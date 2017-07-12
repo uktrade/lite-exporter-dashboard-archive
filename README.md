@@ -1,15 +1,10 @@
-# lite-admin-prototype
+# LITE Exporter Dashboard
 
-A testbed for prototypes and mockups of case processing screens for LITE
+A frontend application allowing exporters to see the status of their licence applications
 
-## To build/push
+## Getting started
 
-In root directory (note: you need to be logged into Docker with Nexus credentials):
-
-* `sbt dist`
-* `docker build -t docker.mgmt.licensing.service.trade.gov.uk.test:80/lite-prototypes/lite-admin-prototype:latest .`
-* `docker push docker.mgmt.licensing.service.trade.gov.uk.test:80/lite-prototypes/lite-admin-prototype:latest`
-
-Then run Jenkins job `prototype-push` to deploy to the dev environment.
-
-Note: OpenShift object definitions are available in `openshift-template.yaml`.
+* Download everything - `git clone <url>`, `cd lite-permissions-finder`, `git submodule init`, `git submodule update`
+* Copy `sample-application.conf` to `application.conf`
+* Run the application - `sbt run`
+* Go to the index page (e.g. `http://localhost:9000`)
