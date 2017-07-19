@@ -10,6 +10,7 @@ GET     /application/*applicationRef/status-tracker             controllers.Appl
 GET     /application/*applicationRef/rfi                        controllers.Application.licenceApplication(applicationRef: String, activeTab="rfi")
 GET     /application/*applicationRef/amend-application          controllers.Application.licenceApplication(applicationRef: String, activeTab="amend")
 GET     /application/*applicationRef/outcome-documents          controllers.Application.licenceApplication(applicationRef: String, activeTab="outcomeDocs")
+GET     /application/*applicationRef             controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                         controllers.Assets.versioned(path="/public", file: Asset)
