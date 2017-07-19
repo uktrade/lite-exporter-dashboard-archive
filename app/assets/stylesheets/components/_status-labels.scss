@@ -1,0 +1,22 @@
+.status-label {
+  @include bold-19;
+  text-align: center;
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1;
+  padding: 0.4em 1.7em 0.35em 1.7em;
+}
+
+.status-label-neutral {
+  background: $grey-3;
+}
+
+.status-label-progress {
+  background: $orange;
+  color: $white;
+}
+
+.status-label-finished {
+  background: $turquoise;
+  color: $white;
+}

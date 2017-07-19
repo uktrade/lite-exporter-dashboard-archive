@@ -1,0 +1,50 @@
+.table-filters {
+  @include core-19();
+  background: $panel-colour;
+  padding: $gutter-half;
+  margin-bottom: $gutter;
+
+  @include media(tablet) {
+    ul {
+      display: inline-block;
+      margin-left: 6em;
+
+      li {
+        display: inline-block;
+        margin-right: 2em;
+      }
+    }
+  }
+  
+  a {
+    text-decoration: none;
+    display: block;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  @include media(mobile) {
+    a {
+      padding: 0.5em 0;
+    }
+
+    li:first-child a {
+      padding-top: 1em;
+    }
+
+    li:last-child a {
+      padding-bottom: 0em;
+    }
+  }
+
+  li.active a {
+    color: $text-colour;
+    font-weight: bold;
+  }
+
+  li.active a:hover {
+    text-decoration: none;
+  }
+}

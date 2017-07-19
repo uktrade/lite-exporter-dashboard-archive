@@ -1,0 +1,24 @@
+// govuk-elements imports
+// Settings (variables)
+@import "../../../subprojects/lite-play-common/app/assets/template/stylesheets/colours";                                // Colour variables
+@import "../../../subprojects/lite-play-common/app/assets/template/stylesheets/font_stack";                             // Font family variables
+@import "../../../subprojects/lite-play-common/app/assets/template/stylesheets/measurements";                           // Widths and gutter variables
+
+// Mixins
+@import "../../../subprojects/lite-play-common/app/assets/template/stylesheets/conditionals";                           // Media query mixin
+@import "../../../subprojects/lite-play-common/app/assets/template/stylesheets/typography";                             // Core bold and heading mixins, also external links
+@import "../../../subprojects/lite-play-common/app/assets/template/stylesheets/shims";                                  // Inline block mixin, clearfix placeholder
+
+// GOV.UK elements
+@import "../../../subprojects/lite-play-common/app/assets/template/stylesheets/elements/helpers";                       // Helper functions and classes
+
+// Components
+@import "components/application-summary-panel";
+@import "components/forms";
+@import "components/part-navigation";
+@import "components/rfi-labels";
+@import "components/status-labels";
+@import "components/table-filters";
+@import "components/tables";
+@import "components/tabs";
+@import "components/typography";

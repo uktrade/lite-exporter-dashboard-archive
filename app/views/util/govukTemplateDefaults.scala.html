@@ -3,6 +3,10 @@
 @(htmlTitle: String, propositionHeading: Option[Html] = None, pageHead: Option[Html] = None)(content: Html)
 
 @head = {
+  <!--[if gt IE 8]><!-->
+  <link href="@controllers.routes.Assets.versioned("stylesheets/exporter-dashboard.css")" media="screen" rel="stylesheet" type="text/css" />
+  <!--<![endif]-->
+  <!--[if (lte IE 8) & (gte IE 6)]><link href="@controllers.routes.Assets.versioned("stylesheets/exporter-dashboard-ie.css")" media="screen" rel="stylesheet" type="text/css" /><!--<![endif]-->
   @pageHead
 }
 

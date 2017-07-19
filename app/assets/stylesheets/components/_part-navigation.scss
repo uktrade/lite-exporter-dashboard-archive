@@ -1,0 +1,18 @@
+.part-navigation-container {
+  margin: $gutter 0;
+  border-bottom: 1px solid $border-colour;
+}
+
+.part-navigation {
+  @include core-16();
+  line-height: 1.25;
+  margin-bottom: $gutter-half;
+
+  ul {
+    list-style-type: none;
+  }
+
+  li {
+    margin-bottom: 0.75em;
+  }
+}

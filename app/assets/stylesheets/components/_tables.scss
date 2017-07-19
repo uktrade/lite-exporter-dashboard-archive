@@ -1,0 +1,57 @@
+.table-align-top {
+  th {
+    vertical-align: bottom;
+  }
+
+  td,
+  tbody th {
+    vertical-align: top;
+  }
+}
+
+.scrollable-table {
+  overflow-x: auto;
+}
+
+.table-hidden-head {
+  thead {
+    @include visually-hidden;
+  }
+
+  tbody tr:first-child {
+    td, th {
+      border-top: 1px solid $border-colour;
+    }
+  }
+}
+
+.status-tracker-table {
+  td {
+    padding: em(24, 19) em(20, 19) em(24, 19) 0;
+
+    &.status-table-stage p {
+      max-width: 24em;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    &.status-table-status {
+      width: 35%;
+    }
+  }
+
+  .bold-medium {
+    margin-bottom: 0.5em;
+  }
+
+  .status-label {
+    margin-bottom: $gutter-one-third;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+}

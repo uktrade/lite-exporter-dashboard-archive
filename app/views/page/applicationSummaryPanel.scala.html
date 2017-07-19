@@ -1,0 +1,54 @@
+@(applicationRef: String, exporterRef: String, destination: String, submittedDate: String, status: String, caseOfficer: String)
+
+<h2 class="visually-hidden">Application summary</h2>
+<div class="application-summary-panel">
+  <a href="somepage" class="view-application-link">View application</a>
+  <div class="heading-medium" id="summary-panel-app-ref">
+    Application reference
+  </div>
+  <div class="font-medium" aria-labelledby="summary-panel-app-ref">
+    @applicationRef<br>
+    @exporterRef
+  </div>
+
+  <div class="grid-row">
+
+    <div class="column-one-quarter">
+      <div class="heading-small" id="summary-panel-destination">
+        Destination
+      </div>
+      <div aria-labelledby="summary-panel-destination">
+        @destination
+      </div>
+    </div>
+
+    <div class="column-one-quarter">
+      <div class="heading-small" id="summary-panel-destination">
+        Date submitted
+      </div>
+      <div aria-labelledby="summary-panel-destination">
+        @submittedDate
+      </div>
+    </div>
+
+    <div class="column-one-quarter">
+      <div class="heading-small" id="summary-panel-destination">
+        Status
+      </div>
+      <div aria-labelledby="summary-panel-destination">
+        @status
+      </div>
+    </div>
+
+    <div class="column-one-quarter">
+      <div class="heading-small" id="summary-panel-destination">
+        Case officer
+      </div>
+      <div aria-labelledby="summary-panel-destination">
+        @caseOfficer
+      </div>
+    </div>
+
+  </div>
+
+</div>

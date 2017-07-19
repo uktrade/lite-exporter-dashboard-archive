@@ -1,11 +1,82 @@
 @import util._
+@import page._
 @import utils.common.SelectOption._
 @import views.html.common.form._
 @import views.html.common.page._
 
 @(form: Form[_])
-@standardPage("Hello, world", Some(Html("Hello, world")), hideBackLink = true){
+@standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
 
 }{
-  <p class="lede">This is the start of the applicant dashboard</p>
+  @twoThirdsColumn {
+    @partNavigation("Navigation options") {
+      <li>Applications</li>
+      <li><a href="/licences">Licences</a></li>
+      <li><a href="/apply">Apply for a standard licence</a></li>
+    }
+  }
+
+  <h2 class="heading-medium">Applications</h2>
+
+  @tabs(size="large", width="wide") {
+    @tab("Created by you", "some-url", true)
+    @tab("Created by your company", "some-other-url")
+  }
+
+  <div class="form-group">
+    <label class="form-label left-label" for="select-box">Filter by company name</label>
+    <select class="form-control" id="select-box" name="select-box">
+      <option>All companies</option>
+      <option>Company A</option>
+      <option>Company B</option>
+    </select>
+  </div>
+
+  <div class="table-filters">
+    Show:
+    <ul>
+      <li class="active"><a href="#">All (23)</a></li>
+      <li><a href="#">Draft (2)</a></li>
+      <li><a href="#">Current (3)</a></li>
+      <li><a href="#">Completed (18)</a></li>
+    </ul>
+  </div>
+
+  <div class="scrollable-table">
+    <table class="table-font-xsmall table-align-top">
+      <thead>
+        <tr>
+          <th>
+            <a href="#">Date submitted</a>
+          </th>
+          <th>References</th>
+          <th>
+            <a href="#">Application status</a>
+          </th>
+          <th>
+            Destination
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">26 Jun 2017</th>
+          <td>
+            <a href="status-tracker" class="bold">SIE2017/04825</a><br>
+            Purchase order: GB93862929 Some export name
+          </td>
+          <td>
+            <p>
+              Licensing unit processing<br>
+              Since: 28 Mar 2017
+            </p>
+            @rfiLabel("#")
+          </td>
+          <td>
+            Netherlands
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 }

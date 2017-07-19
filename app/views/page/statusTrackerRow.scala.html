@@ -1,0 +1,16 @@
+@(stageName: String, stageDescription: String = "", rfiFlag: Option[Html], statusLabel: Html, statusDetail: Option[Html])
+<tr>
+  <td class="status-table-stage">
+    <div class="bold-medium">@stageName</div>
+    @if(stageDescription != "") {
+      <p>@stageDescription</p>
+    }
+    @rfiFlag
+  </td>
+  <td class="status-table-status">
+    @statusLabel
+    @if(statusDetail != null) {
+      <p class="secondary-text">@statusDetail</p>
+    }
+  </td>
+</tr>

@@ -14,4 +14,10 @@ public class Application extends Controller {
         return ok(index.render(form));
     }
 
+    public Result statusTracker() {
+        FormFactory formFactory = new FormFactory(null,null,null);
+        Form form = formFactory.form();
+        return ok(statusTracker.render(form));
+    }
+
 }
