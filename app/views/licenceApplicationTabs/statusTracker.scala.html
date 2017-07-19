@@ -1,0 +1,72 @@
+@import util._
+@import page._
+@import views.html.common.page._
+
+<p>Track the stages of your application.</p>
+
+<table class="table-hidden-head status-tracker-table table-align-top">
+  <thead>
+    <tr>
+      <th>Application stage</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    @statusTrackerRow(
+      "Draft",
+      null,
+      null,
+      {statusLabel("Finished", "finished")},
+      Some(Html("Started on 1 Feb 2017 at 9:35am"))
+    )
+    @statusTrackerRow(
+      "Application submitted",
+      null,
+      null,
+      {statusLabel("Finished", "finished")},
+      Some(Html("Submitted on 2 Feb 2017 at 12:34pm"))
+    )
+    @statusTrackerRow(
+      "Initial checks",
+      "Checking your organisation details",
+      null,
+      {statusLabel("Finished", "finished")},
+      Some(Html("Processed in 1 working day"))
+    )
+    @statusTrackerRow(
+      "Technical assessment",
+      "Classification code validation",
+      null,
+      {statusLabel("Finished", "finished")},
+      Some(Html("Processed in 9 working days"))
+    )
+    @statusTrackerRow(
+      "Licensing unit processing",
+      "Checking application form details and other documentation",
+      Some({rfiLabel("someurl", "Received on 20 Mar 2017 at 9:35am")}),
+      {statusLabel("In progress", "progress")},
+      Some(Html("Started on 12 May 2017<br>(2 working days ago)"))
+    )
+    @statusTrackerRow(
+      "With OGD",
+      "Additional advice from other government departments",
+      null,
+      {statusLabel("Not started", "neutral")},
+      null
+    )
+    @statusTrackerRow(
+      "Final assessment",
+      "Your application is undergoing final checks and you will receive an outcome soon",
+      null,
+      {statusLabel("Not started", "neutral")},
+      null
+    )
+    @statusTrackerRow(
+      "Decision reached",
+      null,
+      null,
+      {statusLabel("Not started", "neutral")},
+      null
+    )
+  </tbody>
+</table>

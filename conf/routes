@@ -6,7 +6,10 @@
 
 # Home page
 GET     /                           controllers.Application.index
-GET     /status-tracker             controllers.Application.statusTracker
+GET     /application/*applicationRef/status-tracker             controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
+GET     /application/*applicationRef/rfi                        controllers.Application.licenceApplication(applicationRef: String, activeTab="rfi")
+GET     /application/*applicationRef/amend-application          controllers.Application.licenceApplication(applicationRef: String, activeTab="amend")
+GET     /application/*applicationRef/outcome-documents          controllers.Application.licenceApplication(applicationRef: String, activeTab="outcomeDocs")
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                         controllers.Assets.versioned(path="/public", file: Asset)

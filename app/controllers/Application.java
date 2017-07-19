@@ -14,10 +14,8 @@ public class Application extends Controller {
         return ok(index.render(form));
     }
 
-    public Result statusTracker() {
-        FormFactory formFactory = new FormFactory(null,null,null);
-        Form form = formFactory.form();
-        return ok(statusTracker.render(form));
+    public Result licenceApplication(String applicationRef, String activeTab) {
+        return ok(licenceApplication.render(applicationRef, activeTab));
     }
 
 }
