@@ -1,4 +1,4 @@
-name := "lite-admin-prototype"
+name := "lite-exporter-dashboard"
 
 version := "1.0"
 
