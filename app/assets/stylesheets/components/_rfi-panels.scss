@@ -66,6 +66,10 @@
 
 .rfi-reply-sender {
   text-align: right;
+
+  @include media(mobile) {
+    text-align: left;
+  }
 }
 
 .icon-reply {
