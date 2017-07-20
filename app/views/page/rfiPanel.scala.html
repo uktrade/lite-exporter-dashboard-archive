@@ -1,0 +1,46 @@
+@(receivedDate: String, replyByDate: String, sender: String)(message: Html)
+
+<div class="rfi-panel">
+  <header>
+    <h3 class="heading-small"><span class="rfi-icon"></span> <abbr title="Request for information">RFI</abbr></h3>
+
+    <div class="grid-row">
+
+      <div class="column-two-thirds">
+        <span class="heading-small">
+          Received on:
+        </span>
+        <span>
+          @receivedDate
+        </span>
+      </div>
+
+      <div class="column-one-third">
+        <span class="heading-small">
+          Sender:
+        </span>
+        <span>
+          @sender
+        </span>
+      </div>
+
+    </div>
+
+    <span class="heading-small">
+      Reply by:
+    </span>
+    <span>
+      @replyByDate
+    </span>
+
+  </header>
+
+  <article>
+    <h4 class="heading-small">Message</h4>
+    <div>
+      @message
+    </div>
+
+    <a href="#" class="rfi-reply-link"><span class="icon-reply"></span> Reply to this message</a>
+  </article>
+</div>

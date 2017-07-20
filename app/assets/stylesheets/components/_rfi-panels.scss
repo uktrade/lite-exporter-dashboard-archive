@@ -1,0 +1,74 @@
+.rfi-panel {
+  background: $grey-4;
+  border: 1px solid $border-colour;
+  max-width: 700px;
+  margin-bottom: $gutter;
+
+  &>header {
+    padding: $gutter-two-thirds $gutter;
+    border-bottom: 1px solid $border-colour;
+  }
+
+  &>article {
+    padding: $gutter;
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &>footer {
+    padding: $gutter-two-thirds $gutter;
+    border-top: 1px solid $border-colour;
+  }
+
+  h3 {
+    margin: 0 0 $gutter-one-third 0;
+  }
+
+  h4 {
+    margin-top: 0;
+  }
+
+  .grid-row {
+    margin-bottom: $gutter-one-third;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .rfi-reply-link {
+    display: block;
+    margin-top: $gutter;
+    display: inline-block;
+    text-decoration: none;
+
+    .icon-reply {
+      margin-right: 0.25em;
+      vertical-align: sub;
+    }
+  }
+}
+
+.rfi-reply-panel {
+  background: $white;
+  margin-left: 7%;
+
+  @include media(mobile) {
+    margin-left: 0;
+  }
+
+  h3 {
+    margin-bottom: 0;
+  }
+}
+
+.rfi-reply-sender {
+  text-align: right;
+}
+
+.icon-reply {
+  @include icon(icon-reply, 32, 25, "../images");
+  display: inline-block;
+}

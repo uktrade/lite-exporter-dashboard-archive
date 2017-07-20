@@ -1,0 +1,47 @@
+@(sender: String, sentDate: String = "")(message: Html = HtmlFormat.empty)
+
+<div class="rfi-panel rfi-reply-panel">
+  <header>
+
+    <div class="grid-row">
+
+      <div class="column-one-half">
+        <h3 class="heading-small">Reply from you...</h3>
+      </div>
+
+      <div class="column-one-half rfi-reply-sender">
+        @if(!sentDate.equals("")){
+          <span class="heading-small">
+            @sender
+          </span>
+          <span>
+            @sentDate
+          </span>
+        } else {
+          <span class="heading-small">
+            Sender:
+          </span>
+          <span>
+            @sender
+          </span>
+        }
+      </div>
+
+    </div>
+
+  </header>
+
+  <article>
+    @if(!sentDate.equals("")){
+      <h4 class="heading-small">Message</h4>
+      <div>
+        @message
+      </div>
+    }
+  </article>
+
+  <footer>
+    <h4 class="heading-small">Attached files</h4>
+    Attachments will go here
+  </footer>
+</div>
