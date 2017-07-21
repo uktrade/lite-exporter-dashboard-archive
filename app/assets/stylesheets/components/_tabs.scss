@@ -8,11 +8,11 @@
 
   li {
     @include core-16();
+    @include link-underline-on-hover;
 
     a {
       padding: 1em;
       background: $panel-colour;
-      text-decoration: none;
       display: block;
       border-top: 1px solid $border-colour;
 
@@ -20,7 +20,6 @@
         background: $border-colour;
         border-color: $border-colour;
         color: $link-hover-colour;
-        text-decoration: underline;
       }
     }
 

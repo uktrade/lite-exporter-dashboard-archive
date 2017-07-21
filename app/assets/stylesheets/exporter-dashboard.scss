@@ -12,36 +12,15 @@
 // GOV.UK elements
 @import "../../../subprojects/lite-play-common/app/assets/template/stylesheets/elements/helpers";                       // Helper functions and classes
 
-// Icon mixin
-@mixin icon($icon-name, $icon-width, $icon-height, $icon-sub-folder:false) {
-
-  width: #{$icon-width}px;
-  height: #{$icon-height}px;
-
-  @if $icon-sub-folder {
-    background-image: url("#{$icon-sub-folder}/#{$icon-name}.png");
-
-    @include device-pixel-ratio() {
-      background-image: url("#{$icon-sub-folder}/#{$icon-name}-2x.png");
-      background-size: 100%;
-    }
-
-  } @else {
-    background-image: url("#{$icon-name}.png");
-
-    @include device-pixel-ratio() {
-      background-image: url("#{$icon-name}-2x.png");
-      background-size: 100%;
-    }
-  }
-}
+// Mixins
+@import "mixins";
 
 // Components
 @import "components/application-summary-panel";
 @import "components/forms";
+@import "components/message-panels";
 @import "components/part-navigation";
 @import "components/rfi-labels";
-@import "components/rfi-panels";
 @import "components/status-labels";
 @import "components/table-filters";
 @import "components/tables";

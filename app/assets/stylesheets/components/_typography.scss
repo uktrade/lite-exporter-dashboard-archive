@@ -1,3 +1,24 @@
 .secondary-text {
   color: $secondary-text-colour;
 }
+
+.telephone-number {
+  .telephone-number-text {
+    display: none;
+  }
+
+  @include media(tablet) {
+    a {
+      display: none;
+    }
+
+    .telephone-number-text {
+      display: inline;
+    }
+  }
+}
+
+.outcome-documents-list li {
+  margin: 1em 0;
+  @include link-underline-on-hover;
+}

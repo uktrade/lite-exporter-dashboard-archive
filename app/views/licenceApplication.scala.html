@@ -8,7 +8,7 @@
 
 }{
   @twoThirdsColumn {
-    @partNavigation("test123") {
+    @partNavigation("Licence management navigation") {
       <li><a href="/">Applications</a></li>
       <li><a href="/licences">Licences</a></li>
       <li><a href="/apply">Apply for a standard licence</a></li>
@@ -34,7 +34,7 @@
   @activeTab match {
     case "statusTracker" => { @statusTracker() }
     case "rfi" => { @rfiList() }
-    case "amend" => { @amendApplication() }
+    case "amend" => { @amendApplication(applicationRef) }
     case "outcomeDocs" => { @outcomeDocs() }
   }
 }

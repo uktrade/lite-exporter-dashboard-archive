@@ -1,1 +1,44 @@
-Amend application
+@import page._
+
+@(applicationRef: String)
+<p>Use this form to make an amendment or withdraw your application.</p>
+
+<div class="message-panel white-message-panel">
+  <article>
+    <p>Withdrawl form goes here</p>
+  <button class="button">Send</button>
+  </article>
+</div>
+
+<p>For general enquiries related to this application, please contact your case officer</p>
+
+<div class="grid-row">
+
+  <div class="column-one-quarter">
+    <div class="heading-small" id="case-officer-name">
+      Case Officer
+    </div>
+    <div aria-labelledby="case-officer-name">
+      Jerry McGuire
+    </div>
+  </div>
+
+  <div class="column-one-quarter">
+    <div class="heading-small" id="case-officer-telephone">
+      Telephone
+    </div>
+    <div aria-labelledby="case-officer-telephone">
+      @telephoneLink("01234 567890")
+    </div>
+  </div>
+
+  <div class="column-one-quarter">
+    <div class="heading-small" id="case-officer-email">
+        Email
+    </div>
+    <div aria-labelledby="case-officer-email">
+      <a href="mailto:j.mcguire@@trade.gov.uk?subject=@applicationRef - applicant enquiry">j.mcguire@@trade.gov.uk</a>
+    </div>
+  </div>
+
+</div>

@@ -1,6 +1,6 @@
 @(sender: String, sentDate: String = "")(message: Html = HtmlFormat.empty)
 
-<div class="rfi-panel rfi-reply-panel">
+<div class="message-panel message-reply-panel">
   <header>
 
     <div class="grid-row">
@@ -9,7 +9,7 @@
         <h3 class="heading-small">Reply from you...</h3>
       </div>
 
-      <div class="column-one-half rfi-reply-sender">
+      <div class="column-one-half message-reply-sender">
         @if(!sentDate.equals("")){
           <span class="heading-small">
             @sender

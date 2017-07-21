@@ -15,14 +15,11 @@
       }
     }
   }
-  
+
+  @include link-underline-on-hover;
+
   a {
-    text-decoration: none;
     display: block;
-    
-    &:hover {
-      text-decoration: underline;
-    }
   }
 
   @include media(mobile) {
