@@ -7,13 +7,8 @@
 @standardPage(applicationRef + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
 
 }{
-  @twoThirdsColumn {
-    @partNavigation("Licence management navigation") {
-      <li><a href="/">Applications</a></li>
-      <li><a href="/licences">Licences</a></li>
-      <li><a href="/apply">Apply for a standard licence</a></li>
-    }
-  }
+
+  @dashboardTopNav()
 
   @applicationSummaryPanel(
     applicationRef,
