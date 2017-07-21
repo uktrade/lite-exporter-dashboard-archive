@@ -1,3 +1,5 @@
+@import page._
+
 @(applicationRef: String, exporterRef: String, destination: String, submittedDate: String, status: String, caseOfficer: String)
 
 <h2 class="visually-hidden">Application summary</h2>
@@ -16,39 +18,19 @@
   <div class="grid-row">
 
     <div class="column-one-quarter">
-      <div class="heading-small" id="summary-panel-destination">
-        Destination
-      </div>
-      <div aria-labelledby="summary-panel-destination">
-        @destination
-      </div>
+      @summaryElement("summary-panel-destination", "Destination"){ @destination }
     </div>
 
     <div class="column-one-quarter">
-      <div class="heading-small" id="summary-panel-destination">
-        Date submitted
-      </div>
-      <div aria-labelledby="summary-panel-destination">
-        @submittedDate
-      </div>
+      @summaryElement("submitted-date", "Date submitted"){ @submittedDate }
     </div>
 
     <div class="column-one-quarter">
-      <div class="heading-small" id="summary-panel-destination">
-        Status
-      </div>
-      <div aria-labelledby="summary-panel-destination">
-        @status
-      </div>
+      @summaryElement("summary-panel-status", "Status"){ @status }
     </div>
 
     <div class="column-one-quarter">
-      <div class="heading-small" id="summary-panel-destination">
-        Case officer
-      </div>
-      <div aria-labelledby="summary-panel-destination">
-        @caseOfficer
-      </div>
+      @summaryElement("summary-panel-case-officer", "Case officer"){ @caseOfficer }
     </div>
 
   </div>

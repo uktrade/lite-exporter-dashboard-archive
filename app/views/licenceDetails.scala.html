@@ -1,0 +1,32 @@
+@import util._
+@import page._
+@import views.html.common.page._
+@import licenceDetailTypes._
+
+@(licenceRef: String)
+@standardPage(licenceRef + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
+
+}{
+
+  @dashboardTopNav()
+
+  @if(licenceRef.startsWith("OGL")) {
+    @ogelLicenceDetails(
+      licenceRef,
+      "Military and dual-use goods: UK forces deployed in nine embargoed destinations"
+    )
+  } else {
+    @sielLicenceDetails(
+      licenceRef,
+      "Purchase order for 20 submersible vehicles to Underwater Fun Ltd Australia",
+      "SIEL Permanent",
+      "Active",
+      "23 Aug 2017",
+      "23 Aug 2018",
+      "5 destinations",
+      "Coventry site",
+      "Deep Blue Limited"
+    )
+  }
+  
+}

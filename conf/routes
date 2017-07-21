@@ -6,11 +6,21 @@
 
 # Home page
 GET     /                           controllers.Application.index
+
+# Application tabs
 GET     /application/*applicationRef/status-tracker             controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
 GET     /application/*applicationRef/rfi                        controllers.Application.licenceApplication(applicationRef: String, activeTab="rfi")
 GET     /application/*applicationRef/amend-application          controllers.Application.licenceApplication(applicationRef: String, activeTab="amend")
 GET     /application/*applicationRef/outcome-documents          controllers.Application.licenceApplication(applicationRef: String, activeTab="outcomeDocs")
-GET     /application/*applicationRef             controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
+GET     /application/*applicationRef                            controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
+
+# Licences tabs
+GET     /licences                                               controllers.Application.licenceList(activeTab="siels")
+GET     /licences/siels                                         controllers.Application.licenceList(activeTab="siels")
+GET     /licences/ogels                                         controllers.Application.licenceList(activeTab="ogels")
+
+# Licence details
+GET     /licence/*licenceRef                                    controllers.Application.licenceDetails(licenceRef: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                         controllers.Assets.versioned(path="/public", file: Asset)

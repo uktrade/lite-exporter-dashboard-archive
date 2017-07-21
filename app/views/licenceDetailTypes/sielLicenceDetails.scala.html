@@ -1,0 +1,58 @@
+@import page._
+
+@(licenceRef: String, licenseeRef: String, licenceType: String, licenceStatus: String, issueDate: String, expiryDate: String, exportDestination: String, licenceSite: String, licensee: String)
+<div class="application-summary-panel">
+
+  <div class="heading-medium" id="summary-panel-app-ref">
+    <abbr title="Standard Individual Export Licence">SIEL</abbr> reference
+  </div>
+  <div class="font-medium" aria-labelledby="summary-panel-app-ref">
+    @licenceRef<br>
+    @licenseeRef
+  </div>
+
+  <div class="grid-row">
+
+    <div class="column-one-third">
+      @summaryElement("licence-type", "Licence type"){ @licenceType }
+    </div>
+
+    <div class="column-one-third">
+      @summaryElement("licence-status", "Licence status"){ @licenceStatus }
+    </div>
+
+    <div class="column-one-third">
+      @summaryElement("licence-document", "Licence document"){ <a href="#">Download licence (PDF)</a> }
+    </div>
+
+  </div>
+
+  <div class="grid-row">
+
+    <div class="column-one-third">
+      @summaryElement("issue-date", "Issue date"){ @issueDate }
+    </div>
+
+    <div class="column-one-third">
+      @summaryElement("expiry-date", "Expiry date"){ @expiryDate }
+    </div>
+
+    <div class="column-one-third">
+      @summaryElement("export-destination", "Export destination"){ @exportDestination }
+    </div>
+
+  </div>
+
+  <div class="grid-row">
+
+    <div class="column-one-third">
+      @summaryElement("licence-site", "Site"){ @licenceSite }
+    </div>
+
+    <div class="column-one-third">
+      @summaryElement("licensee", "Licensee"){ @licensee }
+    </div>
+
+  </div>
+
+</div>
