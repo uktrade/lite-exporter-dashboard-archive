@@ -1,10 +1,7 @@
 @import util._
 @import page._
-@import utils.common.SelectOption._
-@import views.html.common.form._
-@import views.html.common.page._
 
-@(form: Form[_])
+@(activeTab: String)
 @standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
 
 }{
@@ -14,8 +11,8 @@
   <h2 class="heading-medium">Applications</h2>
 
   @tabs("application-list-tabs", size="large", width="wide") {
-    @tab("Created by you", "some-url", true)
-    @tab("Created by your company", "some-other-url")
+    @tab("Created by you", "/applications/created-by-you", activeTab.equals("created-by-you"))
+    @tab("Created by your company", "/applications/created-by-your-company", activeTab.equals("created-by-your-company"))
   }
 
   <div class="form-group">
@@ -57,7 +54,7 @@
         <tr>
           <th scope="row">26 Jun 2017</th>
           <td>
-            <a href="application/ECO123456789012/status-tracker" class="bold">ECO123456789012</a><br>
+            <a href="/application/ECO123456789012/status-tracker" class="bold">ECO123456789012</a><br>
             Purchase order: GB93862929 Some export name
           </td>
           <td>

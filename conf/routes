@@ -4,8 +4,12 @@
 
 ->      /common                     common.Routes
 
-# Home page
-GET     /                           controllers.Application.index
+# Application list
+GET     /                                                       controllers.Application.index
+GET     /applications                                           controllers.Application.applicationList(activeTab=null)
+GET     /applications/created-by-you                            controllers.Application.applicationList(activeTab="created-by-you")
+GET     /applications/created-by-your-company                   controllers.Application.applicationList(activeTab="created-by-your-company")
+
 
 # Application tabs
 GET     /application/*applicationRef/status-tracker             controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
@@ -15,7 +19,7 @@ GET     /application/*applicationRef/outcome-documents          controllers.Appl
 GET     /application/*applicationRef                            controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
 
 # Licences tabs
-GET     /licences                                               controllers.Application.licenceList(activeTab="siels")
+GET     /licences                                               controllers.Application.licenceList(activeTab=null)
 GET     /licences/siels                                         controllers.Application.licenceList(activeTab="siels")
 GET     /licences/ogels                                         controllers.Application.licenceList(activeTab="ogels")
 

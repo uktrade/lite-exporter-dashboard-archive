@@ -7,8 +7,8 @@
 @twoThirdsColumn {
   @partNavigation("Licence management navigation") {
     <li>
-      @if(!request.path().equals("/")) {
-        <a href="/">Applications</a>
+      @if(!request.path().startsWith("/applications")) {
+        <a href="/applications">Applications</a>
       } else {
         Applications
       }
