@@ -12,11 +12,11 @@ GET     /applications/created-by-your-company                   controllers.Appl
 
 
 # Application tabs
-GET     /application/*applicationRef/status-tracker             controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
-GET     /application/*applicationRef/rfi                        controllers.Application.licenceApplication(applicationRef: String, activeTab="rfi")
-GET     /application/*applicationRef/amend-application          controllers.Application.licenceApplication(applicationRef: String, activeTab="amend")
-GET     /application/*applicationRef/outcome-documents          controllers.Application.licenceApplication(applicationRef: String, activeTab="outcomeDocs")
-GET     /application/*applicationRef                            controllers.Application.licenceApplication(applicationRef: String, activeTab="statusTracker")
+GET     /application/*applicationRef/status-tracker             controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="statusTracker")
+GET     /application/*applicationRef/rfi                        controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="rfi")
+GET     /application/*applicationRef/amend-application          controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="amend")
+GET     /application/*applicationRef/outcome-documents          controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="outcomeDocs")
+GET     /application/*applicationRef                            controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="statusTracker")
 
 # Licences tabs
 GET     /licences                                               controllers.Application.licenceList(activeTab=null)

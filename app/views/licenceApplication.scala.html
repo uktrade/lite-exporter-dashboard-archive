@@ -3,33 +3,44 @@
 @import views.html.common.page._
 @import licenceApplicationTabs._
 
-@(applicationRef: String, activeTab: String)
-@standardPage(applicationRef + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
+@import models.view.StatusItemView
+@import java.util
 
-}{
+@(applicationRef: String, activeTab: String, items: util.List[StatusItemView])
+  @standardPage(applicationRef + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-  @dashboardTopNav()
+  } {
 
-  @applicationSummaryPanel(
-    applicationRef,
-    "Purchase order: GB93862929 Some export name",
-    "Netherlands",
-    "26 Jun 2017",
-    "Licensing unit processing",
-    "Jerry McGuire"
-  )
+    @dashboardTopNav()
 
-  @tabs("application-tabs", size="large", fitToPage=true) {
-    @tab("Status tracker", "/application/"+applicationRef+"/status-tracker#application-tabs", activeTab.equals("statusTracker"))
-    @tab("Requests for information (0)", "/application/"+applicationRef+"/rfi#application-tabs", activeTab.equals("rfi"))
-    @tab("Amend application", "/application/"+applicationRef+"/amend-application#application-tabs", activeTab.equals("amend"))
-    @tab("Outcome documents", "/application/"+applicationRef+"/outcome-documents#application-tabs", activeTab.equals("outcomeDocs"))
+    @applicationSummaryPanel(
+      applicationRef,
+      "Purchase order: GB93862929 Some export name",
+      "Netherlands",
+      "26 Jun 2017",
+      "Licensing unit processing",
+      "Jerry McGuire"
+    )
+
+    @tabs("application-tabs", size = "large", fitToPage = true) {
+      @tab("Status tracker", "/application/" + applicationRef + "/status-tracker#application-tabs", activeTab.equals("statusTracker"))
+      @tab("Requests for information (0)", "/application/" + applicationRef + "/rfi#application-tabs", activeTab.equals("rfi"))
+      @tab("Amend application", "/application/" + applicationRef + "/amend-application#application-tabs", activeTab.equals("amend"))
+      @tab("Outcome documents", "/application/" + applicationRef + "/outcome-documents#application-tabs", activeTab.equals("outcomeDocs"))
+    }
+
+    @activeTab match {
+      case "statusTracker" => {
+        @statusTracker(items)
+      }
+      case "rfi" => {
+        @rfiList()
+      }
+      case "amend" => {
+        @amendApplication(applicationRef)
+      }
+      case "outcomeDocs" => {
+        @outcomeDocs()
+      }
+    }
   }
-
-  @activeTab match {
-    case "statusTracker" => { @statusTracker() }
-    case "rfi" => { @rfiList() }
-    case "amend" => { @amendApplication(applicationRef) }
-    case "outcomeDocs" => { @outcomeDocs() }
-  }
-}

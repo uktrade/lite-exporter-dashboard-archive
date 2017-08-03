@@ -13,7 +13,14 @@ lazy val root = (project in file("."))
 
 scalaVersion := "2.11.7"
 
-libraryDependencies ++= Seq( javaJdbc ,  cache , javaWs )
+libraryDependencies ++= Seq(
+  javaJdbc,
+  cache,
+  javaWs,
+  "org.flywaydb" %% "flyway-play" % "3.1.0",
+  "org.xerial" % "sqlite-jdbc" % "3.19.3",
+  "org.jdbi" % "jdbi" % "2.78"
+)
 
 // Contains all files and libraries shared across other projects
 lazy val `zzz-common` = project.in(file("subprojects/lite-play-common")).enablePlugins(PlayJava)
@@ -32,7 +39,4 @@ buildInfoKeys ++= Seq[BuildInfoKey](
 
 buildInfoOptions += BuildInfoOption.BuildTime
 buildInfoOptions += BuildInfoOption.ToJson
-
-//unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )
-
-//resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
+PlayKeys.externalizeResources := false
