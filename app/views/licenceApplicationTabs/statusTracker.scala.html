@@ -3,7 +3,7 @@
 @import models.view.StatusItemView
 @import page._
 
-@(items: util.List[StatusItemView])
+@(statusItemViews: util.List[StatusItemView])
 
 <p>Track the stages of your application.</p>
 
@@ -15,25 +15,8 @@
     </tr>
   </thead>
   <tbody>
-    @for(item <- items) {
-      @statusTrackerRow(
-        item.getStatus,
-        item.getStatusExplanation,
-        if(item.getRfiList.isEmpty) {
-          null
-        } else {
-          Some({
-            rfiLabel("someurl", item.getRfiList.get(0))
-          })
-        },
-        item.getProcessLabel match {
-          case "Finished" => statusLabel("Finished", "finished")
-          case "In progress" => statusLabel("In progress", "progress")
-          case "Not started" => statusLabel("Not started", "neutral")
-          case default => statusLabel(default, "neutral")
-        }
-        , Some(Html(item.getProcessDescription))
-      )
+    @for(statusItemView <- statusItemViews) {
+      @statusTrackerRow(statusItemView)
     }
   </tbody>
 </table>

@@ -8,16 +8,24 @@ import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
 import components.common.state.ContextParamManager;
 import components.common.transaction.TransactionContextParamProvider;
+import components.dao.RfiDao;
+import components.dao.RfiDaoImpl;
+import components.dao.RfiResponseDao;
+import components.dao.RfiResponseDaoImpl;
 import components.dao.StatusUpdateDao;
 import components.dao.StatusUpdateDaoImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
-import components.service.InsertTestDataService;
-import components.service.InsertTestDataServiceImpl;
+import components.service.TestDataService;
+import components.service.TestDataServiceImpl;
+import components.service.PersonService;
+import components.service.PersonServiceMock;
 import components.service.ProcessingDescriptionService;
 import components.service.ProcessingDescriptionServiceImpl;
 import components.service.ProcessingLabelService;
 import components.service.ProcessingLabelServiceImpl;
+import components.service.RfiViewService;
+import components.service.RfiViewServiceImpl;
 import components.service.StatusExplanationService;
 import components.service.StatusExplanationServiceImpl;
 import components.service.StatusItemViewService;
@@ -26,6 +34,8 @@ import components.service.StatusService;
 import components.service.StatusServiceImpl;
 import components.service.TimeFormatService;
 import components.service.TimeFormatServiceImpl;
+import components.service.UserService;
+import components.service.UserServiceMockImpl;
 import components.service.WorkingDaysCalculatorService;
 import components.service.WorkingDaysCalculatorServiceImpl;
 import org.skife.jdbi.v2.DBI;
@@ -33,8 +43,8 @@ import play.Configuration;
 import play.Environment;
 import play.db.Database;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 public class GuiceModule extends AbstractModule {
 
@@ -56,15 +66,20 @@ public class GuiceModule extends AbstractModule {
     bind(ProcessingLabelService.class).to(ProcessingLabelServiceImpl.class);
     bind(WorkingDaysCalculatorService.class).to(WorkingDaysCalculatorServiceImpl.class);
     bind(ProcessingDescriptionService.class).to(ProcessingDescriptionServiceImpl.class);
+    bind(PersonService.class).to(PersonServiceMock.class);
+    bind(RfiViewService.class).to(RfiViewServiceImpl.class);
+    bind(UserService.class).to(UserServiceMockImpl.class);
     // Database
+    bind(RfiDao.class).to(RfiDaoImpl.class);
+    bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);
     bind(StatusUpdateDao.class).to(StatusUpdateDaoImpl.class);
     // Test data
-    bind(InsertTestDataService.class).to(InsertTestDataServiceImpl.class);
+    bind(TestDataService.class).to(TestDataServiceImpl.class);
   }
 
   @Provides
   public Collection<JourneyDefinitionBuilder> provideJourneyDefinitionBuilders() {
-    return Arrays.asList(new JourneyDefinitionBuilderMock());
+    return Collections.singletonList(new JourneyDefinitionBuilderMock());
   }
 
   @Provides

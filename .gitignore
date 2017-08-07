@@ -9,3 +9,4 @@ target
 /conf/application.conf
 ehcachedir
 lite_*
+localExport.db

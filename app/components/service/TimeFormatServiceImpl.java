@@ -18,10 +18,15 @@ public class TimeFormatServiceImpl implements TimeFormatService {
       .withZone(ZoneId.systemDefault());
 
   @Override
-  public String format(long millis) {
+  public String formatDateAndTime(long millis) {
     String date = dateFormatter.format(Instant.ofEpochMilli(millis));
     String time = timeFormatter.format(Instant.ofEpochMilli(millis));
     return date + " at " + time;
+  }
+
+  @Override
+  public String formatDate(long millis) {
+    return dateFormatter.format(Instant.ofEpochMilli(millis));
   }
 
 }

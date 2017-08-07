@@ -1,8 +1,11 @@
-@(receivedDate: String, replyByDate: String, sender: String)(message: Html)
+@import models.view.RfiView
 
-<div class="message-panel">
+@(rfiView: RfiView)
+
+<div class="message-panel" id=@rfiView.getRfiId>
   <header>
-    <h3 class="heading-small"><span class="rfi-icon"></span> <abbr title="Request for information">RFI</abbr></h3>
+    <h3 class="heading-small"><span class="rfi-icon"></span>
+      <abbr title="Request for information">RFI</abbr></h3>
 
     <div class="grid-row">
 
@@ -11,7 +14,7 @@
           Received on:
         </span>
         <span>
-          @receivedDate
+        @rfiView.getReceivedOn
         </span>
       </div>
 
@@ -20,7 +23,7 @@
           Sender:
         </span>
         <span>
-          @sender
+        @rfiView.getSender
         </span>
       </div>
 
@@ -30,7 +33,7 @@
       Reply by:
     </span>
     <span>
-      @replyByDate
+    @rfiView.getReplyBy
     </span>
 
   </header>
@@ -38,9 +41,10 @@
   <article>
     <h4 class="heading-small">Message</h4>
     <div>
-      @message
+    @Html(rfiView.getMessage)
     </div>
 
-    <a href="#" class="rfi-reply-link"><span class="icon-reply"></span> Reply to this message</a>
+    <a href="@routes.LicenseApplicationController.reply(rfiView.getAppId, rfiView.getRfiId).withFragment("reply")" class="rfi-reply-link"><span class="icon-reply"></span>
+      Reply to this message</a>
   </article>
 </div>

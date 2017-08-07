@@ -1,6 +1,11 @@
-@(sender: String, sentDate: String = "")(message: Html = HtmlFormat.empty)
+@import models.view.RfiResponseView
+@import play.data.Form
+@import views.html.common.form._
 
-<div class="message-panel message-reply-panel">
+@(rfiResponseView: RfiResponseView, appId: String, rfiId: String, rfiResponseForm: Form[_])
+
+<div class="message-panel message-reply-panel" @if(rfiResponseView.isEditable) {
+  id="reply"} >
   <header>
 
     <div class="grid-row">
@@ -10,21 +15,21 @@
       </div>
 
       <div class="column-one-half message-reply-sender">
-        @if(!sentDate.equals("")){
-          <span class="heading-small">
-            @sender
-          </span>
-          <span>
-            @sentDate
-          </span>
-        } else {
-          <span class="heading-small">
-            Sender:
-          </span>
-          <span>
-            @sender
-          </span>
-        }
+      @if(!rfiResponseView.getSentAt.equals("")) {
+        <span class="heading-small">
+        @rfiResponseView.getSentBy
+        </span>
+        <span>
+        @rfiResponseView.getSentAt
+        </span>
+      } else {
+        <span class="heading-small">
+          Sender:
+        </span>
+        <span>
+        @rfiResponseView.getSentBy
+        </span>
+      }
       </div>
 
     </div>
@@ -32,16 +37,29 @@
   </header>
 
   <article>
-    @if(!sentDate.equals("")){
-      <h4 class="heading-small">Message</h4>
-      <div>
-        @message
-      </div>
+    <h4 class="heading-small">Message</h4>
+    <div>
+    @if(rfiResponseView.isEditable) {
+
+      <form action="@routes.LicenseApplicationController.submitReply(appId, rfiId)" method="POST">
+        @formTextarea(rfiResponseForm("responseMessage"), rows = "4", cssClass = "form-control-wide") {
+
+        }
+
+        <button class="button">Send</button>
+
+      </form>
+
+    } else {
+      @Html(rfiResponseView.getMessage)
     }
+    </div>
   </article>
 
-  <footer>
-    <h4 class="heading-small">Attached files</h4>
-    Attachments will go here
-  </footer>
+  @if(!rfiResponseView.isEditable) {
+    <footer>
+      <h4 class="heading-small">Attached files</h4>
+      Attachments will go here
+    </footer>
+  }
 </div>

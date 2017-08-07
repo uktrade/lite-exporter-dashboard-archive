@@ -17,4 +17,7 @@ public interface StatusUpdateJDBIDao {
   @SqlUpdate("INSERT INTO STATUS_UPDATE (APP_ID, STATUS_TYPE, START_TIMESTAMP, END_TIMESTAMP) VALUES (:appId, :statusType, :startTimestamp, :endTimestamp)")
   void insert(@Bind("appId") String appId, @Bind("statusType") String statusType, @Bind("startTimestamp") Long startTimestamp, @Bind("endTimestamp") Long endTimestamp);
 
+  @SqlUpdate("DELETE FROM STATUS_UPDATE")
+  void truncateTable();
+
 }

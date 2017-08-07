@@ -1,0 +1,44 @@
+package components.dao;
+
+import com.google.inject.Inject;
+import models.RfiResponse;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
+
+import java.util.List;
+
+public class RfiResponseDaoImpl implements RfiResponseDao {
+
+  private final DBI dbi;
+
+  @Inject
+  public RfiResponseDaoImpl(DBI dbi) {
+    this.dbi = dbi;
+  }
+
+  @Override
+  public List<RfiResponse> getRfiResponses(String rfiId) {
+    try (final Handle handle = dbi.open()) {
+      RfiResponseJDBIDao rfiResponseJDBIDao = handle.attach(RfiResponseJDBIDao.class);
+      return rfiResponseJDBIDao.getRfiResponses(rfiId);
+    }
+  }
+
+  @Override
+  public void insertRfiResponse(RfiResponse rfiResponse) {
+    try (final Handle handle = dbi.open()) {
+      RfiResponseJDBIDao rfiResponseJDBIDao = handle.attach(RfiResponseJDBIDao.class);
+      rfiResponseJDBIDao.insertRfiResponse(rfiResponse.getRfiId(), rfiResponse.getSentBy(),
+          rfiResponse.getSentTimestamp(), rfiResponse.getMessage(), rfiResponse.getAttachments());
+    }
+  }
+
+  @Override
+  public void deleteAllRfiResponses() {
+    try (final Handle handle = dbi.open()) {
+      RfiResponseJDBIDao rfiResponseJDBIDao = handle.attach(RfiResponseJDBIDao.class);
+      rfiResponseJDBIDao.truncateTable();
+    }
+  }
+
+}

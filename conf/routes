@@ -2,29 +2,34 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-->      /common                     common.Routes
+->          /common                                               common.Routes
 
 # Application list
-GET     /                                                       controllers.Application.index
-GET     /applications                                           controllers.Application.applicationList(activeTab=null)
-GET     /applications/created-by-you                            controllers.Application.applicationList(activeTab="created-by-you")
-GET     /applications/created-by-your-company                   controllers.Application.applicationList(activeTab="created-by-your-company")
+GET         /                                                     controllers.Application.index
+GET         /applications                                         controllers.Application.applicationList(activeTab=null)
+GET         /applications/created-by-you                          controllers.Application.applicationList(activeTab="created-by-you")
+GET         /applications/created-by-your-company                 controllers.Application.applicationList(activeTab="created-by-your-company")
 
 
 # Application tabs
-GET     /application/*applicationRef/status-tracker             controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="statusTracker")
-GET     /application/*applicationRef/rfi                        controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="rfi")
-GET     /application/*applicationRef/amend-application          controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="amend")
-GET     /application/*applicationRef/outcome-documents          controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="outcomeDocs")
-GET     /application/*applicationRef                            controllers.LicenseApplicationController.licenceApplication(applicationRef: String, activeTab="statusTracker")
+GET         /application/*applicationRef/status-tracker           controllers.LicenseApplicationController.statusTab(applicationRef: String)
+GET         /application/*applicationRef/rfi                      controllers.LicenseApplicationController.rfiTab(applicationRef: String)
+GET         /application/*applicationRef/rfi/*rfiId/reply         controllers.LicenseApplicationController.reply(applicationRef: String, rfiId: String)
+POST        /application/*applicationRef/rfi/*rfiId/reply         controllers.LicenseApplicationController.submitReply(applicationRef: String, rfiId: String)
+GET         /application/*applicationRef/amend-application        controllers.LicenseApplicationController.amendTab(applicationRef: String)
+GET         /application/*applicationRef/outcome-documents        controllers.LicenseApplicationController.outcomeTab(applicationRef: String)
+GET         /application/*applicationRef                          controllers.LicenseApplicationController.statusTab(applicationRef: String)
 
 # Licences tabs
-GET     /licences                                               controllers.Application.licenceList(activeTab=null)
-GET     /licences/siels                                         controllers.Application.licenceList(activeTab="siels")
-GET     /licences/ogels                                         controllers.Application.licenceList(activeTab="ogels")
+GET         /licences                                             controllers.Application.licenceList(activeTab=null)
+GET         /licences/siels                                       controllers.Application.licenceList(activeTab="siels")
+GET         /licences/ogels                                       controllers.Application.licenceList(activeTab="ogels")
 
 # Licence details
-GET     /licence/*licenceRef                                    controllers.Application.licenceDetails(licenceRef: String)
+GET         /licence/*licenceRef                                  controllers.Application.licenceDetails(licenceRef: String)
+
+# Test data
+GET         /test                                                 controllers.TestDataController.insertTestData()
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file                         controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                                         controllers.Assets.versioned(path="/public", file: Asset)

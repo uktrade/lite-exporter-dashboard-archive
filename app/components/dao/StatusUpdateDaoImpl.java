@@ -32,4 +32,12 @@ public class StatusUpdateDaoImpl implements StatusUpdateDao {
     }
   }
 
+  @Override
+  public void deleteAllStatusUpdates() {
+    try (final Handle handle = dbi.open()) {
+      StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);
+      statusUpdateJDBIDao.truncateTable();
+    }
+  }
+
 }

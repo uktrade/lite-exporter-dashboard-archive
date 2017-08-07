@@ -22,9 +22,9 @@ public class ProcessingDescriptionServiceImpl implements ProcessingDescriptionSe
     Long endTimestamp = statusUpdate.getEndTimestamp();
     switch (statusUpdate.getStatusType()) {
       case DRAFT:
-        return "Created on " + timeFormatService.format(startTimestamp);
+        return "Created on " + timeFormatService.formatDateAndTime(startTimestamp);
       case SUBMITTED:
-        return "Submitted on " + timeFormatService.format(startTimestamp);
+        return "Submitted on " + timeFormatService.formatDateAndTime(startTimestamp);
       case INITIAL_CHECKS:
       case TECHNICAL_ASSESSMENT:
       case LU_PROCESSING:
@@ -33,11 +33,11 @@ public class ProcessingDescriptionServiceImpl implements ProcessingDescriptionSe
       case COMPLETE:
         if (startTimestamp != null) {
           if (endTimestamp != null) {
-            long duration = workingDaysCalculatorService.calculate(startTimestamp, endTimestamp);
+            long duration = workingDaysCalculatorService.calculateWithStartBeforeEnd(startTimestamp, endTimestamp);
             return "Processed in " + duration + " working days";
           } else {
-            String started = timeFormatService.format(startTimestamp);
-            long duration = workingDaysCalculatorService.calculate(startTimestamp, Instant.now().toEpochMilli());
+            String started = timeFormatService.formatDateAndTime(startTimestamp);
+            long duration = workingDaysCalculatorService.calculateWithStartBeforeEnd(startTimestamp, Instant.now().toEpochMilli());
             return String.format("Started on %s<br>(%d days ago)", started, duration);
           }
         }
