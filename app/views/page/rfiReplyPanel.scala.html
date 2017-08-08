@@ -1,11 +1,8 @@
 @import models.view.RfiResponseView
-@import play.data.Form
-@import views.html.common.form._
 
-@(rfiResponseView: RfiResponseView, appId: String, rfiId: String, rfiResponseForm: Form[_])
+@(rfiResponseView: RfiResponseView)
 
-<div class="message-panel message-reply-panel" @if(rfiResponseView.isEditable) {
-  id="reply"} >
+<div class="message-panel message-reply-panel" >
   <header>
 
     <div class="grid-row">
@@ -15,21 +12,12 @@
       </div>
 
       <div class="column-one-half message-reply-sender">
-      @if(!rfiResponseView.getSentAt.equals("")) {
         <span class="heading-small">
         @rfiResponseView.getSentBy
         </span>
         <span>
         @rfiResponseView.getSentAt
         </span>
-      } else {
-        <span class="heading-small">
-          Sender:
-        </span>
-        <span>
-        @rfiResponseView.getSentBy
-        </span>
-      }
       </div>
 
     </div>
@@ -39,27 +27,13 @@
   <article>
     <h4 class="heading-small">Message</h4>
     <div>
-    @if(rfiResponseView.isEditable) {
-
-      <form action="@routes.LicenseApplicationController.submitReply(appId, rfiId)" method="POST">
-        @formTextarea(rfiResponseForm("responseMessage"), rows = "4", cssClass = "form-control-wide") {
-
-        }
-
-        <button class="button">Send</button>
-
-      </form>
-
-    } else {
-      @Html(rfiResponseView.getMessage)
-    }
-    </div>
+    @Html(rfiResponseView.getMessage)
+</div>
   </article>
 
-  @if(!rfiResponseView.isEditable) {
-    <footer>
-      <h4 class="heading-small">Attached files</h4>
-      Attachments will go here
-    </footer>
-  }
+  <footer>
+    <h4 class="heading-small">Attached files</h4>
+    Attachments will go here
+  </footer>
+
 </div>

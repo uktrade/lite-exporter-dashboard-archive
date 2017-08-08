@@ -1,0 +1,10 @@
+@import java.util
+
+@import models.view.StatusItemView
+@import page._
+
+@(applicationRef: String, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
+
+@licenceApplication(applicationRef, "statusTracker", rfiViewCount) {
+  @statusTracker(statusItemViews)
+}

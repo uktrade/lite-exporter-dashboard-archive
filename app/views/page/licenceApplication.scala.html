@@ -1,0 +1,29 @@
+@import page._
+@import util._
+
+@(applicationRef: String, activeTab: String, rfiViewCount: Integer)(content: Html)
+@standardPage(applicationRef + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
+
+} {
+
+  @dashboardTopNav()
+
+  @applicationSummaryPanel(
+    applicationRef,
+    "Purchase order: GB93862929 Some export name",
+    "Netherlands",
+    "26 Jun 2017",
+    "Licensing unit processing",
+    "Jerry McGuire"
+  )
+
+  @tabs("application-tabs", size = "large", fitToPage = true) {
+    @tab("Status tracker", "/application/" + applicationRef + "/status-tracker#application-tabs", activeTab.equals("statusTracker"))
+    @tab(s"Requests for information ($rfiViewCount)", "/application/" + applicationRef + "/rfi#application-tabs", activeTab.equals("rfi"))
+    @tab("Amend application", "/application/" + applicationRef + "/amend-application#application-tabs", activeTab.equals("amend"))
+    @tab("Outcome documents", "/application/" + applicationRef + "/outcome-documents#application-tabs", activeTab.equals("outcomeDocs"))
+  }
+
+  @content
+
+}

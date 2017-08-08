@@ -1,0 +1,9 @@
+@import models.view.{AddRfiResponseView, RfiView}
+@import page._
+@import play.data.Form
+
+@(applicationRef: String, rfiViews: List[RfiView], rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+
+@licenceApplication(applicationRef, "rfi", rfiViews.size) {
+  @rfiList(rfiViews, rfiResponseForm, addRfiResponseView)
+}

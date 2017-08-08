@@ -14,8 +14,8 @@ GET         /applications/created-by-your-company                 controllers.Ap
 # Application tabs
 GET         /application/*applicationRef/status-tracker           controllers.LicenseApplicationController.statusTab(applicationRef: String)
 GET         /application/*applicationRef/rfi                      controllers.LicenseApplicationController.rfiTab(applicationRef: String)
-GET         /application/*applicationRef/rfi/*rfiId/reply         controllers.LicenseApplicationController.reply(applicationRef: String, rfiId: String)
-POST        /application/*applicationRef/rfi/*rfiId/reply         controllers.LicenseApplicationController.submitReply(applicationRef: String, rfiId: String)
+GET         /application/*applicationRef/rfi/*rfiId               controllers.LicenseApplicationController.reply(applicationRef: String, rfiId: String)
+POST        /application/*applicationRef/rfi                      controllers.LicenseApplicationController.submitReply(applicationRef: String)
 GET         /application/*applicationRef/amend-application        controllers.LicenseApplicationController.amendTab(applicationRef: String)
 GET         /application/*applicationRef/outcome-documents        controllers.LicenseApplicationController.outcomeTab(applicationRef: String)
 GET         /application/*applicationRef                          controllers.LicenseApplicationController.statusTab(applicationRef: String)

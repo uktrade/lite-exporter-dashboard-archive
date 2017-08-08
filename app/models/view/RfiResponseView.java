@@ -5,13 +5,11 @@ public class RfiResponseView {
   private final String sentBy;
   private final String sentAt;
   private final String message;
-  private final boolean editable;
 
-  public RfiResponseView(String sentBy, String sentAt, String message, boolean editable) {
+  public RfiResponseView(String sentBy, String sentAt, String message) {
     this.sentBy = sentBy;
     this.sentAt = sentAt;
     this.message = message;
-    this.editable = editable;
   }
 
   public String getSentBy() {
@@ -26,7 +24,4 @@ public class RfiResponseView {
     return message;
   }
 
-  public boolean isEditable() {
-    return editable;
-  }
 }

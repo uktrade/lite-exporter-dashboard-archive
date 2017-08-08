@@ -5,6 +5,7 @@ import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
 import models.Rfi;
 import models.RfiResponse;
+import models.view.AddRfiResponseView;
 import models.view.RfiResponseView;
 import models.view.RfiView;
 
@@ -35,20 +36,6 @@ public class RfiViewServiceImpl implements RfiViewService {
   }
 
   @Override
-  public List<RfiView> getRfiViewsWithReply(String appId, String rfiId) {
-    List<RfiView> rfiViews = getRfiViews(appId);
-    rfiViews.stream()
-        .filter(rfiView -> rfiView.getRfiId().equals(rfiId))
-        .findFirst()
-        .ifPresent(rfiView -> {
-          String sentAt = timeFormatService.formatDate(Instant.now().toEpochMilli());
-          RfiResponseView rfiResponseView = new RfiResponseView("", sentAt, "", true);
-          rfiView.getRfiResponseViews().add(0, rfiResponseView);
-        });
-    return rfiViews;
-  }
-
-  @Override
   public List<RfiView> getRfiViews(String appId) {
     List<Rfi> rfiList = rfiDao.getRfiList(appId);
     return rfiList.stream()
@@ -60,6 +47,11 @@ public class RfiViewServiceImpl implements RfiViewService {
   @Override
   public int getRfiViewCount(String appId) {
     return rfiDao.getRfiCount(appId);
+  }
+
+  @Override
+  public AddRfiResponseView getAddRfiResponseView(String rfiId) {
+    return new AddRfiResponseView(timeFormatService.formatDate(Instant.now().toEpochMilli()), rfiId);
   }
 
   private RfiView getRfiView(Rfi rfi, List<RfiResponse> rfiResponses) {
@@ -77,7 +69,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     String sentBy = personService.getPerson(rfiResponse.getSentBy());
     String sentAt = timeFormatService.formatDate(rfiResponse.getSentTimestamp());
     String message = rfiResponse.getMessage();
-    return new RfiResponseView(sentBy, sentAt, message, false);
+    return new RfiResponseView(sentBy, sentAt, message);
   }
 
   private String getReplyBy(Rfi rfi) {
