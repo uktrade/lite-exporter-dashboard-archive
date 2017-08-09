@@ -17,4 +17,5 @@ public class AddRfiResponseView {
   public String getRfiId() {
     return rfiId;
   }
+
 }

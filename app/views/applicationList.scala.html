@@ -1,16 +1,17 @@
-@import util._
+@import models.enums.StatusTypeFilter
+@import models.view.ApplicationListView
 @import page._
+@import util._
+@(activeTab: String, applicationListView: ApplicationListView)
+@standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-@(activeTab: String)
-@standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
-
-}{
+} {
 
   @dashboardTopNav()
 
-  <h2 class="heading-medium">Applications</h2>
+  <div class="heading-medium">Applications</div>
 
-  @tabs("application-list-tabs", size="large", width="wide") {
+  @tabs("application-list-tabs", size = "large", width = "wide") {
     @tab("Created by you", "/applications/created-by-you", activeTab.equals("created-by-you"))
     @tab("Created by your company", "/applications/created-by-your-company", activeTab.equals("created-by-your-company"))
   }
@@ -27,10 +28,45 @@
   <div class="table-filters">
     Show:
     <ul>
-      <li class="active"><a href="#">All (23)</a></li>
-      <li><a href="#">Draft (2)</a></li>
-      <li><a href="#">Current (3)</a></li>
-      <li><a href="#">Completed (18)</a></li>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.ALL) {
+        class="active" }>
+        <a href="@routes.Application.applicationList(
+          activeTab,
+          Option(applicationListView.getDateSortDirection),
+          Option(applicationListView.getStatusSortDirection),
+          Option.empty)">
+          All (@applicationListView.getAllCount)
+        </a>
+      </li>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {
+        class="active" }>
+        <a href="@routes.Application.applicationList(
+          activeTab,
+          Option(applicationListView.getDateSortDirection),
+          Option(applicationListView.getStatusSortDirection),
+          Option(StatusTypeFilter.DRAFT.toString.toLowerCase()))">
+          Draft (@applicationListView.getDraftCount)
+        </a>
+      </li>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.CURRENT) {
+        class="active" }>
+        <a href="@routes.Application.applicationList(
+          activeTab,
+          Option(applicationListView.getDateSortDirection),
+          Option(applicationListView.getStatusSortDirection),
+          Option(StatusTypeFilter.CURRENT.toString.toLowerCase()))">
+          Current (@applicationListView.getCurrentCount)
+        </a>
+      </li>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.COMPLETED) {
+        class="active" }><a href="@routes.Application.applicationList(
+        activeTab,
+        Option(applicationListView.getDateSortDirection),
+        Option(applicationListView.getStatusSortDirection),
+        Option(StatusTypeFilter.COMPLETED.toString.toLowerCase()))">
+        Completed (@applicationListView.getCompletedCount)
+      </a>
+      </li>
     </ul>
   </div>
 
@@ -38,12 +74,30 @@
     <table class="table-font-xsmall table-align-top">
       <thead>
         <tr>
-          <th>
-            <a href="#">Date submitted</a>
+          <th nowrap>
+            <a href="@routes.Application.applicationList(activeTab, Option(applicationListView.getNextDateSortDirection), Option.empty, Option(applicationListView.getStatusTypeFilter.toString.toLowerCase))">
+              Date submitted
+            </a>
+            <span class="sort-arrow">
+            @applicationListView.getDateSortDirection match {
+              case "asc" => { &#9651 }
+              case "desc" => { &#9661 }
+              case default => {}
+            }
+            </span>
           </th>
           <th>References</th>
           <th>
-            <a href="#">Application status</a>
+            <a href="@routes.Application.applicationList(activeTab, Option.empty, Option(applicationListView.getNextStatusSortDirection), Option(applicationListView.getStatusTypeFilter.toString.toLowerCase))">
+              Application status
+            </a>
+            <span class="sort-arrow">
+            @applicationListView.getStatusSortDirection match {
+              case "asc" => { &#9651 }
+              case "desc" => { &#9661 }
+              case default => {}
+            }
+            </span>
           </th>
           <th>
             Destination
@@ -51,23 +105,26 @@
         </tr>
       </thead>
       <tbody>
+      @for(applicationItemView <- applicationListView.getApplicationItemViews) {
         <tr>
-          <th scope="row">26 Jun 2017</th>
+          <th scope="row">@applicationItemView.getDateSubmitted</th>
           <td>
-            <a href="/application/ECO123456789012/status-tracker" class="bold">ECO123456789012</a><br>
-            Purchase order: GB93862929 Some export name
+            <a href="@routes.LicenseApplicationController.statusTab(applicationItemView.getAppId)" class="bold">@applicationItemView.getAppId</a>
+            <br>
+            @applicationItemView.getCaseDescription
           </td>
           <td>
             <p>
-              Licensing unit processing<br>
-              Since: 28 Mar 2017
+              @applicationItemView.getApplicationStatus <br>
+            @applicationItemView.getApplicationStatusDate
             </p>
             @rfiLabel("application/ECO123456789012/rfi#application-tabs")
           </td>
           <td>
-            Netherlands
+          @applicationItemView.getDestination
           </td>
         </tr>
+      }
       </tbody>
     </table>
   </div>

@@ -8,6 +8,8 @@ import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
 import components.common.state.ContextParamManager;
 import components.common.transaction.TransactionContextParamProvider;
+import components.dao.ApplicationDao;
+import components.dao.ApplicationDaoImpl;
 import components.dao.RfiDao;
 import components.dao.RfiDaoImpl;
 import components.dao.RfiResponseDao;
@@ -16,8 +18,8 @@ import components.dao.StatusUpdateDao;
 import components.dao.StatusUpdateDaoImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
-import components.service.TestDataService;
-import components.service.TestDataServiceImpl;
+import components.service.ApplicationItemViewService;
+import components.service.ApplicationItemViewServiceImpl;
 import components.service.PersonService;
 import components.service.PersonServiceMock;
 import components.service.ProcessingDescriptionService;
@@ -32,6 +34,8 @@ import components.service.StatusItemViewService;
 import components.service.StatusItemViewServiceImpl;
 import components.service.StatusService;
 import components.service.StatusServiceImpl;
+import components.service.TestDataService;
+import components.service.TestDataServiceImpl;
 import components.service.TimeFormatService;
 import components.service.TimeFormatServiceImpl;
 import components.service.UserService;
@@ -69,10 +73,12 @@ public class GuiceModule extends AbstractModule {
     bind(PersonService.class).to(PersonServiceMock.class);
     bind(RfiViewService.class).to(RfiViewServiceImpl.class);
     bind(UserService.class).to(UserServiceMockImpl.class);
+    bind(ApplicationItemViewService.class).to(ApplicationItemViewServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);
     bind(StatusUpdateDao.class).to(StatusUpdateDaoImpl.class);
+    bind(ApplicationDao.class).to(ApplicationDaoImpl.class);
     // Test data
     bind(TestDataService.class).to(TestDataServiceImpl.class);
   }

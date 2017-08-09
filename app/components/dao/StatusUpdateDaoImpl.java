@@ -25,6 +25,14 @@ public class StatusUpdateDaoImpl implements StatusUpdateDao {
   }
 
   @Override
+  public List<StatusUpdate> getStatusUpdates() {
+    try (final Handle handle = dbi.open()) {
+      StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);
+      return statusUpdateJDBIDao.getStatusUpdates();
+    }
+  }
+
+  @Override
   public void insertStatusUpdate(StatusUpdate statusUpdate) {
     try (final Handle handle = dbi.open()) {
       StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);

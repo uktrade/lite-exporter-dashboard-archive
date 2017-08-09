@@ -6,9 +6,9 @@
 
 # Application list
 GET         /                                                     controllers.Application.index
-GET         /applications                                         controllers.Application.applicationList(activeTab=null)
-GET         /applications/created-by-you                          controllers.Application.applicationList(activeTab="created-by-you")
-GET         /applications/created-by-your-company                 controllers.Application.applicationList(activeTab="created-by-your-company")
+GET         /applications                                         controllers.Application.applicationList(activeTab=null, date: Option[String], status: Option[String], show: Option[String])
+GET         /applications/created-by-you                          controllers.Application.applicationList(activeTab="created-by-you", date: Option[String], status: Option[String], show: Option[String])
+GET         /applications/created-by-your-company                 controllers.Application.applicationList(activeTab="created-by-your-company", date: Option[String], status: Option[String], show: Option[String])
 
 
 # Application tabs

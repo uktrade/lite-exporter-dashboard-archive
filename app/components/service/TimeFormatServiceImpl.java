@@ -11,6 +11,7 @@ import java.time.temporal.ChronoField;
 public class TimeFormatServiceImpl implements TimeFormatService {
 
   private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy").withZone(ZoneId.systemDefault());
+  private static final DateTimeFormatter dateFormatterSlashes = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.systemDefault());
   private static final DateTimeFormatter timeFormatter = new DateTimeFormatterBuilder()
       .appendPattern("h:mm")
       .appendText(ChronoField.AMPM_OF_DAY, ImmutableMap.of(0L, "am", 1L, "pm"))
@@ -27,6 +28,11 @@ public class TimeFormatServiceImpl implements TimeFormatService {
   @Override
   public String formatDate(long millis) {
     return dateFormatter.format(Instant.ofEpochMilli(millis));
+  }
+
+  @Override
+  public String formatDateWithSlashes(long millis) {
+    return dateFormatterSlashes.format(Instant.ofEpochMilli(millis));
   }
 
 }

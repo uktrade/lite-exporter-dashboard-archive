@@ -11,6 +11,10 @@ import java.util.List;
 public interface StatusUpdateJDBIDao {
 
   @Mapper(StatusUpdateRSMapper.class)
+  @SqlQuery("SELECT * FROM STATUS_UPDATE")
+  List<StatusUpdate> getStatusUpdates();
+
+  @Mapper(StatusUpdateRSMapper.class)
   @SqlQuery("SELECT * FROM STATUS_UPDATE WHERE APP_ID = :appId")
   List<StatusUpdate> getStatusUpdates(@Bind("appId") String appId);
 
