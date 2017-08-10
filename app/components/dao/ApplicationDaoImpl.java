@@ -31,6 +31,7 @@ public class ApplicationDaoImpl implements ApplicationDao {
       ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
       applicationJDBIDao.insert(application.getAppId(),
           application.getCompanyId(),
+          application.getCompanyName(),
           application.getApplicationStatus(),
           application.getApplicantReference(),
           JsonUtil.convertListToJson(application.getDestinationList()),

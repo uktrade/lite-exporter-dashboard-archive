@@ -15,10 +15,11 @@ public interface ApplicationJDBIDao {
   @SqlQuery("SELECT * FROM APPLICATION")
   List<Application> getApplications();
 
-  @SqlUpdate("INSERT INTO APPLICATION ( APP_ID, COMPANY_ID, STATUS,  APPLICANT_REFERENCE, DESTINATION_LIST, CASE_REFERENCE, CASE_OFFICER_ID) " +
-      "                        VALUES (:appId, :companyId, :status, :applicantReference, :destinationList, :caseReference, :caseOfficerId) ")
+  @SqlUpdate("INSERT INTO APPLICATION ( APP_ID, COMPANY_ID, COMPANY_NAME, STATUS,  APPLICANT_REFERENCE, DESTINATION_LIST, CASE_REFERENCE, CASE_OFFICER_ID) " +
+      "                        VALUES (:appId, :companyId, :companyName, :status, :applicantReference, :destinationList, :caseReference, :caseOfficerId) ")
   void insert(@Bind("appId") String appId,
               @Bind("companyId") String companyId,
+              @Bind("companyName") String companyName,
               @Bind("status") ApplicationStatus applicationStatus,
               @Bind("applicantReference") String applicantReference,
               @Bind("destinationList") String destinationList,

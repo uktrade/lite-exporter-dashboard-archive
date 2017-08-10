@@ -17,6 +17,14 @@ public class RfiDaoImpl implements RfiDao {
   }
 
   @Override
+  public List<Rfi> getRfiList() {
+    try (final Handle handle = dbi.open()) {
+      RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);
+      return rfiJDBIDao.getRfiList();
+    }
+  }
+
+  @Override
   public List<Rfi> getRfiList(String appId) {
     try (final Handle handle = dbi.open()) {
       RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);

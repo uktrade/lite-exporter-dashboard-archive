@@ -11,6 +11,10 @@ import java.util.List;
 public interface RfiResponseJDBIDao {
 
   @Mapper(RfiResponseRSMapper.class)
+  @SqlQuery("SELECT * FROM RFI_RESPONSE")
+  List<RfiResponse> getRfiResponses();
+
+  @Mapper(RfiResponseRSMapper.class)
   @SqlQuery("SELECT * FROM RFI_RESPONSE WHERE RFI_ID = :rfiId")
   List<RfiResponse> getRfiResponses(@Bind("rfiId") String rfiId);
 

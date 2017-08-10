@@ -12,6 +12,10 @@ import java.util.List;
 public interface RfiJDBIDao {
 
   @Mapper(RfiRSMapper.class)
+  @SqlQuery("SELECT * FROM RFI")
+  List<Rfi> getRfiList();
+
+  @Mapper(RfiRSMapper.class)
   @SqlQuery("SELECT * FROM RFI WHERE APP_ID = :appId")
   List<Rfi> getRfiList(@Bind("appId") String appId);
 

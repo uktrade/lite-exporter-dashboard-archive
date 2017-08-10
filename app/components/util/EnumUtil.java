@@ -1,16 +1,14 @@
 package components.util;
 
-import com.google.common.base.Enums;
-import com.google.common.base.Optional;
-import scala.Option;
+import org.apache.commons.lang3.EnumUtils;
 
 public class EnumUtil {
 
-  public static <T extends Enum<T>> T parse(Class<T> enumClass, Option<String> str, T fallback) {
-    if (str.isDefined()) {
-      Optional<T> optional = Enums.getIfPresent(enumClass, str.get().toUpperCase());
-      if (optional.isPresent()) {
-        return optional.get();
+  public static <T extends Enum<T>> T parse(Class<T> enumClass, String str, T fallback) {
+    if (str != null) {
+      T value = EnumUtils.getEnum(enumClass, str.toUpperCase());
+      if (value != null) {
+        return value;
       } else {
         return fallback;
       }

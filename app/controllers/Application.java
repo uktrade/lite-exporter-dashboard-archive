@@ -1,16 +1,19 @@
 package controllers;
 
+import static components.util.StreamUtil.distinctByKey;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.inject.Inject;
 import components.service.ApplicationItemViewService;
 import components.util.EnumUtil;
+import models.ApplicationListState;
 import models.enums.SortDirection;
 import models.enums.StatusType;
 import models.enums.StatusTypeFilter;
 import models.view.ApplicationItemView;
 import models.view.ApplicationListView;
+import models.view.CompanySelectItemView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Controller;
@@ -20,13 +23,14 @@ import views.html.applicationList;
 import views.html.licenceDetails;
 import views.html.licenceList;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Application extends Controller {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
-  private static final ObjectWriter WRITER = new ObjectMapper().writerWithDefaultPrettyPrinter();
+  private static final ObjectMapper MAPPER = new ObjectMapper();
   private final ApplicationItemViewService applicationItemViewService;
 
   @Inject
@@ -34,25 +38,40 @@ public class Application extends Controller {
     this.applicationItemViewService = applicationItemViewService;
   }
 
-  public String setOrRestoreTabState(String tabGroup, String activeTab, String defaultTab) {
-    if (activeTab == null) {
-      String sessionActiveTab = session(tabGroup + "ActiveTab");
-      activeTab = (sessionActiveTab != null) ? sessionActiveTab : defaultTab;
-    }
-    session(tabGroup + "ActiveTab", activeTab);
-    return activeTab;
-  }
-
   public Result index() {
     return redirect("/applications");
   }
 
-  public Result applicationList(String activeTab, Option<String> date, Option<String> status, Option<String> show) throws JsonProcessingException {
+  public Result applicationList(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company) throws JsonProcessingException {
 
-    StatusTypeFilter statusTypeFilter = EnumUtil.parse(StatusTypeFilter.class, show, StatusTypeFilter.ALL);
+    ApplicationListState state = null;
+    if (tab.isEmpty() && date.isEmpty() && status.isEmpty() && show.isEmpty() && company.isEmpty()) {
+      String applicationListStateJson = session("applicationListState");
+      if (applicationListStateJson != null) {
+        try {
+          state = MAPPER.readValue(applicationListStateJson, ApplicationListState.class);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    if (state == null) {
+      state = new ApplicationListState(parse(tab), parse(date), parse(status), parse(show), parse(company));
+      session("applicationListState", MAPPER.writeValueAsString(state));
+    }
 
-    SortDirection dateSortDirection = EnumUtil.parse(SortDirection.class, date, null);
-    SortDirection statusSortDirection = EnumUtil.parse(SortDirection.class, status, null);
+    return applicationList(state);
+  }
+
+  private String parse(Option<String> str) {
+    return str.isDefined() ? str.get() : null;
+  }
+
+  private Result applicationList(ApplicationListState state) {
+    StatusTypeFilter statusTypeFilter = EnumUtil.parse(StatusTypeFilter.class, state.getShow(), StatusTypeFilter.ALL);
+
+    SortDirection dateSortDirection = EnumUtil.parse(SortDirection.class, state.getDate(), null);
+    SortDirection statusSortDirection = EnumUtil.parse(SortDirection.class, state.getStatus(), null);
     // If both sort directions were defined, default to date sort direction
     if (dateSortDirection != null && statusSortDirection != null) {
       statusSortDirection = null;
@@ -72,8 +91,20 @@ public class Application extends Controller {
       nextStatusSortDirection = SortDirection.ASC;
     }
 
+
     List<ApplicationItemView> applicationItemViews = applicationItemViewService.getApplicationItemViews(dateSortDirection, statusSortDirection);
-    String tab = setOrRestoreTabState("applicationList", activeTab, "created-by-you");
+
+    List<CompanySelectItemView> companyNames = applicationItemViews.stream().
+        filter(distinctByKey(ApplicationItemView::getCompanyId))
+        .map(applicationItemView -> new CompanySelectItemView(applicationItemView.getCompanyId(), applicationItemView.getCompanyName()))
+        .collect(Collectors.toList());
+
+    String companyId = state.getCompany();
+    if (companyId != null) {
+      applicationItemViews = applicationItemViews.stream().filter(view -> companyId.equals(view.getCompanyId())).collect(Collectors.toList());
+    }
+
+    String activeTab = "created-by-your-company".equals(state.getTab()) ? "created-by-your-company" : "created-by-you";
 
     long allCount = applicationItemViews.size();
     long draftCount = applicationItemViews.stream().filter(view -> view.getStatusType() == StatusType.DRAFT).count();
@@ -92,6 +123,8 @@ public class Application extends Controller {
     }
 
     ApplicationListView applicationListView = new ApplicationListView(filteredApplicationViews,
+        companyId,
+        companyNames,
         lower(dateSortDirection),
         lower(nextDateSortDirection),
         lower(statusSortDirection),
@@ -101,14 +134,15 @@ public class Application extends Controller {
         draftCount,
         currentCount,
         completedCount);
-
-    return ok(applicationList.render(tab, applicationListView));
-
+    return ok(applicationList.render(activeTab, applicationListView));
   }
 
   public Result licenceList(String activeTab) {
-    String tab = setOrRestoreTabState("licenceList", activeTab, "siels");
-    return ok(licenceList.render(tab));
+    if (activeTab == null) {
+      activeTab = "siels";
+    }
+    //String tab = setOrRestoreTabState("licenceList", activeTab, "siels");
+    return ok(licenceList.render(activeTab));
   }
 
   public Result licenceDetails(String licenceRef) {

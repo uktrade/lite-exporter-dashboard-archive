@@ -12,17 +12,55 @@
   <div class="heading-medium">Applications</div>
 
   @tabs("application-list-tabs", size = "large", width = "wide") {
-    @tab("Created by you", "/applications/created-by-you", activeTab.equals("created-by-you"))
-    @tab("Created by your company", "/applications/created-by-your-company", activeTab.equals("created-by-your-company"))
+    @tab("Created by you", routes.Application.applicationList(
+      Option("created-by-you"),
+      Option(applicationListView.getDateSortDirection),
+      Option(applicationListView.getStatusSortDirection),
+      Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+      Option(applicationListView.getCompanyId)
+    ).toString,
+      activeTab.equals("created-by-you"))
+    @tab("Created by your company", routes.Application.applicationList(
+      Option("created-by-your-company"),
+      Option(applicationListView.getDateSortDirection),
+      Option(applicationListView.getStatusSortDirection),
+      Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+      Option(applicationListView.getCompanyId)
+    ).toString,
+      activeTab.equals("created-by-your-company"))
   }
 
   <div class="form-group">
     <label class="form-label left-label" for="select-box">Filter by company name</label>
     <select class="form-control" id="select-box" name="select-box">
-      <option>All companies</option>
-      <option>Company A</option>
-      <option>Company B</option>
+      <option @if(applicationListView.getCompanyId == null) {
+        selected="selected"
+      } value="@routes.Application.applicationList(
+        Option(activeTab),
+        Option(applicationListView.getDateSortDirection),
+        Option(applicationListView.getStatusSortDirection),
+        Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+        Option(null)
+      ).toString">All companies</option>
+      @for(companySelectItemView <- applicationListView.getCompanySelectItemViews) {
+        <option @if(companySelectItemView.getCompanyId == applicationListView.getCompanyId) {
+          selected="selected"
+        } value="@routes.Application.applicationList(
+          Option(activeTab),
+          Option(applicationListView.getDateSortDirection),
+          Option(applicationListView.getStatusSortDirection),
+          Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+          Option(companySelectItemView.getCompanyId)
+        ).toString">@companySelectItemView.getCompanyName</option>
+      }
     </select>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $("#select-box").change(function () {
+          location = $("#select-box").find("option:selected").val();
+        });
+      });
+    </script>
   </div>
 
   <div class="table-filters">
@@ -31,39 +69,43 @@
       <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.ALL) {
         class="active" }>
         <a href="@routes.Application.applicationList(
-          activeTab,
+          Option(activeTab),
           Option(applicationListView.getDateSortDirection),
           Option(applicationListView.getStatusSortDirection),
-          Option.empty)">
+          Option.empty,
+          Option(applicationListView.getCompanyId))">
           All (@applicationListView.getAllCount)
         </a>
       </li>
       <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {
         class="active" }>
         <a href="@routes.Application.applicationList(
-          activeTab,
+          Option(activeTab),
           Option(applicationListView.getDateSortDirection),
           Option(applicationListView.getStatusSortDirection),
-          Option(StatusTypeFilter.DRAFT.toString.toLowerCase()))">
+          Option(StatusTypeFilter.DRAFT.toString.toLowerCase()),
+          Option(applicationListView.getCompanyId))">
           Draft (@applicationListView.getDraftCount)
         </a>
       </li>
       <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.CURRENT) {
         class="active" }>
         <a href="@routes.Application.applicationList(
-          activeTab,
+          Option(activeTab),
           Option(applicationListView.getDateSortDirection),
           Option(applicationListView.getStatusSortDirection),
-          Option(StatusTypeFilter.CURRENT.toString.toLowerCase()))">
+          Option(StatusTypeFilter.CURRENT.toString.toLowerCase()),
+          Option(applicationListView.getCompanyId))">
           Current (@applicationListView.getCurrentCount)
         </a>
       </li>
       <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.COMPLETED) {
         class="active" }><a href="@routes.Application.applicationList(
-        activeTab,
+        Option(activeTab),
         Option(applicationListView.getDateSortDirection),
         Option(applicationListView.getStatusSortDirection),
-        Option(StatusTypeFilter.COMPLETED.toString.toLowerCase()))">
+        Option(StatusTypeFilter.COMPLETED.toString.toLowerCase()),
+        Option(applicationListView.getCompanyId))">
         Completed (@applicationListView.getCompletedCount)
       </a>
       </li>
@@ -75,7 +117,11 @@
       <thead>
         <tr>
           <th nowrap>
-            <a href="@routes.Application.applicationList(activeTab, Option(applicationListView.getNextDateSortDirection), Option.empty, Option(applicationListView.getStatusTypeFilter.toString.toLowerCase))">
+            <a href="@routes.Application.applicationList(Option(activeTab),
+              Option(applicationListView.getNextDateSortDirection),
+              Option.empty,
+              Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+              Option(applicationListView.getCompanyId))">
               Date submitted
             </a>
             <span class="sort-arrow">
@@ -88,7 +134,11 @@
           </th>
           <th>References</th>
           <th>
-            <a href="@routes.Application.applicationList(activeTab, Option.empty, Option(applicationListView.getNextStatusSortDirection), Option(applicationListView.getStatusTypeFilter.toString.toLowerCase))">
+            <a href="@routes.Application.applicationList(Option(activeTab),
+              Option.empty,
+              Option(applicationListView.getNextStatusSortDirection),
+              Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+              Option(applicationListView.getCompanyId))">
               Application status
             </a>
             <span class="sort-arrow">
@@ -118,7 +168,9 @@
               @applicationItemView.getApplicationStatus <br>
             @applicationItemView.getApplicationStatusDate
             </p>
-            @rfiLabel("application/ECO123456789012/rfi#application-tabs")
+            @if(applicationItemView.getOpenRfiId != null) {
+              @rfiLabel(routes.LicenseApplicationController.rfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
+            }
           </td>
           <td>
           @applicationItemView.getDestination

@@ -51,31 +51,46 @@ public class TestDataServiceImpl implements TestDataService {
     rfiDao.deleteAllRfiData();
     rfiResponseDao.deleteAllRfiResponses();
     createApplications();
-    createApplication().forEach(applicationDao::insert);
+    applicationDao.insert(createApplication());
     createStatusUpdateTestData().forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData().forEach(rfiDao::insertRfi);
     createRfiResponseTestData().forEach(rfiResponseDao::insertRfiResponse);
   }
 
   private void createApplications() {
+    String companyName = "Company Ltd";
+    String companyId = random("COM");
     for (int i = 0; i < 20; i++) {
-      Application app = new Application(random("APP"), random("COM"), ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY), random("CAS"), OFFICER);
+      String appId = random("APP");
+      Application app = new Application(appId, companyId, companyName, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY), random("CAS"), OFFICER);
       StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 3, 3 + i, i, i), null);
       applicationDao.insert(app);
       statusUpdateDao.insertStatusUpdate(draft);
       if (i % 4 != 0) {
         StatusUpdate submitted = new StatusUpdate(app.getAppId(), StatusType.SUBMITTED, time(2017, 4, 3 + i, i, i), null);
         statusUpdateDao.insertStatusUpdate(submitted);
+        StatusUpdate initialChecks = new StatusUpdate(app.getAppId(), StatusType.INITIAL_CHECKS, time(2017, 4, 4 + i, i, i), null);
+        statusUpdateDao.insertStatusUpdate(initialChecks);
+        String rfiId = random("RFI");
+        Rfi rfi = new Rfi(rfiId,
+            appId,
+            RfiStatus.ACTIVE,
+            time(2017, 4, 5 + i, i, i),
+            time(2017, 5, 5 + i, i, i),
+            OFFICER,
+            "Please answer this rfi");
+        rfiDao.insertRfi(rfi);
+        if (i % 2 != 0) {
+          RfiResponse rfiResponse = new RfiResponse(rfiId, APPLICANT, time(2017, 4, 5 + i, i, i), "This is a reply.", null);
+          rfiResponseDao.insertRfiResponse(rfiResponse);
+        }
       }
     }
   }
 
-  private List<Application> createApplication() {
+  private Application createApplication() {
     String companyId = random("COM");
-    Application application = new Application(APP_ID, companyId, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY, ICELAND, FRANCE), random("CAS"), OFFICER);
-    List<Application> applications = new ArrayList<>();
-    applications.add(application);
-    return applications;
+    return new Application(APP_ID, companyId, "Firma AG", ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY, ICELAND, FRANCE), random("CAS"), OFFICER);
   }
 
   private List<RfiResponse> createRfiResponseTestData() {
@@ -161,7 +176,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private static String random(String prefix) {
-    return prefix + "_" + UUID.randomUUID().toString().replace("-", "");
+    return prefix.toLowerCase() + "_" + UUID.randomUUID().toString().replace("-", "");
   }
 
   private long time(int year, int month, int dayOfMonth, int hour, int minute) {

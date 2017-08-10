@@ -4,8 +4,11 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import components.dao.ApplicationDao;
+import components.dao.RfiDao;
+import components.dao.RfiResponseDao;
 import components.dao.StatusUpdateDao;
 import models.Application;
+import models.RfiResponse;
 import models.StatusUpdate;
 import models.enums.SortDirection;
 import models.enums.StatusType;
@@ -14,8 +17,11 @@ import models.view.ApplicationItemView;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
@@ -24,13 +30,17 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final StatusUpdateDao statusUpdateDao;
   private final TimeFormatService timeFormatService;
   private final StatusService statusService;
+  private final RfiDao rfiDao;
+  private final RfiResponseDao rfiResponseDao;
 
   @Inject
-  public ApplicationItemViewServiceImpl(ApplicationDao applicationDao, StatusUpdateDao statusUpdateDao, TimeFormatService timeFormatService, StatusService statusService) {
+  public ApplicationItemViewServiceImpl(ApplicationDao applicationDao, StatusUpdateDao statusUpdateDao, TimeFormatService timeFormatService, StatusService statusService, RfiDao rfiDao, RfiResponseDao rfiResponseDao) {
     this.applicationDao = applicationDao;
     this.statusUpdateDao = statusUpdateDao;
     this.timeFormatService = timeFormatService;
     this.statusService = statusService;
+    this.rfiDao = rfiDao;
+    this.rfiResponseDao = rfiResponseDao;
   }
 
   @Override
@@ -38,10 +48,17 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     List<Application> applications = applicationDao.getApplications();
     Multimap<String, StatusUpdate> statusUpdateMap = HashMultimap.create();
     statusUpdateDao.getStatusUpdates().forEach(statusUpdate -> statusUpdateMap.put(statusUpdate.getAppId(), statusUpdate));
+
+    Map<String, String> openRfiIds = new HashMap<>();
+    Set<String> rfiResponses = rfiResponseDao.getRfiResponses().stream().map(RfiResponse::getRfiId).collect(Collectors.toSet());
+    rfiDao.getRfiList().stream().filter(rfi -> !rfiResponses.contains(rfi.getRfiId())).forEach(rfi -> openRfiIds.put(rfi.getAppId(), rfi.getRfiId()));
+
+
     List<ApplicationItemView> applicationItemViews = applications.stream()
         .map(application -> {
           Collection<StatusUpdate> statusUpdates = statusUpdateMap.get(application.getAppId());
-          return getApplicationItemView(application, statusUpdates);
+          String openRfiId = openRfiIds.get(application.getAppId());
+          return getApplicationItemView(application, statusUpdates, openRfiId);
         })
         .collect(Collectors.toList());
 
@@ -60,7 +77,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     return applicationItemViews;
   }
 
-  private ApplicationItemView getApplicationItemView(Application application, Collection<StatusUpdate> statusUpdates) {
+  private ApplicationItemView getApplicationItemView(Application application, Collection<StatusUpdate> statusUpdates, String openRfiId) {
     Optional<StatusUpdate> statusUpdate = statusUpdates.stream().filter(su -> su.getStatusType() == StatusType.SUBMITTED).findAny();
     if (!statusUpdate.isPresent()) {
       statusUpdate = statusUpdates.stream().filter(su -> su.getStatusType() == StatusType.DRAFT).findAny();
@@ -99,7 +116,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     } else if (destinationCount > 1) {
       destination = String.format("%d destinations", destinationCount);
     }
-    return new ApplicationItemView(application.getAppId(), dateSubmittedTimestamp, dateSubmitted, caseDescription, statusType, applicationStatus, applicationStatusDate, applicationStatusTimestamp, destination);
+    return new ApplicationItemView(application.getAppId(), application.getCompanyId(), application.getCompanyName(), dateSubmittedTimestamp, dateSubmitted, caseDescription, statusType, applicationStatus, applicationStatusDate, applicationStatusTimestamp, destination, openRfiId);
   }
 
 }

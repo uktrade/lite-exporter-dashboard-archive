@@ -7,6 +7,8 @@ import java.util.List;
 public class ApplicationListView {
 
   private final List<ApplicationItemView> applicationItemViews;
+  private String companyId;
+  private final List<CompanySelectItemView> companySelectItemViews;
   private final String dateSortDirection;
   private final String nextDateSortDirection;
   private final String statusSortDirection;
@@ -17,8 +19,10 @@ public class ApplicationListView {
   private final long currentCount;
   private final long completedCount;
 
-  public ApplicationListView(List<ApplicationItemView> applicationItemViews, String dateSortDirection, String nextDateSortDirection, String statusSortDirection, String nextStatusSortDirection, StatusTypeFilter statusTypeFilter, long allCount, long draftCount, long currentCount, long completedCount) {
+  public ApplicationListView(List<ApplicationItemView> applicationItemViews, String company, List<CompanySelectItemView> companySelectItemViews, String dateSortDirection, String nextDateSortDirection, String statusSortDirection, String nextStatusSortDirection, StatusTypeFilter statusTypeFilter, long allCount, long draftCount, long currentCount, long completedCount) {
     this.applicationItemViews = applicationItemViews;
+    this.companyId = company;
+    this.companySelectItemViews = companySelectItemViews;
     this.dateSortDirection = dateSortDirection;
     this.nextDateSortDirection = nextDateSortDirection;
     this.statusSortDirection = statusSortDirection;
@@ -32,6 +36,14 @@ public class ApplicationListView {
 
   public List<ApplicationItemView> getApplicationItemViews() {
     return applicationItemViews;
+  }
+
+  public String getCompanyId() {
+    return companyId;
+  }
+
+  public List<CompanySelectItemView> getCompanySelectItemViews() {
+    return companySelectItemViews;
   }
 
   public String getDateSortDirection() {
