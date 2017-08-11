@@ -2,9 +2,10 @@
 
 @import models.view.StatusItemView
 @import page._
+@import models.view.ApplicationSummaryView
 
-@(applicationRef: String, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
+@(applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
 
-@licenceApplication(applicationRef, "statusTracker", rfiViewCount) {
+@licenceApplication(applicationSummaryView, "statusTracker", rfiViewCount) {
   @statusTracker(statusItemViews)
 }

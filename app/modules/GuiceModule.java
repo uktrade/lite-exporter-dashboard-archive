@@ -20,6 +20,8 @@ import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
 import components.service.ApplicationItemViewService;
 import components.service.ApplicationItemViewServiceImpl;
+import components.service.ApplicationSummaryViewService;
+import components.service.ApplicationSummaryViewServiceImpl;
 import components.service.PersonService;
 import components.service.PersonServiceMock;
 import components.service.ProcessingDescriptionService;
@@ -74,6 +76,7 @@ public class GuiceModule extends AbstractModule {
     bind(RfiViewService.class).to(RfiViewServiceImpl.class);
     bind(UserService.class).to(UserServiceMockImpl.class);
     bind(ApplicationItemViewService.class).to(ApplicationItemViewServiceImpl.class);
+    bind(ApplicationSummaryViewService.class).to(ApplicationSummaryViewServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);

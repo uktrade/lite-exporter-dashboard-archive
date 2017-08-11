@@ -42,10 +42,10 @@ public class Application extends Controller {
     return redirect("/applications");
   }
 
-  public Result applicationList(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company) throws JsonProcessingException {
+  public Result applicationList(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company, Option<Integer> page) throws JsonProcessingException {
 
     ApplicationListState state = null;
-    if (tab.isEmpty() && date.isEmpty() && status.isEmpty() && show.isEmpty() && company.isEmpty()) {
+    if (tab.isEmpty() && date.isEmpty() && status.isEmpty() && show.isEmpty() && company.isEmpty() && page.isEmpty()) {
       String applicationListStateJson = session("applicationListState");
       if (applicationListStateJson != null) {
         try {
@@ -56,7 +56,7 @@ public class Application extends Controller {
       }
     }
     if (state == null) {
-      state = new ApplicationListState(parse(tab), parse(date), parse(status), parse(show), parse(company));
+      state = new ApplicationListState(parse(tab), parse(date), parse(status), parse(show), parse(company), parseNumber(page));
       session("applicationListState", MAPPER.writeValueAsString(state));
     }
 
@@ -65,6 +65,10 @@ public class Application extends Controller {
 
   private String parse(Option<String> str) {
     return str.isDefined() ? str.get() : null;
+  }
+
+  private Integer parseNumber(Option<Integer> number) {
+    return number.isDefined() ? number.get() : null;
   }
 
   private Result applicationList(ApplicationListState state) {
@@ -122,7 +126,15 @@ public class Application extends Controller {
       filteredApplicationViews = applicationItemViews;
     }
 
-    ApplicationListView applicationListView = new ApplicationListView(filteredApplicationViews,
+    int currentPage = state.getPage() == null ? 1 : state.getPage();
+    currentPage = Math.min(currentPage, (filteredApplicationViews.size() / 10) + 1);
+
+    // return only views according to page;
+    int start = (currentPage - 1) * 10;
+    int max = Math.min(currentPage * 10, filteredApplicationViews.size());
+    List<ApplicationItemView> sublist = filteredApplicationViews.subList(start, max);
+
+    ApplicationListView applicationListView = new ApplicationListView(sublist,
         companyId,
         companyNames,
         lower(dateSortDirection),
@@ -133,7 +145,11 @@ public class Application extends Controller {
         allCount,
         draftCount,
         currentCount,
-        completedCount);
+        completedCount,
+        currentPage, filteredApplicationViews.size() / 10 + 1,
+        start + 1,
+        max,
+        filteredApplicationViews.size());
     return ok(applicationList.render(activeTab, applicationListView));
   }
 

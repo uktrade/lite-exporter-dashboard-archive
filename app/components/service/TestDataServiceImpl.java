@@ -78,7 +78,7 @@ public class TestDataServiceImpl implements TestDataService {
             time(2017, 4, 5 + i, i, i),
             time(2017, 5, 5 + i, i, i),
             OFFICER,
-            "Please answer this rfi");
+            "Please answer this rfi.");
         rfiDao.insertRfi(rfi);
         if (i % 2 != 0) {
           RfiResponse rfiResponse = new RfiResponse(rfiId, APPLICANT, time(2017, 4, 5 + i, i, i), "This is a reply.", null);

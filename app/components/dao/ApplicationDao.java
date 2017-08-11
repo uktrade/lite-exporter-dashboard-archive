@@ -8,6 +8,8 @@ public interface ApplicationDao {
 
   List<Application> getApplications();
 
+  Application getApplication(String appId);
+
   void insert(Application application);
 
   void deleteAllApplications();

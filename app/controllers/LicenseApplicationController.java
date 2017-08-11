@@ -2,11 +2,13 @@ package controllers;
 
 import com.google.inject.Inject;
 import components.dao.RfiResponseDao;
+import components.service.ApplicationSummaryViewService;
 import components.service.RfiViewService;
 import components.service.StatusItemViewService;
 import components.service.UserService;
 import models.RfiResponse;
 import models.view.AddRfiResponseView;
+import models.view.ApplicationSummaryView;
 import models.view.RfiResponseForm;
 import models.view.RfiView;
 import models.view.StatusItemView;
@@ -29,18 +31,20 @@ public class LicenseApplicationController extends Controller {
   private final UserService userService;
   private final FormFactory formFactory;
   private final RfiResponseDao rfiResponseDao;
+  private final ApplicationSummaryViewService applicationSummaryViewService;
 
   @Inject
   public LicenseApplicationController(StatusItemViewService statusItemViewService,
                                       RfiViewService rfiViewService,
                                       UserService userService,
                                       FormFactory formFactory,
-                                      RfiResponseDao rfiResponseDao) {
+                                      RfiResponseDao rfiResponseDao, ApplicationSummaryViewService applicationSummaryViewService) {
     this.statusItemViewService = statusItemViewService;
     this.rfiViewService = rfiViewService;
     this.userService = userService;
     this.formFactory = formFactory;
     this.rfiResponseDao = rfiResponseDao;
+    this.applicationSummaryViewService = applicationSummaryViewService;
   }
 
   public Result submitReply(String appId) {
@@ -65,30 +69,35 @@ public class LicenseApplicationController extends Controller {
   }
 
   private Result reply(String appId, String rfiId, Form<RfiResponseForm> rfiResponseForm) {
+    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
     AddRfiResponseView addRfiResponseView = rfiViewService.getAddRfiResponseView(rfiId);
-    return ok(rfiListTab.render(appId, rfiViews, rfiResponseForm, addRfiResponseView));
+    return ok(rfiListTab.render(applicationSummaryView, rfiViews, rfiResponseForm, addRfiResponseView));
   }
 
   public Result rfiTab(String appId) {
+    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
-    return ok(rfiListTab.render(appId, rfiViews, null, null));
+    return ok(rfiListTab.render(applicationSummaryView, rfiViews, null, null));
   }
 
   public Result statusTab(String appId) {
+    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<StatusItemView> statusItemViewList = statusItemViewService.getStatusItemViews(appId);
-    return ok(statusTrackerTab.render(appId, rfiViewCount(appId), statusItemViewList));
+    return ok(statusTrackerTab.render(applicationSummaryView, getRfiViewCount(appId), statusItemViewList));
   }
 
   public Result amendTab(String appId) {
-    return ok(amendApplicationTab.render(appId, rfiViewCount(appId)));
+    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
+    return ok(amendApplicationTab.render(applicationSummaryView, getRfiViewCount(appId)));
   }
 
   public Result outcomeTab(String appId) {
-    return ok(outcomeDocsTab.render(appId, rfiViewCount(appId)));
+    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
+    return ok(outcomeDocsTab.render(applicationSummaryView, getRfiViewCount(appId)));
   }
 
-  private int rfiViewCount(String appId) {
+  private int getRfiViewCount(String appId) {
     return rfiViewService.getRfiViewCount(appId);
   }
 

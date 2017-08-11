@@ -17,7 +17,8 @@
       Option(applicationListView.getDateSortDirection),
       Option(applicationListView.getStatusSortDirection),
       Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
-      Option(applicationListView.getCompanyId)
+      Option(applicationListView.getCompanyId),
+      Option(applicationListView.getCurrentPage)
     ).toString,
       activeTab.equals("created-by-you"))
     @tab("Created by your company", routes.Application.applicationList(
@@ -25,7 +26,8 @@
       Option(applicationListView.getDateSortDirection),
       Option(applicationListView.getStatusSortDirection),
       Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
-      Option(applicationListView.getCompanyId)
+      Option(applicationListView.getCompanyId),
+      Option(applicationListView.getCurrentPage)
     ).toString,
       activeTab.equals("created-by-your-company"))
   }
@@ -34,78 +36,83 @@
     <label class="form-label left-label" for="select-box">Filter by company name</label>
     <select class="form-control" id="select-box" name="select-box">
       <option @if(applicationListView.getCompanyId == null) {
-        selected="selected"
-      } value="@routes.Application.applicationList(
-        Option(activeTab),
-        Option(applicationListView.getDateSortDirection),
-        Option(applicationListView.getStatusSortDirection),
-        Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
-        Option(null)
-      ).toString">All companies</option>
+      selected = "selected" } value="@routes.Application.applicationList(
+      Option(activeTab),
+      Option(applicationListView.getDateSortDirection),
+      Option(applicationListView.getStatusSortDirection),
+      Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+      Option(null),
+      Option(applicationListView.getCurrentPage)
+    ).toString">All companies
+      </option>
       @for(companySelectItemView <- applicationListView.getCompanySelectItemViews) {
-        <option @if(companySelectItemView.getCompanyId == applicationListView.getCompanyId) {
-          selected="selected"
-        } value="@routes.Application.applicationList(
+        <option
+        @if(companySelectItemView.getCompanyId == applicationListView.getCompanyId) {
+          selected = "selected" } value = "@routes.Application.applicationList(
           Option(activeTab),
           Option(applicationListView.getDateSortDirection),
           Option(applicationListView.getStatusSortDirection),
           Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
-          Option(companySelectItemView.getCompanyId)
-        ).toString">@companySelectItemView.getCompanyName</option>
+          Option(companySelectItemView.getCompanyId),
+          Option(applicationListView.getCurrentPage)
+        ).toString">@companySelectItemView.getCompanyName </option>
       }
     </select>
     <script type="text/javascript">
       $(document).ready(function () {
-        $("#select-box").change(function () {
-          location = $("#select-box").find("option:selected").val();
-        });
-      });
+          $("#select-box").change(function () {
+            location = $("#select-box").find("option:selected").val();
+          });
+        }
+      );
     </script>
   </div>
 
   <div class="table-filters">
     Show:
     <ul>
-      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.ALL) {
-        class="active" }>
-        <a href="@routes.Application.applicationList(
-          Option(activeTab),
-          Option(applicationListView.getDateSortDirection),
-          Option(applicationListView.getStatusSortDirection),
-          Option.empty,
-          Option(applicationListView.getCompanyId))">
-          All (@applicationListView.getAllCount)
-        </a>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.ALL) { class = "active" }>
+      <a href="@routes.Application.applicationList(
+        Option(activeTab),
+        Option(applicationListView.getDateSortDirection),
+        Option(applicationListView.getStatusSortDirection),
+        Option.empty,
+        Option(applicationListView.getCompanyId),
+        Option(applicationListView.getCurrentPage))">
+        All (@applicationListView.getAllCount)
+      </a>
       </li>
-      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {
-        class="active" }>
-        <a href="@routes.Application.applicationList(
-          Option(activeTab),
-          Option(applicationListView.getDateSortDirection),
-          Option(applicationListView.getStatusSortDirection),
-          Option(StatusTypeFilter.DRAFT.toString.toLowerCase()),
-          Option(applicationListView.getCompanyId))">
-          Draft (@applicationListView.getDraftCount)
-        </a>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {class = "active"}>
+      <a href="@routes.Application.applicationList(
+        Option(activeTab),
+        Option(applicationListView.getDateSortDirection),
+        Option(applicationListView.getStatusSortDirection),
+        Option(StatusTypeFilter.DRAFT.toString.toLowerCase()),
+        Option(applicationListView.getCompanyId),
+        Option(applicationListView.getCurrentPage))">
+        Draft (@applicationListView.getDraftCount)
+      </a>
       </li>
-      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.CURRENT) {
-        class="active" }>
-        <a href="@routes.Application.applicationList(
-          Option(activeTab),
-          Option(applicationListView.getDateSortDirection),
-          Option(applicationListView.getStatusSortDirection),
-          Option(StatusTypeFilter.CURRENT.toString.toLowerCase()),
-          Option(applicationListView.getCompanyId))">
-          Current (@applicationListView.getCurrentCount)
-        </a>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.CURRENT) {class = "active"}>
+      <a href="@routes.Application.applicationList(
+        Option(activeTab),
+        Option(applicationListView.getDateSortDirection),
+        Option(applicationListView.getStatusSortDirection),
+        Option(StatusTypeFilter.CURRENT.toString.toLowerCase()),
+        Option(applicationListView.getCompanyId),
+        Option(applicationListView.getCurrentPage))">
+        Current (@applicationListView.getCurrentCount)
+      </a>
       </li>
-      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.COMPLETED) {
-        class="active" }><a href="@routes.Application.applicationList(
+      <li
+      @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.COMPLETED) {class = "active"}>
+      <a href="@routes.Application.applicationList(
         Option(activeTab),
         Option(applicationListView.getDateSortDirection),
         Option(applicationListView.getStatusSortDirection),
         Option(StatusTypeFilter.COMPLETED.toString.toLowerCase()),
-        Option(applicationListView.getCompanyId))">
+        Option(applicationListView.getCompanyId),
+        Option(applicationListView.getCurrentPage))">
         Completed (@applicationListView.getCompletedCount)
       </a>
       </li>
@@ -121,30 +128,34 @@
               Option(applicationListView.getNextDateSortDirection),
               Option.empty,
               Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
-              Option(applicationListView.getCompanyId))">
+              Option(applicationListView.getCompanyId),
+              Option(applicationListView.getCurrentPage))">
               Date submitted
             </a>
             <span class="sort-arrow">
             @applicationListView.getDateSortDirection match {
-              case "asc" => { &#9651 }
-              case "desc" => { &#9661 }
+              case "asc" => {&#9651}
+              case "desc" => {&#9661}
               case default => {}
             }
             </span>
           </th>
-          <th>References</th>
+          <th>
+            References
+          </th>
           <th>
             <a href="@routes.Application.applicationList(Option(activeTab),
               Option.empty,
               Option(applicationListView.getNextStatusSortDirection),
               Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
-              Option(applicationListView.getCompanyId))">
+              Option(applicationListView.getCompanyId),
+              Option(applicationListView.getCurrentPage))">
               Application status
             </a>
             <span class="sort-arrow">
             @applicationListView.getStatusSortDirection match {
-              case "asc" => { &#9651 }
-              case "desc" => { &#9661 }
+              case "asc" => {&#9651}
+              case "desc" => {&#9661}
               case default => {}
             }
             </span>
@@ -157,15 +168,20 @@
       <tbody>
       @for(applicationItemView <- applicationListView.getApplicationItemViews) {
         <tr>
-          <th scope="row">@applicationItemView.getDateSubmitted</th>
+          <th scope="row">
+          @applicationItemView.getDateSubmitted
+          </th>
           <td>
-            <a href="@routes.LicenseApplicationController.statusTab(applicationItemView.getAppId)" class="bold">@applicationItemView.getAppId</a>
+            <a href="@routes.LicenseApplicationController.statusTab(applicationItemView.getAppId)" class="bold">
+            @applicationItemView.getAppId
+            </a>
             <br>
             @applicationItemView.getCaseDescription
           </td>
           <td>
             <p>
-              @applicationItemView.getApplicationStatus <br>
+              @applicationItemView.getApplicationStatus
+            <br>
             @applicationItemView.getApplicationStatusDate
             </p>
             @if(applicationItemView.getOpenRfiId != null) {
@@ -180,4 +196,49 @@
       </tbody>
     </table>
   </div>
+
+  </p>
+  <table>
+    <tr>
+      @if(applicationListView.getApplicationCount != 0) {
+        <td align="left" width="100%" style="border: 0">
+          Showing @applicationListView.getShowingFrom - @applicationListView.getShowingTo of @applicationListView.getApplicationCount applications
+        </td>
+      }
+      @if(applicationListView.getPageCount != 1) {
+        <td align="right" nowrap style="padding: 0;
+          margin: 0;
+          border: 0">
+          @for(i <- 1 to applicationListView.getPageCount) {
+            @if(i != applicationListView.getCurrentPage) {
+              <a href="@routes.Application.applicationList(Option(activeTab),
+                Option(applicationListView.getNextDateSortDirection),
+                Option.empty,
+                Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+                Option(applicationListView.getCompanyId),
+                Option(if(i == 1) null else i))">@i</a>
+            } else {
+              @i
+            }
+            @if(i < applicationListView.getPageCount) {
+              <span style="display: inline-block;
+                width: 1em"> </span>
+            }
+          }
+          @if(applicationListView.getCurrentPage < applicationListView.getPageCount) {
+            <span style="display: inline-block;
+              width: 1em"> </span>
+            <a href="@routes.Application.applicationList(Option(activeTab),
+              Option(applicationListView.getNextDateSortDirection),
+              Option.empty,
+              Option(applicationListView.getStatusTypeFilter.toString.toLowerCase),
+              Option(applicationListView.getCompanyId),
+              Option(applicationListView.getCurrentPage+1))">
+              Next
+            </a>
+          }
+        </td>
+      }
+    </tr>
+  </table>
 }

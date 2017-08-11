@@ -1,9 +1,9 @@
 @import models.view.{AddRfiResponseView, RfiView}
-@import page._
 @import play.data.Form
+@import models.view.ApplicationSummaryView
 
-@(applicationRef: String, rfiViews: List[RfiView], rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+@(applicationSummaryView: ApplicationSummaryView, rfiViews: List[RfiView], rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
-@licenceApplication(applicationRef, "rfi", rfiViews.size) {
+@licenceApplication(applicationSummaryView, "rfi", rfiViews.size) {
   @rfiList(rfiViews, rfiResponseForm, addRfiResponseView)
 }

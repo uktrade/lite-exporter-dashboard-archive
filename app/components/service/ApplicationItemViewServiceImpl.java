@@ -15,7 +15,6 @@ import models.enums.StatusType;
 import models.view.ApplicationItemView;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -32,15 +31,17 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final StatusService statusService;
   private final RfiDao rfiDao;
   private final RfiResponseDao rfiResponseDao;
+  private final ApplicationSummaryViewService applicationSummaryViewService;
 
   @Inject
-  public ApplicationItemViewServiceImpl(ApplicationDao applicationDao, StatusUpdateDao statusUpdateDao, TimeFormatService timeFormatService, StatusService statusService, RfiDao rfiDao, RfiResponseDao rfiResponseDao) {
+  public ApplicationItemViewServiceImpl(ApplicationDao applicationDao, StatusUpdateDao statusUpdateDao, TimeFormatService timeFormatService, StatusService statusService, RfiDao rfiDao, RfiResponseDao rfiResponseDao, ApplicationSummaryViewService applicationSummaryViewService) {
     this.applicationDao = applicationDao;
     this.statusUpdateDao = statusUpdateDao;
     this.timeFormatService = timeFormatService;
     this.statusService = statusService;
     this.rfiDao = rfiDao;
     this.rfiResponseDao = rfiResponseDao;
+    this.applicationSummaryViewService = applicationSummaryViewService;
   }
 
   @Override
@@ -88,16 +89,13 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
       dateSubmittedTimestamp = statusUpdate.get().getStartTimestamp();
       dateSubmitted = timeFormatService.formatDateWithSlashes(statusUpdate.get().getStartTimestamp());
     }
-    String caseDescription = "";
-    if (application.getCaseReference() != null) {
-      caseDescription = String.format("Purchase order: %s", application.getCaseReference());
-    }
+    String caseDescription = applicationSummaryViewService.getCaseDescription(application);
     StatusType statusType = null;
     String applicationStatus = "";
     String applicationStatusDate = "";
     long applicationStatusTimestamp = 0;
     if (!statusUpdates.isEmpty()) {
-      StatusUpdate maxStatusUpdate = Collections.max(statusUpdates, Comparator.comparing(StatusUpdate::getStartTimestamp, Comparator.nullsFirst(Comparator.naturalOrder())));
+      StatusUpdate maxStatusUpdate = applicationSummaryViewService.getMaxStatusUpdate(statusUpdates).orElse(null);
       if (maxStatusUpdate != null) {
         applicationStatus = statusService.getStatus(maxStatusUpdate.getStatusType());
         if (maxStatusUpdate.getStartTimestamp() != null) {
@@ -109,13 +107,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         }
       }
     }
-    String destination = "";
-    int destinationCount = application.getDestinationList().size();
-    if (destinationCount == 1) {
-      destination = application.getDestinationList().get(0);
-    } else if (destinationCount > 1) {
-      destination = String.format("%d destinations", destinationCount);
-    }
+    String destination = applicationSummaryViewService.getDestination(application);
     return new ApplicationItemView(application.getAppId(), application.getCompanyId(), application.getCompanyName(), dateSubmittedTimestamp, dateSubmitted, caseDescription, statusType, applicationStatus, applicationStatusDate, applicationStatusTimestamp, destination, openRfiId);
   }
 

@@ -1,7 +1,8 @@
 @import page._
+@import models.view.ApplicationSummaryView
 
-@(applicationRef: String, rfiViewCount: Integer)
+@(applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer)
 
-@licenceApplication(applicationRef, "outcomeDocs", rfiViewCount) {
+@licenceApplication(applicationSummaryView, "outcomeDocs", rfiViewCount) {
   @outcomeDocs()
 }

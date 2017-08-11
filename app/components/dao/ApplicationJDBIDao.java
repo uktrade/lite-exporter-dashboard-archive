@@ -15,6 +15,10 @@ public interface ApplicationJDBIDao {
   @SqlQuery("SELECT * FROM APPLICATION")
   List<Application> getApplications();
 
+  @Mapper(ApplicationRSMapper.class)
+  @SqlQuery("SELECT * FROM APPLICATION WHERE APP_ID = :appId")
+  Application getApplication(@Bind("appId") String appId);
+
   @SqlUpdate("INSERT INTO APPLICATION ( APP_ID, COMPANY_ID, COMPANY_NAME, STATUS,  APPLICANT_REFERENCE, DESTINATION_LIST, CASE_REFERENCE, CASE_OFFICER_ID) " +
       "                        VALUES (:appId, :companyId, :companyName, :status, :applicantReference, :destinationList, :caseReference, :caseOfficerId) ")
   void insert(@Bind("appId") String appId,
@@ -28,4 +32,5 @@ public interface ApplicationJDBIDao {
 
   @SqlUpdate("DELETE FROM APPLICATION")
   void truncateTable();
+
 }

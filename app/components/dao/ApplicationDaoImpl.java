@@ -26,6 +26,14 @@ public class ApplicationDaoImpl implements ApplicationDao {
   }
 
   @Override
+  public Application getApplication(String appId) {
+    try (final Handle handle = dbi.open()) {
+      ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
+      return applicationJDBIDao.getApplication(appId);
+    }
+  }
+
+  @Override
   public void insert(Application application) {
     try (final Handle handle = dbi.open()) {
       ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
