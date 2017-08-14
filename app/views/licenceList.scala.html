@@ -2,8 +2,10 @@
 @import page._
 @import views.html.common.page._
 @import licenceListTabs._
+@import models.view.OgelRegistrationListView
 
-@(activeTab: String)
+@import models.view.OgelRegistrationItemView
+@(activeTab: String, ogelRegistrationListView: OgelRegistrationListView)
 @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
 
 }{
@@ -11,12 +13,12 @@
   @dashboardTopNav()
 
   @tabs("licences-tabs", size="large", width="wide") {
-    @tab("SIELs", "/licences/siels#licences-tabs", activeTab.equals("siels"))
-    @tab("OGELs", "/licences/ogels#licences-tabs", activeTab.equals("ogels"))
+    @tab("SIELs", "/licences?tab=siels", activeTab.equals("siels"))
+    @tab("OGELs", "/licences?tab=ogels", activeTab.equals("ogels"))
   }
 
   @activeTab match {
     case "siels" => { @sielList() }
-    case "ogels" => { @ogelList() }
+    case "ogels" => { @ogelList(activeTab, ogelRegistrationListView) }
   }
 }

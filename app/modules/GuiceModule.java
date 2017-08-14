@@ -22,6 +22,14 @@ import components.service.ApplicationItemViewService;
 import components.service.ApplicationItemViewServiceImpl;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationSummaryViewServiceImpl;
+import components.service.CacheService;
+import components.service.CacheServiceImpl;
+import components.service.OgelRegistrationItemViewService;
+import components.service.OgelRegistrationItemViewServiceImpl;
+import components.service.OgelRegistrationService;
+import components.service.OgelRegistrationServiceMockImpl;
+import components.service.PageService;
+import components.service.PageServiceImpl;
 import components.service.PersonService;
 import components.service.PersonServiceMock;
 import components.service.ProcessingDescriptionService;
@@ -30,6 +38,8 @@ import components.service.ProcessingLabelService;
 import components.service.ProcessingLabelServiceImpl;
 import components.service.RfiViewService;
 import components.service.RfiViewServiceImpl;
+import components.service.SortDirectionService;
+import components.service.SortDirectionServiceImpl;
 import components.service.StatusExplanationService;
 import components.service.StatusExplanationServiceImpl;
 import components.service.StatusItemViewService;
@@ -75,14 +85,19 @@ public class GuiceModule extends AbstractModule {
     bind(PersonService.class).to(PersonServiceMock.class);
     bind(RfiViewService.class).to(RfiViewServiceImpl.class);
     bind(UserService.class).to(UserServiceMockImpl.class);
+    bind(OgelRegistrationService.class).to(OgelRegistrationServiceMockImpl.class).in(Singleton.class);
     bind(ApplicationItemViewService.class).to(ApplicationItemViewServiceImpl.class);
     bind(ApplicationSummaryViewService.class).to(ApplicationSummaryViewServiceImpl.class);
+    bind(OgelRegistrationItemViewService.class).to(OgelRegistrationItemViewServiceImpl.class);
+    bind(CacheService.class).to(CacheServiceImpl.class);
+    bind(SortDirectionService.class).to(SortDirectionServiceImpl.class);
+    bind(PageService.class).to(PageServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);
     bind(StatusUpdateDao.class).to(StatusUpdateDaoImpl.class);
     bind(ApplicationDao.class).to(ApplicationDaoImpl.class);
-    // Test data
+    // Database test data
     bind(TestDataService.class).to(TestDataServiceImpl.class);
   }
 

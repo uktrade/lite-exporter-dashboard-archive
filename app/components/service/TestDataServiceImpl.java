@@ -1,5 +1,8 @@
 package components.service;
 
+import static components.util.RandomUtil.random;
+import static components.util.TimeUtil.time;
+
 import com.google.inject.Inject;
 import components.dao.ApplicationDao;
 import components.dao.RfiDao;
@@ -13,12 +16,9 @@ import models.enums.ApplicationStatus;
 import models.enums.RfiStatus;
 import models.enums.StatusType;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class TestDataServiceImpl implements TestDataService {
 
@@ -173,14 +173,6 @@ public class TestDataServiceImpl implements TestDataService {
     statusUpdates.add(assessment);
     statusUpdates.add(decision);
     return statusUpdates;
-  }
-
-  private static String random(String prefix) {
-    return prefix.toLowerCase() + "_" + UUID.randomUUID().toString().replace("-", "");
-  }
-
-  private long time(int year, int month, int dayOfMonth, int hour, int minute) {
-    return LocalDateTime.of(year, month, dayOfMonth, hour, minute).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
   }
 
 }

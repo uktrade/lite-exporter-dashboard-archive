@@ -132,12 +132,7 @@
               Option(applicationListView.getCurrentPage))">
               Date submitted
             </a>
-            <span class="sort-arrow">
-            @applicationListView.getDateSortDirection match {
-              case "asc" => {&#9651}
-              case "desc" => {&#9661}
-              case default => {}
-            }
+            @sortArrow(applicationListView.getDateSortDirection)
             </span>
           </th>
           <th>
@@ -152,13 +147,7 @@
               Option(applicationListView.getCurrentPage))">
               Application status
             </a>
-            <span class="sort-arrow">
-            @applicationListView.getStatusSortDirection match {
-              case "asc" => {&#9651}
-              case "desc" => {&#9661}
-              case default => {}
-            }
-            </span>
+            @sortArrow(applicationListView.getStatusSortDirection)
           </th>
           <th>
             Destination

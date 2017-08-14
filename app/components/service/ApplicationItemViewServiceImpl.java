@@ -16,6 +16,7 @@ import models.view.ApplicationItemView;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
+
+  private static final Map<SortDirection, Comparator<ApplicationItemView>> DATE_COMPARATORS = new EnumMap<>(SortDirection.class);
+  private static final Map<SortDirection, Comparator<ApplicationItemView>> STATUS_COMPARATORS = new EnumMap<>(SortDirection.class);
+
+  static {
+    Comparator<ApplicationItemView> dateComparator = Comparator.comparing(ApplicationItemView::getDateSubmittedTimestamp);
+    DATE_COMPARATORS.put(SortDirection.ASC, dateComparator);
+    DATE_COMPARATORS.put(SortDirection.DESC, dateComparator.reversed());
+    Comparator<ApplicationItemView> statusComparator = Comparator.comparing(ApplicationItemView::getApplicationStatusTimestamp);
+    STATUS_COMPARATORS.put(SortDirection.ASC, statusComparator);
+    STATUS_COMPARATORS.put(SortDirection.DESC, statusComparator.reversed());
+  }
+
 
   private final ApplicationDao applicationDao;
   private final StatusUpdateDao statusUpdateDao;
@@ -54,7 +68,6 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     Set<String> rfiResponses = rfiResponseDao.getRfiResponses().stream().map(RfiResponse::getRfiId).collect(Collectors.toSet());
     rfiDao.getRfiList().stream().filter(rfi -> !rfiResponses.contains(rfi.getRfiId())).forEach(rfi -> openRfiIds.put(rfi.getAppId(), rfi.getRfiId()));
 
-
     List<ApplicationItemView> applicationItemViews = applications.stream()
         .map(application -> {
           Collection<StatusUpdate> statusUpdates = statusUpdateMap.get(application.getAppId());
@@ -63,19 +76,18 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         })
         .collect(Collectors.toList());
 
-    if (dateSortDirection == SortDirection.ASC) {
-      applicationItemViews.sort(Comparator.comparing(ApplicationItemView::getDateSubmittedTimestamp));
-    } else if (dateSortDirection == SortDirection.DESC) {
-      applicationItemViews.sort(Comparator.comparing(ApplicationItemView::getDateSubmittedTimestamp).reversed());
-    }
-
-    if (statusSortDirection == SortDirection.ASC) {
-      applicationItemViews.sort(Comparator.comparing(ApplicationItemView::getApplicationStatusTimestamp));
-    } else if (statusSortDirection == SortDirection.DESC) {
-      applicationItemViews.sort(Comparator.comparing(ApplicationItemView::getApplicationStatusTimestamp).reversed());
-    }
+    sort(applicationItemViews, dateSortDirection, statusSortDirection);
 
     return applicationItemViews;
+  }
+
+  private void sort(List<ApplicationItemView> applicationItemViews, SortDirection dateSortDirection, SortDirection statusSortDirection) {
+    if (dateSortDirection != null) {
+      applicationItemViews.sort(DATE_COMPARATORS.get(dateSortDirection));
+    }
+    if (statusSortDirection != null) {
+      applicationItemViews.sort(STATUS_COMPARATORS.get(statusSortDirection));
+    }
   }
 
   private ApplicationItemView getApplicationItemView(Application application, Collection<StatusUpdate> statusUpdates, String openRfiId) {
