@@ -91,24 +91,18 @@ public class Application extends Controller {
 
     Page<ApplicationItemView> pageData = pageService.getPage(state.getPage(), filteredApplicationViews);
 
-    ApplicationListView applicationListView = new ApplicationListView(pageData.getItems(),
+    ApplicationListView applicationListView = new ApplicationListView(activeTab,
         companyId,
         companyNames,
         sortDirectionService.toParam(dateSortDirection),
-        sortDirectionService.toNextParam(dateSortDirection),
         sortDirectionService.toParam(statusSortDirection),
-        sortDirectionService.toNextParam(statusSortDirection),
         statusTypeFilter,
         allCount,
         draftCount,
         currentCount,
         completedCount,
-        pageData.getCurrentPage(),
-        pageData.getPageCount(),
-        pageData.getFrom(),
-        pageData.getTo(),
-        filteredApplicationViews.size());
-    return ok(applicationList.render(activeTab, applicationListView));
+        pageData);
+    return ok(applicationList.render(applicationListView));
   }
 
   public Result licenceDetails(String licenceRef) {
