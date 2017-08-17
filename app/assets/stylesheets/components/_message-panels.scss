@@ -55,6 +55,18 @@
   }
 }
 
+.amend-application-panel {
+  background: $white;
+
+  @include media(mobile) {
+    margin-left: 0;
+  }
+
+  h3 {
+    margin-bottom: 0;
+  }
+}
+
 .message-reply-panel {
   background: $white;
   margin-left: 7%;

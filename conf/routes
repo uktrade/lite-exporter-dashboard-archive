@@ -13,7 +13,8 @@ GET         /application/*applicationRef/status-tracker           controllers.Li
 GET         /application/*applicationRef/rfi                      controllers.LicenseApplicationController.rfiTab(applicationRef: String)
 GET         /application/*applicationRef/rfi/*rfiId               controllers.LicenseApplicationController.reply(applicationRef: String, rfiId: String)
 POST        /application/*applicationRef/rfi                      controllers.LicenseApplicationController.submitReply(applicationRef: String)
-GET         /application/*applicationRef/amend-application        controllers.LicenseApplicationController.amendTab(applicationRef: String)
+GET         /application/*applicationRef/amend-application        controllers.LicenseApplicationController.amendTab(applicationRef: String, action: Option[String])
+POST        /application/*applicationRef/amend-application        controllers.LicenseApplicationController.amendApplication(applicationRef: String)
 GET         /application/*applicationRef/outcome-documents        controllers.LicenseApplicationController.outcomeTab(applicationRef: String)
 GET         /application/*applicationRef                          controllers.LicenseApplicationController.statusTab(applicationRef: String)
 

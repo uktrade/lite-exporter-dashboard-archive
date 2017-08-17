@@ -15,6 +15,8 @@ import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
 import components.common.state.ContextParamManager;
 import components.common.transaction.TransactionContextParamProvider;
+import components.dao.AmendmentDao;
+import components.dao.AmendmentDaoImpl;
 import components.dao.ApplicationDao;
 import components.dao.ApplicationDaoImpl;
 import components.dao.RfiDao;
@@ -23,6 +25,8 @@ import components.dao.RfiResponseDao;
 import components.dao.RfiResponseDaoImpl;
 import components.dao.StatusUpdateDao;
 import components.dao.StatusUpdateDaoImpl;
+import components.dao.WithdrawalRequestDao;
+import components.dao.WithdrawalRequestDaoImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
 import components.service.ApplicationItemViewService;
@@ -129,6 +133,8 @@ public class GuiceModule extends AbstractModule {
     bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);
     bind(StatusUpdateDao.class).to(StatusUpdateDaoImpl.class);
     bind(ApplicationDao.class).to(ApplicationDaoImpl.class);
+    bind(WithdrawalRequestDao.class).to(WithdrawalRequestDaoImpl.class);
+    bind(AmendmentDao.class).to(AmendmentDaoImpl.class);
     // Database test data
     bind(TestDataService.class).to(TestDataServiceImpl.class);
   }

@@ -5,10 +5,12 @@ import static components.util.RandomUtil.randomNumber;
 import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
+import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
 import components.dao.StatusUpdateDao;
+import components.dao.WithdrawalRequestDao;
 import models.Application;
 import models.Rfi;
 import models.RfiResponse;
@@ -24,6 +26,7 @@ import java.util.List;
 public class TestDataServiceImpl implements TestDataService {
 
   private static String APPLICANT = "Kathryn Smith";
+  private static String OTHER_APPLICANT = "Christoph";
   private static String OFFICER = "Jerry McGuire";
   private static String GERMANY = "Germany";
   private static String ICELAND = "Iceland";
@@ -36,13 +39,17 @@ public class TestDataServiceImpl implements TestDataService {
   private final StatusUpdateDao statusUpdateDao;
   private final RfiResponseDao rfiResponseDao;
   private final ApplicationDao applicationDao;
+  private final WithdrawalRequestDao withdrawalRequestDao;
+  private final AmendmentDao amendmentDao;
 
   @Inject
-  public TestDataServiceImpl(RfiDao rfiDao, StatusUpdateDao statusUpdateDao, RfiResponseDao rfiResponseDao, ApplicationDao applicationDao) {
+  public TestDataServiceImpl(RfiDao rfiDao, StatusUpdateDao statusUpdateDao, RfiResponseDao rfiResponseDao, ApplicationDao applicationDao, WithdrawalRequestDao withdrawalRequestDao, AmendmentDao amendmentDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiResponseDao = rfiResponseDao;
     this.applicationDao = applicationDao;
+    this.withdrawalRequestDao = withdrawalRequestDao;
+    this.amendmentDao = amendmentDao;
   }
 
   @Override
@@ -51,6 +58,9 @@ public class TestDataServiceImpl implements TestDataService {
     statusUpdateDao.deleteAllStatusUpdates();
     rfiDao.deleteAllRfiData();
     rfiResponseDao.deleteAllRfiResponses();
+    withdrawalRequestDao.deleteAllWithdrawalRequests();
+    amendmentDao.deleteAllAmendments();
+
     createApplications();
     applicationDao.insert(createApplication());
     createStatusUpdateTestData().forEach(statusUpdateDao::insertStatusUpdate);
@@ -86,6 +96,14 @@ public class TestDataServiceImpl implements TestDataService {
           rfiResponseDao.insertRfiResponse(rfiResponse);
         }
       }
+    }
+    // create applications by other applicant
+    for (int i = 0; i < 4; i++) {
+      String appId = randomNumber("ECO");
+      Application app = new Application(appId, companyId, companyName, ApplicationStatus.DRAFT, OTHER_APPLICANT, new ArrayList<>(), getCas(), OFFICER);
+      applicationDao.insert(app);
+      StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 1, 3 + i, i, i), null);
+      statusUpdateDao.insertStatusUpdate(draft);
     }
   }
 

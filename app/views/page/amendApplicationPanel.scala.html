@@ -1,0 +1,24 @@
+@import models.view.AddRfiResponseView
+@import play.data.Form
+@import views.html.common.form._
+
+@(appId: String, heading: String, form: Form[_])
+
+<div class="message-panel amend-application-panel">
+
+  <article>
+    <h4 class="heading-small">@heading</h4>
+    <div>
+
+      <form action="@routes.LicenseApplicationController.amendTab(appId, Option(null))" method="POST">
+        @formTextarea(form("message"), rows = "4", cssClass = "form-control-wide") {
+
+        }
+        <input type="hidden" name="action" value="@form("action").value" >
+        <button class="button">Send</button>
+      </form>
+
+    </div>
+  </article>
+
+</div>

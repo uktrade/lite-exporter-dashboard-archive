@@ -29,6 +29,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
   private static final Map<SortDirection, Comparator<ApplicationItemView>> DATE_COMPARATORS = new EnumMap<>(SortDirection.class);
   private static final Map<SortDirection, Comparator<ApplicationItemView>> STATUS_COMPARATORS = new EnumMap<>(SortDirection.class);
+  private static final Map<SortDirection, Comparator<ApplicationItemView>> CREATED_BY_COMPARATORS = new EnumMap<>(SortDirection.class);
 
   static {
     Comparator<ApplicationItemView> dateComparator = Comparator.comparing(ApplicationItemView::getDateSubmittedTimestamp);
@@ -37,6 +38,9 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     Comparator<ApplicationItemView> statusComparator = Comparator.comparing(ApplicationItemView::getApplicationStatusTimestamp);
     STATUS_COMPARATORS.put(SortDirection.ASC, statusComparator);
     STATUS_COMPARATORS.put(SortDirection.DESC, statusComparator.reversed());
+    Comparator<ApplicationItemView> createdByComparator = Comparator.comparing(ApplicationItemView::getApplicantReference);
+    CREATED_BY_COMPARATORS.put(SortDirection.ASC, createdByComparator);
+    CREATED_BY_COMPARATORS.put(SortDirection.DESC, createdByComparator.reversed());
   }
 
 
@@ -66,7 +70,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   @Override
-  public List<ApplicationItemView> getApplicationItemViews(SortDirection dateSortDirection, SortDirection statusSortDirection) {
+  public List<ApplicationItemView> getApplicationItemViews(SortDirection dateSortDirection, SortDirection statusSortDirection, SortDirection createdBySortDirection) {
     Multimap<String, StatusUpdate> appIdToStatusUpdateMap = HashMultimap.create();
     statusUpdateDao.getStatusUpdates().forEach(statusUpdate -> appIdToStatusUpdateMap.put(statusUpdate.getAppId(), statusUpdate));
     Map<String, String> appIdToOpenRfiIdMap = getAppIdToOpenRfiIdMap();
@@ -81,17 +85,20 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         })
         .collect(Collectors.toList());
 
-    sort(applicationItemViews, dateSortDirection, statusSortDirection);
+    sort(applicationItemViews, dateSortDirection, statusSortDirection, createdBySortDirection);
 
     return applicationItemViews;
   }
 
-  private void sort(List<ApplicationItemView> applicationItemViews, SortDirection dateSortDirection, SortDirection statusSortDirection) {
+  private void sort(List<ApplicationItemView> applicationItemViews, SortDirection dateSortDirection, SortDirection statusSortDirection, SortDirection createdBySortDirection) {
     if (dateSortDirection != null) {
       applicationItemViews.sort(DATE_COMPARATORS.get(dateSortDirection));
     }
     if (statusSortDirection != null) {
       applicationItemViews.sort(STATUS_COMPARATORS.get(statusSortDirection));
+    }
+    if (createdBySortDirection != null) {
+      applicationItemViews.sort(CREATED_BY_COMPARATORS.get(createdBySortDirection));
     }
   }
 

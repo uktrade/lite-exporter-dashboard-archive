@@ -17,8 +17,6 @@ import models.enums.StatusTypeFilter;
 import models.view.ApplicationItemView;
 import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
-import models.view.form.SelectCompanyForm;
-import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -78,7 +76,7 @@ public class ApplicationController extends Controller {
       statusSortDirection = null;
     }
 
-    List<ApplicationItemView> applicationItemViews = applicationItemViewService.getApplicationItemViews(dateSortDirection, statusSortDirection);
+    List<ApplicationItemView> applicationItemViews = applicationItemViewService.getApplicationItemViews(dateSortDirection, statusSortDirection, createdBySortDirection);
 
     List<CompanySelectItemView> companyNames = applicationItemViews.stream().
         filter(distinctByKey(ApplicationItemView::getCompanyId))
@@ -123,9 +121,7 @@ public class ApplicationController extends Controller {
         completedCount,
         pageData);
 
-    Form<SelectCompanyForm> form = formFactory.form(SelectCompanyForm.class);
-
-    return ok(applicationList.render(licenceApplicationAddress, applicationListView, form));
+    return ok(applicationList.render(licenceApplicationAddress, applicationListView));
   }
 
 }
