@@ -1,13 +1,14 @@
 @import models.enums.StatusTypeFilter
 @import models.view.ApplicationListView
 @import page._
+@import play.data.Form
 @import util._
-@(applicationListView: ApplicationListView)
+@(applyLink: String, applicationListView: ApplicationListView, selectCompanyForm: Form[_])
 @standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
 } {
 
-  @dashboardTopNav()
+  @dashboardTopNav(applyLink)
 
   <div class="heading-medium">Applications</div>
 
@@ -22,49 +23,69 @@
 
   <div class="form-group">
     <label class="form-label left-label" for="select-box">Filter by company name</label>
-    <select class="form-control" id="select-box" name="select-box">
-      <option @if(applicationListView.getCompanyId == null) { selected="selected" }
-      value="@applicationListView.getApplicationRoute.toString">All companies
-      </option>
-      @for(companySelectItemView <- applicationListView.getCompanySelectItemViews) {
-        <option
-        @if(companySelectItemView.getCompanyId == applicationListView.getCompanyId) { selected="selected" }
-        value="@applicationListView.getApplicationRoute.setCompanyId(companySelectItemView.getCompanyId).toString">@companySelectItemView.getCompanyName </option>
-      }
-    </select>
-    <script type="text/javascript">
-      $(document).ready(function () {
-          $("#select-box").change(function () {
-            location = $("#select-box").find("option:selected").val();
-          });
+    <form action="@applicationListView.getApplicationRoute.setCompanyId(null).toString" method="GET">
+      <select class="form-control" id="company" name="company" onChange="this.form.submit()">
+        <option @if(applicationListView.getCompanyId == null) {
+          selected=""
         }
-      );
-    </script>
+        value="all">All companies
+        </option>
+        @for(companySelectItemView <- applicationListView.getCompanySelectItemViews) {
+          <option
+            @if(companySelectItemView.getCompanyId == applicationListView.getCompanyId) {
+              selected=""
+            }
+          value="@companySelectItemView.getCompanyId">@companySelectItemView.getCompanyName </option>
+        }
+        @if(applicationListView.getTab != null) {
+          <input type="hidden" name="tab" value="@applicationListView.getTab"/>
+        }
+        @if(applicationListView.getDateSortDirection != null) {
+          <input type="hidden" name="date" value="@applicationListView.getDateSortDirection"/>
+        }
+        @if(applicationListView.getStatusSortDirection != null) {
+          <input type="hidden" name="status" value="@applicationListView.getStatusSortDirection"/>
+        }
+        @if(applicationListView.getCreatedBySortDirection!=null) {
+          <input type="hidden" name="createdBy" value="@applicationListView.getCreatedBySortDirection"/>
+        }
+        @if(applicationListView.getStatusTypeFilter != null) {
+          <input type="hidden" name="show" value="@applicationListView.getStatusTypeFilter.toString.toLowerCase"/>
+        }
+        @if(applicationListView.getPage.getCurrentPage != 0) {
+          <input type="hidden" name="page" value="@applicationListView.getPage.getCurrentPage"/>
+        }
+      </select>
+    </form>
   </div>
 
   <div class="table-filters">
     Show:
     <ul>
-      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.ALL || applicationListView.getStatusTypeFilter == null) { class="active" }>
-      <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(null).toString">
-        All (@applicationListView.getAllCount)
-      </a>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.ALL || applicationListView.getStatusTypeFilter == null) {
+        class="active" }>
+        <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(null).toString">
+          All (@applicationListView.getAllCount)
+        </a>
       </li>
-      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) { class="active"}>
-      <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.DRAFT).toString">
-        Draft (@applicationListView.getDraftCount)
-      </a>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {
+        class="active"}>
+        <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.DRAFT).toString">
+          Draft (@applicationListView.getDraftCount)
+        </a>
       </li>
-      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.CURRENT) { class="active"}>
-      <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.CURRENT).toString">
-        Current (@applicationListView.getCurrentCount)
-      </a>
+      <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.CURRENT) {
+        class="active"}>
+        <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.CURRENT).toString">
+          Current (@applicationListView.getCurrentCount)
+        </a>
       </li>
       <li
-      @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.COMPLETED) { class="active"}>
-      <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.COMPLETED).toString">
-        Completed (@applicationListView.getCompletedCount)
-      </a>
+        @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.COMPLETED) {
+          class="active"}>
+        <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.COMPLETED).toString">
+          Completed (@applicationListView.getCompletedCount)
+        </a>
       </li>
     </ul>
   </div>
@@ -78,12 +99,11 @@
               Date submitted
             </a>
             @sortArrow(applicationListView.getDateSortDirection)
-            </span>
           </th>
           <th>
             References
           </th>
-          <th>
+          <th nowrap>
             <a href="@applicationListView.getApplicationRoute.nextStatus().toString">
               Application status
             </a>
@@ -92,6 +112,14 @@
           <th>
             Destination
           </th>
+          @if("created-by-your-company" == applicationListView.getTab) {
+            <th nowrap>
+              <a href="@applicationListView.getApplicationRoute.nextCreatedBy().toString">
+                Created by
+              </a>
+              @sortArrow(applicationListView.getCreatedBySortDirection)
+            </th>
+          }
         </tr>
       </thead>
       <tbody>
@@ -120,6 +148,11 @@
           <td>
           @applicationItemView.getDestination
           </td>
+          @if("created-by-your-company" == applicationListView.getTab) {
+            <td>
+            @applicationItemView.getApplicantReference
+            </td>
+          }
         </tr>
       }
       </tbody>

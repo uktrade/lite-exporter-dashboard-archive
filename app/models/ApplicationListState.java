@@ -10,6 +10,7 @@ public class ApplicationListState {
   private final String status;
   private final String show;
   private final String company;
+  private final String createdBy;
   private final Integer page;
 
   @JsonCreator
@@ -18,12 +19,14 @@ public class ApplicationListState {
                               @JsonProperty("status") String status,
                               @JsonProperty("show") String show,
                               @JsonProperty("company") String company,
+                              @JsonProperty("createdBy") String createdBy,
                               @JsonProperty("page") Integer page) {
     this.tab = tab;
     this.date = date;
     this.status = status;
     this.show = show;
     this.company = company;
+    this.createdBy = createdBy;
     this.page = page;
   }
 
@@ -45,6 +48,10 @@ public class ApplicationListState {
 
   public String getCompany() {
     return company;
+  }
+
+  public String getCreatedBy() {
+    return createdBy;
   }
 
   public Integer getPage() {

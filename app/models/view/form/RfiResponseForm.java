@@ -1,4 +1,4 @@
-package models.view;
+package models.view.form;
 
 import play.data.validation.Constraints;
 

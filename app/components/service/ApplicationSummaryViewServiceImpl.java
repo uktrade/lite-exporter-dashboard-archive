@@ -7,6 +7,7 @@ import models.Application;
 import models.StatusUpdate;
 import models.enums.StatusType;
 import models.view.ApplicationSummaryView;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,12 +37,18 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
     Application application = applicationDao.getApplication(appId);
     List<StatusUpdate> statusUpdates = statusUpdateDao.getStatusUpdates(appId);
     String officer = personService.getPerson(application.getCaseOfficerId());
+
     Optional<StatusUpdate> maxStatusUpdate = getMaxStatusUpdate(statusUpdates);
     String status = "";
     if (maxStatusUpdate.isPresent()) {
       status = statusService.getStatus(maxStatusUpdate.get().getStatusType());
     }
-    return new ApplicationSummaryView(appId, getCaseDescription(application), getDestination(application), getDateSubmitted(statusUpdates), status, officer);
+    return new ApplicationSummaryView(appId,
+        application.getCaseReference(),
+        getDestination(application),
+        getDateSubmitted(statusUpdates),
+        status,
+        officer);
   }
 
   @Override
@@ -57,30 +64,21 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   }
 
   private String getDateSubmitted(List<StatusUpdate> statusUpdateList) {
-    Optional<StatusUpdate> submitted = statusUpdateList.stream().filter(statusUpdate -> StatusType.DRAFT == statusUpdate.getStatusType()).findAny();
+    Optional<StatusUpdate> submitted = statusUpdateList.stream().filter(statusUpdate -> StatusType.SUBMITTED == statusUpdate.getStatusType()).findAny();
     if (submitted.isPresent() && submitted.get().getStartTimestamp() != null) {
       return timeFormatService.formatDate(submitted.get().getStartTimestamp());
     } else {
-      return "";
+      return "n/a";
     }
   }
 
   @Override
   public Optional<StatusUpdate> getMaxStatusUpdate(Collection<StatusUpdate> statusUpdates) {
-    if (statusUpdates != null) {
+    if (CollectionUtils.isNotEmpty(statusUpdates)) {
       StatusUpdate maxStatusUpdate = Collections.max(statusUpdates, Comparator.comparing(StatusUpdate::getStartTimestamp, Comparator.nullsFirst(Comparator.naturalOrder())));
       return Optional.ofNullable(maxStatusUpdate);
     } else {
       return Optional.empty();
-    }
-  }
-
-  @Override
-  public String getCaseDescription(Application application) {
-    if (application.getCaseReference() != null) {
-      return String.format("Purchase order: %s", application.getCaseReference());
-    } else {
-      return "";
     }
   }
 

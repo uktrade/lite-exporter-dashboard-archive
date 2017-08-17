@@ -22,6 +22,12 @@ libraryDependencies ++= Seq(
   "org.jdbi" % "jdbi" % "2.78"
 )
 
+libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.3"
+libraryDependencies += "uk.gov.bis.lite" % "lite-customer-service-api" % "1.1"
+libraryDependencies += "uk.gov.bis.lite" % "lite-ogel-service-api" % "1.0"
+
+resolvers += "Lite Lib Releases " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
+
 // Contains all files and libraries shared across other projects
 lazy val `zzz-common` = project.in(file("subprojects/lite-play-common")).enablePlugins(PlayJava)
 

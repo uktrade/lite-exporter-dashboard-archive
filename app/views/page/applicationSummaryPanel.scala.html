@@ -5,32 +5,41 @@
 <h2 class="visually-hidden">Application summary</h2>
 <header class="application-summary-panel">
 
-  <a href="somepage" class="view-application-link" target="_blank">View application<span class="visually-hidden"> (Opens in a new tab)</span></a>
+  <a href="#" class="view-application-link">View application<span class="visually-hidden"> (Opens in a new tab)</span></a>
 
   <div class="heading-medium" id="summary-panel-app-ref">
     Application reference
   </div>
   <div class="font-medium" aria-labelledby="summary-panel-app-ref">
-    @applicationRef<br>
+    @applicationRef
+    <br>
     @exporterRef
   </div>
 
   <div class="grid-row">
 
     <div class="column-one-quarter">
-      @summaryElement("summary-panel-destination", "Destination"){ @destination }
+    @summaryElement("summary-panel-destination", "Destination") {
+      @destination
+    }
     </div>
 
     <div class="column-one-quarter">
-      @summaryElement("submitted-date", "Date submitted"){ @submittedDate }
+    @summaryElement("submitted-date", "Date submitted") {
+      @submittedDate
+    }
     </div>
 
     <div class="column-one-quarter">
-      @summaryElement("summary-panel-status", "Status"){ @status }
+    @summaryElement("summary-panel-status", "Status") {
+      @status
+    }
     </div>
 
     <div class="column-one-quarter">
-      @summaryElement("summary-panel-case-officer", "Case officer"){ @caseOfficer }
+    @summaryElement("summary-panel-case-officer", "Case officer") {
+      @caseOfficer
+    }
     </div>
 
   </div>

@@ -3,6 +3,7 @@ package controllers;
 import static components.util.StreamUtil.distinctByKey;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import components.service.ApplicationItemViewService;
 import components.service.CacheService;
 import components.service.PageService;
@@ -16,44 +17,62 @@ import models.enums.StatusTypeFilter;
 import models.view.ApplicationItemView;
 import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
+import models.view.form.SelectCompanyForm;
+import play.data.Form;
+import play.data.FormFactory;
 import play.mvc.Controller;
 import play.mvc.Result;
 import scala.Option;
 import views.html.applicationList;
-import views.html.licenceDetails;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Application extends Controller {
+public class ApplicationController extends Controller {
 
   private final ApplicationItemViewService applicationItemViewService;
   private final CacheService cacheService;
   private final SortDirectionService sortDirectionService;
   private final PageService pageService;
+  private final String licenceApplicationAddress;
+  private final FormFactory formFactory;
 
   @Inject
-  public Application(ApplicationItemViewService applicationItemViewService, CacheService cacheService, SortDirectionService sortDirectionService, PageService pageService) {
+  public ApplicationController(ApplicationItemViewService applicationItemViewService,
+                               CacheService cacheService,
+                               SortDirectionService sortDirectionService,
+                               PageService pageService,
+                               @Named("licenceApplicationAddress") String licenceApplicationAddress,
+                               FormFactory formFactory) {
     this.applicationItemViewService = applicationItemViewService;
     this.cacheService = cacheService;
     this.sortDirectionService = sortDirectionService;
     this.pageService = pageService;
+    this.licenceApplicationAddress = licenceApplicationAddress;
+    this.formFactory = formFactory;
   }
 
   public Result index() {
     return redirect("/applications");
   }
 
-  public Result applicationList(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company, Option<Integer> page) {
+  public Result applicationList(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company, Option<String> createdBy, Option<Integer> page) {
 
-    ApplicationListState state = cacheService.getApplicationListState(tab, date, status, show, company, page);
+    ApplicationListState state = cacheService.getApplicationListState(tab, date, status, show, company, createdBy, page);
 
     StatusTypeFilter statusTypeFilter = EnumUtil.parse(StatusTypeFilter.class, state.getShow(), StatusTypeFilter.ALL);
 
     SortDirection dateSortDirection = sortDirectionService.parse(state.getDate());
     SortDirection statusSortDirection = sortDirectionService.parse(state.getStatus());
+    SortDirection createdBySortDirection = sortDirectionService.parse(state.getCreatedBy());
 
-    long definedCount = sortDirectionService.definedCount(dateSortDirection, statusSortDirection);
+    String activeTab = "created-by-your-company".equals(state.getTab()) ? "created-by-your-company" : "created-by-you";
+
+    if (!"created-by-your-company".equals(activeTab) && createdBySortDirection != null) {
+      createdBySortDirection = null;
+    }
+    long definedCount = sortDirectionService.definedCount(dateSortDirection, statusSortDirection, createdBySortDirection);
     if (definedCount != 1) {
       dateSortDirection = SortDirection.DESC;
       statusSortDirection = null;
@@ -64,14 +83,14 @@ public class Application extends Controller {
     List<CompanySelectItemView> companyNames = applicationItemViews.stream().
         filter(distinctByKey(ApplicationItemView::getCompanyId))
         .map(applicationItemView -> new CompanySelectItemView(applicationItemView.getCompanyId(), applicationItemView.getCompanyName()))
+        .sorted(Comparator.comparing(CompanySelectItemView::getCompanyName))
         .collect(Collectors.toList());
 
     String companyId = state.getCompany();
-    if (companyId != null) {
+    if (companyId != null && !companyId.equals("all")) {
       applicationItemViews = applicationItemViews.stream().filter(view -> companyId.equals(view.getCompanyId())).collect(Collectors.toList());
     }
 
-    String activeTab = "created-by-your-company".equals(state.getTab()) ? "created-by-your-company" : "created-by-you";
 
     long allCount = applicationItemViews.size();
     long draftCount = applicationItemViews.stream().filter(view -> view.getStatusType() == StatusType.DRAFT).count();
@@ -96,17 +115,17 @@ public class Application extends Controller {
         companyNames,
         sortDirectionService.toParam(dateSortDirection),
         sortDirectionService.toParam(statusSortDirection),
+        sortDirectionService.toParam(createdBySortDirection),
         statusTypeFilter,
         allCount,
         draftCount,
         currentCount,
         completedCount,
         pageData);
-    return ok(applicationList.render(applicationListView));
-  }
 
-  public Result licenceDetails(String licenceRef) {
-    return ok(licenceDetails.render(licenceRef));
+    Form<SelectCompanyForm> form = formFactory.form(SelectCompanyForm.class);
+
+    return ok(applicationList.render(licenceApplicationAddress, applicationListView, form));
   }
 
 }

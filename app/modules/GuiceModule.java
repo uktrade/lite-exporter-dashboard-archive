@@ -3,6 +3,13 @@ package modules;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Names;
+import components.client.CustomerServiceClient;
+import components.client.CustomerServiceClientImpl;
+import components.client.OgelServiceClient;
+import components.client.OgelServiceClientImpl;
+import components.client.PermissionsServiceClient;
+import components.client.PermissionsServiceClientImpl;
 import components.common.journey.JourneyContextParamProvider;
 import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
@@ -24,6 +31,8 @@ import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationSummaryViewServiceImpl;
 import components.service.CacheService;
 import components.service.CacheServiceImpl;
+import components.service.OgelDetailsViewService;
+import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelRegistrationItemViewService;
 import components.service.OgelRegistrationItemViewServiceImpl;
 import components.service.OgelRegistrationService;
@@ -74,6 +83,28 @@ public class GuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    // CustomerServiceClient
+    bindConstant().annotatedWith(Names.named("customerServiceAddress"))
+        .to(configuration.getString("customerService.address"));
+    bindConstant().annotatedWith(Names.named("customerServiceTimeout"))
+        .to(configuration.getString("customerService.timeout"));
+    bind(CustomerServiceClient.class).to(CustomerServiceClientImpl.class);
+    // PermissionsServiceClient
+    bindConstant().annotatedWith(Names.named("permissionsServiceAddress"))
+        .to(configuration.getString("permissionsService.address"));
+    bindConstant().annotatedWith(Names.named("permissionsServiceTimeout"))
+        .to(configuration.getString("permissionsService.timeout"));
+    bind(PermissionsServiceClient.class).to(PermissionsServiceClientImpl.class);
+    // OgelServiceClient
+    bindConstant().annotatedWith(Names.named("ogelServiceAddress"))
+        .to(configuration.getString("ogelService.address"));
+    bindConstant().annotatedWith(Names.named("ogelServiceTimeout"))
+        .to(configuration.getString("ogelService.timeout"));
+    bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
+    // LicenseApplication
+    bindConstant().annotatedWith(Names.named("licenceApplicationAddress"))
+        .to(configuration.getString("licenceApplication.address"));
+    // Service
     bind(JourneySerialiser.class).to(JourneySerialiserMock.class);
     bind(TimeFormatService.class).to(TimeFormatServiceImpl.class);
     bind(StatusService.class).to(StatusServiceImpl.class);
@@ -92,6 +123,7 @@ public class GuiceModule extends AbstractModule {
     bind(CacheService.class).to(CacheServiceImpl.class);
     bind(SortDirectionService.class).to(SortDirectionServiceImpl.class);
     bind(PageService.class).to(PageServiceImpl.class);
+    bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);

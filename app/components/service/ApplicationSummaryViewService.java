@@ -14,5 +14,4 @@ public interface ApplicationSummaryViewService {
 
   Optional<StatusUpdate> getMaxStatusUpdate(Collection<StatusUpdate> statusUpdates);
 
-  String getCaseDescription(Application application);
 }

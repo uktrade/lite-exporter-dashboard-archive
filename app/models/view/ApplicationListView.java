@@ -13,6 +13,7 @@ public class ApplicationListView {
   private final List<CompanySelectItemView> companySelectItemViews;
   private final String dateSortDirection;
   private final String statusSortDirection;
+  private final String createdBySortDirection;
   private final StatusTypeFilter statusTypeFilter;
   private final long allCount;
   private final long draftCount;
@@ -20,12 +21,13 @@ public class ApplicationListView {
   private final long completedCount;
   private final Page<ApplicationItemView> page;
 
-  public ApplicationListView(String tab, String companyId, List<CompanySelectItemView> companySelectItemViews, String dateSortDirection, String statusSortDirection, StatusTypeFilter statusTypeFilter, long allCount, long draftCount, long currentCount, long completedCount, Page<ApplicationItemView> page) {
+  public ApplicationListView(String tab, String companyId, List<CompanySelectItemView> companySelectItemViews, String dateSortDirection, String statusSortDirection, String createdBySortDirection, StatusTypeFilter statusTypeFilter, long allCount, long draftCount, long currentCount, long completedCount, Page<ApplicationItemView> page) {
     this.tab = tab;
     this.companyId = companyId;
     this.companySelectItemViews = companySelectItemViews;
     this.dateSortDirection = dateSortDirection;
     this.statusSortDirection = statusSortDirection;
+    this.createdBySortDirection = createdBySortDirection;
     this.statusTypeFilter = statusTypeFilter;
     this.allCount = allCount;
     this.draftCount = draftCount;
@@ -58,6 +60,10 @@ public class ApplicationListView {
     return statusTypeFilter;
   }
 
+  public String getCreatedBySortDirection() {
+    return createdBySortDirection;
+  }
+
   public long getAllCount() {
     return allCount;
   }
@@ -79,6 +85,6 @@ public class ApplicationListView {
   }
 
   public ApplicationRoute getApplicationRoute() {
-    return new ApplicationRoute(tab, companyId, dateSortDirection, statusSortDirection, statusTypeFilter, page.getCurrentPage());
+    return new ApplicationRoute(tab, companyId, dateSortDirection, statusSortDirection, createdBySortDirection, statusTypeFilter, page.getCurrentPage());
   }
 }

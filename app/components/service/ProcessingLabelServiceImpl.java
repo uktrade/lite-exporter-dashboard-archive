@@ -9,7 +9,11 @@ public class ProcessingLabelServiceImpl implements ProcessingLabelService {
     switch (statusUpdate.getStatusType()) {
       case DRAFT:
       case SUBMITTED:
-        return "Finished";
+        if (statusUpdate.getStartTimestamp() != null) {
+          return "Finished";
+        } else {
+          return "Not started";
+        }
       case INITIAL_CHECKS:
       case TECHNICAL_ASSESSMENT:
       case LU_PROCESSING:
@@ -29,3 +33,4 @@ public class ProcessingLabelServiceImpl implements ProcessingLabelService {
   }
 
 }
+

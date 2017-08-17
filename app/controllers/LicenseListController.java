@@ -1,35 +1,50 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import components.service.CacheService;
+import components.service.OgelDetailsViewService;
 import components.service.OgelRegistrationItemViewService;
 import components.service.PageService;
 import components.service.SortDirectionService;
 import models.LicenseListState;
 import models.Page;
 import models.enums.SortDirection;
+import models.view.OgelDetailsView;
 import models.view.OgelRegistrationItemView;
 import models.view.OgelRegistrationListView;
 import play.mvc.Controller;
 import play.mvc.Result;
 import scala.Option;
+import views.html.licenceDetails;
 import views.html.licenceList;
+import views.html.ogelDetails;
 
 import java.util.List;
 
 public class LicenseListController extends Controller {
 
+  private static final String USER_ID = "24492";
+
   private final CacheService cacheService;
   private final OgelRegistrationItemViewService ogelRegistrationItemViewService;
   private final SortDirectionService sortDirectionService;
   private final PageService pageService;
+  private final OgelDetailsViewService ogelDetailsViewService;
+  private final String licenceApplicationAddress;
 
   @Inject
-  public LicenseListController(CacheService cacheService, OgelRegistrationItemViewService ogelRegistrationItemViewService, SortDirectionService sortDirectionService, PageService pageService) {
+  public LicenseListController(CacheService cacheService,
+                               OgelRegistrationItemViewService ogelRegistrationItemViewService,
+                               SortDirectionService sortDirectionService,
+                               PageService pageService, OgelDetailsViewService ogelDetailsViewService,
+                               @Named("licenceApplicationAddress") String licenceApplicationAddress) {
     this.cacheService = cacheService;
     this.ogelRegistrationItemViewService = ogelRegistrationItemViewService;
     this.sortDirectionService = sortDirectionService;
     this.pageService = pageService;
+    this.ogelDetailsViewService = ogelDetailsViewService;
+    this.licenceApplicationAddress = licenceApplicationAddress;
   }
 
 
@@ -50,11 +65,11 @@ public class LicenseListController extends Controller {
       dateSortDirection = null;
     }
 
-    String activeTab = "ogels".equals(state.getTab()) ? "ogels" : "siels";
+    String activeTab = "siels".equals(state.getTab()) ? "siels" : "ogels";
 
     Page<OgelRegistrationItemView> pageData = null;
     if (activeTab.equals("ogels")) {
-      List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(null, referenceSortDirection, licenseeSortDirection, siteSortDirection, dateSortDirection);
+      List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(USER_ID, referenceSortDirection, licenseeSortDirection, siteSortDirection, dateSortDirection);
       pageData = pageService.getPage(state.getPage(), ogelRegistrationItemViews);
     }
     OgelRegistrationListView ogelRegistrationListView = new OgelRegistrationListView(pageData,
@@ -63,7 +78,17 @@ public class LicenseListController extends Controller {
         sortDirectionService.toParam(licenseeSortDirection),
         sortDirectionService.toParam(siteSortDirection),
         sortDirectionService.toParam(dateSortDirection));
-    return ok(licenceList.render(activeTab, ogelRegistrationListView));
+    return ok(licenceList.render(licenceApplicationAddress, activeTab, ogelRegistrationListView));
+  }
+
+  public Result licenceDetails(String licenceRef) {
+    // TODO
+    if (licenceRef != null && licenceRef.startsWith("GBSIE")) {
+      return ok(licenceDetails.render(licenceApplicationAddress, licenceRef));
+    } else {
+      OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(USER_ID, licenceRef);
+      return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView));
+    }
   }
 
 }

@@ -1,6 +1,7 @@
 package components.service;
 
 import static components.util.RandomUtil.random;
+import static components.util.RandomUtil.randomNumber;
 import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
@@ -28,7 +29,7 @@ public class TestDataServiceImpl implements TestDataService {
   private static String ICELAND = "Iceland";
   private static String FRANCE = "France";
 
-  private static final String APP_ID = random("APP");
+  private static final String APP_ID = randomNumber("ECO");
   private static final String RFI_ID = random("RFI");
 
   private final RfiDao rfiDao;
@@ -61,8 +62,8 @@ public class TestDataServiceImpl implements TestDataService {
     String companyName = "Company Ltd";
     String companyId = random("COM");
     for (int i = 0; i < 20; i++) {
-      String appId = random("APP");
-      Application app = new Application(appId, companyId, companyName, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY), random("CAS"), OFFICER);
+      String appId = randomNumber("ECO");
+      Application app = new Application(appId, companyId, companyName, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY), getCas(), OFFICER);
       StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 3, 3 + i, i, i), null);
       applicationDao.insert(app);
       statusUpdateDao.insertStatusUpdate(draft);
@@ -88,9 +89,21 @@ public class TestDataServiceImpl implements TestDataService {
     }
   }
 
+  private String getCas() {
+    String cas = "Purchase order: " + randomNumber("GB") + " ";
+    if (Math.random() < 0.33) {
+      cas = cas + "Thingyma for Deep Blue Holland";
+    } else if (Math.random() < 0.66) {
+      cas = cas + "Flangable Widget for a Bendy Strut Thing";
+    } else {
+      cas = cas + "Flangable Widget Corner Piece for a Wobbly Magnetic Thingy";
+    }
+    return cas;
+  }
+
   private Application createApplication() {
     String companyId = random("COM");
-    return new Application(APP_ID, companyId, "Firma AG", ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY, ICELAND, FRANCE), random("CAS"), OFFICER);
+    return new Application(APP_ID, companyId, "Firma AG", ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(), OFFICER);
   }
 
   private List<RfiResponse> createRfiResponseTestData() {
@@ -116,7 +129,7 @@ public class TestDataServiceImpl implements TestDataService {
   private List<Rfi> createRfiTestData() {
     Rfi rfi = new Rfi(random("RFI"),
         APP_ID,
-        RfiStatus.CLOSED,
+        RfiStatus.ACTIVE,
         time(2017, 2, 2, 13, 30),
         time(2017, 3, 2, 13, 30),
         OFFICER,
@@ -157,21 +170,20 @@ public class TestDataServiceImpl implements TestDataService {
         StatusType.INITIAL_CHECKS,
         time(2017, 2, 2, 13, 30),
         time(2017, 2, 22, 14, 17));
+    StatusUpdate technicalAssessment = new StatusUpdate(APP_ID,
+        StatusType.TECHNICAL_ASSESSMENT,
+        time(2017, 5, 5, 0, 0),
+        time(2017, 5, 6, 0, 0));
     StatusUpdate licenseUnitProcessing = new StatusUpdate(APP_ID,
         StatusType.LU_PROCESSING,
         time(2017, 7, 5, 0, 0),
         null);
-    StatusUpdate ogd = new StatusUpdate(APP_ID, StatusType.WITH_OGD, null, null);
-    StatusUpdate assessment = new StatusUpdate(APP_ID, StatusType.FINAL_ASSESSMENT, null, null);
-    StatusUpdate decision = new StatusUpdate(APP_ID, StatusType.COMPLETE, null, null);
     List<StatusUpdate> statusUpdates = new ArrayList<>();
     statusUpdates.add(draft);
     statusUpdates.add(submitted);
     statusUpdates.add(initialChecks);
+    statusUpdates.add(technicalAssessment);
     statusUpdates.add(licenseUnitProcessing);
-    statusUpdates.add(ogd);
-    statusUpdates.add(assessment);
-    statusUpdates.add(decision);
     return statusUpdates;
   }
 

@@ -24,7 +24,11 @@ public class ProcessingDescriptionServiceImpl implements ProcessingDescriptionSe
       case DRAFT:
         return "Created on " + timeFormatService.formatDateAndTime(startTimestamp);
       case SUBMITTED:
-        return "Submitted on " + timeFormatService.formatDateAndTime(startTimestamp);
+        if (startTimestamp != null) {
+          return "Submitted on " + timeFormatService.formatDateAndTime(startTimestamp);
+        } else {
+          return "";
+        }
       case INITIAL_CHECKS:
       case TECHNICAL_ASSESSMENT:
       case LU_PROCESSING:

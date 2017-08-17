@@ -7,15 +7,28 @@ import components.dao.RfiDao;
 import components.dao.StatusUpdateDao;
 import models.Rfi;
 import models.StatusUpdate;
+import models.enums.StatusType;
 import models.view.StatusItemRfiView;
 import models.view.StatusItemView;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class StatusItemViewServiceImpl implements StatusItemViewService {
+
+  private final static List<StatusType> STATUS_TYPE_LIST = Arrays.asList(StatusType.DRAFT,
+      StatusType.SUBMITTED,
+      StatusType.INITIAL_CHECKS,
+      StatusType.TECHNICAL_ASSESSMENT,
+      StatusType.LU_PROCESSING,
+      StatusType.WITH_OGD,
+      StatusType.FINAL_ASSESSMENT,
+      StatusType.COMPLETE);
 
   private final StatusUpdateDao statusUpdateDao;
   private final RfiDao rfiDao;
@@ -42,26 +55,34 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
 
   @Override
   public List<StatusItemView> getStatusItemViews(String appId) {
-    List<StatusUpdate> statusUpdates = statusUpdateDao.getStatusUpdates(appId);
-    List<Rfi> rfiList = rfiDao.getRfiList(appId);
-    Multimap<StatusUpdate, Rfi> rfiMultimap = createRfiMultimap(statusUpdates, rfiList);
+    List<StatusUpdate> statusUpdates = getStatusUpdates(appId);
+    Multimap<StatusUpdate, Rfi> rfiMultimap = createRfiMultimap(appId, statusUpdates);
     return statusUpdates.stream()
         .map(statusUpdate -> getStatusItemView(statusUpdate, rfiMultimap.get(statusUpdate)))
         .collect(Collectors.toList());
   }
 
-  private Multimap<StatusUpdate, Rfi> createRfiMultimap(List<StatusUpdate> statusUpdates, List<Rfi> rfiList) {
-    List<StatusUpdate> inverseSortedStatusUpdates = statusUpdates.stream()
-        .filter(statusUpdate -> statusUpdate.getStartTimestamp() != null)
-        .sorted(Comparator.comparing(StatusUpdate::getStartTimestamp).reversed())
-        .collect(Collectors.toList());
-    List<Rfi> sortedRfiList = rfiList.stream().
+  private List<StatusUpdate> getStatusUpdates(String appId) {
+    Map<StatusType, StatusUpdate> statusUpdateMap = new HashMap<>();
+    statusUpdateDao.getStatusUpdates(appId).forEach(su -> statusUpdateMap.put(su.getStatusType(), su));
+    return STATUS_TYPE_LIST.stream().map(statusType -> {
+      StatusUpdate statusUpdate = statusUpdateMap.get(statusType);
+      if (statusUpdate != null) {
+        return statusUpdate;
+      } else {
+        return new StatusUpdate(appId, statusType, null, null);
+      }
+    }).collect(Collectors.toList());
+  }
+
+  private Multimap<StatusUpdate, Rfi> createRfiMultimap(String appId, List<StatusUpdate> statusUpdates) {
+    List<Rfi> sortedRfiList = rfiDao.getRfiList(appId).stream().
         sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
         .collect(Collectors.toList());
     Multimap<StatusUpdate, Rfi> rfiMap = HashMultimap.create();
     for (Rfi rfi : sortedRfiList) {
-      for (StatusUpdate statusUpdate : inverseSortedStatusUpdates) {
-        if (rfi.getReceivedTimestamp() >= statusUpdate.getStartTimestamp()) {
+      for (StatusUpdate statusUpdate : statusUpdates) {
+        if (statusUpdate.getStartTimestamp() != null && rfi.getReceivedTimestamp() >= statusUpdate.getStartTimestamp()) {
           rfiMap.put(statusUpdate, rfi);
           break;
         }

@@ -4,8 +4,8 @@
 @import page._
 @import models.view.ApplicationSummaryView
 
-@(applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
 
-@licenceApplication(applicationSummaryView, "statusTracker", rfiViewCount) {
+@licenceApplication(applyLink, applicationSummaryView, "statusTracker", rfiViewCount) {
   @statusTracker(statusItemViews)
 }

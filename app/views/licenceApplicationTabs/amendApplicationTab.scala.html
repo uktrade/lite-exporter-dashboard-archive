@@ -1,8 +1,8 @@
 @import page._
 @import models.view.ApplicationSummaryView
 
-@(applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer)
 
-@licenceApplication(applicationSummaryView, "amend", rfiViewCount) {
+@licenceApplication(applyLink, applicationSummaryView, "amend", rfiViewCount) {
   @amendApplication(applicationSummaryView.getAppId)
 }

@@ -2,12 +2,12 @@
 @import util._
 @import models.view.ApplicationSummaryView
 
-@(applicationSummaryView: ApplicationSummaryView, activeTab: String, rfiViewCount: Integer)(content: Html)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, activeTab: String, rfiViewCount: Integer)(content: Html)
 @standardPage(applicationSummaryView.getAppId + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
 } {
 
-  @dashboardTopNav()
+  @dashboardTopNav(applyLink)
 
   @applicationSummaryPanel(
     applicationSummaryView.getAppId,

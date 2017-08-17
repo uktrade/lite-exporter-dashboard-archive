@@ -35,7 +35,7 @@
     @for(ogelRegistrationItemView <- ogelRegistrationListView.getPage.getItems) {
       <tr>
         <th scope="row">
-          <a href="/licence/OGL2017/417253" class="bold">@ogelRegistrationItemView.getRegistrationReference</a>
+          <a href="@routes.LicenseListController.licenceDetails(ogelRegistrationItemView.getRegistrationReference)" class="bold">@ogelRegistrationItemView.getRegistrationReference</a>
           <br>
           @ogelRegistrationItemView.getDescription
         </th>
@@ -79,7 +79,7 @@
           @if(ogelRegistrationListView.getPage.getCurrentPage < ogelRegistrationListView.getPage.getPageCount) {
             <span style="display: inline-block;
               width: 1em"> </span>
-            <a href="@ogelRegistrationListView.getLicenceRoute.setPage(ogelRegistrationListView.getPage.getCurrentPage+1).toString">
+            <a href="@ogelRegistrationListView.getLicenceRoute.setPage(ogelRegistrationListView.getPage.getCurrentPage + 1).toString">
               Next
             </a>
           }

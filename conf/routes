@@ -5,8 +5,8 @@
 ->          /common                                               common.Routes
 
 # Application list
-GET         /                                                     controllers.Application.index
-GET         /applications                                         controllers.Application.applicationList(tab: Option[String], date: Option[String], status: Option[String], show: Option[String], company: Option[String], page: Option[Integer])
+GET         /                                                     controllers.ApplicationController.index
+GET         /applications                                         controllers.ApplicationController.applicationList(tab: Option[String], date: Option[String], status: Option[String], show: Option[String], company: Option[String], createdBy: Option[String], page: Option[Integer])
 
 # Application tabs
 GET         /application/*applicationRef/status-tracker           controllers.LicenseApplicationController.statusTab(applicationRef: String)
@@ -18,12 +18,10 @@ GET         /application/*applicationRef/outcome-documents        controllers.Li
 GET         /application/*applicationRef                          controllers.LicenseApplicationController.statusTab(applicationRef: String)
 
 # Licences tabs
-GET         /licences                                             controllers.Application.licenceList(activeTab=null)
-GET         /licences/siels                                       controllers.Application.licenceList(activeTab="siels")
-GET         /licences/ogels                                       controllers.Application.licenceList(activeTab="ogels")
+GET         /licences                                             controllers.LicenseListController.licenceList(tab: Option[String], reference: Option[String], licensee: Option[String], site: Option[String], date: Option[String], page: Option[Integer])
 
 # Licence details
-GET         /licence/*licenceRef                                  controllers.Application.licenceDetails(licenceRef: String)
+GET         /licence/*licenceRef                                  controllers.LicenseListController.licenceDetails(licenceRef: String)
 
 # Test data
 GET         /test                                                 controllers.TestDataController.insertTestData()

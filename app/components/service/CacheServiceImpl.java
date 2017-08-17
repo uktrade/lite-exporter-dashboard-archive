@@ -21,13 +21,13 @@ public class CacheServiceImpl implements CacheService {
   private static final String LICENSE_LIST_STATE = "licenseListState";
 
   @Override
-  public ApplicationListState getApplicationListState(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company, Option<Integer> page) {
+  public ApplicationListState getApplicationListState(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company, Option<String> createdBy, Option<Integer> page) {
     ApplicationListState state = null;
-    if (tab.isEmpty() && date.isEmpty() && status.isEmpty() && show.isEmpty() && company.isEmpty() && page.isEmpty()) {
+    if (tab.isEmpty() && date.isEmpty() && status.isEmpty() && show.isEmpty() && company.isEmpty() && createdBy.isEmpty() && page.isEmpty()) {
       state = getFromSession(APPLICATION_LIST_STATE, ApplicationListState.class);
     }
     if (state == null) {
-      state = new ApplicationListState(parse(tab), parse(date), parse(status), parse(show), parse(company), parseNumber(page));
+      state = new ApplicationListState(parse(tab), parse(date), parse(status), parse(show), parse(company), parse(createdBy), parseNumber(page));
       save(APPLICATION_LIST_STATE, state);
     }
     return state;
