@@ -25,10 +25,10 @@ public class StatusUpdateDaoImpl implements StatusUpdateDao {
   }
 
   @Override
-  public List<StatusUpdate> getStatusUpdates() {
+  public List<StatusUpdate> getStatusUpdates(List<String> appIds) {
     try (final Handle handle = dbi.open()) {
       StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);
-      return statusUpdateJDBIDao.getStatusUpdates();
+      return statusUpdateJDBIDao.getStatusUpdates(appIds);
     }
   }
 

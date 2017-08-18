@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ApplicationDao {
 
-  List<Application> getApplications();
+  List<Application> getApplications(List<String> customerIds);
 
   Application getApplication(String appId);
 

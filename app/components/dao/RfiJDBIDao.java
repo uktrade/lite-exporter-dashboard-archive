@@ -6,14 +6,17 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
+import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
+import org.skife.jdbi.v2.unstable.BindIn;
 
 import java.util.List;
 
+@UseStringTemplate3StatementLocator
 public interface RfiJDBIDao {
 
   @Mapper(RfiRSMapper.class)
-  @SqlQuery("SELECT * FROM RFI")
-  List<Rfi> getRfiList();
+  @SqlQuery("SELECT * FROM RFI WHERE APP_ID in (<appIds>)")
+  List<Rfi> getRfiList(@BindIn("appIds") List<String> appIds);
 
   @Mapper(RfiRSMapper.class)
   @SqlQuery("SELECT * FROM RFI WHERE APP_ID = :appId")

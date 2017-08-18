@@ -18,7 +18,7 @@ public class TestDataController extends Controller {
   public Result insertTestData() {
     session().clear();
     testDataService.deleteAllDataAndInsertTestData();
-    return redirect(routes.ApplicationController.index());
+    return redirect(ApplicationListController.index());
   }
 
 }

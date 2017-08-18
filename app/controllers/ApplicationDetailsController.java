@@ -12,6 +12,7 @@ import components.service.UserService;
 import components.util.RandomUtil;
 import models.Amendment;
 import models.RfiResponse;
+import models.User;
 import models.WithdrawalRequest;
 import models.view.AddRfiResponseView;
 import models.view.ApplicationSummaryView;
@@ -34,9 +35,9 @@ import views.html.licenceApplicationTabs.statusTrackerTab;
 import java.time.Instant;
 import java.util.List;
 
-public class LicenseApplicationController extends Controller {
+public class ApplicationDetailsController extends Controller {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(LicenseApplicationController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationDetailsController.class);
 
   private final StatusItemViewService statusItemViewService;
   private final RfiViewService rfiViewService;
@@ -49,7 +50,7 @@ public class LicenseApplicationController extends Controller {
   private final WithdrawalRequestDao withdrawalRequestDao;
 
   @Inject
-  public LicenseApplicationController(StatusItemViewService statusItemViewService,
+  public ApplicationDetailsController(StatusItemViewService statusItemViewService,
                                       RfiViewService rfiViewService,
                                       UserService userService,
                                       FormFactory formFactory,
@@ -69,14 +70,14 @@ public class LicenseApplicationController extends Controller {
   }
 
   public Result submitReply(String appId) {
+    User currentUser = userService.getCurrentUser();
     Form<RfiResponseForm> rfiResponseForm = formFactory.form(RfiResponseForm.class).bindFromRequest();
     String rfiId = rfiResponseForm.data().get("rfiId");
     if (rfiResponseForm.hasErrors()) {
       return reply(appId, rfiId, rfiResponseForm);
     } else {
       String responseMessage = rfiResponseForm.get().responseMessage;
-      String sentBy = userService.getCurrentUser();
-      RfiResponse rfiResponse = new RfiResponse(rfiId, sentBy, Instant.now().toEpochMilli(), responseMessage, null);
+      RfiResponse rfiResponse = new RfiResponse(rfiId, currentUser.getId(), Instant.now().toEpochMilli(), responseMessage, null);
       rfiResponseDao.insertRfiResponse(rfiResponse);
       return redirect(routes.LicenseApplicationController.rfiTab(appId).withFragment(rfiId));
     }
@@ -109,6 +110,7 @@ public class LicenseApplicationController extends Controller {
   }
 
   public Result amendApplication(String appId) {
+    User currentUser = userService.getCurrentUser();
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
     String action = amendApplicationForm.data().get("action");
     if (amendApplicationForm.hasErrors()) {
@@ -116,13 +118,13 @@ public class LicenseApplicationController extends Controller {
     } else {
       String message = amendApplicationForm.get().message;
       if ("amend".equals(action)) {
-        Amendment amendment = new Amendment(RandomUtil.random("AME"), appId, Instant.now().toEpochMilli(), userService.getCurrentUser(), message, null);
+        Amendment amendment = new Amendment(RandomUtil.random("AME"), appId, Instant.now().toEpochMilli(), currentUser.getId(), message, null);
         amendmentDao.insertAmendment(amendment);
       } else if ("withdraw".equals(action)) {
         WithdrawalRequest withdrawalRequest = new WithdrawalRequest(RandomUtil.random("WIT"),
             appId,
             Instant.now().toEpochMilli(),
-            userService.getCurrentUser(),
+            currentUser.getId(),
             message,
             null,
             null,

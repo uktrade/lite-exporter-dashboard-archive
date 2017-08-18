@@ -7,8 +7,10 @@ import components.service.OgelDetailsViewService;
 import components.service.OgelRegistrationItemViewService;
 import components.service.PageService;
 import components.service.SortDirectionService;
+import components.service.UserService;
 import models.LicenseListState;
 import models.Page;
+import models.User;
 import models.enums.SortDirection;
 import models.view.OgelDetailsView;
 import models.view.OgelRegistrationItemView;
@@ -24,31 +26,33 @@ import java.util.List;
 
 public class LicenseListController extends Controller {
 
-  private static final String USER_ID = "24492";
-
   private final CacheService cacheService;
   private final OgelRegistrationItemViewService ogelRegistrationItemViewService;
   private final SortDirectionService sortDirectionService;
   private final PageService pageService;
   private final OgelDetailsViewService ogelDetailsViewService;
   private final String licenceApplicationAddress;
+  private final UserService userService;
 
   @Inject
   public LicenseListController(CacheService cacheService,
                                OgelRegistrationItemViewService ogelRegistrationItemViewService,
                                SortDirectionService sortDirectionService,
                                PageService pageService, OgelDetailsViewService ogelDetailsViewService,
-                               @Named("licenceApplicationAddress") String licenceApplicationAddress) {
+                               @Named("licenceApplicationAddress") String licenceApplicationAddress,
+                               UserService userService) {
     this.cacheService = cacheService;
     this.ogelRegistrationItemViewService = ogelRegistrationItemViewService;
     this.sortDirectionService = sortDirectionService;
     this.pageService = pageService;
     this.ogelDetailsViewService = ogelDetailsViewService;
     this.licenceApplicationAddress = licenceApplicationAddress;
+    this.userService = userService;
   }
 
 
   public Result licenceList(Option<String> tab, Option<String> reference, Option<String> licensee, Option<String> site, Option<String> date, Option<Integer> page) {
+    User currentUser = userService.getCurrentUser();
 
     LicenseListState state = cacheService.getLicenseListState(tab, reference, licensee, site, date, page);
 
@@ -69,7 +73,7 @@ public class LicenseListController extends Controller {
 
     Page<OgelRegistrationItemView> pageData = null;
     if (activeTab.equals("ogels")) {
-      List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(USER_ID, referenceSortDirection, licenseeSortDirection, siteSortDirection, dateSortDirection);
+      List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(currentUser.getId(), referenceSortDirection, licenseeSortDirection, siteSortDirection, dateSortDirection);
       pageData = pageService.getPage(state.getPage(), ogelRegistrationItemViews);
     }
     OgelRegistrationListView ogelRegistrationListView = new OgelRegistrationListView(pageData,
@@ -82,11 +86,11 @@ public class LicenseListController extends Controller {
   }
 
   public Result licenceDetails(String licenceRef) {
-    // TODO
+    User currentUser = userService.getCurrentUser();
     if (licenceRef != null && licenceRef.startsWith("GBSIE")) {
       return ok(licenceDetails.render(licenceApplicationAddress, licenceRef));
     } else {
-      OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(USER_ID, licenceRef);
+      OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(currentUser.getId(), licenceRef);
       return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView));
     }
   }

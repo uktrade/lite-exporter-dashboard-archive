@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface RfiDao {
 
-  List<Rfi> getRfiList();
+  List<Rfi> getRfiList(List<String> appIds);
 
   List<Rfi> getRfiList(String appId);
 

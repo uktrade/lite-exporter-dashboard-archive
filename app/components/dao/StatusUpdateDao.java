@@ -8,7 +8,7 @@ public interface StatusUpdateDao {
 
   List<StatusUpdate> getStatusUpdates(String appId);
 
-  List<StatusUpdate> getStatusUpdates();
+  List<StatusUpdate> getStatusUpdates(List<String> appIds);
 
   void insertStatusUpdate(StatusUpdate statusUpdate);
 

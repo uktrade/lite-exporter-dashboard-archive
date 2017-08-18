@@ -17,10 +17,10 @@ public class RfiResponseDaoImpl implements RfiResponseDao {
   }
 
   @Override
-  public List<RfiResponse> getRfiResponses() {
+  public List<RfiResponse> getRfiResponses(List<String> rfiIds) {
     try (final Handle handle = dbi.open()) {
       RfiResponseJDBIDao rfiResponseJDBIDao = handle.attach(RfiResponseJDBIDao.class);
-      return rfiResponseJDBIDao.getRfiResponses();
+      return rfiResponseJDBIDao.getRfiResponses(rfiIds);
     }
   }
 

@@ -8,17 +8,15 @@ public class Application {
 
   private final String appId;
   private final String companyId;
-  private final String companyName;
   private final ApplicationStatus applicationStatus;
   private final String applicantReference;
   private final List<String> destinationList;
   private final String caseReference;
   private final String caseOfficerId;
 
-  public Application(String appId, String companyId, String companyName, ApplicationStatus applicationStatus, String applicantReference, List<String> destinationList, String caseReference, String caseOfficerId) {
+  public Application(String appId, String companyId, ApplicationStatus applicationStatus, String applicantReference, List<String> destinationList, String caseReference, String caseOfficerId) {
     this.appId = appId;
     this.companyId = companyId;
-    this.companyName = companyName;
     this.applicationStatus = applicationStatus;
     this.applicantReference = applicantReference;
     this.destinationList = destinationList;
@@ -32,10 +30,6 @@ public class Application {
 
   public String getCompanyId() {
     return companyId;
-  }
-
-  public String getCompanyName() {
-    return companyName;
   }
 
   public ApplicationStatus getApplicationStatus() {

@@ -35,6 +35,10 @@ public class TestDataServiceImpl implements TestDataService {
   private static final String APP_ID = randomNumber("ECO");
   private static final String RFI_ID = random("RFI");
 
+  private static final String COMPANY_ID_ONE = "SAR1";
+  private static final String COMPANY_ID_TWO = "SAR2";
+  private static final String COMPANY_ID_THREE = "SAR3";
+
   private final RfiDao rfiDao;
   private final StatusUpdateDao statusUpdateDao;
   private final RfiResponseDao rfiResponseDao;
@@ -70,10 +74,9 @@ public class TestDataServiceImpl implements TestDataService {
 
   private void createApplications() {
     String companyName = "Company Ltd";
-    String companyId = random("COM");
     for (int i = 0; i < 20; i++) {
       String appId = randomNumber("ECO");
-      Application app = new Application(appId, companyId, companyName, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY), getCas(), OFFICER);
+      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY), getCas(), OFFICER);
       StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 3, 3 + i, i, i), null);
       applicationDao.insert(app);
       statusUpdateDao.insertStatusUpdate(draft);
@@ -100,7 +103,7 @@ public class TestDataServiceImpl implements TestDataService {
     // create applications by other applicant
     for (int i = 0; i < 4; i++) {
       String appId = randomNumber("ECO");
-      Application app = new Application(appId, companyId, companyName, ApplicationStatus.DRAFT, OTHER_APPLICANT, new ArrayList<>(), getCas(), OFFICER);
+      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.DRAFT, OTHER_APPLICANT, new ArrayList<>(), getCas(), OFFICER);
       applicationDao.insert(app);
       StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 1, 3 + i, i, i), null);
       statusUpdateDao.insertStatusUpdate(draft);
@@ -120,8 +123,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private Application createApplication() {
-    String companyId = random("COM");
-    return new Application(APP_ID, companyId, "Firma AG", ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(), OFFICER);
+    return new Application(APP_ID, COMPANY_ID_TWO, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(), OFFICER);
   }
 
   private List<RfiResponse> createRfiResponseTestData() {

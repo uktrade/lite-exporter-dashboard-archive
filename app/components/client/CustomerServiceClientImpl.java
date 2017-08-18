@@ -12,6 +12,8 @@ import play.libs.ws.WSRequest;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
@@ -45,7 +47,7 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
         String message = String.format("Unable to get customer with id %s", customerId);
         throw new ServiceException(message, error);
       } else if (response.getStatus() != 200) {
-        String message = String.format("Unexpected HTTP status code %d. Unable to getCustomer customer with id %s", response.getStatus(), customerId);
+        String message = String.format("Unexpected HTTP status code %d. Unable to get customer with id %s", response.getStatus(), customerId);
         throw new ServiceException(message);
       } else {
         return Json.fromJson(response.asJson(), CustomerView.class);
@@ -55,6 +57,33 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
       return request.toCompletableFuture().get();
     } catch (InterruptedException | ExecutionException error) {
       String message = String.format("Unable to get customer with id %s", customerId);
+      throw new ServiceException(message, error);
+    }
+  }
+
+  @Override
+  public List<CustomerView> getCustomers(String userId) {
+    String url = String.format("%s/user-customers/user/%s", address, userId);
+    WSRequest req = wsClient.url(url)
+        .withRequestFilter(CorrelationId.requestFilter)
+        .withRequestFilter(ServiceClientLogger.requestFilter("Customers", "GET", httpExecutionContext))
+        .setRequestTimeout(timeout);
+    CompletionStage<CustomerView[]> request = req.get().handle((response, error) -> {
+      if (error != null) {
+        String message = String.format("Unable to get customers with user id %s", userId);
+        throw new ServiceException(message, error);
+      } else if (response.getStatus() != 200) {
+        String message = String.format("Unexpected HTTP status code %d. Unable to get customers with user id %s", response.getStatus(), userId);
+        throw new ServiceException(message);
+      } else {
+        return Json.fromJson(response.asJson(), CustomerView[].class);
+      }
+    });
+    try {
+      CustomerView[] customers = request.toCompletableFuture().get();
+      return Arrays.asList(customers);
+    } catch (InterruptedException | ExecutionException error) {
+      String message = String.format("Unable to get customers with user id %s", userId);
       throw new ServiceException(message, error);
     }
   }

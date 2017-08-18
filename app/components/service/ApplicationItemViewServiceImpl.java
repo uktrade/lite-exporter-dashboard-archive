@@ -1,8 +1,11 @@
 package components.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
+import components.client.CustomerServiceClient;
 import components.dao.ApplicationDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
@@ -14,7 +17,11 @@ import models.StatusUpdate;
 import models.enums.SortDirection;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.bis.lite.customer.api.view.CustomerView;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -26,6 +33,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationItemViewServiceImpl.class);
+  private static final ObjectWriter WRITER = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
   private static final Map<SortDirection, Comparator<ApplicationItemView>> DATE_COMPARATORS = new EnumMap<>(SortDirection.class);
   private static final Map<SortDirection, Comparator<ApplicationItemView>> STATUS_COMPARATORS = new EnumMap<>(SortDirection.class);
@@ -43,7 +53,6 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     CREATED_BY_COMPARATORS.put(SortDirection.DESC, createdByComparator.reversed());
   }
 
-
   private final ApplicationDao applicationDao;
   private final StatusUpdateDao statusUpdateDao;
   private final TimeFormatService timeFormatService;
@@ -51,6 +60,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final RfiDao rfiDao;
   private final RfiResponseDao rfiResponseDao;
   private final ApplicationSummaryViewService applicationSummaryViewService;
+  private final CustomerServiceClient customerServiceClient;
 
   @Inject
   public ApplicationItemViewServiceImpl(ApplicationDao applicationDao,
@@ -59,7 +69,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
                                         StatusService statusService,
                                         RfiDao rfiDao,
                                         RfiResponseDao rfiResponseDao,
-                                        ApplicationSummaryViewService applicationSummaryViewService) {
+                                        ApplicationSummaryViewService applicationSummaryViewService,
+                                        CustomerServiceClient customerServiceClient) {
     this.applicationDao = applicationDao;
     this.statusUpdateDao = statusUpdateDao;
     this.timeFormatService = timeFormatService;
@@ -67,21 +78,33 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     this.rfiDao = rfiDao;
     this.rfiResponseDao = rfiResponseDao;
     this.applicationSummaryViewService = applicationSummaryViewService;
+    this.customerServiceClient = customerServiceClient;
   }
 
   @Override
-  public List<ApplicationItemView> getApplicationItemViews(SortDirection dateSortDirection, SortDirection statusSortDirection, SortDirection createdBySortDirection) {
-    Multimap<String, StatusUpdate> appIdToStatusUpdateMap = HashMultimap.create();
-    statusUpdateDao.getStatusUpdates().forEach(statusUpdate -> appIdToStatusUpdateMap.put(statusUpdate.getAppId(), statusUpdate));
-    Map<String, String> appIdToOpenRfiIdMap = getAppIdToOpenRfiIdMap();
+  public List<ApplicationItemView> getApplicationItemViews(String userId, SortDirection dateSortDirection, SortDirection statusSortDirection, SortDirection createdBySortDirection) {
+    List<CustomerView> customerViews = customerServiceClient.getCustomers(userId);
 
-    List<Application> applications = applicationDao.getApplications();
+    Map<String, String> customerIdToCompanyName = customerViews.stream()
+        .collect(Collectors.toMap(CustomerView::getCustomerId, CustomerView::getCompanyName));
+
+    List<String> customerIds = new ArrayList<>(customerIdToCompanyName.keySet());
+
+    List<Application> applications = applicationDao.getApplications(customerIds);
+    List<String> appIds = applications.stream().map(Application::getAppId).collect(Collectors.toList());
+
+    Multimap<String, StatusUpdate> appIdToStatusUpdateMap = HashMultimap.create();
+    statusUpdateDao.getStatusUpdates(appIds).forEach(statusUpdate -> appIdToStatusUpdateMap.put(statusUpdate.getAppId(), statusUpdate));
+
+    Map<String, String> appIdToOpenRfiIdMap = getAppIdToOpenRfiIdMap(appIds);
+
     List<ApplicationItemView> applicationItemViews = applications.stream()
         .map(application -> {
+          String companyName = customerIdToCompanyName.get(application.getCompanyId());
           String appId = application.getAppId();
           Collection<StatusUpdate> statusUpdates = appIdToStatusUpdateMap.get(appId);
           String openRfiId = appIdToOpenRfiIdMap.get(appId);
-          return getApplicationItemView(application, statusUpdates, openRfiId);
+          return getApplicationItemView(application, companyName, statusUpdates, openRfiId);
         })
         .collect(Collectors.toList());
 
@@ -102,7 +125,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     }
   }
 
-  private ApplicationItemView getApplicationItemView(Application application, Collection<StatusUpdate> statusUpdates, String openRfiId) {
+  private ApplicationItemView getApplicationItemView(Application application, String companyName, Collection<StatusUpdate> statusUpdates, String openRfiId) {
 
     long dateSubmittedTimestamp = getDateSubmittedTimestamp(statusUpdates);
     String dateSubmitted = getDateSubmitted(dateSubmittedTimestamp);
@@ -126,7 +149,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     String destination = applicationSummaryViewService.getDestination(application);
     return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
-        application.getCompanyName(),
+        companyName,
         application.getApplicantReference(),
         dateSubmittedTimestamp,
         dateSubmitted,
@@ -140,12 +163,23 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     );
   }
 
-  private Map<String, String> getAppIdToOpenRfiIdMap() {
-    Map<String, String> appIdToOpenRfiIdMap = new HashMap<>();
-    Set<String> answeredRfiIds = rfiResponseDao.getRfiResponses().stream().map(RfiResponse::getRfiId).collect(Collectors.toSet());
+  private Map<String, String> getAppIdToOpenRfiIdMap(List<String> appIds) {
+    List<Rfi> rfiList = rfiDao.getRfiList(appIds);
     Multimap<String, Rfi> appIdToRfi = HashMultimap.create();
-    rfiDao.getRfiList().forEach(rfi -> appIdToRfi.put(rfi.getAppId(), rfi));
-    appIdToRfi.asMap().forEach((key, value) -> appIdToOpenRfiIdMap.put(key, getOpenRfiId(value, answeredRfiIds)));
+    rfiList.forEach(rfi -> appIdToRfi.put(rfi.getAppId(), rfi));
+
+    List<String> rfiIds = rfiList.stream()
+        .map(Rfi::getRfiId)
+        .collect(Collectors.toList());
+    Set<String> answeredRfiIds = rfiResponseDao.getRfiResponses(rfiIds).stream()
+        .map(RfiResponse::getRfiId)
+        .collect(Collectors.toSet());
+
+    Map<String, String> appIdToOpenRfiIdMap = new HashMap<>();
+    appIdToRfi.asMap().forEach((appId, rfiCollection) -> {
+      String openRfiId = getOpenRfiId(rfiCollection, answeredRfiIds);
+      appIdToOpenRfiIdMap.put(appId, openRfiId);
+    });
     return appIdToOpenRfiIdMap;
   }
 
@@ -154,7 +188,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         .filter(rfi -> !answeredRfiIds.contains(rfi.getRfiId()))
         .sorted(Comparator.comparing(Rfi::getReceivedTimestamp).reversed())
         .map(Rfi::getRfiId)
-        .findFirst().orElse(null);
+        .findFirst()
+        .orElse(null);
   }
 
   private long getDateSubmittedTimestamp(Collection<StatusUpdate> statusUpdates) {

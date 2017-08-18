@@ -8,16 +8,17 @@ import components.service.ApplicationItemViewService;
 import components.service.CacheService;
 import components.service.PageService;
 import components.service.SortDirectionService;
+import components.service.UserService;
 import components.util.EnumUtil;
 import models.ApplicationListState;
 import models.Page;
+import models.User;
 import models.enums.SortDirection;
 import models.enums.StatusType;
 import models.enums.StatusTypeFilter;
 import models.view.ApplicationItemView;
 import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
-import play.data.FormFactory;
 import play.mvc.Controller;
 import play.mvc.Result;
 import scala.Option;
@@ -27,28 +28,28 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ApplicationController extends Controller {
+public class ApplicationListController extends Controller {
 
   private final ApplicationItemViewService applicationItemViewService;
   private final CacheService cacheService;
   private final SortDirectionService sortDirectionService;
   private final PageService pageService;
   private final String licenceApplicationAddress;
-  private final FormFactory formFactory;
+  private final UserService userService;
 
   @Inject
-  public ApplicationController(ApplicationItemViewService applicationItemViewService,
-                               CacheService cacheService,
-                               SortDirectionService sortDirectionService,
-                               PageService pageService,
-                               @Named("licenceApplicationAddress") String licenceApplicationAddress,
-                               FormFactory formFactory) {
+  public ApplicationListController(ApplicationItemViewService applicationItemViewService,
+                                   CacheService cacheService,
+                                   SortDirectionService sortDirectionService,
+                                   PageService pageService,
+                                   @Named("licenceApplicationAddress") String licenceApplicationAddress,
+                                   UserService userService) {
     this.applicationItemViewService = applicationItemViewService;
     this.cacheService = cacheService;
     this.sortDirectionService = sortDirectionService;
     this.pageService = pageService;
     this.licenceApplicationAddress = licenceApplicationAddress;
-    this.formFactory = formFactory;
+    this.userService = userService;
   }
 
   public Result index() {
@@ -56,6 +57,7 @@ public class ApplicationController extends Controller {
   }
 
   public Result applicationList(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company, Option<String> createdBy, Option<Integer> page) {
+    User currentUser = userService.getCurrentUser();
 
     ApplicationListState state = cacheService.getApplicationListState(tab, date, status, show, company, createdBy, page);
 
@@ -76,7 +78,7 @@ public class ApplicationController extends Controller {
       statusSortDirection = null;
     }
 
-    List<ApplicationItemView> applicationItemViews = applicationItemViewService.getApplicationItemViews(dateSortDirection, statusSortDirection, createdBySortDirection);
+    List<ApplicationItemView> applicationItemViews = applicationItemViewService.getApplicationItemViews(currentUser.getId(), dateSortDirection, statusSortDirection, createdBySortDirection);
 
     List<CompanySelectItemView> companyNames = applicationItemViews.stream().
         filter(distinctByKey(ApplicationItemView::getCompanyId))

@@ -18,10 +18,10 @@ public class ApplicationDaoImpl implements ApplicationDao {
   }
 
   @Override
-  public List<Application> getApplications() {
+  public List<Application> getApplications(List<String> customerIds) {
     try (final Handle handle = dbi.open()) {
       ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
-      return applicationJDBIDao.getApplications();
+      return applicationJDBIDao.getApplications(customerIds);
     }
   }
 
@@ -39,7 +39,6 @@ public class ApplicationDaoImpl implements ApplicationDao {
       ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
       applicationJDBIDao.insert(application.getAppId(),
           application.getCompanyId(),
-          application.getCompanyName(),
           application.getApplicationStatus(),
           application.getApplicantReference(),
           JsonUtil.convertListToJson(application.getDestinationList()),

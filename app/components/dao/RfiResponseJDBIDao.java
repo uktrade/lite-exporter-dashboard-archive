@@ -5,14 +5,17 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
+import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
+import org.skife.jdbi.v2.unstable.BindIn;
 
 import java.util.List;
 
+@UseStringTemplate3StatementLocator
 public interface RfiResponseJDBIDao {
 
   @Mapper(RfiResponseRSMapper.class)
-  @SqlQuery("SELECT * FROM RFI_RESPONSE")
-  List<RfiResponse> getRfiResponses();
+  @SqlQuery("SELECT * FROM RFI_RESPONSE WHERE RFI_ID in (<rfiIds>)")
+  List<RfiResponse> getRfiResponses(@BindIn("rfiIds") List<String> rfiIds);
 
   @Mapper(RfiResponseRSMapper.class)
   @SqlQuery("SELECT * FROM RFI_RESPONSE WHERE RFI_ID = :rfiId")

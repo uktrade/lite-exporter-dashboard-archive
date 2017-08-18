@@ -5,18 +5,18 @@
 ->          /common                                               common.Routes
 
 # Application list
-GET         /                                                     controllers.ApplicationController.index
-GET         /applications                                         controllers.ApplicationController.applicationList(tab: Option[String], date: Option[String], status: Option[String], show: Option[String], company: Option[String], createdBy: Option[String], page: Option[Integer])
+GET         /                                                     controllers.ApplicationListController.index
+GET         /applications                                         controllers.ApplicationListController.applicationList(tab: Option[String], date: Option[String], status: Option[String], show: Option[String], company: Option[String], createdBy: Option[String], page: Option[Integer])
 
 # Application tabs
-GET         /application/*applicationRef/status-tracker           controllers.LicenseApplicationController.statusTab(applicationRef: String)
-GET         /application/*applicationRef/rfi                      controllers.LicenseApplicationController.rfiTab(applicationRef: String)
-GET         /application/*applicationRef/rfi/*rfiId               controllers.LicenseApplicationController.reply(applicationRef: String, rfiId: String)
-POST        /application/*applicationRef/rfi                      controllers.LicenseApplicationController.submitReply(applicationRef: String)
-GET         /application/*applicationRef/amend-application        controllers.LicenseApplicationController.amendTab(applicationRef: String, action: Option[String])
-POST        /application/*applicationRef/amend-application        controllers.LicenseApplicationController.amendApplication(applicationRef: String)
-GET         /application/*applicationRef/outcome-documents        controllers.LicenseApplicationController.outcomeTab(applicationRef: String)
-GET         /application/*applicationRef                          controllers.LicenseApplicationController.statusTab(applicationRef: String)
+GET         /application/*applicationRef/status-tracker           controllers.ApplicationDetailsController.statusTab(applicationRef: String)
+GET         /application/*applicationRef/rfi                      controllers.ApplicationDetailsController.rfiTab(applicationRef: String)
+GET         /application/*applicationRef/rfi/*rfiId               controllers.ApplicationDetailsController.reply(applicationRef: String, rfiId: String)
+POST        /application/*applicationRef/rfi                      controllers.ApplicationDetailsController.submitReply(applicationRef: String)
+GET         /application/*applicationRef/amend-application        controllers.ApplicationDetailsController.amendTab(applicationRef: String, action: Option[String])
+POST        /application/*applicationRef/amend-application        controllers.ApplicationDetailsController.amendApplication(applicationRef: String)
+GET         /application/*applicationRef/outcome-documents        controllers.ApplicationDetailsController.outcomeTab(applicationRef: String)
+GET         /application/*applicationRef                          controllers.ApplicationDetailsController.statusTab(applicationRef: String)
 
 # Licences tabs
 GET         /licences                                             controllers.LicenseListController.licenceList(tab: Option[String], reference: Option[String], licensee: Option[String], site: Option[String], date: Option[String], page: Option[Integer])

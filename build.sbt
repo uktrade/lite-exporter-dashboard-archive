@@ -25,6 +25,8 @@ libraryDependencies ++= Seq(
 libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.3"
 libraryDependencies += "uk.gov.bis.lite" % "lite-customer-service-api" % "1.1"
 libraryDependencies += "uk.gov.bis.lite" % "lite-ogel-service-api" % "1.0"
+// we need this dependency to use JDBI @BindIn annotation
+libraryDependencies += "org.antlr" % "stringtemplate" % "3.2.1"
 
 resolvers += "Lite Lib Releases " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
 
