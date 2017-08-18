@@ -1,16 +1,17 @@
 package models.view.route;
 
+import models.enums.LicenceListTab;
+import models.enums.SortDirection;
+
 public class LicenceRoute {
 
-  private String tab;
-  private String reference;
-  private String licensee;
-  private String site;
-  private String registrationDate;
+  private SortDirection reference;
+  private SortDirection licensee;
+  private SortDirection site;
+  private SortDirection registrationDate;
   private Integer page;
 
-  public LicenceRoute(String tab, String reference, String licensee, String site, String registrationDate, Integer page) {
-    this.tab = tab;
+  public LicenceRoute(SortDirection reference, SortDirection licensee, SortDirection site, SortDirection registrationDate, Integer page) {
     this.reference = reference;
     this.licensee = licensee;
     this.site = site;
@@ -18,11 +19,11 @@ public class LicenceRoute {
     this.page = page;
   }
 
-  private String next(String sortDirection) {
-    if ("desc".equals(sortDirection)) {
-      return "asc";
+  private SortDirection next(SortDirection sortDirection) {
+    if (sortDirection == SortDirection.DESC) {
+      return SortDirection.ASC;
     } else {
-      return "desc";
+      return SortDirection.DESC;
     }
   }
 
@@ -34,28 +35,28 @@ public class LicenceRoute {
   }
 
   public LicenceRoute nextReference() {
-    String next = next(reference);
+    SortDirection next = next(reference);
     clearSortDirections();
     this.reference = next;
     return this;
   }
 
   public LicenceRoute nextLicensee() {
-    String next = next(licensee);
+    SortDirection next = next(licensee);
     clearSortDirections();
     this.licensee = next;
     return this;
   }
 
   public LicenceRoute nextSite() {
-    String next = next(site);
+    SortDirection next = next(site);
     clearSortDirections();
     this.site = next;
     return this;
   }
 
   public LicenceRoute nextRegistrationDate() {
-    String next = next(registrationDate);
+    SortDirection next = next(registrationDate);
     clearSortDirections();
     this.registrationDate = next;
     return this;
@@ -68,29 +69,29 @@ public class LicenceRoute {
 
   public String toString() {
     StringBuilder stringBuilder = new StringBuilder();
-    if (tab != null) {
-      stringBuilder.append("&tab=" + tab);
-    }
+    stringBuilder.append("/licences?tab=");
+    stringBuilder.append(LicenceListTab.OGELS);
     if (reference != null) {
-      stringBuilder.append("&reference=" + reference);
+      stringBuilder.append("&reference=");
+      stringBuilder.append(reference);
     }
     if (licensee != null) {
-      stringBuilder.append("&licensee=" + licensee);
+      stringBuilder.append("&licensee=");
+      stringBuilder.append(licensee);
     }
     if (site != null) {
-      stringBuilder.append("&site=" + site);
+      stringBuilder.append("&site=");
+      stringBuilder.append(site);
     }
     if (registrationDate != null) {
-      stringBuilder.append("&date=" + registrationDate);
+      stringBuilder.append("&date=");
+      stringBuilder.append(registrationDate);
     }
     if (page != null && page != 1) {
-      stringBuilder.append("&page=" + page);
+      stringBuilder.append("&page=");
+      stringBuilder.append(page);
     }
-    String url = stringBuilder.toString();
-    if (url.startsWith("&")) {
-      url = "?" + url.substring(1, url.length());
-    }
-    return "/licences" + url;
+    return stringBuilder.toString();
   }
 
 }

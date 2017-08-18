@@ -6,22 +6,24 @@ import components.dao.AmendmentDao;
 import components.dao.RfiResponseDao;
 import components.dao.WithdrawalRequestDao;
 import components.service.ApplicationSummaryViewService;
+import components.service.OfficerViewService;
 import components.service.RfiViewService;
 import components.service.StatusItemViewService;
 import components.service.UserService;
+import components.util.EnumUtil;
 import components.util.RandomUtil;
 import models.Amendment;
 import models.RfiResponse;
 import models.User;
 import models.WithdrawalRequest;
+import models.enums.Action;
 import models.view.AddRfiResponseView;
 import models.view.ApplicationSummaryView;
+import models.view.OfficerView;
 import models.view.RfiView;
 import models.view.StatusItemView;
 import models.view.form.AmendApplicationForm;
 import models.view.form.RfiResponseForm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.Controller;
@@ -37,36 +39,38 @@ import java.util.List;
 
 public class ApplicationDetailsController extends Controller {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationDetailsController.class);
-
+  private final String licenceApplicationAddress;
   private final StatusItemViewService statusItemViewService;
   private final RfiViewService rfiViewService;
   private final UserService userService;
   private final FormFactory formFactory;
   private final RfiResponseDao rfiResponseDao;
   private final ApplicationSummaryViewService applicationSummaryViewService;
-  private final String licenceApplicationAddress;
   private final AmendmentDao amendmentDao;
   private final WithdrawalRequestDao withdrawalRequestDao;
+  private final OfficerViewService officerViewService;
 
   @Inject
-  public ApplicationDetailsController(StatusItemViewService statusItemViewService,
+  public ApplicationDetailsController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
+                                      StatusItemViewService statusItemViewService,
                                       RfiViewService rfiViewService,
                                       UserService userService,
                                       FormFactory formFactory,
-                                      RfiResponseDao rfiResponseDao, ApplicationSummaryViewService applicationSummaryViewService,
-                                      @Named("licenceApplicationAddress") String licenceApplicationAddress,
+                                      RfiResponseDao rfiResponseDao,
+                                      ApplicationSummaryViewService applicationSummaryViewService,
                                       AmendmentDao amendmentDao,
-                                      WithdrawalRequestDao withdrawalRequestDao) {
+                                      WithdrawalRequestDao withdrawalRequestDao,
+                                      OfficerViewService officerViewService) {
+    this.licenceApplicationAddress = licenceApplicationAddress;
     this.statusItemViewService = statusItemViewService;
     this.rfiViewService = rfiViewService;
     this.userService = userService;
     this.formFactory = formFactory;
     this.rfiResponseDao = rfiResponseDao;
     this.applicationSummaryViewService = applicationSummaryViewService;
-    this.licenceApplicationAddress = licenceApplicationAddress;
     this.amendmentDao = amendmentDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
+    this.officerViewService = officerViewService;
   }
 
   public Result submitReply(String appId) {
@@ -79,7 +83,7 @@ public class ApplicationDetailsController extends Controller {
       String responseMessage = rfiResponseForm.get().responseMessage;
       RfiResponse rfiResponse = new RfiResponse(rfiId, currentUser.getId(), Instant.now().toEpochMilli(), responseMessage, null);
       rfiResponseDao.insertRfiResponse(rfiResponse);
-      return redirect(routes.LicenseApplicationController.rfiTab(appId).withFragment(rfiId));
+      return redirect(routes.ApplicationDetailsController.rfiTab(appId).withFragment(rfiId));
     }
   }
 
@@ -112,15 +116,15 @@ public class ApplicationDetailsController extends Controller {
   public Result amendApplication(String appId) {
     User currentUser = userService.getCurrentUser();
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
-    String action = amendApplicationForm.data().get("action");
+    Action action = EnumUtil.parse(amendApplicationForm.data().get("action"), Action.class);
     if (amendApplicationForm.hasErrors()) {
-      return amendTab(appId, Option.apply(action));
+      return amendTab(appId, Option.apply(action.toString()));
     } else {
       String message = amendApplicationForm.get().message;
-      if ("amend".equals(action)) {
+      if (action == Action.AMEND) {
         Amendment amendment = new Amendment(RandomUtil.random("AME"), appId, Instant.now().toEpochMilli(), currentUser.getId(), message, null);
         amendmentDao.insertAmendment(amendment);
-      } else if ("withdraw".equals(action)) {
+      } else if (action == Action.WITHDRAW) {
         WithdrawalRequest withdrawalRequest = new WithdrawalRequest(RandomUtil.random("WIT"),
             appId,
             Instant.now().toEpochMilli(),
@@ -132,22 +136,20 @@ public class ApplicationDetailsController extends Controller {
             null);
         withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
       }
-      LOGGER.error(action);
-      LOGGER.error(message);
       return amendTab(appId, Option.apply(null));
     }
   }
 
-  public Result amendTab(String appId, Option<String> action) {
-    String actionStr = null;
-    if (action.isDefined() && ("amend".equals(action.get()) || "withdraw".equals(action.get()))) {
-      actionStr = action.get();
-    }
+  public Result amendTab(String appId, Option<String> actionOption) {
+    Action action = EnumUtil.parse(parse(actionOption), Action.class);
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     AmendApplicationForm amendApplicationForm = new AmendApplicationForm();
-    amendApplicationForm.action = actionStr;
+    if (action != null) {
+      amendApplicationForm.action = action.toString();
+    }
     Form<AmendApplicationForm> form = formFactory.form(AmendApplicationForm.class).fill(amendApplicationForm);
-    return ok(amendApplicationTab.render(licenceApplicationAddress, applicationSummaryView, getRfiViewCount(appId), actionStr, form));
+    OfficerView officerView = officerViewService.getOfficerView(appId);
+    return ok(amendApplicationTab.render(licenceApplicationAddress, applicationSummaryView, getRfiViewCount(appId), action, form, officerView));
   }
 
   public Result outcomeTab(String appId) {
@@ -157,6 +159,10 @@ public class ApplicationDetailsController extends Controller {
 
   private int getRfiViewCount(String appId) {
     return rfiViewService.getRfiViewCount(appId);
+  }
+
+  private String parse(Option<String> str) {
+    return str.isDefined() ? str.get() : null;
   }
 
 }

@@ -1,6 +1,6 @@
+@import models.view.ApplicationSummaryView
 @import page._
 @import util._
-@import models.view.ApplicationSummaryView
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, activeTab: String, rfiViewCount: Integer)(content: Html)
 @standardPage(applicationSummaryView.getAppId + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
@@ -19,10 +19,10 @@
   )
 
   @tabs("application-tabs", size = "large", fitToPage = true) {
-    @tab("Status tracker", "/application/" + applicationSummaryView.getAppId + "/status-tracker#application-tabs", activeTab.equals("statusTracker"))
-    @tab(s"Requests for information ($rfiViewCount)", "/application/" + applicationSummaryView.getAppId + "/rfi#application-tabs", activeTab.equals("rfi"))
-    @tab("Amend application", "/application/" + applicationSummaryView.getAppId + "/amend-application#application-tabs", activeTab.equals("amend"))
-    @tab("Outcome documents", "/application/" + applicationSummaryView.getAppId + "/outcome-documents#application-tabs", activeTab.equals("outcomeDocs"))
+    @tab("Status tracker", "/application/" + applicationSummaryView.getAppId + "/status-tracker", activeTab.equals("statusTracker"))
+    @tab(s"Requests for information ($rfiViewCount)", "/application/" + applicationSummaryView.getAppId + "/rfi", activeTab.equals("rfi"))
+    @tab("Amend application", "/application/" + applicationSummaryView.getAppId + "/amend-application", activeTab.equals("amend"))
+    @tab("Outcome documents", "/application/" + applicationSummaryView.getAppId + "/outcome-documents", activeTab.equals("outcomeDocs"))
   }
 
   @content

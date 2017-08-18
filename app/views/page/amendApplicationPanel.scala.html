@@ -10,7 +10,7 @@
     <h4 class="heading-small">@heading</h4>
     <div>
 
-      <form action="@routes.LicenseApplicationController.amendTab(appId, Option(null))" method="POST">
+      <form action="@routes.ApplicationDetailsController.amendTab(appId, Option(null))" method="POST">
         @formTextarea(form("message"), rows = "4", cssClass = "form-control-wide") {
 
         }

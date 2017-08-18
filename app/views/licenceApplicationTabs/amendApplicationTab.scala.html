@@ -1,7 +1,9 @@
 @import models.view.ApplicationSummaryView
+@import models.enums.Action
+@import models.view.OfficerView
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, action: String, form: Form[_])
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, action: Action, form: Form[_], officerView: OfficerView)
 
-@licenceApplication(applyLink, applicationSummaryView, "amend", rfiViewCount) {
-  @amendApplication(applicationSummaryView.getAppId, action, form)
+@ApplicationDetails(applyLink, applicationSummaryView, "amend", rfiViewCount) {
+  @amendApplication(applicationSummaryView.getAppId, action, form, officerView)
 }

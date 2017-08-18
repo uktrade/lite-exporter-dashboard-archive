@@ -19,10 +19,10 @@ GET         /application/*applicationRef/outcome-documents        controllers.Ap
 GET         /application/*applicationRef                          controllers.ApplicationDetailsController.statusTab(applicationRef: String)
 
 # Licences tabs
-GET         /licences                                             controllers.LicenseListController.licenceList(tab: Option[String], reference: Option[String], licensee: Option[String], site: Option[String], date: Option[String], page: Option[Integer])
+GET         /licences                                             controllers.LicenceListController.licenceList(tab: Option[String], reference: Option[String], licensee: Option[String], site: Option[String], date: Option[String], page: Option[Integer])
 
 # Licence details
-GET         /licence/*licenceRef                                  controllers.LicenseListController.licenceDetails(licenceRef: String)
+GET         /licence/*licenceRef                                  controllers.LicenceListController.licenceDetails(licenceRef: String)
 
 # Test data
 GET         /test                                                 controllers.TestDataController.insertTestData()

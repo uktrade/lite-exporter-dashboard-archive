@@ -2,7 +2,8 @@
 @import models.view.OgelRegistrationListView
 @import page._
 @import util._
-@(applyLink: String, activeTab: String, ogelRegistrationListView: OgelRegistrationListView)
+@import models.enums.LicenceListTab
+@(applyLink: String, licenceListTab: LicenceListTab, ogelRegistrationListView: OgelRegistrationListView)
   @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
   } {
@@ -10,16 +11,16 @@
     @dashboardTopNav(applyLink)
 
     @tabs("licences-tabs", size = "large", width = "wide") {
-      @tab("SIELs", "/licences?tab=siels", activeTab.equals("siels"))
-      @tab("OGELs", "/licences?tab=ogels", activeTab.equals("ogels"))
+      @tab("SIELs", "/licences?tab=siels", licenceListTab == LicenceListTab.SIELS)
+      @tab("OGELs", "/licences?tab=ogels", licenceListTab == LicenceListTab.OGELS)
     }
 
-    @activeTab match {
-      case "siels" => {
+    @licenceListTab match {
+      case LicenceListTab.SIELS => {
         @sielList()
       }
-      case "ogels" => {
-        @ogelList(activeTab, ogelRegistrationListView)
+      case LicenceListTab.OGELS => {
+        @ogelList(ogelRegistrationListView)
       }
     }
   }

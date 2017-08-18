@@ -4,6 +4,6 @@
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViews: List[RfiView], rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
-@licenceApplication(applyLink, applicationSummaryView, "rfi", rfiViews.size) {
+@ApplicationDetails(applyLink, applicationSummaryView, "rfi", rfiViews.size) {
   @rfiList(rfiViews, rfiResponseForm, addRfiResponseView)
 }

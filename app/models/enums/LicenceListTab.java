@@ -1,12 +1,12 @@
 package models.enums;
 
-public enum SortDirection {
+public enum LicenceListTab {
 
-  ASC("asc"), DESC("desc");
+  OGELS("ogels"), SIELS("siels");
 
   private final String text;
 
-  SortDirection(final String text) {
+  LicenceListTab(final String text) {
     this.text = text;
   }
 

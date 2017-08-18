@@ -1,6 +1,6 @@
 @import models.view.OgelRegistrationListView
 @import util._
-@(tab: String, ogelRegistrationListView: OgelRegistrationListView)
+@(ogelRegistrationListView: OgelRegistrationListView)
 <div class="scrollable-table">
   <table class="table-font-xsmall table-align-top">
     <thead>
@@ -35,7 +35,7 @@
     @for(ogelRegistrationItemView <- ogelRegistrationListView.getPage.getItems) {
       <tr>
         <th scope="row">
-          <a href="@routes.LicenseListController.licenceDetails(ogelRegistrationItemView.getRegistrationReference)" class="bold">@ogelRegistrationItemView.getRegistrationReference</a>
+          <a href="@routes.LicenceListController.licenceDetails(ogelRegistrationItemView.getRegistrationReference)" class="bold">@ogelRegistrationItemView.getRegistrationReference</a>
           <br>
           @ogelRegistrationItemView.getDescription
         </th>

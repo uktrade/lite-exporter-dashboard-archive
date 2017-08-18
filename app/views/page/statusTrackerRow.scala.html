@@ -10,7 +10,7 @@
       <p>@statusItemView.getStatusExplanation</p>
     }
     @for(statusItemRfiView <- statusItemView.getStatusItemRfiViews) {
-      @rfiLabel(routes.LicenseApplicationController.rfiTab(statusItemRfiView.getAppId).withFragment(statusItemRfiView.getRfiId).toString,
+      @rfiLabel(routes.ApplicationDetailsController.rfiTab(statusItemRfiView.getAppId).withFragment(statusItemRfiView.getRfiId).toString,
         statusItemRfiView.getDescription)
     }
   </td>

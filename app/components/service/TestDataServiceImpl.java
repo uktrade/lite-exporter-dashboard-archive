@@ -25,9 +25,9 @@ import java.util.List;
 
 public class TestDataServiceImpl implements TestDataService {
 
-  private static String APPLICANT = "Kathryn Smith";
-  private static String OTHER_APPLICANT = "Christoph";
-  private static String OFFICER = "Jerry McGuire";
+  private static String APPLICANT_ID = "24492";
+  private static String OTHER_APPLICANT_ID = "2";
+  private static String OFFICER_ID = "3";
   private static String GERMANY = "Germany";
   private static String ICELAND = "Iceland";
   private static String FRANCE = "France";
@@ -76,7 +76,7 @@ public class TestDataServiceImpl implements TestDataService {
     String companyName = "Company Ltd";
     for (int i = 0; i < 20; i++) {
       String appId = randomNumber("ECO");
-      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY), getCas(), OFFICER);
+      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.SUBMITTED, APPLICANT_ID, Arrays.asList(GERMANY), getCas(), OFFICER_ID);
       StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 3, 3 + i, i, i), null);
       applicationDao.insert(app);
       statusUpdateDao.insertStatusUpdate(draft);
@@ -91,11 +91,11 @@ public class TestDataServiceImpl implements TestDataService {
             RfiStatus.ACTIVE,
             time(2017, 4, 5 + i, i, i),
             time(2017, 5, 5 + i, i, i),
-            OFFICER,
+            OFFICER_ID,
             "Please answer this rfi.");
         rfiDao.insertRfi(rfi);
         if (i % 2 != 0) {
-          RfiResponse rfiResponse = new RfiResponse(rfiId, APPLICANT, time(2017, 4, 5 + i, i, i), "This is a reply.", null);
+          RfiResponse rfiResponse = new RfiResponse(rfiId, APPLICANT_ID, time(2017, 4, 5 + i, i, i), "This is a reply.", null);
           rfiResponseDao.insertRfiResponse(rfiResponse);
         }
       }
@@ -103,7 +103,7 @@ public class TestDataServiceImpl implements TestDataService {
     // create applications by other applicant
     for (int i = 0; i < 4; i++) {
       String appId = randomNumber("ECO");
-      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.DRAFT, OTHER_APPLICANT, new ArrayList<>(), getCas(), OFFICER);
+      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.DRAFT, OTHER_APPLICANT_ID, new ArrayList<>(), getCas(), OFFICER_ID);
       applicationDao.insert(app);
       StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 1, 3 + i, i, i), null);
       statusUpdateDao.insertStatusUpdate(draft);
@@ -123,12 +123,12 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private Application createApplication() {
-    return new Application(APP_ID, COMPANY_ID_TWO, ApplicationStatus.SUBMITTED, APPLICANT, Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(), OFFICER);
+    return new Application(APP_ID, COMPANY_ID_TWO, ApplicationStatus.SUBMITTED, APPLICANT_ID, Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(), OFFICER_ID);
   }
 
   private List<RfiResponse> createRfiResponseTestData() {
     RfiResponse rfiResponse = new RfiResponse(RFI_ID,
-        APPLICANT,
+        APPLICANT_ID,
         time(2017, 5, 13, 16, 10),
         "<p>All the items on my application were originally designed for the Eurofighter Typhoon FGR4. "
             + "Please see attached the specifications and design plans showing the original design.</p>"
@@ -136,7 +136,7 @@ public class TestDataServiceImpl implements TestDataService {
             + "<p>Kathryn Smith</p>",
         null);
     RfiResponse rfiResponseTwo = new RfiResponse(RFI_ID,
-        APPLICANT,
+        APPLICANT_ID,
         time(2017, 5, 14, 17, 14),
         "This is another test reply.",
         null);
@@ -152,14 +152,14 @@ public class TestDataServiceImpl implements TestDataService {
         RfiStatus.ACTIVE,
         time(2017, 2, 2, 13, 30),
         time(2017, 3, 2, 13, 30),
-        OFFICER,
+        OFFICER_ID,
         "Please reply to this rfi message.");
     Rfi rfiTwo = new Rfi(RFI_ID,
         APP_ID,
         RfiStatus.ACTIVE,
         time(2017, 4, 5, 10, 10),
         time(2017, 5, 12, 16, 10),
-        OFFICER,
+        OFFICER_ID,
         "<p>We note from your application that you have rated all 8 line items as ML10a and that these items are used in production and maintenance of civil and/or military aircraft.</p>"
             + "<p>Would you please provide the make/model of aircraft for which each of the 8 line items on your application was originally designed.</p>"
             + "<p>Than you for your help in this matter.</p>");
@@ -168,7 +168,7 @@ public class TestDataServiceImpl implements TestDataService {
         RfiStatus.ACTIVE,
         time(2017, 6, 5, 10, 10),
         time(2018, 6, 5, 10, 10),
-        OFFICER,
+        OFFICER_ID,
         "This is another rfi message.");
     List<Rfi> rfiList = new ArrayList<>();
     rfiList.add(rfi);

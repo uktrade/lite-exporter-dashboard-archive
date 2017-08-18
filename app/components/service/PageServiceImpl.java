@@ -19,16 +19,21 @@ public class PageServiceImpl implements PageService {
     return new Page<>(currentPage, pageCount, from, to, total, items);
   }
 
-  public int getCurrentPage(Integer requested, int listSize) {
-    int nonNull = requested == null ? 1 : requested;
-    return Math.min(nonNull, (listSize / SIZE) + 1);
+  private int getCurrentPage(Integer requested, int listSize) {
+    int positive;
+    if (requested == null || requested < 1) {
+      positive = 1;
+    } else {
+      positive = requested;
+    }
+    return Math.min(positive, (listSize / SIZE) + 1);
   }
 
-  public int getFrom(Integer currentPage) {
+  private int getFrom(int currentPage) {
     return ((currentPage - 1) * SIZE) + 1;
   }
 
-  public int getTo(Integer currentPage, int listSize) {
+  private int getTo(int currentPage, int listSize) {
     return Math.min(currentPage * SIZE, listSize);
   }
 

@@ -3,6 +3,7 @@
 @import page._
 @import play.data.Form
 @import util._
+@import models.enums.ApplicationListTab
 @(applyLink: String, applicationListView: ApplicationListView)
 @standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
@@ -14,11 +15,11 @@
 
   @tabs("application-list-tabs", size = "large", width = "wide") {
     @tab("Created by you",
-      applicationListView.getApplicationRoute.setTab("created-by-you").toString,
-      applicationListView.getTab.equals("created-by-you"))
+      applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.USER).toString,
+      applicationListView.getApplicationListTab == ApplicationListTab.USER)
     @tab("Created by your company",
-      applicationListView.getApplicationRoute.setTab("created-by-your-company").toString,
-      applicationListView.getTab.equals("created-by-your-company"))
+      applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.COMPANY).toString,
+      applicationListView.getApplicationListTab == ApplicationListTab.COMPANY)
   }
 
   <div class="form-group">
@@ -37,17 +38,17 @@
             }
           value="@companySelectItemView.getCompanyId">@companySelectItemView.getCompanyName </option>
         }
-        @if(applicationListView.getTab != null) {
-          <input type="hidden" name="tab" value="@applicationListView.getTab"/>
+        @if(applicationListView.getApplicationListTab != null) {
+          <input type="hidden" name="tab" value="@applicationListView.getApplicationListTab"/>
         }
-        @if(applicationListView.getDateSortDirection != null) {
-          <input type="hidden" name="date" value="@applicationListView.getDateSortDirection"/>
+        @if(applicationListView.getDate != null) {
+          <input type="hidden" name="date" value="@applicationListView.getDate"/>
         }
-        @if(applicationListView.getStatusSortDirection != null) {
-          <input type="hidden" name="status" value="@applicationListView.getStatusSortDirection"/>
+        @if(applicationListView.getStatus != null) {
+          <input type="hidden" name="status" value="@applicationListView.getStatus"/>
         }
-        @if(applicationListView.getCreatedBySortDirection!=null) {
-          <input type="hidden" name="createdBy" value="@applicationListView.getCreatedBySortDirection"/>
+        @if(applicationListView.getCreatedBy!=null) {
+          <input type="hidden" name="createdBy" value="@applicationListView.getCreatedBy"/>
         }
         @if(applicationListView.getStatusTypeFilter != null) {
           <input type="hidden" name="show" value="@applicationListView.getStatusTypeFilter.toString.toLowerCase"/>
@@ -98,7 +99,7 @@
             <a href="@applicationListView.getApplicationRoute.nextDate().toString">
               Date submitted
             </a>
-            @sortArrow(applicationListView.getDateSortDirection)
+            @sortArrow(applicationListView.getDate)
           </th>
           <th>
             References
@@ -107,17 +108,17 @@
             <a href="@applicationListView.getApplicationRoute.nextStatus().toString">
               Application status
             </a>
-            @sortArrow(applicationListView.getStatusSortDirection)
+            @sortArrow(applicationListView.getStatus)
           </th>
           <th>
             Destination
           </th>
-          @if("created-by-your-company" == applicationListView.getTab) {
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
             <th nowrap>
               <a href="@applicationListView.getApplicationRoute.nextCreatedBy().toString">
                 Created by
               </a>
-              @sortArrow(applicationListView.getCreatedBySortDirection)
+              @sortArrow(applicationListView.getCreatedBy)
             </th>
           }
         </tr>
@@ -129,7 +130,7 @@
           @applicationItemView.getDateSubmitted
           </th>
           <td>
-            <a href="@routes.LicenseApplicationController.statusTab(applicationItemView.getAppId)" class="bold">
+            <a href="@routes.ApplicationDetailsController.statusTab(applicationItemView.getAppId)" class="bold">
             @applicationItemView.getAppId
             </a>
             <br>
@@ -142,13 +143,13 @@
             @applicationItemView.getApplicationStatusDate
             </p>
             @if(applicationItemView.getOpenRfiId != null) {
-              @rfiLabel(routes.LicenseApplicationController.rfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
+              @rfiLabel(routes.ApplicationDetailsController.rfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
             }
           </td>
           <td>
           @applicationItemView.getDestination
           </td>
-          @if("created-by-your-company" == applicationListView.getTab) {
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
             <td>
             @applicationItemView.getApplicantReference
             </td>

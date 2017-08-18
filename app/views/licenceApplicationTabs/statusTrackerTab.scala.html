@@ -6,6 +6,6 @@
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
 
-@licenceApplication(applyLink, applicationSummaryView, "statusTracker", rfiViewCount) {
+@ApplicationDetails(applyLink, applicationSummaryView, "statusTracker", rfiViewCount) {
   @statusTracker(statusItemViews)
 }

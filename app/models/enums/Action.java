@@ -1,12 +1,12 @@
 package models.enums;
 
-public enum SortDirection {
+public enum Action {
 
-  ASC("asc"), DESC("desc");
+  AMEND("amend"), WITHDRAW("withdraw");
 
   private final String text;
 
-  SortDirection(final String text) {
+  Action(final String text) {
     this.text = text;
   }
 

@@ -20,19 +20,19 @@ public class RfiViewServiceImpl implements RfiViewService {
   private final WorkingDaysCalculatorService workingDaysCalculatorService;
   private final RfiDao rfiDao;
   private final RfiResponseDao rfiResponseDao;
-  private final PersonService personService;
+  private final UserService userService;
 
   @Inject
   public RfiViewServiceImpl(TimeFormatService timeFormatService,
                             WorkingDaysCalculatorService workingDaysCalculatorService,
                             RfiDao rfiDao,
                             RfiResponseDao rfiResponseDao,
-                            PersonService personService) {
+                            UserService userService) {
     this.timeFormatService = timeFormatService;
     this.workingDaysCalculatorService = workingDaysCalculatorService;
     this.rfiDao = rfiDao;
     this.rfiResponseDao = rfiResponseDao;
-    this.personService = personService;
+    this.userService = userService;
   }
 
   @Override
@@ -57,7 +57,7 @@ public class RfiViewServiceImpl implements RfiViewService {
   private RfiView getRfiView(Rfi rfi, List<RfiResponse> rfiResponses) {
     String receivedOn = timeFormatService.formatDateAndTime(rfi.getReceivedTimestamp());
     String replyBy = getReplyBy(rfi);
-    String sender = personService.getPerson(rfi.getSentBy());
+    String sender = userService.getUser(rfi.getSentBy()).getName();
     List<RfiResponseView> rfiResponseViews = rfiResponses.stream()
         .sorted(Comparator.comparing(RfiResponse::getSentTimestamp))
         .map(this::getRfiResponseView)
@@ -66,7 +66,7 @@ public class RfiViewServiceImpl implements RfiViewService {
   }
 
   private RfiResponseView getRfiResponseView(RfiResponse rfiResponse) {
-    String sentBy = personService.getPerson(rfiResponse.getSentBy());
+    String sentBy = userService.getUser(rfiResponse.getSentBy()).getName();
     String sentAt = timeFormatService.formatDate(rfiResponse.getSentTimestamp());
     String message = rfiResponse.getMessage();
     return new RfiResponseView(sentBy, sentAt, message);

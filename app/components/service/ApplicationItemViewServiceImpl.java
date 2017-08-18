@@ -61,6 +61,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final RfiResponseDao rfiResponseDao;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final CustomerServiceClient customerServiceClient;
+  private final UserService userService;
 
   @Inject
   public ApplicationItemViewServiceImpl(ApplicationDao applicationDao,
@@ -70,7 +71,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
                                         RfiDao rfiDao,
                                         RfiResponseDao rfiResponseDao,
                                         ApplicationSummaryViewService applicationSummaryViewService,
-                                        CustomerServiceClient customerServiceClient) {
+                                        CustomerServiceClient customerServiceClient,
+                                        UserService userService) {
     this.applicationDao = applicationDao;
     this.statusUpdateDao = statusUpdateDao;
     this.timeFormatService = timeFormatService;
@@ -79,6 +81,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     this.rfiResponseDao = rfiResponseDao;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.customerServiceClient = customerServiceClient;
+    this.userService = userService;
   }
 
   @Override
@@ -146,11 +149,12 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
       statusType = maxStatusUpdate.getStatusType();
     }
 
+    String createdBy = userService.getUser(application.getApplicantReference()).getName();
     String destination = applicationSummaryViewService.getDestination(application);
     return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
         companyName,
-        application.getApplicantReference(),
+        createdBy,
         dateSubmittedTimestamp,
         dateSubmitted,
         application.getCaseReference(),

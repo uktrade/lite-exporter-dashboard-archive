@@ -20,15 +20,15 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   private final StatusUpdateDao statusUpdateDao;
   private final ApplicationDao applicationDao;
   private final TimeFormatService timeFormatService;
-  private final PersonService personService;
+  private final UserService userService;
   private final StatusService statusService;
 
   @Inject
-  public ApplicationSummaryViewServiceImpl(StatusUpdateDao statusUpdateDao, ApplicationDao applicationDao, TimeFormatService timeFormatService, PersonService personService, StatusService statusService) {
+  public ApplicationSummaryViewServiceImpl(StatusUpdateDao statusUpdateDao, ApplicationDao applicationDao, TimeFormatService timeFormatService, UserService userService, StatusService statusService) {
     this.statusUpdateDao = statusUpdateDao;
     this.applicationDao = applicationDao;
     this.timeFormatService = timeFormatService;
-    this.personService = personService;
+    this.userService = userService;
     this.statusService = statusService;
   }
 
@@ -36,7 +36,7 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   public ApplicationSummaryView getApplicationSummaryView(String appId) {
     Application application = applicationDao.getApplication(appId);
     List<StatusUpdate> statusUpdates = statusUpdateDao.getStatusUpdates(appId);
-    String officer = personService.getPerson(application.getCaseOfficerId());
+    String officerName = userService.getUser(application.getCaseOfficerId()).getName();
 
     Optional<StatusUpdate> maxStatusUpdate = getMaxStatusUpdate(statusUpdates);
     String status = "";
@@ -48,7 +48,7 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
         getDestination(application),
         getDateSubmitted(statusUpdates),
         status,
-        officer);
+        officerName);
   }
 
   @Override

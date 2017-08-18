@@ -7,12 +7,12 @@ import com.google.inject.name.Named;
 import components.service.ApplicationItemViewService;
 import components.service.CacheService;
 import components.service.PageService;
-import components.service.SortDirectionService;
 import components.service.UserService;
 import components.util.EnumUtil;
 import models.ApplicationListState;
 import models.Page;
 import models.User;
+import models.enums.ApplicationListTab;
 import models.enums.SortDirection;
 import models.enums.StatusType;
 import models.enums.StatusTypeFilter;
@@ -26,13 +26,14 @@ import views.html.applicationList;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ApplicationListController extends Controller {
 
   private final ApplicationItemViewService applicationItemViewService;
   private final CacheService cacheService;
-  private final SortDirectionService sortDirectionService;
   private final PageService pageService;
   private final String licenceApplicationAddress;
   private final UserService userService;
@@ -40,13 +41,11 @@ public class ApplicationListController extends Controller {
   @Inject
   public ApplicationListController(ApplicationItemViewService applicationItemViewService,
                                    CacheService cacheService,
-                                   SortDirectionService sortDirectionService,
                                    PageService pageService,
                                    @Named("licenceApplicationAddress") String licenceApplicationAddress,
                                    UserService userService) {
     this.applicationItemViewService = applicationItemViewService;
     this.cacheService = cacheService;
-    this.sortDirectionService = sortDirectionService;
     this.pageService = pageService;
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.userService = userService;
@@ -61,61 +60,55 @@ public class ApplicationListController extends Controller {
 
     ApplicationListState state = cacheService.getApplicationListState(tab, date, status, show, company, createdBy, page);
 
-    StatusTypeFilter statusTypeFilter = EnumUtil.parse(StatusTypeFilter.class, state.getShow(), StatusTypeFilter.ALL);
+    StatusTypeFilter statusTypeFilter = EnumUtil.parse(state.getShow(), StatusTypeFilter.class, StatusTypeFilter.ALL);
 
-    SortDirection dateSortDirection = sortDirectionService.parse(state.getDate());
-    SortDirection statusSortDirection = sortDirectionService.parse(state.getStatus());
-    SortDirection createdBySortDirection = sortDirectionService.parse(state.getCreatedBy());
+    SortDirection dateSortDirection = EnumUtil.parse(state.getDate(), SortDirection.class);
+    SortDirection statusSortDirection = EnumUtil.parse(state.getStatus(), SortDirection.class);
+    SortDirection createdBySortDirection = EnumUtil.parse(state.getCreatedBy(), SortDirection.class);
 
-    String activeTab = "created-by-your-company".equals(state.getTab()) ? "created-by-your-company" : "created-by-you";
+    ApplicationListTab applicationListTab = EnumUtil.parse(state.getTab(), ApplicationListTab.class, ApplicationListTab.USER);
 
-    if (!"created-by-your-company".equals(activeTab) && createdBySortDirection != null) {
+    if (applicationListTab != ApplicationListTab.COMPANY) {
       createdBySortDirection = null;
     }
-    long definedCount = sortDirectionService.definedCount(dateSortDirection, statusSortDirection, createdBySortDirection);
+
+    long definedCount = Stream.of(dateSortDirection, statusSortDirection, createdBySortDirection).filter(Objects::nonNull).count();
     if (definedCount != 1) {
       dateSortDirection = SortDirection.DESC;
       statusSortDirection = null;
+      createdBySortDirection = null;
     }
 
-    List<ApplicationItemView> applicationItemViews = applicationItemViewService.getApplicationItemViews(currentUser.getId(), dateSortDirection, statusSortDirection, createdBySortDirection);
+    List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(currentUser.getId(), dateSortDirection, statusSortDirection, createdBySortDirection);
 
-    List<CompanySelectItemView> companyNames = applicationItemViews.stream().
-        filter(distinctByKey(ApplicationItemView::getCompanyId))
-        .map(applicationItemView -> new CompanySelectItemView(applicationItemView.getCompanyId(), applicationItemView.getCompanyName()))
+    List<CompanySelectItemView> companyNames = views.stream()
+        .filter(distinctByKey(ApplicationItemView::getCompanyId))
+        .map(view -> new CompanySelectItemView(view.getCompanyId(), view.getCompanyName()))
         .sorted(Comparator.comparing(CompanySelectItemView::getCompanyName))
         .collect(Collectors.toList());
 
     String companyId = state.getCompany();
-    if (companyId != null && !companyId.equals("all")) {
-      applicationItemViews = applicationItemViews.stream().filter(view -> companyId.equals(view.getCompanyId())).collect(Collectors.toList());
-    }
+    List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, views);
 
-
-    long allCount = applicationItemViews.size();
-    long draftCount = applicationItemViews.stream().filter(view -> view.getStatusType() == StatusType.DRAFT).count();
-    long completedCount = applicationItemViews.stream().filter(view -> view.getStatusType() == StatusType.COMPLETE).count();
+    long allCount = companyFilteredViews.size();
+    long draftCount = companyFilteredViews.stream()
+        .filter(view -> view.getStatusType() == StatusType.DRAFT)
+        .count();
+    long completedCount = companyFilteredViews.stream()
+        .filter(view -> view.getStatusType() == StatusType.COMPLETE)
+        .count();
     long currentCount = allCount - draftCount - completedCount;
 
-    List<ApplicationItemView> filteredApplicationViews;
-    if (statusTypeFilter == StatusTypeFilter.DRAFT) {
-      filteredApplicationViews = applicationItemViews.stream().filter(view -> view.getStatusType() == StatusType.DRAFT).collect(Collectors.toList());
-    } else if (statusTypeFilter == StatusTypeFilter.COMPLETED) {
-      filteredApplicationViews = applicationItemViews.stream().filter(view -> view.getStatusType() == StatusType.COMPLETE).collect(Collectors.toList());
-    } else if (statusTypeFilter == StatusTypeFilter.CURRENT) {
-      filteredApplicationViews = applicationItemViews.stream().filter(view -> view.getStatusType() != StatusType.DRAFT && view.getStatusType() != StatusType.COMPLETE).collect(Collectors.toList());
-    } else {
-      filteredApplicationViews = applicationItemViews;
-    }
+    List<ApplicationItemView> statusTypeFilteredViews = filterByStatusType(statusTypeFilter, views);
 
-    Page<ApplicationItemView> pageData = pageService.getPage(state.getPage(), filteredApplicationViews);
+    Page<ApplicationItemView> pageData = pageService.getPage(state.getPage(), statusTypeFilteredViews);
 
-    ApplicationListView applicationListView = new ApplicationListView(activeTab,
+    ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
         companyId,
         companyNames,
-        sortDirectionService.toParam(dateSortDirection),
-        sortDirectionService.toParam(statusSortDirection),
-        sortDirectionService.toParam(createdBySortDirection),
+        dateSortDirection,
+        statusSortDirection,
+        createdBySortDirection,
         statusTypeFilter,
         allCount,
         draftCount,
@@ -124,6 +117,34 @@ public class ApplicationListController extends Controller {
         pageData);
 
     return ok(applicationList.render(licenceApplicationAddress, applicationListView));
+  }
+
+  private List<ApplicationItemView> filterByCompanyId(String companyId, List<ApplicationItemView> applicationItemViews) {
+    if (companyId != null && !companyId.equals("all")) {
+      return applicationItemViews.stream()
+          .filter(view -> companyId.equals(view.getCompanyId()))
+          .collect(Collectors.toList());
+    } else {
+      return applicationItemViews;
+    }
+  }
+
+  private List<ApplicationItemView> filterByStatusType(StatusTypeFilter statusTypeFilter, List<ApplicationItemView> applicationItemViews) {
+    if (statusTypeFilter == StatusTypeFilter.DRAFT) {
+      return applicationItemViews.stream()
+          .filter(view -> view.getStatusType() == StatusType.DRAFT)
+          .collect(Collectors.toList());
+    } else if (statusTypeFilter == StatusTypeFilter.COMPLETED) {
+      return applicationItemViews.stream()
+          .filter(view -> view.getStatusType() == StatusType.COMPLETE)
+          .collect(Collectors.toList());
+    } else if (statusTypeFilter == StatusTypeFilter.CURRENT) {
+      return applicationItemViews.stream()
+          .filter(view -> view.getStatusType() != StatusType.DRAFT && view.getStatusType() != StatusType.COMPLETE)
+          .collect(Collectors.toList());
+    } else {
+      return applicationItemViews;
+    }
   }
 
 }

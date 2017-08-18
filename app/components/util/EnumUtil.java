@@ -1,20 +1,20 @@
 package components.util;
 
-import org.apache.commons.lang3.EnumUtils;
-
 public class EnumUtil {
 
-  public static <T extends Enum<T>> T parse(Class<T> enumClass, String str, T fallback) {
+  public static <T extends Enum<T>> T parse(String str, Class<T> enumClass) {
+    return parse(str, enumClass, null);
+  }
+
+  public static <T extends Enum<T>> T parse(String str, Class<T> enumClass, T fallback) {
     if (str != null) {
-      T value = EnumUtils.getEnum(enumClass, str.toUpperCase());
-      if (value != null) {
-        return value;
-      } else {
-        return fallback;
+      for (T iterate : enumClass.getEnumConstants()) {
+        if (str.equals(iterate.toString())) {
+          return iterate;
+        }
       }
-    } else {
-      return fallback;
     }
+    return fallback;
   }
 
 }
