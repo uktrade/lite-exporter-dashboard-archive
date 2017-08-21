@@ -37,4 +37,5 @@ public class StatusItemView {
   public List<StatusItemRfiView> getStatusItemRfiViews() {
     return statusItemRfiViews;
   }
+
 }

@@ -23,4 +23,5 @@ public class StatusItemRfiView {
   public String getDescription() {
     return description;
   }
+
 }

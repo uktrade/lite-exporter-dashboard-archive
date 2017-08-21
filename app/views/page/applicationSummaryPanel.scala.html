@@ -1,6 +1,7 @@
+@import models.view.ApplicationSummaryView
 @import page._
 
-@(applicationRef: String, exporterRef: String, destination: String, submittedDate: String, status: String, caseOfficer: String)
+@(applicationSummaryView: ApplicationSummaryView)
 
 <h2 class="visually-hidden">Application summary</h2>
 <header class="application-summary-panel">
@@ -11,34 +12,34 @@
     Application reference
   </div>
   <div class="font-medium" aria-labelledby="summary-panel-app-ref">
-    @applicationRef
-    <br>
-    @exporterRef
+    @applicationSummaryView.getAppId
+  <br>
+  @applicationSummaryView.getCaseDescription
   </div>
 
   <div class="grid-row">
 
     <div class="column-one-quarter">
     @summaryElement("summary-panel-destination", "Destination") {
-      @destination
+      @applicationSummaryView.getDestination
     }
     </div>
 
     <div class="column-one-quarter">
     @summaryElement("submitted-date", "Date submitted") {
-      @submittedDate
+      @applicationSummaryView.getDateSubmitted
     }
     </div>
 
     <div class="column-one-quarter">
     @summaryElement("summary-panel-status", "Status") {
-      @status
+      @applicationSummaryView.getStatus
     }
     </div>
 
     <div class="column-one-quarter">
     @summaryElement("summary-panel-case-officer", "Case officer") {
-      @caseOfficer
+      @applicationSummaryView.getCaseOfficer
     }
     </div>
 

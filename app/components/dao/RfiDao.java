@@ -15,4 +15,5 @@ public interface RfiDao {
   void insertRfi(Rfi rfi);
 
   void deleteAllRfiData();
+
 }

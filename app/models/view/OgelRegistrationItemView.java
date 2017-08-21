@@ -35,4 +35,5 @@ public class OgelRegistrationItemView {
   public String getRegistrationDate() {
     return registrationDate;
   }
+
 }

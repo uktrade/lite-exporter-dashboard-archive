@@ -2,17 +2,12 @@ package components.service;
 
 import static components.util.TimeUtil.time;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.client.OgelServiceClient;
 import components.client.PermissionsServiceClient;
 import models.enums.SortDirection;
 import models.view.OgelRegistrationItemView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
 import uk.gov.bis.lite.ogel.api.view.OgelFullView;
@@ -27,9 +22,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItemViewService {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(OgelRegistrationItemViewServiceImpl.class);
-  private static final ObjectWriter WRITER = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
   private static final Map<SortDirection, Comparator<OgelRegistrationItemView>> REFERENCE_COMPARATORS = new EnumMap<>(SortDirection.class);
   private static final Map<SortDirection, Comparator<OgelRegistrationItemView>> LICENSEE_COMPARATORS = new EnumMap<>(SortDirection.class);
@@ -73,15 +65,6 @@ public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItem
     Map<String, SiteView> sites = getSites(ogelRegistrationViews);
     Map<String, CustomerView> customers = getCustomers(ogelRegistrationViews);
     Map<String, OgelFullView> ogels = getOgels(ogelRegistrationViews);
-    try {
-      // TODO remove
-      LOGGER.error(WRITER.writeValueAsString(ogelRegistrationViews));
-      LOGGER.error(WRITER.writeValueAsString(sites));
-      LOGGER.error(WRITER.writeValueAsString(customers));
-      LOGGER.error(WRITER.writeValueAsString(ogels));
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
 
     List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationViews.stream()
         .map(view -> {
@@ -96,6 +79,7 @@ public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItem
     ogelRegistrationItemViews = recycle(ogelRegistrationItemViews.get(0));
 
     sort(ogelRegistrationItemViews, reference, licensee, site, date);
+
     return ogelRegistrationItemViews;
   }
 
@@ -157,6 +141,5 @@ public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItem
         siteView.getSiteName(),
         registrationDate);
   }
-
 
 }

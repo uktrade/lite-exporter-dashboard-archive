@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ApplicationRSMapper implements ResultSetMapper<Application> {
+
   @Override
   public Application map(int index, ResultSet r, StatementContext ctx) throws SQLException {
     String appId = r.getString("app_id");
@@ -23,4 +24,5 @@ public class ApplicationRSMapper implements ResultSetMapper<Application> {
     String caseOfficerId = r.getString("case_officer_id");
     return new Application(appId, companyId, applicationStatus, applicantReference, destinationList, caseReference, caseOfficerId);
   }
+
 }

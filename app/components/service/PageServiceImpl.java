@@ -9,13 +9,13 @@ public class PageServiceImpl implements PageService {
   private static final int SIZE = 10;
 
   @Override
-  public <T> Page<T> getPage(Integer pageRequested, List<T> list) {
-    int total = list.size();
+  public <T> Page<T> getPage(Integer pageRequested, List<T> completeList) {
+    int total = completeList.size();
     int currentPage = getCurrentPage(pageRequested, total);
     int pageCount = total / SIZE + 1;
     int from = getFrom(currentPage);
     int to = getTo(currentPage, total);
-    List<T> items = list.subList(from - 1, to);
+    List<T> items = completeList.subList(from - 1, to);
     return new Page<>(currentPage, pageCount, from, to, total, items);
   }
 

@@ -17,6 +17,8 @@ import java.util.Optional;
 
 public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryViewService {
 
+  private static final Comparator<StatusUpdate> MAX_STATUS_UPDATE_COMPARATOR = Comparator.comparing(StatusUpdate::getStartTimestamp, Comparator.nullsFirst(Comparator.naturalOrder()));
+
   private final StatusUpdateDao statusUpdateDao;
   private final ApplicationDao applicationDao;
   private final TimeFormatService timeFormatService;
@@ -64,7 +66,9 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   }
 
   private String getDateSubmitted(List<StatusUpdate> statusUpdateList) {
-    Optional<StatusUpdate> submitted = statusUpdateList.stream().filter(statusUpdate -> StatusType.SUBMITTED == statusUpdate.getStatusType()).findAny();
+    Optional<StatusUpdate> submitted = statusUpdateList.stream()
+        .filter(statusUpdate -> StatusType.SUBMITTED == statusUpdate.getStatusType())
+        .findAny();
     if (submitted.isPresent() && submitted.get().getStartTimestamp() != null) {
       return timeFormatService.formatDate(submitted.get().getStartTimestamp());
     } else {
@@ -75,7 +79,7 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   @Override
   public Optional<StatusUpdate> getMaxStatusUpdate(Collection<StatusUpdate> statusUpdates) {
     if (CollectionUtils.isNotEmpty(statusUpdates)) {
-      StatusUpdate maxStatusUpdate = Collections.max(statusUpdates, Comparator.comparing(StatusUpdate::getStartTimestamp, Comparator.nullsFirst(Comparator.naturalOrder())));
+      StatusUpdate maxStatusUpdate = Collections.max(statusUpdates, MAX_STATUS_UPDATE_COMPARATOR);
       return Optional.ofNullable(maxStatusUpdate);
     } else {
       return Optional.empty();

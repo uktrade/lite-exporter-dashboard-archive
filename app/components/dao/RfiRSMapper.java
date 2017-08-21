@@ -21,4 +21,5 @@ public class RfiRSMapper implements ResultSetMapper<Rfi> {
     String message = r.getString("message");
     return new Rfi(rfiId, appId, rfiStatus, receivedTimestamp, dueTimestamp, sentBy, message);
   }
+
 }

@@ -17,4 +17,5 @@ public class CompanySelectItemView {
   public String getCompanyName() {
     return companyName;
   }
+
 }

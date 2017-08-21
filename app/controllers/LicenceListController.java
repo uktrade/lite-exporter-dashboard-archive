@@ -8,7 +8,7 @@ import components.service.OgelRegistrationItemViewService;
 import components.service.PageService;
 import components.service.UserService;
 import components.util.EnumUtil;
-import models.LicenseListState;
+import models.LicenceListState;
 import models.Page;
 import models.User;
 import models.enums.LicenceListTab;
@@ -53,7 +53,7 @@ public class LicenceListController extends Controller {
   public Result licenceList(Option<String> tab, Option<String> reference, Option<String> licensee, Option<String> site, Option<String> date, Option<Integer> page) {
     User currentUser = userService.getCurrentUser();
 
-    LicenseListState state = cacheService.getLicenseListState(tab, reference, licensee, site, date, page);
+    LicenceListState state = cacheService.getLicenseListState(tab, reference, licensee, site, date, page);
 
     SortDirection referenceSortDirection = EnumUtil.parse(state.getReference(), SortDirection.class);
     SortDirection licenseeSortDirection = EnumUtil.parse(state.getLicensee(), SortDirection.class);
@@ -82,6 +82,7 @@ public class LicenceListController extends Controller {
         siteSortDirection,
         dateSortDirection,
         pageData);
+    
     return ok(licenceList.render(licenceApplicationAddress, licenceListTab, ogelRegistrationListView));
   }
 

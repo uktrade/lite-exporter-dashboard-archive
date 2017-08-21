@@ -47,7 +47,12 @@ public class TestDataServiceImpl implements TestDataService {
   private final AmendmentDao amendmentDao;
 
   @Inject
-  public TestDataServiceImpl(RfiDao rfiDao, StatusUpdateDao statusUpdateDao, RfiResponseDao rfiResponseDao, ApplicationDao applicationDao, WithdrawalRequestDao withdrawalRequestDao, AmendmentDao amendmentDao) {
+  public TestDataServiceImpl(RfiDao rfiDao,
+                             StatusUpdateDao statusUpdateDao,
+                             RfiResponseDao rfiResponseDao,
+                             ApplicationDao applicationDao,
+                             WithdrawalRequestDao withdrawalRequestDao,
+                             AmendmentDao amendmentDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiResponseDao = rfiResponseDao;
@@ -103,7 +108,7 @@ public class TestDataServiceImpl implements TestDataService {
     // create applications by other applicant
     for (int i = 0; i < 4; i++) {
       String appId = randomNumber("ECO");
-      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.DRAFT, OTHER_APPLICANT_ID, new ArrayList<>(), getCas(), OFFICER_ID);
+      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.DRAFT, OTHER_APPLICANT_ID, Arrays.asList(FRANCE), getCas(), OFFICER_ID);
       applicationDao.insert(app);
       StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 1, 3 + i, i, i), null);
       statusUpdateDao.insertStatusUpdate(draft);

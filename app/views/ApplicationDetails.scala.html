@@ -9,14 +9,7 @@
 
   @dashboardTopNav(applyLink)
 
-  @applicationSummaryPanel(
-    applicationSummaryView.getAppId,
-    applicationSummaryView.getCaseDescription,
-    applicationSummaryView.getDestination,
-    applicationSummaryView.getDateSubmitted,
-    applicationSummaryView.getStatus,
-    applicationSummaryView.getCaseOfficer
-  )
+  @applicationSummaryPanel(applicationSummaryView)
 
   @tabs("application-tabs", size = "large", fitToPage = true) {
     @tab("Status tracker", "/application/" + applicationSummaryView.getAppId + "/status-tracker", activeTab.equals("statusTracker"))

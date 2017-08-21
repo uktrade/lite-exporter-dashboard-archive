@@ -35,4 +35,5 @@ public class RfiResponse {
   public String getAttachments() {
     return attachments;
   }
+
 }

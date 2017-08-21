@@ -89,4 +89,5 @@ public class ApplicationListView {
   public ApplicationRoute getApplicationRoute() {
     return new ApplicationRoute(applicationListTab, companyId, date, status, createdBy, statusTypeFilter, page.getCurrentPage());
   }
+
 }

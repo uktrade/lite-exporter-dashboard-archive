@@ -41,8 +41,6 @@ import components.service.OgelDetailsViewService;
 import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelRegistrationItemViewService;
 import components.service.OgelRegistrationItemViewServiceImpl;
-import components.service.OgelRegistrationService;
-import components.service.OgelRegistrationServiceMockImpl;
 import components.service.PageService;
 import components.service.PageServiceImpl;
 import components.service.ProcessingDescriptionService;
@@ -103,7 +101,7 @@ public class GuiceModule extends AbstractModule {
     bindConstant().annotatedWith(Names.named("ogelServiceTimeout"))
         .to(configuration.getString("ogelService.timeout"));
     bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
-    // LicenseApplication
+    // LicenceApplication
     bindConstant().annotatedWith(Names.named("licenceApplicationAddress"))
         .to(configuration.getString("licenceApplication.address"));
     // Service
@@ -117,7 +115,6 @@ public class GuiceModule extends AbstractModule {
     bind(ProcessingDescriptionService.class).to(ProcessingDescriptionServiceImpl.class);
     bind(RfiViewService.class).to(RfiViewServiceImpl.class);
     bind(UserService.class).to(UserServiceMockImpl.class);
-    bind(OgelRegistrationService.class).to(OgelRegistrationServiceMockImpl.class).in(Singleton.class);
     bind(ApplicationItemViewService.class).to(ApplicationItemViewServiceImpl.class);
     bind(ApplicationSummaryViewService.class).to(ApplicationSummaryViewServiceImpl.class);
     bind(OgelRegistrationItemViewService.class).to(OgelRegistrationItemViewServiceImpl.class);

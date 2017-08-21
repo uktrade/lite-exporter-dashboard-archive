@@ -31,4 +31,5 @@ public class OgelDetailsView {
   public OgelFullView.OgelConditionSummary getOgelConditionSummary() {
     return ogelConditionSummary;
   }
+
 }

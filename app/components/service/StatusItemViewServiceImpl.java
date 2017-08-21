@@ -39,7 +39,9 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   private final StatusService statusService;
 
   @Inject
-  public StatusItemViewServiceImpl(StatusUpdateDao statusUpdateDao, RfiDao rfiDao, TimeFormatService timeFormatService,
+  public StatusItemViewServiceImpl(StatusUpdateDao statusUpdateDao,
+                                   RfiDao rfiDao,
+                                   TimeFormatService timeFormatService,
                                    ProcessingDescriptionService processingDescriptionService,
                                    StatusExplanationService statusExplanationService,
                                    ProcessingLabelService processingLabelService,
@@ -76,8 +78,8 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   }
 
   private Multimap<StatusUpdate, Rfi> createRfiMultimap(String appId, List<StatusUpdate> statusUpdates) {
-    List<Rfi> sortedRfiList = rfiDao.getRfiList(appId).stream().
-        sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
+    List<Rfi> sortedRfiList = rfiDao.getRfiList(appId).stream()
+        .sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
         .collect(Collectors.toList());
     Multimap<StatusUpdate, Rfi> rfiMap = HashMultimap.create();
     for (Rfi rfi : sortedRfiList) {
@@ -98,12 +100,12 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     String processingDescription = processingDescriptionService.getProcessingDescription(statusUpdate);
     List<StatusItemRfiView> statusItemRfiViews = rfiList.stream()
         .sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
-        .map(this::getStatusItemRviView)
+        .map(this::getStatusItemRfiView)
         .collect(Collectors.toList());
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, statusItemRfiViews);
   }
 
-  private StatusItemRfiView getStatusItemRviView(Rfi rfi) {
+  private StatusItemRfiView getStatusItemRfiView(Rfi rfi) {
     String time = timeFormatService.formatDateAndTime(rfi.getReceivedTimestamp());
     String description = "Received on " + time;
     return new StatusItemRfiView(rfi.getAppId(), rfi.getRfiId(), description);

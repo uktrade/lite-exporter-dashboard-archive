@@ -31,4 +31,5 @@ public class StatusUpdate {
   public Long getEndTimestamp() {
     return endTimestamp;
   }
+
 }

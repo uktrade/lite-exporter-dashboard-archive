@@ -11,4 +11,5 @@ public interface TimeFormatService {
   String formatDate(long millis);
 
   String formatDateWithSlashes(long millis);
+
 }

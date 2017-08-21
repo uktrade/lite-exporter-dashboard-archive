@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class LicenseListState {
+public class LicenceListState {
 
   private final String tab;
   private final String reference;
@@ -13,7 +13,7 @@ public class LicenseListState {
   private final Integer page;
 
   @JsonCreator
-  public LicenseListState(@JsonProperty("tab") String tab,
+  public LicenceListState(@JsonProperty("tab") String tab,
                           @JsonProperty("reference") String reference,
                           @JsonProperty("licensee") String licensee,
                           @JsonProperty("site") String site,
@@ -50,4 +50,5 @@ public class LicenseListState {
   public Integer getPage() {
     return page;
   }
+
 }

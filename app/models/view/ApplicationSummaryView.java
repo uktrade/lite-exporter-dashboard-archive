@@ -41,4 +41,5 @@ public class ApplicationSummaryView {
   public String getCaseOfficer() {
     return caseOfficer;
   }
+
 }

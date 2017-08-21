@@ -85,4 +85,5 @@ public class ApplicationItemView {
   public String getOpenRfiId() {
     return openRfiId;
   }
+
 }

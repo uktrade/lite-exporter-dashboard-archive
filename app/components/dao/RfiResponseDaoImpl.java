@@ -36,8 +36,11 @@ public class RfiResponseDaoImpl implements RfiResponseDao {
   public void insertRfiResponse(RfiResponse rfiResponse) {
     try (final Handle handle = dbi.open()) {
       RfiResponseJDBIDao rfiResponseJDBIDao = handle.attach(RfiResponseJDBIDao.class);
-      rfiResponseJDBIDao.insertRfiResponse(rfiResponse.getRfiId(), rfiResponse.getSentBy(),
-          rfiResponse.getSentTimestamp(), rfiResponse.getMessage(), rfiResponse.getAttachments());
+      rfiResponseJDBIDao.insertRfiResponse(rfiResponse.getRfiId(),
+          rfiResponse.getSentBy(),
+          rfiResponse.getSentTimestamp(),
+          rfiResponse.getMessage(),
+          rfiResponse.getAttachments());
     }
   }
 

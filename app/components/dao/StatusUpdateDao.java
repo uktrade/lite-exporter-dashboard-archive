@@ -13,4 +13,5 @@ public interface StatusUpdateDao {
   void insertStatusUpdate(StatusUpdate statusUpdate);
 
   void deleteAllStatusUpdates();
+
 }

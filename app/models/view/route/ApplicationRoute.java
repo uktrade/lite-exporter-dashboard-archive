@@ -14,7 +14,13 @@ public class ApplicationRoute {
   private StatusTypeFilter statusTypeFilter;
   private Integer page;
 
-  public ApplicationRoute(ApplicationListTab applicationListTab, String companyId, SortDirection date, SortDirection status, SortDirection createdBy, StatusTypeFilter statusTypeFilter, Integer page) {
+  public ApplicationRoute(ApplicationListTab applicationListTab,
+                          String companyId,
+                          SortDirection date,
+                          SortDirection status,
+                          SortDirection createdBy,
+                          StatusTypeFilter statusTypeFilter,
+                          Integer page) {
     this.applicationListTab = applicationListTab;
     this.companyId = companyId;
     this.date = date;

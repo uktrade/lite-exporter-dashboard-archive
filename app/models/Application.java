@@ -51,4 +51,5 @@ public class Application {
   public String getCaseOfficerId() {
     return caseOfficerId;
   }
+  
 }

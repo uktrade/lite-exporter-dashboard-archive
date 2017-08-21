@@ -5,7 +5,7 @@ import static play.mvc.Controller.session;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.ApplicationListState;
-import models.LicenseListState;
+import models.LicenceListState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
@@ -34,13 +34,13 @@ public class CacheServiceImpl implements CacheService {
   }
 
   @Override
-  public LicenseListState getLicenseListState(Option<String> tab, Option<String> reference, Option<String> licensee, Option<String> site, Option<String> date, Option<Integer> page) {
-    LicenseListState state = null;
+  public LicenceListState getLicenseListState(Option<String> tab, Option<String> reference, Option<String> licensee, Option<String> site, Option<String> date, Option<Integer> page) {
+    LicenceListState state = null;
     if (tab.isEmpty() && reference.isEmpty() && licensee.isEmpty() && site.isEmpty() && date.isEmpty() && page.isEmpty()) {
-      state = getFromSession(LICENSE_LIST_STATE, LicenseListState.class);
+      state = getFromSession(LICENSE_LIST_STATE, LicenceListState.class);
     }
     if (state == null) {
-      state = new LicenseListState(parse(tab), parse(reference), parse(licensee), parse(site), parse(date), parseNumber(page));
+      state = new LicenceListState(parse(tab), parse(reference), parse(licensee), parse(site), parse(date), parseNumber(page));
       save(LICENSE_LIST_STATE, state);
     }
     return state;

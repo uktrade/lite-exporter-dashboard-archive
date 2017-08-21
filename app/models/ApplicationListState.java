@@ -57,4 +57,5 @@ public class ApplicationListState {
   public Integer getPage() {
     return page;
   }
+
 }

@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class StatusUpdateRSMapper implements ResultSetMapper<StatusUpdate> {
+
   @Override
   public StatusUpdate map(int index, ResultSet r, StatementContext ctx) throws SQLException {
     String appId = r.getString("app_id");

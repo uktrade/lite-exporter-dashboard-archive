@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface PageService {
 
-  <T> Page<T> getPage(Integer pageRequested, List<T> list);
+  <T> Page<T> getPage(Integer pageRequested, List<T> completeList);
 
 }

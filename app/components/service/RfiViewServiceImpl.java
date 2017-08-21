@@ -40,7 +40,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     List<Rfi> rfiList = rfiDao.getRfiList(appId);
     return rfiList.stream()
         .sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
-        .map(rfi -> getRfiView(rfi, rfiResponseDao.getRfiResponses(rfi.getRfiId())))
+        .map(this::getRfiView)
         .collect(Collectors.toList());
   }
 
@@ -54,15 +54,19 @@ public class RfiViewServiceImpl implements RfiViewService {
     return new AddRfiResponseView(timeFormatService.formatDate(Instant.now().toEpochMilli()), rfiId);
   }
 
-  private RfiView getRfiView(Rfi rfi, List<RfiResponse> rfiResponses) {
+  private RfiView getRfiView(Rfi rfi) {
     String receivedOn = timeFormatService.formatDateAndTime(rfi.getReceivedTimestamp());
     String replyBy = getReplyBy(rfi);
     String sender = userService.getUser(rfi.getSentBy()).getName();
-    List<RfiResponseView> rfiResponseViews = rfiResponses.stream()
+    List<RfiResponseView> rfiResponseViews = getRfiResponseViews(rfi.getRfiId());
+    return new RfiView(rfi.getAppId(), rfi.getRfiId(), receivedOn, replyBy, sender, rfi.getMessage(), rfiResponseViews);
+  }
+
+  private List<RfiResponseView> getRfiResponseViews(String rfiId) {
+    return rfiResponseDao.getRfiResponses(rfiId).stream()
         .sorted(Comparator.comparing(RfiResponse::getSentTimestamp))
         .map(this::getRfiResponseView)
         .collect(Collectors.toList());
-    return new RfiView(rfi.getAppId(), rfi.getRfiId(), receivedOn, replyBy, sender, rfi.getMessage(), rfiResponseViews);
   }
 
   private RfiResponseView getRfiResponseView(RfiResponse rfiResponse) {

@@ -23,4 +23,5 @@ public class OfficerView {
   public String getEmail() {
     return email;
   }
+
 }

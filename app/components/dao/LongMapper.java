@@ -19,7 +19,8 @@ public class LongMapper {
    */
   public static Long getLong(ResultSet resultSet, String column) throws SQLException {
     return Optional.ofNullable(resultSet.getBigDecimal(column))
-        .map(BigDecimal::longValue).orElse(null);
+        .map(BigDecimal::longValue)
+        .orElse(null);
   }
 
 }

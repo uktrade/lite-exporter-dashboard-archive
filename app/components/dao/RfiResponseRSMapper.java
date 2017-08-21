@@ -18,4 +18,5 @@ public class RfiResponseRSMapper implements ResultSetMapper<RfiResponse> {
     String attachments = r.getString("attachments");
     return new RfiResponse(rfiId, sentBy, sentTimestamp, message, attachments);
   }
+
 }

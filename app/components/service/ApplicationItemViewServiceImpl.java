@@ -1,7 +1,5 @@
 package components.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
@@ -17,8 +15,6 @@ import models.StatusUpdate;
 import models.enums.SortDirection;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 
 import java.util.ArrayList;
@@ -33,9 +29,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationItemViewServiceImpl.class);
-  private static final ObjectWriter WRITER = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
   private static final Map<SortDirection, Comparator<ApplicationItemView>> DATE_COMPARATORS = new EnumMap<>(SortDirection.class);
   private static final Map<SortDirection, Comparator<ApplicationItemView>> STATUS_COMPARATORS = new EnumMap<>(SortDirection.class);
@@ -151,6 +144,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
     String createdBy = userService.getUser(application.getApplicantReference()).getName();
     String destination = applicationSummaryViewService.getDestination(application);
+
     return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
         companyName,
@@ -197,9 +191,13 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   private long getDateSubmittedTimestamp(Collection<StatusUpdate> statusUpdates) {
-    Optional<StatusUpdate> statusUpdate = statusUpdates.stream().filter(su -> su.getStatusType() == StatusType.SUBMITTED).findAny();
+    Optional<StatusUpdate> statusUpdate = statusUpdates.stream()
+        .filter(su -> su.getStatusType() == StatusType.SUBMITTED)
+        .findAny();
     if (!statusUpdate.isPresent()) {
-      statusUpdate = statusUpdates.stream().filter(su -> su.getStatusType() == StatusType.DRAFT).findAny();
+      statusUpdate = statusUpdates.stream()
+          .filter(su -> su.getStatusType() == StatusType.DRAFT)
+          .findAny();
     }
     if (statusUpdate.isPresent() && statusUpdate.get().getStartTimestamp() != null) {
       return statusUpdate.get().getStartTimestamp();

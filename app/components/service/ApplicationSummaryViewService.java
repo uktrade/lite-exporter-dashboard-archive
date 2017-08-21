@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface ApplicationSummaryViewService {
+
   ApplicationSummaryView getApplicationSummaryView(String appId);
 
   String getDestination(Application application);
