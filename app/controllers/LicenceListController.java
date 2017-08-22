@@ -76,13 +76,12 @@ public class LicenceListController extends Controller {
       pageData = pageService.getPage(state.getPage(), ogelRegistrationItemViews);
     }
 
-    OgelRegistrationListView ogelRegistrationListView = new OgelRegistrationListView(licenceListTab,
-        referenceSortDirection,
+    OgelRegistrationListView ogelRegistrationListView = new OgelRegistrationListView(referenceSortDirection,
         licenseeSortDirection,
         siteSortDirection,
         dateSortDirection,
         pageData);
-    
+
     return ok(licenceList.render(licenceApplicationAddress, licenceListTab, ogelRegistrationListView));
   }
 

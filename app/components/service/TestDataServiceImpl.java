@@ -25,12 +25,12 @@ import java.util.List;
 
 public class TestDataServiceImpl implements TestDataService {
 
-  private static String APPLICANT_ID = "24492";
-  private static String OTHER_APPLICANT_ID = "2";
-  private static String OFFICER_ID = "3";
-  private static String GERMANY = "Germany";
-  private static String ICELAND = "Iceland";
-  private static String FRANCE = "France";
+  private static final String APPLICANT_ID = "24492";
+  private static final String OTHER_APPLICANT_ID = "2";
+  private static final String OFFICER_ID = "3";
+  private static final String GERMANY = "Germany";
+  private static final String ICELAND = "Iceland";
+  private static final String FRANCE = "France";
 
   private static final String APP_ID = random("APP");
   private static final String RFI_ID = random("RFI");
@@ -91,7 +91,6 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private void createApplications() {
-    String companyName = "Company Ltd";
     for (int i = 0; i < 20; i++) {
       String appId = random("APP");
       boolean isDraft = i % 4 == 0;
