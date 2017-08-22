@@ -51,8 +51,9 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   @Override
   public ApplicationSummaryView getApplicationSummaryView(String appId) {
     Application application = applicationDao.getApplication(appId);
-    return new ApplicationSummaryView(appId,
+    return new ApplicationSummaryView(application.getAppId(),
         application.getCaseReference(),
+        application.getApplicantReference(),
         getDestination(application),
         getDateSubmitted(application),
         getStatus(appId),

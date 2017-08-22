@@ -3,14 +3,16 @@ package models.view;
 public class ApplicationSummaryView {
 
   private final String appId;
+  private final String caseId;
   private final String caseDescription;
   private final String destination;
   private final String dateSubmitted;
   private final String status;
   private final String caseOfficer;
 
-  public ApplicationSummaryView(String appId, String caseDescription, String destination, String dateSubmitted, String status, String caseOfficer) {
+  public ApplicationSummaryView(String appId, String caseId, String caseDescription, String destination, String dateSubmitted, String status, String caseOfficer) {
     this.appId = appId;
+    this.caseId = caseId;
     this.caseDescription = caseDescription;
     this.destination = destination;
     this.dateSubmitted = dateSubmitted;
@@ -20,6 +22,10 @@ public class ApplicationSummaryView {
 
   public String getAppId() {
     return appId;
+  }
+
+  public String getCaseId() {
+    return caseId;
   }
 
   public String getCaseDescription() {
@@ -41,5 +47,5 @@ public class ApplicationSummaryView {
   public String getCaseOfficer() {
     return caseOfficer;
   }
-
+  
 }
