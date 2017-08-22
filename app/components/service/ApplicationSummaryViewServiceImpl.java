@@ -5,7 +5,6 @@ import components.dao.ApplicationDao;
 import components.dao.StatusUpdateDao;
 import models.Application;
 import models.StatusUpdate;
-import models.enums.StatusType;
 import models.view.ApplicationSummaryView;
 import org.apache.commons.collections.CollectionUtils;
 
@@ -38,8 +37,6 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   public ApplicationSummaryView getApplicationSummaryView(String appId) {
     Application application = applicationDao.getApplication(appId);
     List<StatusUpdate> statusUpdates = statusUpdateDao.getStatusUpdates(appId);
-    String officerName = userService.getUser(application.getCaseOfficerId()).getName();
-
     Optional<StatusUpdate> maxStatusUpdate = getMaxStatusUpdate(statusUpdates);
     String status = "";
     if (maxStatusUpdate.isPresent()) {
@@ -48,9 +45,9 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
     return new ApplicationSummaryView(appId,
         application.getCaseReference(),
         getDestination(application),
-        getDateSubmitted(statusUpdates),
+        getDateSubmitted(application),
         status,
-        officerName);
+        getOfficerName(application));
   }
 
   @Override
@@ -65,15 +62,8 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
     }
   }
 
-  private String getDateSubmitted(List<StatusUpdate> statusUpdateList) {
-    Optional<StatusUpdate> submitted = statusUpdateList.stream()
-        .filter(statusUpdate -> StatusType.SUBMITTED == statusUpdate.getStatusType())
-        .findAny();
-    if (submitted.isPresent() && submitted.get().getStartTimestamp() != null) {
-      return timeFormatService.formatDate(submitted.get().getStartTimestamp());
-    } else {
-      return "n/a";
-    }
+  private String getDateSubmitted(Application application) {
+    return timeFormatService.formatDate(application.getSubmittedTimestamp());
   }
 
   @Override
@@ -83,6 +73,14 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
       return Optional.ofNullable(maxStatusUpdate);
     } else {
       return Optional.empty();
+    }
+  }
+
+  private String getOfficerName(Application application) {
+    if (application.getCaseOfficerId() != null) {
+      return userService.getUser(application.getCaseOfficerId()).getName();
+    } else {
+      return "Not assigned yet";
     }
   }
 

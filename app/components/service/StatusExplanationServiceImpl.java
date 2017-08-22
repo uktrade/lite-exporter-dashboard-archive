@@ -25,4 +25,14 @@ public class StatusExplanationServiceImpl implements StatusExplanationService {
     return statusExplanationMap.get(statusType);
   }
 
+  @Override
+  public String getDraftStatusExplanation() {
+    return "";
+  }
+
+  @Override
+  public String getSubmittedStatusExplanation() {
+    return "";
+  }
+
 }

@@ -92,14 +92,14 @@ public class ApplicationListController extends Controller {
 
     long allCount = companyFilteredViews.size();
     long draftCount = companyFilteredViews.stream()
-        .filter(view -> view.getStatusType() == StatusType.DRAFT)
+        .filter(view -> view.getSubmittedTimestamp() == null)
         .count();
     long completedCount = companyFilteredViews.stream()
         .filter(view -> view.getStatusType() == StatusType.COMPLETE)
         .count();
     long currentCount = allCount - draftCount - completedCount;
 
-    List<ApplicationItemView> statusTypeFilteredViews = filterByStatusType(statusTypeFilter, views);
+    List<ApplicationItemView> statusTypeFilteredViews = filterByStatusType(statusTypeFilter, companyFilteredViews);
 
     Page<ApplicationItemView> pageData = pageService.getPage(state.getPage(), statusTypeFilteredViews);
 
@@ -130,20 +130,22 @@ public class ApplicationListController extends Controller {
   }
 
   private List<ApplicationItemView> filterByStatusType(StatusTypeFilter statusTypeFilter, List<ApplicationItemView> applicationItemViews) {
-    if (statusTypeFilter == StatusTypeFilter.DRAFT) {
-      return applicationItemViews.stream()
-          .filter(view -> view.getStatusType() == StatusType.DRAFT)
-          .collect(Collectors.toList());
-    } else if (statusTypeFilter == StatusTypeFilter.COMPLETED) {
-      return applicationItemViews.stream()
-          .filter(view -> view.getStatusType() == StatusType.COMPLETE)
-          .collect(Collectors.toList());
-    } else if (statusTypeFilter == StatusTypeFilter.CURRENT) {
-      return applicationItemViews.stream()
-          .filter(view -> view.getStatusType() != StatusType.DRAFT && view.getStatusType() != StatusType.COMPLETE)
-          .collect(Collectors.toList());
-    } else {
-      return applicationItemViews;
+    switch (statusTypeFilter) {
+      case DRAFT:
+        return applicationItemViews.stream()
+            .filter(view -> view.getSubmittedTimestamp() == null)
+            .collect(Collectors.toList());
+      case COMPLETED:
+        return applicationItemViews.stream()
+            .filter(view -> view.getStatusType() == StatusType.COMPLETE)
+            .collect(Collectors.toList());
+      case CURRENT:
+        return applicationItemViews.stream()
+            .filter(view -> view.getSubmittedTimestamp() != null && view.getStatusType() != StatusType.COMPLETE)
+            .collect(Collectors.toList());
+      case ALL:
+      default:
+        return applicationItemViews;
     }
   }
 

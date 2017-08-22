@@ -15,12 +15,12 @@ import models.Application;
 import models.Rfi;
 import models.RfiResponse;
 import models.StatusUpdate;
-import models.enums.ApplicationStatus;
 import models.enums.RfiStatus;
 import models.enums.StatusType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class TestDataServiceImpl implements TestDataService {
@@ -32,7 +32,7 @@ public class TestDataServiceImpl implements TestDataService {
   private static String ICELAND = "Iceland";
   private static String FRANCE = "France";
 
-  private static final String APP_ID = randomNumber("ECO");
+  private static final String APP_ID = random("APP");
   private static final String RFI_ID = random("RFI");
 
   private static final String COMPANY_ID_ONE = "SAR1";
@@ -62,32 +62,52 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   @Override
-  public void deleteAllDataAndInsertTestData() {
+  public void deleteAllDataAndInsertTwoCompaniesTestData() {
+    delete();
+    createApplications();
+    createAdvancedApplication();
+  }
+
+  @Override
+  public void deleteAllDataAndInsertOneCompanyTestData() {
+    delete();
+    insertCompleteApplication();
+    insertNoCaseOfficerApplication();
+    createAdvancedApplication();
+  }
+
+  @Override
+  public void deleteAllData() {
+    delete();
+  }
+
+  private void delete() {
     applicationDao.deleteAllApplications();
     statusUpdateDao.deleteAllStatusUpdates();
     rfiDao.deleteAllRfiData();
     rfiResponseDao.deleteAllRfiResponses();
     withdrawalRequestDao.deleteAllWithdrawalRequests();
     amendmentDao.deleteAllAmendments();
-
-    createApplications();
-    applicationDao.insert(createApplication());
-    createStatusUpdateTestData().forEach(statusUpdateDao::insertStatusUpdate);
-    createRfiTestData().forEach(rfiDao::insertRfi);
-    createRfiResponseTestData().forEach(rfiResponseDao::insertRfiResponse);
   }
 
   private void createApplications() {
     String companyName = "Company Ltd";
     for (int i = 0; i < 20; i++) {
-      String appId = randomNumber("ECO");
-      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.SUBMITTED, APPLICANT_ID, Arrays.asList(GERMANY), getCas(), OFFICER_ID);
-      StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 3, 3 + i, i, i), null);
+      String appId = random("APP");
+      boolean isDraft = i % 4 == 0;
+      Long submittedTimestamp = isDraft ? null : time(2017, 4, 3 + i, i, i);
+      String caseReference = isDraft ? null : randomNumber("ECO");
+      Application app = new Application(appId,
+          COMPANY_ID_ONE,
+          APPLICANT_ID,
+          time(2017, 3, 3 + i, i, i),
+          submittedTimestamp,
+          Collections.singletonList(GERMANY),
+          getCas(),
+          caseReference,
+          OFFICER_ID);
       applicationDao.insert(app);
-      statusUpdateDao.insertStatusUpdate(draft);
-      if (i % 4 != 0) {
-        StatusUpdate submitted = new StatusUpdate(app.getAppId(), StatusType.SUBMITTED, time(2017, 4, 3 + i, i, i), null);
-        statusUpdateDao.insertStatusUpdate(submitted);
+      if (!isDraft) {
         StatusUpdate initialChecks = new StatusUpdate(app.getAppId(), StatusType.INITIAL_CHECKS, time(2017, 4, 4 + i, i, i), null);
         statusUpdateDao.insertStatusUpdate(initialChecks);
         String rfiId = random("RFI");
@@ -107,11 +127,17 @@ public class TestDataServiceImpl implements TestDataService {
     }
     // create applications by other applicant
     for (int i = 0; i < 4; i++) {
-      String appId = randomNumber("ECO");
-      Application app = new Application(appId, COMPANY_ID_ONE, ApplicationStatus.DRAFT, OTHER_APPLICANT_ID, Arrays.asList(FRANCE), getCas(), OFFICER_ID);
+      String appId = random("APP");
+      Application app = new Application(appId,
+          COMPANY_ID_ONE,
+          OTHER_APPLICANT_ID,
+          time(2017, 1, 3 + i, i, i),
+          null,
+          Collections.singletonList(FRANCE),
+          getCas(),
+          null,
+          OFFICER_ID);
       applicationDao.insert(app);
-      StatusUpdate draft = new StatusUpdate(app.getAppId(), StatusType.DRAFT, time(2017, 1, 3 + i, i, i), null);
-      statusUpdateDao.insertStatusUpdate(draft);
     }
   }
 
@@ -127,8 +153,12 @@ public class TestDataServiceImpl implements TestDataService {
     return cas;
   }
 
-  private Application createApplication() {
-    return new Application(APP_ID, COMPANY_ID_TWO, ApplicationStatus.SUBMITTED, APPLICANT_ID, Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(), OFFICER_ID);
+  private void createAdvancedApplication() {
+    Application application = new Application(APP_ID, COMPANY_ID_TWO, APPLICANT_ID, time(2016, 11, 4, 13, 10), time(2016, 11, 4, 14, 10), Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(), randomNumber("ECO"), OFFICER_ID);
+    applicationDao.insert(application);
+    createStatusUpdateTestData().forEach(statusUpdateDao::insertStatusUpdate);
+    createRfiTestData().forEach(rfiDao::insertRfi);
+    createRfiResponseTestData().forEach(rfiResponseDao::insertRfiResponse);
   }
 
   private List<RfiResponse> createRfiResponseTestData() {
@@ -183,14 +213,6 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private List<StatusUpdate> createStatusUpdateTestData() {
-    StatusUpdate draft = new StatusUpdate(APP_ID,
-        StatusType.DRAFT,
-        time(2017, 1, 1, 0, 0),
-        null);
-    StatusUpdate submitted = new StatusUpdate(APP_ID,
-        StatusType.SUBMITTED,
-        time(2017, 2, 1, 14, 12),
-        null);
     StatusUpdate initialChecks = new StatusUpdate(APP_ID,
         StatusType.INITIAL_CHECKS,
         time(2017, 2, 2, 13, 30),
@@ -204,12 +226,56 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 7, 5, 0, 0),
         null);
     List<StatusUpdate> statusUpdates = new ArrayList<>();
-    statusUpdates.add(draft);
-    statusUpdates.add(submitted);
     statusUpdates.add(initialChecks);
     statusUpdates.add(technicalAssessment);
     statusUpdates.add(licenseUnitProcessing);
     return statusUpdates;
+  }
+
+  private void insertNoCaseOfficerApplication() {
+    String appId = random("APP");
+    Application application = new Application(appId,
+        COMPANY_ID_TWO,
+        APPLICANT_ID,
+        time(2016, 11, 3, 3, 3),
+        time(2016, 12, 4, 3, 3),
+        Collections.singletonList(FRANCE), getCas(),
+        randomNumber("ECO"),
+        null);
+    applicationDao.insert(application);
+    StatusUpdate statusUpdate = new StatusUpdate(appId, StatusType.INITIAL_CHECKS, time(2016, 12, 5, 3, 3), null);
+    statusUpdateDao.insertStatusUpdate(statusUpdate);
+  }
+
+  private void insertCompleteApplication() {
+    String appId = random("APP");
+    Application application = new Application(appId,
+        COMPANY_ID_TWO,
+        APPLICANT_ID,
+        time(2015, 3, 3, 3, 3),
+        time(2015, 4, 3, 3, 3),
+        Collections.singletonList(FRANCE), getCas(),
+        randomNumber("ECO"),
+        OFFICER_ID);
+    applicationDao.insert(application);
+    List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
+        StatusType.TECHNICAL_ASSESSMENT,
+        StatusType.LU_PROCESSING,
+        StatusType.WITH_OGD,
+        StatusType.FINAL_ASSESSMENT,
+        StatusType.COMPLETE);
+    for (int i = 0; i < statusTypes.size(); i++) {
+      StatusType statusType = statusTypes.get(i);
+      Long start = time(2017, 5, 3 + i, 3 + i, 3 + i);
+      Long end;
+      if (statusType != StatusType.COMPLETE) {
+        end = time(2017, 6, 3 + i, 3 + i, 3 + i);
+      } else {
+        end = null;
+      }
+      StatusUpdate statusUpdate = new StatusUpdate(appId, statusType, start, end);
+      statusUpdateDao.insertStatusUpdate(statusUpdate);
+    }
   }
 
 }

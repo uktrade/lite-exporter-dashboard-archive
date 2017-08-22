@@ -6,4 +6,7 @@ public interface StatusExplanationService {
 
   String getStatusExplanation(StatusType statusType);
 
+  String getDraftStatusExplanation();
+
+  String getSubmittedStatusExplanation();
 }

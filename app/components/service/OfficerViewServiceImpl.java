@@ -20,8 +20,12 @@ public class OfficerViewServiceImpl implements OfficerViewService {
   @Override
   public OfficerView getOfficerView(String appId) {
     Application application = applicationDao.getApplication(appId);
-    User user = userService.getUser(application.getCaseOfficerId());
-    return new OfficerView(user.getName(), user.getTelephone(), user.getEmail());
+    if (application.getCaseOfficerId() != null) {
+      User user = userService.getUser(application.getCaseOfficerId());
+      return new OfficerView(user.getName(), user.getTelephone(), user.getEmail());
+    } else {
+      return null;
+    }
   }
 
 }

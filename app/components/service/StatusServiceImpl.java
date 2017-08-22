@@ -12,8 +12,6 @@ public class StatusServiceImpl implements StatusService {
 
   static {
     Map<StatusType, String> statuses = new HashMap<>();
-    statuses.put(StatusType.DRAFT, "Draft");
-    statuses.put(StatusType.SUBMITTED, "Submitted");
     statuses.put(StatusType.INITIAL_CHECKS, "Initial Checks");
     statuses.put(StatusType.TECHNICAL_ASSESSMENT, "Technical assessment");
     statuses.put(StatusType.LU_PROCESSING, "Licensing unit processing");
@@ -26,6 +24,16 @@ public class StatusServiceImpl implements StatusService {
   @Override
   public String getStatus(StatusType statusType) {
     return statusMap.get(statusType);
+  }
+
+  @Override
+  public String getSubmitted() {
+    return "Submitted";
+  }
+
+  @Override
+  public String getDraft() {
+    return "Draft";
   }
 
 }

@@ -13,7 +13,7 @@ public class WithdrawalRequestRSMapper implements ResultSetMapper<WithdrawalRequ
   public WithdrawalRequest map(int index, ResultSet r, StatementContext ctx) throws SQLException {
     String withdrawalRequestId = r.getString("withdrawal_request_id");
     String appId = r.getString("app_id");
-    Long sentTimestamp = r.getLong("sent_timestamp");
+    Long sentTimestamp = LongMapper.getLong(r, "sent_timestamp");
     String sentBy = r.getString("sentBy");
     String message = r.getString("message");
     String attachments = r.getString("attachments");

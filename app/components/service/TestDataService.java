@@ -2,6 +2,9 @@ package components.service;
 
 public interface TestDataService {
 
-  void deleteAllDataAndInsertTestData();
+  void deleteAllDataAndInsertTwoCompaniesTestData();
 
+  void deleteAllDataAndInsertOneCompanyTestData();
+
+  void deleteAllData();
 }

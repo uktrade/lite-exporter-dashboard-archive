@@ -5,6 +5,7 @@ import models.Rfi;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RfiDaoImpl implements RfiDao {
@@ -18,9 +19,13 @@ public class RfiDaoImpl implements RfiDao {
 
   @Override
   public List<Rfi> getRfiList(List<String> appIds) {
-    try (final Handle handle = dbi.open()) {
-      RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);
-      return rfiJDBIDao.getRfiList(appIds);
+    if (appIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (final Handle handle = dbi.open()) {
+        RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);
+        return rfiJDBIDao.getRfiList(appIds);
+      }
     }
   }
 

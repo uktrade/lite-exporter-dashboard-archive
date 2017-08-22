@@ -6,6 +6,7 @@ import models.Application;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ApplicationDaoImpl implements ApplicationDao {
@@ -18,10 +19,22 @@ public class ApplicationDaoImpl implements ApplicationDao {
   }
 
   @Override
-  public List<Application> getApplications(List<String> customerIds) {
+  public long getApplicationCount() {
     try (final Handle handle = dbi.open()) {
       ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
-      return applicationJDBIDao.getApplications(customerIds);
+      return applicationJDBIDao.getApplicationCount();
+    }
+  }
+
+  @Override
+  public List<Application> getApplications(List<String> customerIds) {
+    if (customerIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (final Handle handle = dbi.open()) {
+        ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
+        return applicationJDBIDao.getApplications(customerIds);
+      }
     }
   }
 
@@ -39,9 +52,11 @@ public class ApplicationDaoImpl implements ApplicationDao {
       ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
       applicationJDBIDao.insert(application.getAppId(),
           application.getCompanyId(),
-          application.getApplicationStatus(),
-          application.getApplicantReference(),
+          application.getCreatedBy(),
+          application.getCreatedTimestamp(),
+          application.getSubmittedTimestamp(),
           JsonUtil.convertListToJson(application.getDestinationList()),
+          application.getApplicantReference(),
           application.getCaseReference(),
           application.getCaseOfficerId());
     }

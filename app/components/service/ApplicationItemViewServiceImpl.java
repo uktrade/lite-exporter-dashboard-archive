@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
+import components.comparator.ApplicationDateComparator;
 import components.dao.ApplicationDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
@@ -24,7 +25,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,13 +35,12 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private static final Map<SortDirection, Comparator<ApplicationItemView>> CREATED_BY_COMPARATORS = new EnumMap<>(SortDirection.class);
 
   static {
-    Comparator<ApplicationItemView> dateComparator = Comparator.comparing(ApplicationItemView::getDateSubmittedTimestamp);
-    DATE_COMPARATORS.put(SortDirection.ASC, dateComparator);
-    DATE_COMPARATORS.put(SortDirection.DESC, dateComparator.reversed());
+    DATE_COMPARATORS.put(SortDirection.ASC, new ApplicationDateComparator());
+    DATE_COMPARATORS.put(SortDirection.DESC, new ApplicationDateComparator().reversed());
     Comparator<ApplicationItemView> statusComparator = Comparator.comparing(ApplicationItemView::getApplicationStatusTimestamp);
     STATUS_COMPARATORS.put(SortDirection.ASC, statusComparator);
     STATUS_COMPARATORS.put(SortDirection.DESC, statusComparator.reversed());
-    Comparator<ApplicationItemView> createdByComparator = Comparator.comparing(ApplicationItemView::getApplicantReference);
+    Comparator<ApplicationItemView> createdByComparator = Comparator.comparing(ApplicationItemView::getCreatedBy);
     CREATED_BY_COMPARATORS.put(SortDirection.ASC, createdByComparator);
     CREATED_BY_COMPARATORS.put(SortDirection.DESC, createdByComparator.reversed());
   }
@@ -123,39 +122,53 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
   private ApplicationItemView getApplicationItemView(Application application, String companyName, Collection<StatusUpdate> statusUpdates, String openRfiId) {
 
-    long dateSubmittedTimestamp = getDateSubmittedTimestamp(statusUpdates);
-    String dateSubmitted = getDateSubmitted(dateSubmittedTimestamp);
+    long dateTimestamp;
+    if (application.getSubmittedTimestamp() != null) {
+      dateTimestamp = application.getSubmittedTimestamp();
+    } else {
+      dateTimestamp = application.getCreatedTimestamp();
+    }
 
-    StatusType statusType = null;
-    String applicationStatus = "";
-    String applicationStatusDate = "";
-    long applicationStatusTimestamp = 0;
+    String date = timeFormatService.formatDateWithSlashes(dateTimestamp);
+
+    StatusType statusType;
+    String applicationStatus;
+    long statusTimestamp;
 
     StatusUpdate maxStatusUpdate = applicationSummaryViewService.getMaxStatusUpdate(statusUpdates).orElse(null);
     if (maxStatusUpdate != null) {
       applicationStatus = statusService.getStatus(maxStatusUpdate.getStatusType());
-      Long maxTimestamp = maxStatusUpdate.getStartTimestamp();
-      if (maxTimestamp != null) {
-        applicationStatusDate = String.format("Since: %s", timeFormatService.formatDateWithSlashes(maxTimestamp));
-        applicationStatusTimestamp = maxTimestamp;
-      }
+      statusTimestamp = maxStatusUpdate.getStartTimestamp();
       statusType = maxStatusUpdate.getStatusType();
+    } else {
+      statusType = null;
+      if (application.getSubmittedTimestamp() != null) {
+        applicationStatus = statusService.getSubmitted();
+        statusTimestamp = application.getSubmittedTimestamp();
+      } else {
+        applicationStatus = statusService.getDraft();
+        statusTimestamp = application.getCreatedTimestamp();
+      }
     }
 
-    String createdBy = userService.getUser(application.getApplicantReference()).getName();
+    String applicationStatusDate = String.format("Since: %s", timeFormatService.formatDateWithSlashes(statusTimestamp));
+
+    String createdBy = userService.getUser(application.getCreatedBy()).getName();
     String destination = applicationSummaryViewService.getDestination(application);
 
     return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
         companyName,
         createdBy,
-        dateSubmittedTimestamp,
-        dateSubmitted,
+        application.getCreatedTimestamp(),
+        application.getSubmittedTimestamp(),
+        date,
         application.getCaseReference(),
+        application.getApplicantReference(),
         statusType,
         applicationStatus,
         applicationStatusDate,
-        applicationStatusTimestamp,
+        statusTimestamp,
         destination,
         openRfiId
     );
@@ -188,30 +201,6 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         .map(Rfi::getRfiId)
         .findFirst()
         .orElse(null);
-  }
-
-  private long getDateSubmittedTimestamp(Collection<StatusUpdate> statusUpdates) {
-    Optional<StatusUpdate> statusUpdate = statusUpdates.stream()
-        .filter(su -> su.getStatusType() == StatusType.SUBMITTED)
-        .findAny();
-    if (!statusUpdate.isPresent()) {
-      statusUpdate = statusUpdates.stream()
-          .filter(su -> su.getStatusType() == StatusType.DRAFT)
-          .findAny();
-    }
-    if (statusUpdate.isPresent() && statusUpdate.get().getStartTimestamp() != null) {
-      return statusUpdate.get().getStartTimestamp();
-    } else {
-      return 0;
-    }
-  }
-
-  private String getDateSubmitted(long dateSubmittedTimestamp) {
-    if (dateSubmittedTimestamp == 0) {
-      return "";
-    } else {
-      return timeFormatService.formatDateWithSlashes(dateSubmittedTimestamp);
-    }
   }
 
 }

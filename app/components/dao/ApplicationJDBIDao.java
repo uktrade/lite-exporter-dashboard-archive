@@ -1,7 +1,6 @@
 package components.dao;
 
 import models.Application;
-import models.enums.ApplicationStatus;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
@@ -22,13 +21,18 @@ public interface ApplicationJDBIDao {
   @SqlQuery("SELECT * FROM APPLICATION WHERE APP_ID = :appId")
   Application getApplication(@Bind("appId") String appId);
 
-  @SqlUpdate("INSERT INTO APPLICATION ( APP_ID, COMPANY_ID, STATUS,  APPLICANT_REFERENCE, DESTINATION_LIST, CASE_REFERENCE, CASE_OFFICER_ID) " +
-      "                        VALUES (:appId, :companyId, :status, :applicantReference, :destinationList, :caseReference, :caseOfficerId) ")
+  @SqlQuery("SELECT COUNT(*) FROM APPLICATION")
+  long getApplicationCount();
+
+  @SqlUpdate("INSERT INTO APPLICATION ( APP_ID, COMPANY_ID, CREATED_BY, CREATED_TIMESTAMP, SUBMITTED_TIMESTAMP, DESTINATION_LIST, APPLICANT_REFERENCE, CASE_REFERENCE, CASE_OFFICER_ID) " +
+      "                        VALUES (:appId, :companyId, :createdBy, :createdTimestamp, :submittedTimestamp, :destinationList, :applicantReference, :caseReference, :caseOfficerId) ")
   void insert(@Bind("appId") String appId,
               @Bind("companyId") String companyId,
-              @Bind("status") ApplicationStatus applicationStatus,
-              @Bind("applicantReference") String applicantReference,
+              @Bind("createdBy") String createdBy,
+              @Bind("createdTimestamp") Long createdTimestamp,
+              @Bind("submittedTimestamp") Long submittedTimestamp,
               @Bind("destinationList") String destinationList,
+              @Bind("applicantReference") String applicantReference,
               @Bind("caseReference") String caseReference,
               @Bind("caseOfficerId") String caseOfficerId);
 

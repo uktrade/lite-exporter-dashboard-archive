@@ -7,9 +7,11 @@ public class ApplicationItemView {
   private final String appId;
   private final String companyId;
   private final String companyName;
-  private final String applicantReference;
-  private final long dateSubmittedTimestamp;
-  private final String dateSubmitted;
+  private final String createdBy;
+  private final Long createdTimestamp;
+  private final Long submittedTimestamp;
+  private final String date;
+  private final String caseId;
   private final String caseDescription;
   private final StatusType statusType;
   private final String applicationStatus;
@@ -18,13 +20,15 @@ public class ApplicationItemView {
   private final String destination;
   private final String openRfiId;
 
-  public ApplicationItemView(String appId, String companyId, String companyName, String applicantReference, long dateSubmittedTimestamp, String dateSubmitted, String caseDescription, StatusType statusType, String applicationStatus, String applicationStatusDate, long applicationStatusTimestamp, String destination, String openRfiId) {
+  public ApplicationItemView(String appId, String companyId, String companyName, String createdBy, Long createdTimestamp, Long submittedTimestamp, String date, String caseId, String caseDescription, StatusType statusType, String applicationStatus, String applicationStatusDate, long applicationStatusTimestamp, String destination, String openRfiId) {
     this.appId = appId;
     this.companyId = companyId;
     this.companyName = companyName;
-    this.applicantReference = applicantReference;
-    this.dateSubmittedTimestamp = dateSubmittedTimestamp;
-    this.dateSubmitted = dateSubmitted;
+    this.createdBy = createdBy;
+    this.createdTimestamp = createdTimestamp;
+    this.submittedTimestamp = submittedTimestamp;
+    this.date = date;
+    this.caseId = caseId;
     this.caseDescription = caseDescription;
     this.statusType = statusType;
     this.applicationStatus = applicationStatus;
@@ -46,16 +50,24 @@ public class ApplicationItemView {
     return companyName;
   }
 
-  public String getApplicantReference() {
-    return applicantReference;
+  public String getCreatedBy() {
+    return createdBy;
   }
 
-  public long getDateSubmittedTimestamp() {
-    return dateSubmittedTimestamp;
+  public Long getCreatedTimestamp() {
+    return createdTimestamp;
   }
 
-  public String getDateSubmitted() {
-    return dateSubmitted;
+  public Long getSubmittedTimestamp() {
+    return submittedTimestamp;
+  }
+
+  public String getDate() {
+    return date;
+  }
+
+  public String getCaseId() {
+    return caseId;
   }
 
   public String getCaseDescription() {

@@ -1,9 +1,6 @@
-@import models.enums.StatusTypeFilter
+@import models.enums.{ApplicationListTab, StatusTypeFilter}
 @import models.view.ApplicationListView
 @import page._
-@import play.data.Form
-@import util._
-@import models.enums.ApplicationListTab
 @(applyLink: String, applicationListView: ApplicationListView)
 @standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
@@ -22,7 +19,9 @@
       applicationListView.getApplicationListTab == ApplicationListTab.COMPANY)
   }
 
-  @companySelect(applicationListView)
+  @if(applicationListView.getCompanySelectItemViews.size() > 1) {
+    @companySelect(applicationListView)
+  }
 
   @statusPanel(applicationListView)
 
@@ -32,7 +31,11 @@
         <tr>
           <th nowrap>
             <a href="@applicationListView.getApplicationRoute.nextDate().toString">
+            @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {
+              Date created
+            } else {
               Date submitted
+            }
             </a>
             @sortArrow(applicationListView.getDate)
           </th>
@@ -62,14 +65,22 @@
       @for(applicationItemView <- applicationListView.getPage.getItems) {
         <tr>
           <th scope="row">
-          @applicationItemView.getDateSubmitted
+          @if(applicationListView.getStatusTypeFilter != StatusTypeFilter.ALL || applicationItemView.getSubmittedTimestamp != null) {
+            @applicationItemView.getDate
+          }
           </th>
           <td>
+          @if(applicationItemView.getCaseId != null) {
             <a href="@routes.ApplicationDetailsController.statusTab(applicationItemView.getAppId)" class="bold">
-            @applicationItemView.getAppId
+            @applicationItemView.getCaseId
             </a>
             <br>
             @applicationItemView.getCaseDescription
+          } else {
+            <a href="#" class="bold">
+            @applicationItemView.getCaseDescription
+            </a>
+          }
           </td>
           <td>
             <p>
@@ -86,7 +97,7 @@
           </td>
           @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
             <td>
-            @applicationItemView.getApplicantReference
+            @applicationItemView.getCreatedBy
             </td>
           }
         </tr>

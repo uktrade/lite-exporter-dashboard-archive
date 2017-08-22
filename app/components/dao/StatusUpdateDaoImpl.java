@@ -5,6 +5,7 @@ import models.StatusUpdate;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StatusUpdateDaoImpl implements StatusUpdateDao {
@@ -26,9 +27,13 @@ public class StatusUpdateDaoImpl implements StatusUpdateDao {
 
   @Override
   public List<StatusUpdate> getStatusUpdates(List<String> appIds) {
-    try (final Handle handle = dbi.open()) {
-      StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);
-      return statusUpdateJDBIDao.getStatusUpdates(appIds);
+    if (appIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (final Handle handle = dbi.open()) {
+        StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);
+        return statusUpdateJDBIDao.getStatusUpdates(appIds);
+      }
     }
   }
 

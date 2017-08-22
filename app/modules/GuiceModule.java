@@ -49,6 +49,8 @@ import components.service.ProcessingLabelService;
 import components.service.ProcessingLabelServiceImpl;
 import components.service.RfiViewService;
 import components.service.RfiViewServiceImpl;
+import components.service.StartUpService;
+import components.service.StartUpServiceImpl;
 import components.service.StatusExplanationService;
 import components.service.StatusExplanationServiceImpl;
 import components.service.StatusItemViewService;
@@ -131,6 +133,8 @@ public class GuiceModule extends AbstractModule {
     bind(AmendmentDao.class).to(AmendmentDaoImpl.class);
     // Database test data
     bind(TestDataService.class).to(TestDataServiceImpl.class);
+    // Start up
+    bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();
   }
 
   @Provides

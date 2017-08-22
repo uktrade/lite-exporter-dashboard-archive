@@ -15,9 +15,19 @@ public class TestDataController extends Controller {
     this.testDataService = testDataService;
   }
 
-  public Result insertTestData() {
+  public Result insertDefaultTestData() {
+    return insertTestData(null);
+  }
+
+  public Result insertTestData(String testType) {
     session().clear();
-    testDataService.deleteAllDataAndInsertTestData();
+    if ("one".equals(testType)) {
+      testDataService.deleteAllDataAndInsertOneCompanyTestData();
+    } else if ("del".equals(testType)) {
+      testDataService.deleteAllData();
+    } else {
+      testDataService.deleteAllDataAndInsertTwoCompaniesTestData();
+    }
     return redirect(routes.ApplicationListController.index());
   }
 

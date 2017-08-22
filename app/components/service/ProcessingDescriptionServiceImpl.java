@@ -1,7 +1,9 @@
 package components.service;
 
 import com.google.inject.Inject;
+import models.Application;
 import models.StatusUpdate;
+import models.enums.StatusType;
 
 import java.time.Instant;
 
@@ -18,35 +20,41 @@ public class ProcessingDescriptionServiceImpl implements ProcessingDescriptionSe
 
   @Override
   public String getProcessingDescription(StatusUpdate statusUpdate) {
+    if (statusUpdate.getStatusType() == StatusType.COMPLETE) {
+      return "";
+    } else {
+      return getNonCompleteProcessingDescription(statusUpdate);
+    }
+  }
+
+  private String getNonCompleteProcessingDescription(StatusUpdate statusUpdate) {
     Long startTimestamp = statusUpdate.getStartTimestamp();
     Long endTimestamp = statusUpdate.getEndTimestamp();
-    switch (statusUpdate.getStatusType()) {
-      case DRAFT:
-        return "Created on " + timeFormatService.formatDateAndTime(startTimestamp);
-      case SUBMITTED:
-        if (startTimestamp != null) {
-          return "Submitted on " + timeFormatService.formatDateAndTime(startTimestamp);
-        } else {
-          return "";
-        }
-      case INITIAL_CHECKS:
-      case TECHNICAL_ASSESSMENT:
-      case LU_PROCESSING:
-      case WITH_OGD:
-      case FINAL_ASSESSMENT:
-      case COMPLETE:
-        if (startTimestamp != null) {
-          if (endTimestamp != null) {
-            long duration = workingDaysCalculatorService.calculateWithStartBeforeEnd(startTimestamp, endTimestamp);
-            return "Processed in " + duration + " working days";
-          } else {
-            String started = timeFormatService.formatDateAndTime(startTimestamp);
-            long duration = workingDaysCalculatorService.calculateWithStartBeforeEnd(startTimestamp, Instant.now().toEpochMilli());
-            return String.format("Started on %s<br>(%d days ago)", started, duration);
-          }
-        }
-      default:
-        return "";
+    if (startTimestamp != null) {
+      if (endTimestamp != null) {
+        long duration = workingDaysCalculatorService.calculateWithStartBeforeEnd(startTimestamp, endTimestamp);
+        return "Processed in " + duration + " working days";
+      } else {
+        String started = timeFormatService.formatDateAndTime(startTimestamp);
+        long duration = workingDaysCalculatorService.calculateWithStartBeforeEnd(startTimestamp, Instant.now().toEpochMilli());
+        return String.format("Started on %s<br>(%d days ago)", started, duration);
+      }
+    } else {
+      return "";
+    }
+  }
+
+  @Override
+  public String getDraftProcessingDescription(Application application) {
+    return "Created on " + timeFormatService.formatDateAndTime(application.getCreatedTimestamp());
+  }
+
+  @Override
+  public String getSubmittedProcessingDescription(Application application) {
+    if (application.getSubmittedTimestamp() != null) {
+      return "Submitted on " + timeFormatService.formatDateAndTime(application.getSubmittedTimestamp());
+    } else {
+      return "";
     }
   }
 
