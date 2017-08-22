@@ -109,7 +109,7 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
     try {
       return request.toCompletableFuture().get();
     } catch (InterruptedException | ExecutionException error) {
-      String message = String.format("Unable to site with id %s", siteId);
+      String message = String.format("Unable to get site with id %s", siteId);
       throw new ServiceException(message, error);
     }
   }

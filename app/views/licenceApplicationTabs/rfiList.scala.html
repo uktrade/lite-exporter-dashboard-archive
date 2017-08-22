@@ -9,7 +9,7 @@
 @for(rfiView <- rfiViews) {
   @rfiPanel(rfiView)
   @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
-    @rfiAddReplyPanel(rfiView.getAppId, rfiView.getRfiId, rfiResponseForm, addRfiResponseView)
+    @addRfiReplyPanel(rfiView.getAppId, rfiView.getRfiId, rfiResponseForm, addRfiResponseView)
   }
   @for(rfiResponseView <- rfiView.getRfiResponseViews) {
     @rfiReplyPanel(rfiResponseView)

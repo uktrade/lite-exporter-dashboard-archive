@@ -8,9 +8,23 @@ public class ProcessingLabelServiceImpl implements ProcessingLabelService {
 
   @Override
   public String getProcessingLabel(StatusUpdate statusUpdate) {
-    if (statusUpdate.getStatusType() == StatusType.COMPLETE && statusUpdate.getStartTimestamp() != null || statusUpdate.getEndTimestamp() != null) {
+    if (statusUpdate.getStatusType() == StatusType.COMPLETE) {
+      return getCompleteProcessingLabel(statusUpdate);
+    } else {
+      return getNonCompleteProcessingLabel(statusUpdate);
+    }
+  }
+
+  private String getCompleteProcessingLabel(StatusUpdate statusUpdate) {
+    if (statusUpdate.getStartTimestamp() != null || statusUpdate.getEndTimestamp() != null) {
       return "Finished";
-    } else if (statusUpdate.getStartTimestamp() == null && statusUpdate.getEndTimestamp() == null) {
+    } else {
+      return "Not started";
+    }
+  }
+
+  private String getNonCompleteProcessingLabel(StatusUpdate statusUpdate) {
+    if (statusUpdate.getStartTimestamp() == null && statusUpdate.getEndTimestamp() == null) {
       return "Not started";
     } else if (statusUpdate.getEndTimestamp() != null) {
       return "Finished";

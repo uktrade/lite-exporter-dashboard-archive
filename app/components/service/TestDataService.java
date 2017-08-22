@@ -7,4 +7,5 @@ public interface TestDataService {
   void deleteAllDataAndInsertOneCompanyTestData();
 
   void deleteAllData();
+
 }

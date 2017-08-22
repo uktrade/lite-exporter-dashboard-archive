@@ -12,9 +12,9 @@ public class LongMapper {
    * This is necessary since the standard ResultSet.getLong method returns 0 if the actual database value is null.
    * See https://stackoverflow.com/a/38241632
    *
-   * @param resultSet
-   * @param column
-   * @return
+   * @param resultSet Result of a database query
+   * @param column    Column of the database query
+   * @return Long database value of the column in the database query
    * @throws SQLException
    */
   public static Long getLong(ResultSet resultSet, String column) throws SQLException {

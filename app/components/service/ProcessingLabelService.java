@@ -10,4 +10,5 @@ public interface ProcessingLabelService {
   String getDraftProcessingLabel();
 
   String getSubmittedProcessingLabel(Application application);
+
 }

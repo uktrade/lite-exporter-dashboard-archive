@@ -32,22 +32,22 @@ import java.util.stream.Stream;
 
 public class ApplicationListController extends Controller {
 
+  private final String licenceApplicationAddress;
   private final ApplicationItemViewService applicationItemViewService;
   private final CacheService cacheService;
   private final PageService pageService;
-  private final String licenceApplicationAddress;
   private final UserService userService;
 
   @Inject
-  public ApplicationListController(ApplicationItemViewService applicationItemViewService,
+  public ApplicationListController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
+                                   ApplicationItemViewService applicationItemViewService,
                                    CacheService cacheService,
                                    PageService pageService,
-                                   @Named("licenceApplicationAddress") String licenceApplicationAddress,
                                    UserService userService) {
+    this.licenceApplicationAddress = licenceApplicationAddress;
     this.applicationItemViewService = applicationItemViewService;
     this.cacheService = cacheService;
     this.pageService = pageService;
-    this.licenceApplicationAddress = licenceApplicationAddress;
     this.userService = userService;
   }
 

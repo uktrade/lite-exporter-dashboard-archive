@@ -5,18 +5,33 @@ import components.dao.ApplicationDao;
 import components.dao.StatusUpdateDao;
 import models.Application;
 import models.StatusUpdate;
+import models.enums.StatusType;
 import models.view.ApplicationSummaryView;
 import org.apache.commons.collections.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryViewService {
 
-  private static final Comparator<StatusUpdate> MAX_STATUS_UPDATE_COMPARATOR = Comparator.comparing(StatusUpdate::getStartTimestamp, Comparator.nullsFirst(Comparator.naturalOrder()));
+  private static final List<StatusType> INVERSE_STATUS_TYPE_LIST;
+
+  static {
+    List<StatusType> statusTypeList = Arrays.asList(
+        StatusType.INITIAL_CHECKS,
+        StatusType.TECHNICAL_ASSESSMENT,
+        StatusType.LU_PROCESSING,
+        StatusType.WITH_OGD,
+        StatusType.FINAL_ASSESSMENT,
+        StatusType.COMPLETE);
+    Collections.reverse(statusTypeList);
+    INVERSE_STATUS_TYPE_LIST = Collections.unmodifiableList(statusTypeList);
+  }
 
   private final StatusUpdateDao statusUpdateDao;
   private final ApplicationDao applicationDao;
@@ -36,18 +51,22 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   @Override
   public ApplicationSummaryView getApplicationSummaryView(String appId) {
     Application application = applicationDao.getApplication(appId);
-    List<StatusUpdate> statusUpdates = statusUpdateDao.getStatusUpdates(appId);
-    Optional<StatusUpdate> maxStatusUpdate = getMaxStatusUpdate(statusUpdates);
-    String status = "";
-    if (maxStatusUpdate.isPresent()) {
-      status = statusService.getStatus(maxStatusUpdate.get().getStatusType());
-    }
     return new ApplicationSummaryView(appId,
         application.getCaseReference(),
         getDestination(application),
         getDateSubmitted(application),
-        status,
+        getStatus(appId),
         getOfficerName(application));
+  }
+
+  private String getStatus(String appId) {
+    List<StatusUpdate> statusUpdates = statusUpdateDao.getStatusUpdates(appId);
+    Optional<StatusUpdate> maxStatusUpdate = getMaxStatusUpdate(statusUpdates);
+    if (maxStatusUpdate.isPresent()) {
+      return statusService.getStatus(maxStatusUpdate.get().getStatusType());
+    } else {
+      return statusService.getSubmitted();
+    }
   }
 
   @Override
@@ -69,11 +88,16 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   @Override
   public Optional<StatusUpdate> getMaxStatusUpdate(Collection<StatusUpdate> statusUpdates) {
     if (CollectionUtils.isNotEmpty(statusUpdates)) {
-      StatusUpdate maxStatusUpdate = Collections.max(statusUpdates, MAX_STATUS_UPDATE_COMPARATOR);
-      return Optional.ofNullable(maxStatusUpdate);
-    } else {
-      return Optional.empty();
+      Map<StatusType, StatusUpdate> statusUpdateMap = new EnumMap<>(StatusType.class);
+      statusUpdates.forEach(statusUpdate -> statusUpdateMap.put(statusUpdate.getStatusType(), statusUpdate));
+      for (StatusType statusType : INVERSE_STATUS_TYPE_LIST) {
+        StatusUpdate statusUpdate = statusUpdateMap.get(statusType);
+        if (statusUpdate != null) {
+          return Optional.of(statusUpdate);
+        }
+      }
     }
+    return Optional.empty();
   }
 
   private String getOfficerName(Application application) {

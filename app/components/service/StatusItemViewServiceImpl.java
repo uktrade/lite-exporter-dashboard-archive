@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -101,7 +101,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   }
 
   private List<StatusUpdate> getStatusUpdates(String appId) {
-    Map<StatusType, StatusUpdate> statusUpdateMap = new HashMap<>();
+    Map<StatusType, StatusUpdate> statusUpdateMap = new EnumMap<>(StatusType.class);
     statusUpdateDao.getStatusUpdates(appId).forEach(su -> statusUpdateMap.put(su.getStatusType(), su));
     return STATUS_TYPE_LIST.stream().map(statusType -> {
       StatusUpdate statusUpdate = statusUpdateMap.get(statusType);

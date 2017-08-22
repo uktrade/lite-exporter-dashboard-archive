@@ -9,4 +9,5 @@ public interface StatusService {
   String getSubmitted();
 
   String getDraft();
+
 }

@@ -122,15 +122,6 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
   private ApplicationItemView getApplicationItemView(Application application, String companyName, Collection<StatusUpdate> statusUpdates, String openRfiId) {
 
-    long dateTimestamp;
-    if (application.getSubmittedTimestamp() != null) {
-      dateTimestamp = application.getSubmittedTimestamp();
-    } else {
-      dateTimestamp = application.getCreatedTimestamp();
-    }
-
-    String date = timeFormatService.formatDateWithSlashes(dateTimestamp);
-
     StatusType statusType;
     String applicationStatus;
     long statusTimestamp;
@@ -151,6 +142,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
       }
     }
 
+    String date = getDate(application);
     String applicationStatusDate = String.format("Since: %s", timeFormatService.formatDateWithSlashes(statusTimestamp));
 
     String createdBy = userService.getUser(application.getCreatedBy()).getName();
@@ -172,6 +164,16 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         destination,
         openRfiId
     );
+  }
+
+  private String getDate(Application application) {
+    long dateTimestamp;
+    if (application.getSubmittedTimestamp() != null) {
+      dateTimestamp = application.getSubmittedTimestamp();
+    } else {
+      dateTimestamp = application.getCreatedTimestamp();
+    }
+    return timeFormatService.formatDateWithSlashes(dateTimestamp);
   }
 
   private Map<String, String> getAppIdToOpenRfiIdMap(List<String> appIds) {

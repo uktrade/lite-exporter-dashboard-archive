@@ -32,7 +32,7 @@ public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
       OgelFullView ogelFullView = ogelServiceClient.getOgel(ogelRegistrationView.get().getOgelType());
       return new OgelDetailsView(registrationReference, ogelFullView.getName(), ogelFullView.getLink(), ogelFullView.getSummary());
     } else {
-      String message = String.format("Unable to find ogel license with registration reference %s for user %s", registrationReference, userId);
+      String message = String.format("Unable to find ogel licence with registration reference %s for user %s", registrationReference, userId);
       throw new ServiceException(message);
     }
   }
