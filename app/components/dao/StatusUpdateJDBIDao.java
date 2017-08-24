@@ -21,6 +21,10 @@ public interface StatusUpdateJDBIDao {
   @SqlQuery("SELECT * FROM STATUS_UPDATE WHERE APP_ID in (<appIds>)")
   List<StatusUpdate> getStatusUpdates(@BindIn("appIds") List<String> appIds);
 
+  @Mapper(StatusUpdateRSMapper.class)
+  @SqlQuery("SELECT * FROM STATUS_UPDATE WHERE APP_ID = :appId AND STATUS_TYPE = :statusType")
+  StatusUpdate getStatusUpdate(@Bind("appId") String appId, @Bind("statusType") String statusType);
+
   @SqlUpdate("INSERT INTO STATUS_UPDATE (APP_ID, STATUS_TYPE, START_TIMESTAMP, END_TIMESTAMP) VALUES (:appId, :statusType, :startTimestamp, :endTimestamp)")
   void insert(@Bind("appId") String appId, @Bind("statusType") String statusType, @Bind("startTimestamp") Long startTimestamp, @Bind("endTimestamp") Long endTimestamp);
 

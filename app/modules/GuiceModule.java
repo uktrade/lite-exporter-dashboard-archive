@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
+import com.rabbitmq.client.Channel;
 import components.client.CustomerServiceClient;
 import components.client.CustomerServiceClientImpl;
 import components.client.OgelServiceClient;
@@ -27,6 +28,12 @@ import components.dao.StatusUpdateDao;
 import components.dao.StatusUpdateDaoImpl;
 import components.dao.WithdrawalRequestDao;
 import components.dao.WithdrawalRequestDaoImpl;
+import components.message.ConnectionManager;
+import components.message.ConnectionManagerImpl;
+import components.message.QueueManager;
+import components.message.QueueManagerImpl;
+import components.message.SpireRelayConsumer;
+import components.message.SpireRelayConsumerImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
 import components.service.ApplicationItemViewService;
@@ -135,6 +142,21 @@ public class GuiceModule extends AbstractModule {
     bind(TestDataService.class).to(TestDataServiceImpl.class);
     // Start up
     bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();
+    // Queue
+    bindConstant().annotatedWith(Names.named("rabbitMqUrl"))
+        .to(configuration.getString("spireRelayService.rabbitMqUrl"));
+    bindConstant().annotatedWith(Names.named("consumerQueueName"))
+        .to(configuration.getString("spireRelayService.consumerQueueName"));
+    bind(ConnectionManager.class).to(ConnectionManagerImpl.class).asEagerSingleton();
+    bind(QueueManager.class).to(QueueManagerImpl.class).asEagerSingleton();
+    bind(SpireRelayConsumer.class).to(SpireRelayConsumerImpl.class).asEagerSingleton();
+  }
+
+
+  @Provides
+  @Singleton
+  public Channel channel(ConnectionManager connectionManager) {
+    return connectionManager.createChannel();
   }
 
   @Provides
@@ -152,4 +174,5 @@ public class GuiceModule extends AbstractModule {
   public DBI provideDataSourceDbi(Database database) {
     return new DBI(database.getUrl());
   }
+
 }

@@ -19,7 +19,8 @@ libraryDependencies ++= Seq(
   javaWs,
   "org.flywaydb" %% "flyway-play" % "3.1.0",
   "org.xerial" % "sqlite-jdbc" % "3.19.3",
-  "org.jdbi" % "jdbi" % "2.78"
+  "org.jdbi" % "jdbi" % "2.78",
+  "com.rabbitmq" % "amqp-client" % "4.2.0"
 )
 
 libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.3"

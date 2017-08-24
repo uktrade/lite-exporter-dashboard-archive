@@ -1,6 +1,8 @@
 package components.dao;
 
 import com.google.inject.Inject;
+import components.exceptions.DatabaseException;
+import models.Application;
 import models.StatusUpdate;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -41,7 +43,21 @@ public class StatusUpdateDaoImpl implements StatusUpdateDao {
   public void insertStatusUpdate(StatusUpdate statusUpdate) {
     try (final Handle handle = dbi.open()) {
       StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);
-      statusUpdateJDBIDao.insert(statusUpdate.getAppId(), statusUpdate.getStatusType().toString(), statusUpdate.getStartTimestamp(), statusUpdate.getEndTimestamp());
+      ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
+      handle.useTransaction((conn, status) -> {
+        Application application = applicationJDBIDao.getApplication(statusUpdate.getAppId());
+        if (application == null) {
+          String message = "Unable to insert statusUpdate since no application exists with appId" + statusUpdate.getAppId();
+          throw new DatabaseException(message);
+        }
+        StatusUpdate existingStatusUpdate = statusUpdateJDBIDao.getStatusUpdate(statusUpdate.getAppId(), statusUpdate.getStatusType().toString());
+        if (existingStatusUpdate != null) {
+          String message = String.format("Unable to insert statusUpdate since a statusUpdate with the same appId %s and status %s already exists",
+              statusUpdate.getAppId(), statusUpdate.getStatusType());
+          throw new DatabaseException(message);
+        }
+        statusUpdateJDBIDao.insert(statusUpdate.getAppId(), statusUpdate.getStatusType().toString(), statusUpdate.getStartTimestamp(), statusUpdate.getEndTimestamp());
+      });
     }
   }
 
