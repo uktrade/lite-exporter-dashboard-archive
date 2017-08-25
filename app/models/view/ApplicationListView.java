@@ -13,6 +13,7 @@ public class ApplicationListView {
   private final ApplicationListTab applicationListTab;
   private final String companyId;
   private final List<CompanySelectItemView> companySelectItemViews;
+  private final boolean showCompanyTab;
   private final SortDirection date;
   private final SortDirection status;
   private final SortDirection createdBy;
@@ -23,10 +24,23 @@ public class ApplicationListView {
   private final long completedCount;
   private final Page<ApplicationItemView> page;
 
-  public ApplicationListView(ApplicationListTab applicationListTab, String companyId, List<CompanySelectItemView> companySelectItemViews, SortDirection date, SortDirection status, SortDirection createdBy, StatusTypeFilter statusTypeFilter, long allCount, long draftCount, long currentCount, long completedCount, Page<ApplicationItemView> page) {
+  public ApplicationListView(ApplicationListTab applicationListTab,
+                             String companyId,
+                             List<CompanySelectItemView> companySelectItemViews,
+                             boolean showCompanyTab,
+                             SortDirection date,
+                             SortDirection status,
+                             SortDirection createdBy,
+                             StatusTypeFilter statusTypeFilter,
+                             long allCount,
+                             long draftCount,
+                             long currentCount,
+                             long completedCount,
+                             Page<ApplicationItemView> page) {
     this.applicationListTab = applicationListTab;
     this.companyId = companyId;
     this.companySelectItemViews = companySelectItemViews;
+    this.showCompanyTab = showCompanyTab;
     this.date = date;
     this.status = status;
     this.createdBy = createdBy;
@@ -48,6 +62,10 @@ public class ApplicationListView {
 
   public List<CompanySelectItemView> getCompanySelectItemViews() {
     return companySelectItemViews;
+  }
+
+  public boolean isShowCompanyTab() {
+    return showCompanyTab;
   }
 
   public SortDirection getDate() {

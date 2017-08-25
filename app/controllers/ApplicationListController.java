@@ -4,7 +4,9 @@ import static components.util.StreamUtil.distinctByKey;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import components.service.ApplicationFilterService;
 import components.service.ApplicationItemViewService;
+import components.service.ApplicationSortService;
 import components.service.CacheService;
 import components.service.PageService;
 import components.service.UserService;
@@ -37,18 +39,24 @@ public class ApplicationListController extends Controller {
   private final CacheService cacheService;
   private final PageService pageService;
   private final UserService userService;
+  private final ApplicationFilterService applicationFilterService;
+  private final ApplicationSortService applicationSortService;
 
   @Inject
   public ApplicationListController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
                                    ApplicationItemViewService applicationItemViewService,
                                    CacheService cacheService,
                                    PageService pageService,
-                                   UserService userService) {
+                                   UserService userService,
+                                   ApplicationFilterService applicationFilterService,
+                                   ApplicationSortService applicationSortService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.applicationItemViewService = applicationItemViewService;
     this.cacheService = cacheService;
     this.pageService = pageService;
     this.userService = userService;
+    this.applicationFilterService = applicationFilterService;
+    this.applicationSortService = applicationSortService;
   }
 
   public Result index() {
@@ -79,7 +87,18 @@ public class ApplicationListController extends Controller {
       createdBySortDirection = null;
     }
 
-    List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(currentUser.getId(), dateSortDirection, statusSortDirection, createdBySortDirection);
+    List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(currentUser.getId());
+
+    applicationSortService.sort(views, dateSortDirection, statusSortDirection, createdBySortDirection);
+
+    long otherUserCount = views.stream()
+        .map(ApplicationItemView::getCreatedById)
+        .filter(id -> !currentUser.getId().equals(id))
+        .distinct()
+        .count();
+    boolean showCompanyTab = otherUserCount > 0;
+
+    List<ApplicationItemView> userFilteredViews = applicationFilterService.filterByUser(currentUser.getId(), applicationListTab, views);
 
     List<CompanySelectItemView> companyNames = views.stream()
         .filter(distinctByKey(ApplicationItemView::getCompanyId))
@@ -88,7 +107,7 @@ public class ApplicationListController extends Controller {
         .collect(Collectors.toList());
 
     String companyId = state.getCompany();
-    List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, views);
+    List<ApplicationItemView> companyFilteredViews = applicationFilterService.filterByCompanyId(companyId, userFilteredViews);
 
     long allCount = companyFilteredViews.size();
     long draftCount = companyFilteredViews.stream()
@@ -99,13 +118,14 @@ public class ApplicationListController extends Controller {
         .count();
     long currentCount = allCount - draftCount - completedCount;
 
-    List<ApplicationItemView> statusTypeFilteredViews = filterByStatusType(statusTypeFilter, companyFilteredViews);
+    List<ApplicationItemView> statusTypeFilteredViews = applicationFilterService.filterByStatusType(statusTypeFilter, companyFilteredViews);
 
     Page<ApplicationItemView> pageData = pageService.getPage(state.getPage(), statusTypeFilteredViews);
 
     ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
         companyId,
         companyNames,
+        showCompanyTab,
         dateSortDirection,
         statusSortDirection,
         createdBySortDirection,
@@ -117,36 +137,6 @@ public class ApplicationListController extends Controller {
         pageData);
 
     return ok(applicationList.render(licenceApplicationAddress, applicationListView));
-  }
-
-  private List<ApplicationItemView> filterByCompanyId(String companyId, List<ApplicationItemView> applicationItemViews) {
-    if (companyId != null && !companyId.equals("all")) {
-      return applicationItemViews.stream()
-          .filter(view -> companyId.equals(view.getCompanyId()))
-          .collect(Collectors.toList());
-    } else {
-      return applicationItemViews;
-    }
-  }
-
-  private List<ApplicationItemView> filterByStatusType(StatusTypeFilter statusTypeFilter, List<ApplicationItemView> applicationItemViews) {
-    switch (statusTypeFilter) {
-      case DRAFT:
-        return applicationItemViews.stream()
-            .filter(view -> view.getSubmittedTimestamp() == null)
-            .collect(Collectors.toList());
-      case COMPLETED:
-        return applicationItemViews.stream()
-            .filter(view -> view.getStatusType() == StatusType.COMPLETE)
-            .collect(Collectors.toList());
-      case CURRENT:
-        return applicationItemViews.stream()
-            .filter(view -> view.getSubmittedTimestamp() != null && view.getStatusType() != StatusType.COMPLETE)
-            .collect(Collectors.toList());
-      case ALL:
-      default:
-        return applicationItemViews;
-    }
   }
 
 }

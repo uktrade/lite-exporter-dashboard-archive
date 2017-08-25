@@ -8,4 +8,5 @@ public interface TestDataService {
 
   void deleteAllData();
 
+  void deleteAllDataAndInsertOtherUserApplications();
 }

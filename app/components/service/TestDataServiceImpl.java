@@ -64,6 +64,7 @@ public class TestDataServiceImpl implements TestDataService {
   public void deleteAllDataAndInsertTwoCompaniesTestData() {
     delete();
     createApplications();
+    createSecondUserApplications();
     createAdvancedApplication();
   }
 
@@ -79,6 +80,12 @@ public class TestDataServiceImpl implements TestDataService {
   @Override
   public void deleteAllData() {
     delete();
+  }
+
+  @Override
+  public void deleteAllDataAndInsertOtherUserApplications() {
+    delete();
+    createSecondUserApplications();
   }
 
   private void delete() {
@@ -137,6 +144,10 @@ public class TestDataServiceImpl implements TestDataService {
         }
       }
     }
+
+  }
+
+  private void createSecondUserApplications() {
     // create applications by other applicant
     for (int i = 0; i < 4; i++) {
       String appId = random("APP");

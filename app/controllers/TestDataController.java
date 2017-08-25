@@ -25,6 +25,8 @@ public class TestDataController extends Controller {
       testDataService.deleteAllDataAndInsertOneCompanyTestData();
     } else if ("del".equals(testType)) {
       testDataService.deleteAllData();
+    } else if ("other".equals(testType)) {
+      testDataService.deleteAllDataAndInsertOtherUserApplications();
     } else {
       testDataService.deleteAllDataAndInsertTwoCompaniesTestData();
     }

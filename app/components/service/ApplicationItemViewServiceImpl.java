@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
-import components.comparator.ApplicationDateComparator;
 import components.dao.ApplicationDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
@@ -13,7 +12,6 @@ import models.Application;
 import models.Rfi;
 import models.RfiResponse;
 import models.StatusUpdate;
-import models.enums.SortDirection;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
@@ -21,7 +19,6 @@ import uk.gov.bis.lite.customer.api.view.CustomerView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,21 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
-
-  private static final Map<SortDirection, Comparator<ApplicationItemView>> DATE_COMPARATORS = new EnumMap<>(SortDirection.class);
-  private static final Map<SortDirection, Comparator<ApplicationItemView>> STATUS_COMPARATORS = new EnumMap<>(SortDirection.class);
-  private static final Map<SortDirection, Comparator<ApplicationItemView>> CREATED_BY_COMPARATORS = new EnumMap<>(SortDirection.class);
-
-  static {
-    DATE_COMPARATORS.put(SortDirection.ASC, new ApplicationDateComparator());
-    DATE_COMPARATORS.put(SortDirection.DESC, new ApplicationDateComparator().reversed());
-    Comparator<ApplicationItemView> statusComparator = Comparator.comparing(ApplicationItemView::getApplicationStatusTimestamp);
-    STATUS_COMPARATORS.put(SortDirection.ASC, statusComparator);
-    STATUS_COMPARATORS.put(SortDirection.DESC, statusComparator.reversed());
-    Comparator<ApplicationItemView> createdByComparator = Comparator.comparing(ApplicationItemView::getCreatedBy);
-    CREATED_BY_COMPARATORS.put(SortDirection.ASC, createdByComparator);
-    CREATED_BY_COMPARATORS.put(SortDirection.DESC, createdByComparator.reversed());
-  }
 
   private final ApplicationDao applicationDao;
   private final StatusUpdateDao statusUpdateDao;
@@ -77,7 +59,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   @Override
-  public List<ApplicationItemView> getApplicationItemViews(String userId, SortDirection dateSortDirection, SortDirection statusSortDirection, SortDirection createdBySortDirection) {
+  public List<ApplicationItemView> getApplicationItemViews(String userId) {
     List<CustomerView> customerViews = customerServiceClient.getCustomers(userId);
 
     Map<String, String> customerIdToCompanyName = customerViews.stream()
@@ -93,7 +75,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
     Map<String, String> appIdToOpenRfiIdMap = getAppIdToOpenRfiIdMap(appIds);
 
-    List<ApplicationItemView> applicationItemViews = applications.stream()
+    return applications.stream()
         .map(application -> {
           String companyName = customerIdToCompanyName.get(application.getCompanyId());
           String appId = application.getAppId();
@@ -102,22 +84,6 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
           return getApplicationItemView(application, companyName, statusUpdates, openRfiId);
         })
         .collect(Collectors.toList());
-
-    sort(applicationItemViews, dateSortDirection, statusSortDirection, createdBySortDirection);
-
-    return applicationItemViews;
-  }
-
-  private void sort(List<ApplicationItemView> applicationItemViews, SortDirection dateSortDirection, SortDirection statusSortDirection, SortDirection createdBySortDirection) {
-    if (dateSortDirection != null) {
-      applicationItemViews.sort(DATE_COMPARATORS.get(dateSortDirection));
-    }
-    if (statusSortDirection != null) {
-      applicationItemViews.sort(STATUS_COMPARATORS.get(statusSortDirection));
-    }
-    if (createdBySortDirection != null) {
-      applicationItemViews.sort(CREATED_BY_COMPARATORS.get(createdBySortDirection));
-    }
   }
 
   private ApplicationItemView getApplicationItemView(Application application, String companyName, Collection<StatusUpdate> statusUpdates, String openRfiId) {
@@ -145,13 +111,15 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     String date = getDate(application);
     String applicationStatusDate = String.format("Since: %s", timeFormatService.formatDateWithSlashes(statusTimestamp));
 
-    String createdBy = userService.getUser(application.getCreatedBy()).getName();
+    String createdById = application.getCreatedBy();
+    String createdByName = userService.getUser(createdById).getName();
     String destination = applicationSummaryViewService.getDestination(application);
 
     return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
         companyName,
-        createdBy,
+        createdById,
+        createdByName,
         application.getCreatedTimestamp(),
         application.getSubmittedTimestamp(),
         date,

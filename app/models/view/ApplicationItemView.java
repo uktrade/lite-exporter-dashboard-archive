@@ -7,7 +7,8 @@ public class ApplicationItemView {
   private final String appId;
   private final String companyId;
   private final String companyName;
-  private final String createdBy;
+  private final String createdById;
+  private final String createdByName;
   private final Long createdTimestamp;
   private final Long submittedTimestamp;
   private final String date;
@@ -20,11 +21,12 @@ public class ApplicationItemView {
   private final String destination;
   private final String openRfiId;
 
-  public ApplicationItemView(String appId, String companyId, String companyName, String createdBy, Long createdTimestamp, Long submittedTimestamp, String date, String caseId, String caseDescription, StatusType statusType, String applicationStatus, String applicationStatusDate, long applicationStatusTimestamp, String destination, String openRfiId) {
+  public ApplicationItemView(String appId, String companyId, String companyName, String createdById, String createdByName, Long createdTimestamp, Long submittedTimestamp, String date, String caseId, String caseDescription, StatusType statusType, String applicationStatus, String applicationStatusDate, long applicationStatusTimestamp, String destination, String openRfiId) {
     this.appId = appId;
     this.companyId = companyId;
     this.companyName = companyName;
-    this.createdBy = createdBy;
+    this.createdById = createdById;
+    this.createdByName = createdByName;
     this.createdTimestamp = createdTimestamp;
     this.submittedTimestamp = submittedTimestamp;
     this.date = date;
@@ -50,8 +52,12 @@ public class ApplicationItemView {
     return companyName;
   }
 
-  public String getCreatedBy() {
-    return createdBy;
+  public String getCreatedById() {
+    return createdById;
+  }
+
+  public String getCreatedByName() {
+    return createdByName;
   }
 
   public Long getCreatedTimestamp() {
@@ -97,5 +103,4 @@ public class ApplicationItemView {
   public String getOpenRfiId() {
     return openRfiId;
   }
-
 }
