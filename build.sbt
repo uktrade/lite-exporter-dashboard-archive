@@ -29,6 +29,10 @@ libraryDependencies += "uk.gov.bis.lite" % "lite-ogel-service-api" % "1.0"
 // We need this dependency to use JDBI @BindIn annotation
 libraryDependencies += "org.antlr" % "stringtemplate" % "3.2.1"
 
+libraryDependencies += "au.com.dius" % "pact-jvm-consumer-junit_2.11" % "3.3.10" % "test"
+libraryDependencies += "com.itv" %% "scalapact-scalatest" % "2.1.2" % "test"
+libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
+
 resolvers += "Lite Lib Releases " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
 
 // Contains all files and libraries shared across other projects
