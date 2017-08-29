@@ -4,10 +4,10 @@
 @import page._
 @import play.data.Form
 
-@(rfiViews: util.List[RfiView], rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+@(rfiViews: util.List[RfiView], allowResponses: Boolean, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
   @for(rfiView <- rfiViews) {
-    @rfiPanel(rfiView)
+    @rfiPanel(rfiView, allowResponses)
     @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
       @addRfiReplyPanel(rfiView.getAppId, rfiView.getRfiId, rfiResponseForm, addRfiResponseView)
     }

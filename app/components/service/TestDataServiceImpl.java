@@ -301,6 +301,14 @@ public class TestDataServiceImpl implements TestDataService {
       StatusUpdate statusUpdate = new StatusUpdate(appId, statusType, start, end);
       statusUpdateDao.insertStatusUpdate(statusUpdate);
     }
+    Rfi rfi = new Rfi(random("RFI"),
+        appId,
+        RfiStatus.ACTIVE,
+        time(2017, 5, 5, 5, 5),
+        time(2017, 6, 6, 6, 6),
+        OFFICER_ID,
+        "This is a rfi.");
+    rfiDao.insertRfi(rfi);
   }
 
 }

@@ -91,7 +91,7 @@
             @applicationItemView.getApplicationStatusDate
             </p>
             @if(applicationItemView.getOpenRfiId != null) {
-              @rfiLabel(routes.ApplicationDetailsController.rfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
+              @rfiLabel(routes.RfiTabController.rfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
             }
           </td>
           <td>

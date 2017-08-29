@@ -30,7 +30,7 @@
     <h4 class="heading-small">Message</h4>
     <div>
 
-      <form action="@routes.ApplicationDetailsController.submitReply(appId)" method="POST">
+      <form action="@routes.RfiTabController.submitResponse(appId)" method="POST">
         @formTextarea(rfiResponseForm("responseMessage"), rows = "4", cssClass = "form-control-wide") {
 
         }

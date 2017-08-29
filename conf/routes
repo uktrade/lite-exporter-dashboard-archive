@@ -10,9 +10,9 @@ GET         /applications                                         controllers.Ap
 
 # Application tabs
 GET         /application/*applicationRef/status-tracker           controllers.ApplicationDetailsController.statusTab(applicationRef: String)
-GET         /application/*applicationRef/rfi                      controllers.ApplicationDetailsController.rfiTab(applicationRef: String)
-GET         /application/*applicationRef/rfi/*rfiId               controllers.ApplicationDetailsController.reply(applicationRef: String, rfiId: String)
-POST        /application/*applicationRef/rfi                      controllers.ApplicationDetailsController.submitReply(applicationRef: String)
+GET         /application/*applicationRef/rfi                      controllers.RfiTabController.rfiTab(applicationRef: String)
+GET         /application/*applicationRef/rfi/*rfiId               controllers.RfiTabController.respond(applicationRef: String, rfiId: String)
+POST        /application/*applicationRef/rfi                      controllers.RfiTabController.submitResponse(applicationRef: String)
 GET         /application/*applicationRef/amend-application        controllers.ApplicationDetailsController.amendTab(applicationRef: String, action: Option[String])
 POST        /application/*applicationRef/amend-application        controllers.ApplicationDetailsController.amendApplication(applicationRef: String)
 GET         /application/*applicationRef/outcome-documents        controllers.ApplicationDetailsController.outcomeTab(applicationRef: String)

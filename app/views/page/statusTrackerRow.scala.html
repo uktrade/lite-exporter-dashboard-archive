@@ -2,7 +2,6 @@
 @import page._
 
 @(statusItemView: StatusItemView)
-@*(stageName: String, stageDescription: String = "", statusItemRfiViews: util.List[StatusItemRfiView], statusLabel: Html, statusDetail: Option[Html])*@
 <tr>
   <td class="status-table-stage">
     <div class="bold-medium">@statusItemView.getStatus</div>
@@ -10,16 +9,24 @@
       <p>@statusItemView.getStatusExplanation</p>
     }
     @for(statusItemRfiView <- statusItemView.getStatusItemRfiViews) {
-      @rfiLabel(routes.ApplicationDetailsController.rfiTab(statusItemRfiView.getAppId).withFragment(statusItemRfiView.getRfiId).toString,
+      @rfiLabel(routes.RfiTabController.rfiTab(statusItemRfiView.getAppId).withFragment(statusItemRfiView.getRfiId).toString,
         statusItemRfiView.getDescription)
     }
   </td>
   <td class="status-table-status">
     @statusItemView.getProcessLabel match {
-      case "Finished" => { @statusLabel("Finished", "finished") }
-      case "In progress" => { @statusLabel("In progress", "progress") }
-      case "Not started" => { @statusLabel("Not started", "neutral") }
-      case default => { @statusLabel(default, "neutral") }
+      case "Finished" => {
+        @statusLabel("Finished", "finished")
+      }
+      case "In progress" => {
+        @statusLabel("In progress", "progress")
+      }
+      case "Not started" => {
+        @statusLabel("Not started", "neutral")
+      }
+      case default => {
+        @statusLabel(default, "neutral")
+      }
     }
     @if(statusItemView.getProcessLabel != null) {
       <p class="secondary-text">@Html(statusItemView.getProcessDescription)</p>
