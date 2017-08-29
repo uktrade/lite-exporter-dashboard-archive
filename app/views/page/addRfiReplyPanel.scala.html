@@ -1,4 +1,5 @@
 @import models.view.AddRfiResponseView
+@import page._
 @import play.data.Form
 @import views.html.common.form._
 
@@ -34,6 +35,9 @@
 
         }
         <input type="hidden" name="rfiId" value="@rfiResponseForm("rfiId").value" >
+
+        <h4 class="heading-small">Attach a file</h4>
+        @fileUpload()
 
         <button class="button">Send</button>
 
