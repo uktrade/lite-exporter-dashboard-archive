@@ -6,12 +6,12 @@
 
 @(rfiViews: util.List[RfiView], rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
-@for(rfiView <- rfiViews) {
-  @rfiPanel(rfiView)
-  @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
-    @addRfiReplyPanel(rfiView.getAppId, rfiView.getRfiId, rfiResponseForm, addRfiResponseView)
+  @for(rfiView <- rfiViews) {
+    @rfiPanel(rfiView)
+    @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
+      @addRfiReplyPanel(rfiView.getAppId, rfiView.getRfiId, rfiResponseForm, addRfiResponseView)
+    }
+    @if(rfiView.getRfiResponseView != null) {
+      @rfiReplyPanel(rfiView.getRfiResponseView)
+    }
   }
-  @for(rfiResponseView <- rfiView.getRfiResponseViews) {
-    @rfiReplyPanel(rfiResponseView)
-  }
-}

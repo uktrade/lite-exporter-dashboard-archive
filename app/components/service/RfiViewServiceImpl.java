@@ -58,22 +58,20 @@ public class RfiViewServiceImpl implements RfiViewService {
     String receivedOn = timeFormatService.formatDateAndTime(rfi.getReceivedTimestamp());
     String replyBy = getReplyBy(rfi);
     String sender = userService.getUser(rfi.getSentBy()).getName();
-    List<RfiResponseView> rfiResponseViews = getRfiResponseViews(rfi.getRfiId());
-    return new RfiView(rfi.getAppId(), rfi.getRfiId(), receivedOn, replyBy, sender, rfi.getMessage(), rfiResponseViews);
+    RfiResponseView rfiResponseView = getRfiResponseView(rfi.getRfiId());
+    return new RfiView(rfi.getAppId(), rfi.getRfiId(), receivedOn, replyBy, sender, rfi.getMessage(), rfiResponseView);
   }
 
-  private List<RfiResponseView> getRfiResponseViews(String rfiId) {
-    return rfiResponseDao.getRfiResponses(rfiId).stream()
-        .sorted(Comparator.comparing(RfiResponse::getSentTimestamp))
-        .map(this::getRfiResponseView)
-        .collect(Collectors.toList());
-  }
-
-  private RfiResponseView getRfiResponseView(RfiResponse rfiResponse) {
-    String sentBy = userService.getUser(rfiResponse.getSentBy()).getName();
-    String sentAt = timeFormatService.formatDate(rfiResponse.getSentTimestamp());
-    String message = rfiResponse.getMessage();
-    return new RfiResponseView(sentBy, sentAt, message);
+  private RfiResponseView getRfiResponseView(String rfiId) {
+    RfiResponse rfiResponse = rfiResponseDao.getRfiResponse(rfiId);
+    if (rfiResponse != null) {
+      String sentBy = userService.getUser(rfiResponse.getSentBy()).getName();
+      String sentAt = timeFormatService.formatDate(rfiResponse.getSentTimestamp());
+      String message = rfiResponse.getMessage();
+      return new RfiResponseView(sentBy, sentAt, message);
+    } else {
+      return null;
+    }
   }
 
   private String getReplyBy(Rfi rfi) {

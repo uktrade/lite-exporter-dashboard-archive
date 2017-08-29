@@ -8,10 +8,10 @@ public interface RfiResponseDao {
 
   List<RfiResponse> getRfiResponses(List<String> rfiIds);
 
-  List<RfiResponse> getRfiResponses(String rfiId);
+  RfiResponse getRfiResponse(String rfiId);
 
   void insertRfiResponse(RfiResponse rfiResponse);
 
   void deleteAllRfiResponses();
-  
+
 }

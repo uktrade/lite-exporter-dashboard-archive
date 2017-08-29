@@ -19,7 +19,7 @@ public interface RfiResponseJDBIDao {
 
   @Mapper(RfiResponseRSMapper.class)
   @SqlQuery("SELECT * FROM RFI_RESPONSE WHERE RFI_ID = :rfiId")
-  List<RfiResponse> getRfiResponses(@Bind("rfiId") String rfiId);
+  RfiResponse getRfiResponse(@Bind("rfiId") String rfiId);
 
   @SqlUpdate("INSERT INTO RFI_RESPONSE (RFI_ID, SENT_BY, SENT_TIMESTAMP, MESSAGE, ATTACHMENTS) VALUES (:rfiId, :sentBy, :sentTimestamp, :message, :attachments)")
   void insertRfiResponse(@Bind("rfiId") String rfiId,

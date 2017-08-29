@@ -44,7 +44,9 @@
     @Html(rfiView.getMessage)
     </div>
 
-    <a href="@routes.ApplicationDetailsController.reply(rfiView.getAppId, rfiView.getRfiId).withFragment("reply")" class="rfi-reply-link"><span class="icon-reply"></span>
-      Reply to this message</a>
+    @if(rfiView.getRfiResponseView == null) {
+      <a href="@routes.ApplicationDetailsController.reply(rfiView.getAppId, rfiView.getRfiId).withFragment("reply")" class="rfi-reply-link"><span class="icon-reply"></span>
+        Reply to this message</a>
+    }
   </article>
 </div>

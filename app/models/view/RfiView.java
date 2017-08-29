@@ -1,7 +1,5 @@
 package models.view;
 
-import java.util.List;
-
 public class RfiView {
 
   private final String appId;
@@ -10,16 +8,16 @@ public class RfiView {
   private final String replyBy;
   private final String sender;
   private final String message;
-  private final List<RfiResponseView> rfiResponseViews;
+  private final RfiResponseView rfiResponseView;
 
-  public RfiView(String appId, String rfiId, String receivedOn, String replyBy, String sender, String message, List<RfiResponseView> rfiResponseViews) {
+  public RfiView(String appId, String rfiId, String receivedOn, String replyBy, String sender, String message, RfiResponseView rfiResponseView) {
     this.appId = appId;
     this.rfiId = rfiId;
     this.receivedOn = receivedOn;
     this.replyBy = replyBy;
     this.sender = sender;
     this.message = message;
-    this.rfiResponseViews = rfiResponseViews;
+    this.rfiResponseView = rfiResponseView;
   }
 
   public String getAppId() {
@@ -46,8 +44,9 @@ public class RfiView {
     return message;
   }
 
-  public List<RfiResponseView> getRfiResponseViews() {
-    return rfiResponseViews;
+  public RfiResponseView getRfiResponseView() {
+    return rfiResponseView;
   }
 
 }
+

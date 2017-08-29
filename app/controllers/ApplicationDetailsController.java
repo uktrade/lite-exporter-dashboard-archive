@@ -12,6 +12,7 @@ import components.service.StatusItemViewService;
 import components.service.UserService;
 import components.util.EnumUtil;
 import components.util.RandomUtil;
+import controllers.action.NoDuplicateRfiResponseCheck;
 import models.Amendment;
 import models.RfiResponse;
 import models.User;
@@ -28,6 +29,7 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.With;
 import scala.Option;
 import views.html.licenceApplicationTabs.amendApplicationTab;
 import views.html.licenceApplicationTabs.outcomeDocsTab;
@@ -73,6 +75,7 @@ public class ApplicationDetailsController extends Controller {
     this.officerViewService = officerViewService;
   }
 
+  @With(NoDuplicateRfiResponseCheck.class)
   public Result submitReply(String appId) {
     User currentUser = userService.getCurrentUser();
     Form<RfiResponseForm> rfiResponseForm = formFactory.form(RfiResponseForm.class).bindFromRequest();
