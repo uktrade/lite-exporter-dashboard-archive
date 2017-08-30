@@ -2,7 +2,7 @@ name := "lite-exporter-dashboard"
 
 version := scala.util.Properties.envOrElse("BUILD_VERSION", formatDateAsVersion() + "-SNAPSHOT")
 
-def formatDateAsVersion () : String = {
+def formatDateAsVersion(): String = {
   val sdf = new java.text.SimpleDateFormat("YYYYMMdd.HHmmss")
   sdf.setTimeZone(new java.util.SimpleTimeZone(java.util.SimpleTimeZone.UTC_TIME, "UTC"))
   sdf.format(new java.util.Date())
@@ -23,7 +23,7 @@ libraryDependencies ++= Seq(
   javaJdbc,
   cache,
   javaWs,
-  "org.flywaydb" %% "flyway-play" % "3.1.0",
+  "org.flywaydb" %% "flyway-play" % "3.2.0",
   "org.xerial" % "sqlite-jdbc" % "3.19.3",
   "org.jdbi" % "jdbi" % "2.78",
   "com.rabbitmq" % "amqp-client" % "4.2.0"

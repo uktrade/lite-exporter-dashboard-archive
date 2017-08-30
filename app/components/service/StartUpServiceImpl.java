@@ -12,7 +12,7 @@ public class StartUpServiceImpl implements StartUpService {
   public StartUpServiceImpl(ApplicationDao applicationDao, TestDataService testDataService) {
     this.applicationDao = applicationDao;
     this.testDataService = testDataService;
-    startUp();
+    //startUp();
   }
 
   private void startUp() {
