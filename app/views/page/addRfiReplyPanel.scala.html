@@ -1,0 +1,49 @@
+@import models.view.AddRfiResponseView
+@import page._
+@import play.data.Form
+@import views.html.common.form._
+
+@(appId: String, rfiId: String, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+
+<div class="message-panel message-reply-panel" id="reply" >
+  <header>
+
+    <div class="grid-row">
+
+      <div class="column-one-half">
+        <h3 class="heading-small">Reply from you...</h3>
+      </div>
+
+      <div class="column-one-half message-reply-sender">
+        <span class="heading-small">
+        </span>
+        <span>
+          @addRfiResponseView.getSentAt
+        </span>
+      </div>
+
+    </div>
+
+  </header>
+
+  <article>
+    <h4 class="heading-small">Message</h4>
+    <div>
+
+      <form action="@routes.RfiTabController.submitResponse(appId)" method="POST">
+        @formTextarea(rfiResponseForm("responseMessage"), rows = "4", cssClass = "form-control-wide") {
+
+        }
+        <input type="hidden" name="rfiId" value="@rfiResponseForm("rfiId").value" >
+
+        <h4 class="heading-small">Attach a file</h4>
+        @fileUpload()
+
+        <button class="button">Send</button>
+
+      </form>
+
+    </div>
+  </article>
+
+</div>

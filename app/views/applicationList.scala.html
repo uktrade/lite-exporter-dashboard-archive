@@ -1,74 +1,115 @@
-@import util._
+@import models.enums.{ApplicationListTab, StatusTypeFilter}
+@import models.view.ApplicationListView
 @import page._
+@(applyLink: String, applicationListView: ApplicationListView)
+@standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-@(activeTab: String)
-@standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
+} {
 
-}{
+  @dashboardTopNav(applyLink)
 
-  @dashboardTopNav()
+  <div class="heading-medium">Applications</div>
 
-  <h2 class="heading-medium">Applications</h2>
-
-  @tabs("application-list-tabs", size="large", width="wide") {
-    @tab("Created by you", "/applications/created-by-you", activeTab.equals("created-by-you"))
-    @tab("Created by your company", "/applications/created-by-your-company", activeTab.equals("created-by-your-company"))
+  @tabs("application-list-tabs", size = "large", width = "wide") {
+    @tab("Created by you",
+      applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.USER).toString,
+      applicationListView.getApplicationListTab == ApplicationListTab.USER)
+    @if(applicationListView.isShowCompanyTab) {
+      @tab("Created by your company",
+        applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.COMPANY).toString,
+        applicationListView.getApplicationListTab == ApplicationListTab.COMPANY)
+    }
   }
 
-  <div class="form-group">
-    <label class="form-label left-label" for="select-box">Filter by company name</label>
-    <select class="form-control" id="select-box" name="select-box">
-      <option>All companies</option>
-      <option>Company A</option>
-      <option>Company B</option>
-    </select>
-  </div>
+  @if(applicationListView.getCompanySelectItemViews.size() > 1) {
+    @companySelect(applicationListView)
+  }
 
-  <div class="table-filters">
-    Show:
-    <ul>
-      <li class="active"><a href="#">All (23)</a></li>
-      <li><a href="#">Draft (2)</a></li>
-      <li><a href="#">Current (3)</a></li>
-      <li><a href="#">Completed (18)</a></li>
-    </ul>
-  </div>
+  @statusPanel(applicationListView)
 
   <div class="scrollable-table">
     <table class="table-font-xsmall table-align-top">
       <thead>
         <tr>
-          <th>
-            <a href="#">Date submitted</a>
+          <th nowrap>
+            <a href="@applicationListView.getApplicationRoute.nextDate().toString">
+            @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {
+              Date created
+            } else {
+              Date submitted
+            }
+            </a>
+            @sortArrow(applicationListView.getDate)
           </th>
-          <th>References</th>
           <th>
-            <a href="#">Application status</a>
+            References
+          </th>
+          <th nowrap>
+            <a href="@applicationListView.getApplicationRoute.nextStatus().toString">
+              Application status
+            </a>
+            @sortArrow(applicationListView.getStatus)
           </th>
           <th>
             Destination
           </th>
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <th nowrap>
+              <a href="@applicationListView.getApplicationRoute.nextCreatedBy().toString">
+                Created by
+              </a>
+              @sortArrow(applicationListView.getCreatedBy)
+            </th>
+          }
         </tr>
       </thead>
       <tbody>
+      @for(applicationItemView <- applicationListView.getPage.getItems) {
         <tr>
-          <th scope="row">26 Jun 2017</th>
+          <th scope="row">
+          @if(applicationListView.getStatusTypeFilter != StatusTypeFilter.ALL || applicationItemView.getSubmittedTimestamp != null) {
+            @applicationItemView.getDate
+          }
+          </th>
           <td>
-            <a href="/application/ECO123456789012/status-tracker" class="bold">ECO123456789012</a><br>
-            Purchase order: GB93862929 Some export name
+          @if(applicationItemView.getCaseId != null) {
+            <a href="@routes.ApplicationDetailsController.statusTab(applicationItemView.getAppId)" class="bold">
+            @applicationItemView.getCaseId
+            </a>
+            <br>
+            @applicationItemView.getCaseDescription
+          } else {
+            <a href="#" class="bold">
+            @applicationItemView.getCaseDescription
+            </a>
+          }
           </td>
           <td>
             <p>
-              Licensing unit processing<br>
-              Since: 28 Mar 2017
+              @applicationItemView.getApplicationStatus
+            <br>
+            @applicationItemView.getApplicationStatusDate
             </p>
-            @rfiLabel("application/ECO123456789012/rfi#application-tabs")
+            @if(applicationItemView.getOpenRfiId != null) {
+              @rfiLabel(routes.RfiTabController.rfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
+            }
           </td>
           <td>
-            Netherlands
+          @applicationItemView.getDestination
           </td>
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <td>
+            @applicationItemView.getCreatedByName
+            </td>
+          }
         </tr>
+      }
       </tbody>
     </table>
   </div>
+
+  <p>
+  @applicationListFooter(applicationListView)
+  </p>
+
 }

@@ -1,0 +1,35 @@
+@import models.enums.StatusTypeFilter
+@import models.view.ApplicationListView
+
+@(applicationListView: ApplicationListView)
+
+<div class="table-filters">
+  Show:
+  <ul>
+    <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.ALL || applicationListView.getStatusTypeFilter == null) {
+      class="active" }>
+    <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(null).toString">
+      All (@applicationListView.getAllCount)
+    </a>
+    </li>
+    <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {
+      class="active"}>
+      <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.DRAFT).toString">
+        Draft (@applicationListView.getDraftCount)
+      </a>
+    </li>
+    <li @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.CURRENT) {
+      class="active"}>
+      <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.CURRENT).toString">
+        Current (@applicationListView.getCurrentCount)
+      </a>
+    </li>
+    <li
+      @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.COMPLETED) {
+        class="active"}>
+      <a href="@applicationListView.getApplicationRoute.setStatusTypeFilter(StatusTypeFilter.COMPLETED).toString">
+        Completed (@applicationListView.getCompletedCount)
+      </a>
+    </li>
+  </ul>
+</div>

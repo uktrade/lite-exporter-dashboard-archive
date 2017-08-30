@@ -1,37 +1,61 @@
+@import models.view.OgelRegistrationListView
+@import page._
+
+@(ogelRegistrationListView: OgelRegistrationListView)
 <div class="scrollable-table">
-  <table class="table-font-xsmall table-align-top licenc">
+  <table class="table-font-xsmall table-align-top">
     <thead>
       <tr>
         <th>
-          <a href="#">Reference</a>
+          <a href="@ogelRegistrationListView.getLicenceRoute.nextReference().toString">
+            Reference
+          </a>
+          @sortArrow(ogelRegistrationListView.getReference)
         </th>
         <th>
-          <a href="#">Licensee</a>
+          <a href="@ogelRegistrationListView.getLicenceRoute.nextLicensee.toString">
+            Licensee
+          </a>
+          @sortArrow(ogelRegistrationListView.getLicensee)
         </th>
         <th>
-          <a href="#">Site</a>
+          <a href="@ogelRegistrationListView.getLicenceRoute.nextSite.toString">
+            Site
+          </a>
+          @sortArrow(ogelRegistrationListView.getSite)
         </th>
         <th>
-          <a href="#">Registration date</a>
+          <a href="@ogelRegistrationListView.getLicenceRoute.nextRegistrationDate.toString">
+            Registration date
+          </a>
+          @sortArrow(ogelRegistrationListView.getRegistrationDate)
         </th>
       </tr>
     </thead>
     <tbody>
+    @for(ogelRegistrationItemView <- ogelRegistrationListView.getPage.getItems) {
       <tr>
         <th scope="row">
-          <a href="/licence/OGL2017/417253" class="bold">OGL2017/417253</a><br>
-          Military and dual-use goods: UK forces deployed in nine embargoed destinations
+          <a href="@routes.LicenceListController.licenceDetails(ogelRegistrationItemView.getRegistrationReference)" class="bold">@ogelRegistrationItemView.getRegistrationReference</a>
+          <br>
+          @ogelRegistrationItemView.getDescription
         </th>
         <td>
-          Deep Blue Limited
+        @ogelRegistrationItemView.getLicensee
         </td>
         <td>
-          Coventry site
+        @ogelRegistrationItemView.getSite
         </td>
         <td class="bold">
-          23 Aug 2017
+        @ogelRegistrationItemView.getRegistrationDate
         </td>
       </tr>
+    }
     </tbody>
   </table>
+
+  <p></p>
+
+  @ogelListFooter(ogelRegistrationListView)
+
 </div>

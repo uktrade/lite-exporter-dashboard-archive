@@ -1,0 +1,7 @@
+@import models.view.ApplicationSummaryView
+
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer)
+
+  @ApplicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount, null) {
+    @outcomeDocs()
+  }

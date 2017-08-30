@@ -1,22 +1,26 @@
-@import util._
-@import page._
-@import views.html.common.page._
 @import licenceListTabs._
+@import models.view.OgelRegistrationListView
+@import page._
+@import util._
+@import models.enums.LicenceListTab
+@(applyLink: String, licenceListTab: LicenceListTab, ogelRegistrationListView: OgelRegistrationListView)
+  @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-@(activeTab: String)
-@standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
+  } {
 
-}{
+    @dashboardTopNav(applyLink)
 
-  @dashboardTopNav()
+    @tabs("licences-tabs", size = "large", width = "wide") {
+      @tab("SIELs", "/licences?tab=siels", licenceListTab == LicenceListTab.SIELS)
+      @tab("OGELs", "/licences?tab=ogels", licenceListTab == LicenceListTab.OGELS)
+    }
 
-  @tabs("licences-tabs", size="large", width="wide") {
-    @tab("SIELs", "/licences/siels#licences-tabs", activeTab.equals("siels"))
-    @tab("OGELs", "/licences/ogels#licences-tabs", activeTab.equals("ogels"))
+    @licenceListTab match {
+      case LicenceListTab.SIELS => {
+        @sielList()
+      }
+      case LicenceListTab.OGELS => {
+        @ogelList(ogelRegistrationListView)
+      }
+    }
   }
-
-  @activeTab match {
-    case "siels" => { @sielList() }
-    case "ogels" => { @ogelList() }
-  }
-}

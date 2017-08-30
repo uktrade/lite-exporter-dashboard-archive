@@ -1,0 +1,35 @@
+@import models.view.ApplicationListView
+
+@(applicationListView: ApplicationListView)
+<div class="form-group">
+  <label class="form-label left-label" for="select-box">Filter by company name</label>
+  <form action="@applicationListView.getApplicationRoute.setCompanyId(null).toString" method="GET">
+    <select class="form-control" id="company" name="company" onChange="this.form.submit()">
+      <option @if(applicationListView.getCompanyId == null) { selected="" }
+      value="all">All companies
+      </option>
+      @for(companySelectItemView <- applicationListView.getCompanySelectItemViews) {
+        <option @if(companySelectItemView.getCompanyId == applicationListView.getCompanyId) { selected="" }
+        value="@companySelectItemView.getCompanyId">@companySelectItemView.getCompanyName </option>
+      }
+      @if(applicationListView.getApplicationListTab != null) {
+        <input type="hidden" name="tab" value="@applicationListView.getApplicationListTab"/>
+      }
+      @if(applicationListView.getDate != null) {
+        <input type="hidden" name="date" value="@applicationListView.getDate"/>
+      }
+      @if(applicationListView.getStatus != null) {
+        <input type="hidden" name="status" value="@applicationListView.getStatus"/>
+      }
+      @if(applicationListView.getCreatedBy != null) {
+        <input type="hidden" name="createdBy" value="@applicationListView.getCreatedBy"/>
+      }
+      @if(applicationListView.getStatusTypeFilter != null) {
+        <input type="hidden" name="show" value="@applicationListView.getStatusTypeFilter.toString.toLowerCase"/>
+      }
+      @if(applicationListView.getPage.getCurrentPage != 0) {
+        <input type="hidden" name="page" value="@applicationListView.getPage.getCurrentPage"/>
+      }
+    </select>
+  </form>
+</div>

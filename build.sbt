@@ -13,7 +13,27 @@ lazy val root = (project in file("."))
 
 scalaVersion := "2.11.7"
 
-libraryDependencies ++= Seq( javaJdbc ,  cache , javaWs )
+libraryDependencies ++= Seq(
+  javaJdbc,
+  cache,
+  javaWs,
+  "org.flywaydb" %% "flyway-play" % "3.1.0",
+  "org.xerial" % "sqlite-jdbc" % "3.19.3",
+  "org.jdbi" % "jdbi" % "2.78",
+  "com.rabbitmq" % "amqp-client" % "4.2.0"
+)
+
+libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.3"
+libraryDependencies += "uk.gov.bis.lite" % "lite-customer-service-api" % "1.1"
+libraryDependencies += "uk.gov.bis.lite" % "lite-ogel-service-api" % "1.0"
+// We need this dependency to use JDBI @BindIn annotation
+libraryDependencies += "org.antlr" % "stringtemplate" % "3.2.1"
+
+libraryDependencies += "au.com.dius" % "pact-jvm-consumer-junit_2.11" % "3.3.10" % "test"
+libraryDependencies += "com.itv" %% "scalapact-scalatest" % "2.1.2" % "test"
+libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
+
+resolvers += "Lite Lib Releases " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
 
 // Contains all files and libraries shared across other projects
 lazy val `zzz-common` = project.in(file("subprojects/lite-play-common")).enablePlugins(PlayJava)
@@ -32,7 +52,4 @@ buildInfoKeys ++= Seq[BuildInfoKey](
 
 buildInfoOptions += BuildInfoOption.BuildTime
 buildInfoOptions += BuildInfoOption.ToJson
-
-//unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )
-
-//resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
+PlayKeys.externalizeResources := false

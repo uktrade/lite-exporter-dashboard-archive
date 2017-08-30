@@ -1,0 +1,59 @@
+@import models.view.OgelDetailsView
+@import page._
+@import util._
+@(applyLink: String, ogelDetailsView: OgelDetailsView)
+  @standardPage(ogelDetailsView.getRegistrationReference + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
+
+  } {
+
+    @dashboardTopNav(applyLink)
+
+    <div class="application-summary-panel">
+
+      <div class="heading-medium" id="summary-panel-app-ref">
+        <abbr title="Open General Export Licence">OGEL</abbr> reference
+      </div>
+      <div class="font-medium" aria-labelledby="summary-panel-app-ref">
+        @ogelDetailsView.getRegistrationReference <br>
+      @ogelDetailsView.getName
+      </div>
+
+      <div class="grid-row">
+        <div class="column-full">
+        @summaryElement("registration-confirmation-letter", "Registration confirmation letter") {
+          <a href="#">Download letter (PDF)</a>
+        }
+        </div>
+      </div>
+
+      <div class="grid-row">
+        <div class="column-full">
+          Read the <a href="@ogelDetailsView.getLink">full licence</a>
+          for more information on how to use it, what you can export and permitted export destinations
+        </div>
+      </div>
+
+    </div>
+
+    <div class="heading-medium">What you can do</div>
+    <ul class="list list-bullet">
+    @for(canItem <- ogelDetailsView.getOgelConditionSummary.getCanList) {
+      <li>@canItem</li>
+    }
+    </ul>
+
+    <div class="heading-medium">What you can't do</div>
+    <ul class="list list-bullet">
+    @for(cantItem <- ogelDetailsView.getOgelConditionSummary.getCantList) {
+      <li>@cantItem</li>
+    }
+    </ul>
+
+    <div class="heading-medium">What you must do</div>
+    <ul class="list list-bullet">
+    @for(mustItem <- ogelDetailsView.getOgelConditionSummary.getMustList) {
+      <li>@mustItem</li>
+    }
+    </ul>
+
+  }

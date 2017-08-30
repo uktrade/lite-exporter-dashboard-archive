@@ -1,0 +1,10 @@
+@import java.util
+
+@import licenceApplicationTabs._
+@import models.view.{ApplicationSummaryView, StatusItemView}
+
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
+
+  @ApplicationDetails(applyLink, applicationSummaryView, "statusTracker", rfiViewCount, null) {
+    @statusTracker(statusItemViews)
+  }

@@ -1,0 +1,9 @@
+@import models.enums.SortDirection
+@(sortDirection: SortDirection)
+<span class="sort-arrow">
+  @sortDirection match {
+    case SortDirection.ASC => {&#9651}
+    case SortDirection.DESC => {&#9661}
+    case default => {}
+  }
+</span>

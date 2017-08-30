@@ -1,0 +1,117 @@
+.file-upload-drop-target {
+  margin-bottom: em(20, 16);
+}
+
+body.js-enabled .file-upload-drop-target {
+  position: relative;
+  overflow: hidden;
+
+  @include media(tablet) {
+    border: 2px dashed $grey-3;
+    padding: 2.5em;
+    text-align: center;
+
+    &:hover,
+    &.hover {
+      background: $grey-4;
+      border-color: $grey-2;
+
+      .file-upload-help-text::before {
+        opacity: 1;
+      }
+    }
+
+    .file-upload-help-text {
+      @include bold-24();
+      display: block;
+      color: $grey-1;
+      line-height: 1.6 !important;
+      margin-bottom: 0.5em;
+
+      &::before {
+        content: '';
+        width: 85px;
+        height: 85px;
+        display: block;
+        margin: 0 auto 10px auto;
+        background-image: file-url('file-upload.png');
+        background-size: 85px;
+        background-repeat: no-repeat;
+        background-position: top center;
+        opacity: 0.5;
+
+        @include device-pixel-ratio() {
+          background-image: file-url('file-upload-2x.png');
+        }
+      }
+    }
+  }
+
+  input[type=file] {
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 1000px;
+    opacity: 0.0001;
+  }
+
+  button.file-upload-button {
+    display: inline;
+  }
+}
+
+.file-upload-help-text,
+button.file-upload-button {
+  display: none;
+}
+
+.empty-file-list {
+  display: none;
+}
+
+.file-upload-filename {
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.file-upload-progress {
+  width: 200px;
+  height: 10px;
+  border: 1px solid $grey-2;
+  display: block;
+}
+
+.file-upload-progress-bar {
+  width: 0%;
+  height: 100%;
+  display: block;
+  background: $govuk-blue;
+  transition: width 0.5s;
+}
+
+.file-upload-status {
+  position: relative;
+
+  .status-label {
+    position: relative;
+    z-index: 10;
+    opacity: 1;
+    transition: opacity 0.5s;
+
+    &.status-label-hidden {
+      opacity: 0;
+    }
+  }
+}
+
+.file-upload-size {
+  position: absolute;
+  left: 0;
+  z-index: 0;
+  margin-top: 4px;
+
+  @include media(tablet) {
+    margin-top: 7px;
+  }
+}

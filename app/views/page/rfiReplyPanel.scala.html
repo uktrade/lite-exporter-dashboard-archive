@@ -1,6 +1,8 @@
-@(sender: String, sentDate: String = "")(message: Html = HtmlFormat.empty)
+@import models.view.RfiResponseView
 
-<div class="message-panel message-reply-panel">
+@(rfiResponseView: RfiResponseView)
+
+<div class="message-panel message-reply-panel" >
   <header>
 
     <div class="grid-row">
@@ -10,21 +12,12 @@
       </div>
 
       <div class="column-one-half message-reply-sender">
-        @if(!sentDate.equals("")){
-          <span class="heading-small">
-            @sender
-          </span>
-          <span>
-            @sentDate
-          </span>
-        } else {
-          <span class="heading-small">
-            Sender:
-          </span>
-          <span>
-            @sender
-          </span>
-        }
+        <span class="heading-small">
+          @rfiResponseView.getSentBy
+        </span>
+        <span>
+        @rfiResponseView.getSentAt
+        </span>
       </div>
 
     </div>
@@ -32,16 +25,15 @@
   </header>
 
   <article>
-    @if(!sentDate.equals("")){
-      <h4 class="heading-small">Message</h4>
-      <div>
-        @message
-      </div>
-    }
+    <h4 class="heading-small">Message</h4>
+    <div>
+    @Html(rfiResponseView.getMessage)
+    </div>
   </article>
 
   <footer>
     <h4 class="heading-small">Attached files</h4>
     Attachments will go here
   </footer>
+
 </div>

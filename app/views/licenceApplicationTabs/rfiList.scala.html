@@ -1,16 +1,17 @@
+@import java.util
+
+@import models.view.{AddRfiResponseView, RfiView}
 @import page._
+@import play.data.Form
 
-@rfiPanel("20 Mar 2017 at 9:35am", "25 Mar 2017 (5 days remaining)", "Jerry McGuire") {
-  <p>We note from your application that you have rated all 8 line items as ML10a and that these items are used in
-    production and maintenance of civil and/or military aircraft.</p>
-  <p>Would you please provide the make/model of aircraft for which each of the 8 line items on your application was
-  originally designed.</p>
-  <p>Than you for your help in this matter.</p>
-}
+@(rfiViews: util.List[RfiView], allowResponses: Boolean, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
-@rfiReplyPanel("Kathryn Smith", "29 Mar 2017") {
-  <p>All the items on my application were originally designed for the Eurofighter Typhoon FGR4. Please see attached
-  the specifications and design plans showing the original design.</p>
-  <p>Kind regards,</p>
-  <p>Kathryn Smith</p>
-}
+  @for(rfiView <- rfiViews) {
+    @rfiPanel(rfiView, allowResponses)
+    @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
+      @addRfiReplyPanel(rfiView.getAppId, rfiView.getRfiId, rfiResponseForm, addRfiResponseView)
+    }
+    @if(rfiView.getRfiResponseView != null) {
+      @rfiReplyPanel(rfiView.getRfiResponseView)
+    }
+  }

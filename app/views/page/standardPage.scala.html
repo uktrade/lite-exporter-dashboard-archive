@@ -1,0 +1,54 @@
+@import template._
+@import views.html.common.journey._
+
+@(htmlTitle: String, pageHeading: Option[Html], pageHead: Option[Html] = None, headingCssClass: String = "heading-large", twoThirdsColumn: Boolean = true, hideBackLink: Boolean = false, twoThirdsHeading: Boolean = false)(beforeHeader: Html)(content: Html)
+
+  @govukTemplateDefaults(htmlTitle + " - Import & Export Licensing", None, pageHead) {
+
+    <main id="content" role="main">
+
+      @phaseBanner()
+
+      @if(!hideBackLink) {
+        @journeyBackLink()
+      }
+
+      @if(twoThirdsColumn) {
+        <div class="grid-row">
+          <div class="column-two-thirds">
+          }
+
+      <a id="contentStart"></a>
+
+      @beforeHeader
+
+      <header class="page-header">
+
+      @if(pageHeading.isDefined) {
+
+        @if(twoThirdsHeading) {
+          <div class="grid-row">
+            <div class="column-two-thirds">
+            }
+
+        <div>
+          <h1 class="@headingCssClass">@pageHeading</h1>
+        </div>
+
+        @if(twoThirdsHeading) {
+        </div>
+        </div>
+        }
+      }
+
+      </header>
+
+      @content
+
+      @if(twoThirdsColumn) {
+      </div>
+      </div>
+      }
+
+    </main>
+  }

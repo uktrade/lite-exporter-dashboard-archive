@@ -1,8 +1,7 @@
 @import util._
 @import page._
 @import views.html.common.page._
-
-
+@(applyLink: String)
 
 @twoThirdsColumn {
   @partNavigation("Licence management navigation") {
@@ -20,6 +19,6 @@
         Licences
       }
     </li>
-    <li><a href="/apply">Apply for a standard licence</a></li>
+    <li><a href="@applyLink" target="_blank">Apply for a standard licence</a></li>
   }
 }

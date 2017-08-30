@@ -1,0 +1,59 @@
+@import views.html.common.page.govukTemplate
+@* @import components.auth.AuthManager *@
+@(htmlTitle: String, propositionHeading: Option[Html] = None, pageHead: Option[Html] = None)(content: Html)
+
+@head = {
+  <!--[if gt IE 8]><!-->
+  <link href="@controllers.routes.Assets.versioned("stylesheets/exporter-dashboard.css")" media="screen" rel="stylesheet" type="text/css" />
+  <!--<![endif]-->
+  <!--[if (lte IE 8) & (gte IE 6)]><link href="@controllers.routes.Assets.versioned("stylesheets/exporter-dashboard-ie.css")" media="screen" rel="stylesheet" type="text/css" /><!--<![endif]-->
+  @pageHead
+}
+
+@bodyEnd = {
+  <noscript><p><img src="//liteanalytics.piwikpro.com/piwik.php?idsite=1" style="border: 0;" alt="" /></p></noscript>
+    <!-- End Piwik Code -->
+}
+
+@propositionHeadingHtml = {
+  <div class="header-proposition">
+    <div class="content">
+      <nav id="proposition-menu">
+        <span id="proposition-name">@propositionHeading.getOrElse("Import / Export Licensing")</span>
+        <div class="account-header">
+          @* @if(AuthManager.currentAuthInfo(ctx()).isAuthenticated) {*@
+          @* @AuthManager.currentAuthInfo(ctx()).getFullName | <a href="@org.pac4j.play.routes.ApplicationLogoutController.logout()">Sign out</a>*@
+          @* } else {*@
+          @* Not logged in*@
+          @* }*@
+        </div>
+      </nav>
+    </div>
+  </div>
+}
+
+@govukTemplate(
+  Some(htmlTitle),
+  bodyClasses = None,
+  htmlLang = None
+)(
+  head = head,
+  bodyStart = HtmlFormat.empty,
+  bodyEnd = bodyEnd,
+  insideHeader = HtmlFormat.empty,
+  afterHeader = HtmlFormat.empty,
+  footerTop = HtmlFormat.empty,
+  footerLinks = HtmlFormat.empty,
+  headerClass = Html("with-proposition"),
+  propositionHeader = propositionHeadingHtml,
+  homepageUrl = None,
+  globalHeaderText = None,
+  cookieMessage = None,
+  skipLinkMessage = None,
+  skipLinkTarget = "contentStart",
+  logoLinkTitle = None,
+  licenceMessage = Html("<p>All content is available under the " +
+          "<a rel=\"license\" href=\"https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/\">Open Government Licence v3.0</a>," +
+          " except where otherwise stated</p>"),
+  crownCopyrightMessage = None
+)(content)
