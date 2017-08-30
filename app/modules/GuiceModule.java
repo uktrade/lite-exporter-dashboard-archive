@@ -149,15 +149,19 @@ public class GuiceModule extends AbstractModule {
     // Start up
     bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();
     // Queue
-    bindConstant().annotatedWith(Names.named("rabbitMqUrl"))
-        .to(configuration.getString("spireRelayService.rabbitMqUrl"));
-    bindConstant().annotatedWith(Names.named("consumerQueueName"))
-        .to(configuration.getString("spireRelayService.consumerQueueName"));
-    bind(ConnectionManager.class).to(ConnectionManagerImpl.class).asEagerSingleton();
-    bind(QueueManager.class).to(QueueManagerImpl.class).asEagerSingleton();
-    bind(SpireRelayConsumer.class).to(SpireRelayConsumerImpl.class).asEagerSingleton();
+    boolean enabled = configuration.getBoolean("spireRelayService.enabled", false);
+    if (enabled) {
+      bindConstant().annotatedWith(Names.named("rabbitMqUrl"))
+          .to(configuration.getString("spireRelayService.rabbitMqUrl"));
+      bindConstant().annotatedWith(Names.named("consumerQueueName"))
+          .to(configuration.getString("spireRelayService.consumerQueueName"));
+      bind(ConnectionManager.class).to(ConnectionManagerImpl.class).asEagerSingleton();
+      bind(QueueManager.class).to(QueueManagerImpl.class).asEagerSingleton();
+      bind(SpireRelayConsumer.class).to(SpireRelayConsumerImpl.class).asEagerSingleton();
+    } else {
+      bind(ConnectionManager.class).toInstance(() -> null);
+    }
   }
-
 
   @Provides
   @Singleton
