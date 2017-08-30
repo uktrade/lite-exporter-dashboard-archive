@@ -1,6 +1,12 @@
 name := "lite-exporter-dashboard"
 
-version := "1.0"
+version := scala.util.Properties.envOrElse("BUILD_VERSION", formatDateAsVersion() + "-SNAPSHOT")
+
+def formatDateAsVersion () : String = {
+  val sdf = new java.text.SimpleDateFormat("YYYYMMdd.HHmmss")
+  sdf.setTimeZone(new java.util.SimpleTimeZone(java.util.SimpleTimeZone.UTC_TIME, "UTC"))
+  sdf.format(new java.util.Date())
+}
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayJava)
