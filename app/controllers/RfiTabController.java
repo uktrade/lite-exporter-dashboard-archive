@@ -63,7 +63,8 @@ public class RfiTabController extends Controller {
       String responseMessage = rfiResponseForm.get().responseMessage;
       RfiResponse rfiResponse = new RfiResponse(rfiId, currentUser.getId(), Instant.now().toEpochMilli(), responseMessage, null);
       rfiResponseDao.insertRfiResponse(rfiResponse);
-      return redirect(routes.RfiTabController.rfiTab(appId).withFragment(rfiId));
+      flash("success", "Your message has been sent.");
+      return redirect(routes.RfiTabController.rfiTab(appId));
     }
   }
 
@@ -86,13 +87,14 @@ public class RfiTabController extends Controller {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
     AddRfiResponseView addRfiResponseView = rfiViewService.getAddRfiResponseView(rfiId);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), rfiResponseForm, addRfiResponseView));
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), null, rfiResponseForm, addRfiResponseView));
   }
 
   public Result rfiTab(String appId) {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), null, null));
+    String message = flash().getOrDefault("success", null);
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), message, null, null));
   }
 
   private boolean allowResponses(String appId) {
