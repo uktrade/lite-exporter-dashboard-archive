@@ -2,18 +2,13 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.dao.AmendmentDao;
-import components.dao.WithdrawalRequestDao;
+import components.service.AmendmentService;
 import components.service.ApplicationService;
 import components.service.ApplicationSummaryViewService;
 import components.service.OfficerViewService;
 import components.service.RfiViewService;
-import components.service.UserService;
+import components.service.WithdrawalRequestService;
 import components.util.EnumUtil;
-import components.util.RandomUtil;
-import models.Amendment;
-import models.User;
-import models.WithdrawalRequest;
 import models.enums.Action;
 import models.view.ApplicationSummaryView;
 import models.view.OfficerView;
@@ -26,44 +21,39 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.amendApplicationTab;
 
-import java.time.Instant;
-
 public class AmendTabController extends Controller {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AmendTabController.class);
 
   private final String licenceApplicationAddress;
-  private final UserService userService;
   private final FormFactory formFactory;
-  private final AmendmentDao amendmentDao;
-  private final WithdrawalRequestDao withdrawalRequestDao;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final OfficerViewService officerViewService;
   private final RfiViewService rfiViewService;
   private final ApplicationService applicationService;
+  private final AmendmentService amendmentService;
+  private final WithdrawalRequestService withdrawalRequestService;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
-                            UserService userService,
                             FormFactory formFactory,
-                            AmendmentDao amendmentDao,
-                            WithdrawalRequestDao withdrawalRequestDao,
                             ApplicationSummaryViewService applicationSummaryViewService,
                             OfficerViewService officerViewService,
                             RfiViewService rfiViewService,
-                            ApplicationService applicationService) {
+                            ApplicationService applicationService,
+                            AmendmentService amendmentService,
+                            WithdrawalRequestService withdrawalRequestService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
-    this.userService = userService;
     this.formFactory = formFactory;
-    this.amendmentDao = amendmentDao;
-    this.withdrawalRequestDao = withdrawalRequestDao;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.officerViewService = officerViewService;
     this.rfiViewService = rfiViewService;
     this.applicationService = applicationService;
+    this.amendmentService = amendmentService;
+    this.withdrawalRequestService = withdrawalRequestService;
   }
 
-  public Result amendApplication(String appId) {
+  public Result submitAmendment(String appId) {
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
     String actionParam = amendApplicationForm.data().get("action");
     Action action = EnumUtil.parse(actionParam, Action.class);
@@ -78,32 +68,12 @@ public class AmendTabController extends Controller {
     } else {
       String message = amendApplicationForm.get().message;
       if (action == Action.AMEND) {
-        insertAmendment(appId, message);
+        amendmentService.insertAmendment(appId, message);
       } else if (action == Action.WITHDRAW) {
-        insertWithdrawalRequest(appId, message);
+        withdrawalRequestService.insertWithdrawalRequest(appId, message);
       }
       return showAmendTab(appId, null);
     }
-  }
-
-  private void insertAmendment(String appId, String message) {
-    User currentUser = userService.getCurrentUser();
-    Amendment amendment = new Amendment(RandomUtil.random("AME"), appId, Instant.now().toEpochMilli(), currentUser.getId(), message, null);
-    amendmentDao.insertAmendment(amendment);
-  }
-
-  private void insertWithdrawalRequest(String appId, String message) {
-    User currentUser = userService.getCurrentUser();
-    WithdrawalRequest withdrawalRequest = new WithdrawalRequest(RandomUtil.random("WIT"),
-        appId,
-        Instant.now().toEpochMilli(),
-        currentUser.getId(),
-        message,
-        null,
-        null,
-        null,
-        null);
-    withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
   }
 
   public Result showAmendTab(String appId, String actionParam) {

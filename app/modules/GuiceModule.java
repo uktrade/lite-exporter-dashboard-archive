@@ -36,6 +36,8 @@ import components.message.SpireRelayConsumer;
 import components.message.SpireRelayConsumerImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
+import components.service.AmendmentService;
+import components.service.AmendmentServiceImpl;
 import components.service.ApplicationFilterService;
 import components.service.ApplicationFilterServiceImpl;
 import components.service.ApplicationItemViewService;
@@ -76,6 +78,8 @@ import components.service.TimeFormatService;
 import components.service.TimeFormatServiceImpl;
 import components.service.UserService;
 import components.service.UserServiceMockImpl;
+import components.service.WithdrawalRequestService;
+import components.service.WithdrawalRequestServiceImpl;
 import components.service.WorkingDaysCalculatorService;
 import components.service.WorkingDaysCalculatorServiceImpl;
 import org.skife.jdbi.v2.DBI;
@@ -140,6 +144,8 @@ public class GuiceModule extends AbstractModule {
     bind(PageService.class).to(PageServiceImpl.class);
     bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
     bind(OfficerViewService.class).to(OfficerViewServiceImpl.class);
+    bind(AmendmentService.class).to(AmendmentServiceImpl.class);
+    bind(WithdrawalRequestService.class).to(WithdrawalRequestServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);
