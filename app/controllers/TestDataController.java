@@ -3,6 +3,7 @@ package controllers;
 import com.google.inject.Inject;
 import components.service.CacheService;
 import components.service.TestDataService;
+import controllers.common.routes;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -30,7 +31,7 @@ public class TestDataController extends Controller {
     } else {
       testDataService.deleteAllDataAndInsertTwoCompaniesTestData();
     }
-    return redirect(routes.ApplicationListController.index());
+    return redirect(controllers.routes.ApplicationListController.index());
   }
 
 }

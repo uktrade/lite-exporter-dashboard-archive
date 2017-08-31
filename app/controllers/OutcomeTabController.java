@@ -8,7 +8,7 @@ import components.service.RfiViewService;
 import models.view.ApplicationSummaryView;
 import play.mvc.Controller;
 import play.mvc.Result;
-import views.html.licenceApplicationTabs.outcomeDocsTab;
+import views.html.outcomeDocsTab;
 
 public class OutcomeTabController extends Controller {
 

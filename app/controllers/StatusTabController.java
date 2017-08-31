@@ -9,7 +9,7 @@ import models.view.ApplicationSummaryView;
 import models.view.StatusItemView;
 import play.mvc.Controller;
 import play.mvc.Result;
-import views.html.licenceApplicationTabs.statusTrackerTab;
+import views.html.statusTrackerTab;
 
 import java.util.List;
 

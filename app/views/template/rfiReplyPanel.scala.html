@@ -1,0 +1,39 @@
+@import models.view.RfiResponseView
+
+@(rfiResponseView: RfiResponseView)
+
+<div class="message-panel message-reply-panel" >
+  <header>
+
+    <div class="grid-row">
+
+      <div class="column-one-half">
+        <h3 class="heading-small">Reply from you...</h3>
+      </div>
+
+      <div class="column-one-half message-reply-sender">
+        <span class="heading-small">
+          @rfiResponseView.getSentBy
+        </span>
+        <span>
+        @rfiResponseView.getSentAt
+        </span>
+      </div>
+
+    </div>
+
+  </header>
+
+  <article>
+    <h4 class="heading-small">Message</h4>
+    <div>
+    @Html(rfiResponseView.getMessage)
+    </div>
+  </article>
+
+  <footer>
+    <h4 class="heading-small">Attached files</h4>
+    Attachments will go here
+  </footer>
+
+</div>

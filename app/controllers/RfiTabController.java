@@ -18,7 +18,7 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.Controller;
 import play.mvc.Result;
-import views.html.licenceApplicationTabs.rfiListTab;
+import views.html.rfiListTab;
 
 import java.time.Instant;
 import java.util.List;

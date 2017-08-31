@@ -23,7 +23,6 @@ import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
 import play.mvc.Controller;
 import play.mvc.Result;
-import scala.Option;
 import views.html.applicationList;
 
 import java.util.Comparator;
@@ -63,7 +62,7 @@ public class ApplicationListController extends Controller {
     return redirect("/applications");
   }
 
-  public Result applicationList(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company, Option<String> createdBy, Option<Integer> page) {
+  public Result applicationList(String tab, String date, String status, String show, String company, String createdBy, Integer page) {
     User currentUser = userService.getCurrentUser();
 
     ApplicationListState state = cacheService.getApplicationListState(tab, date, status, show, company, createdBy, page);
