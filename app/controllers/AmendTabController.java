@@ -3,8 +3,8 @@ package controllers;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.dao.AmendmentDao;
-import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalRequestDao;
+import components.service.ApplicationService;
 import components.service.ApplicationSummaryViewService;
 import components.service.OfficerViewService;
 import components.service.RfiViewService;
@@ -15,7 +15,6 @@ import models.Amendment;
 import models.User;
 import models.WithdrawalRequest;
 import models.enums.Action;
-import models.enums.StatusType;
 import models.view.ApplicationSummaryView;
 import models.view.OfficerView;
 import models.view.form.AmendApplicationForm;
@@ -41,7 +40,7 @@ public class AmendTabController extends Controller {
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final OfficerViewService officerViewService;
   private final RfiViewService rfiViewService;
-  private final StatusUpdateDao statusUpdateDao;
+  private final ApplicationService applicationService;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -52,7 +51,7 @@ public class AmendTabController extends Controller {
                             ApplicationSummaryViewService applicationSummaryViewService,
                             OfficerViewService officerViewService,
                             RfiViewService rfiViewService,
-                            StatusUpdateDao statusUpdateDao) {
+                            ApplicationService applicationService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.userService = userService;
     this.formFactory = formFactory;
@@ -61,7 +60,7 @@ public class AmendTabController extends Controller {
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.officerViewService = officerViewService;
     this.rfiViewService = rfiViewService;
-    this.statusUpdateDao = statusUpdateDao;
+    this.applicationService = applicationService;
   }
 
   public Result amendApplication(String appId) {
@@ -108,9 +107,8 @@ public class AmendTabController extends Controller {
   }
 
   public Result showAmendTab(String appId, String actionParam) {
-    boolean allowAmendment = allowAmendment(appId);
     Action action = EnumUtil.parse(actionParam, Action.class);
-    if (!allowAmendment && action != null) {
+    if (!allowAmendment(appId) && action != null) {
       LOGGER.error("Amending application with appId {} and action {} not possible since application is complete.", appId, actionParam);
       return showAmendTab(appId, null);
     } else {
@@ -122,13 +120,12 @@ public class AmendTabController extends Controller {
       Form<AmendApplicationForm> form = formFactory.form(AmendApplicationForm.class).fill(amendApplicationForm);
       OfficerView officerView = officerViewService.getOfficerView(appId);
       int rfiViewCount = rfiViewService.getRfiViewCount(appId);
-      return ok(amendApplicationTab.render(licenceApplicationAddress, applicationSummaryView, rfiViewCount, allowAmendment, action, form, officerView));
+      return ok(amendApplicationTab.render(licenceApplicationAddress, applicationSummaryView, rfiViewCount, allowAmendment(appId), action, form, officerView));
     }
   }
 
   private boolean allowAmendment(String appId) {
-    return statusUpdateDao.getStatusUpdates(appId).stream()
-        .noneMatch(statusUpdate -> statusUpdate.getStatusType() == StatusType.COMPLETE);
+    return applicationService.isApplicationInProgress(appId);
   }
 
 }

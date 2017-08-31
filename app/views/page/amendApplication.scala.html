@@ -1,0 +1,33 @@
+@import models.enums.Action
+@import page._
+
+@(appId: String, action: models.enums.Action, form: play.data.Form[_])
+
+<p>Use this form to make an amendment or withdraw your application.</p>
+
+<div class="form-group">
+  <div class="heading-small" id="action-select">Amendment I would like to make</div>
+  <form action="" method="GET">
+    <select class="form-control" id="action" name="action" onChange="this.form.submit()">
+      @if(action == null) {
+        <option value="select" selected>Select</option>
+      }
+    <option value="amend" @if(action == Action.AMEND) {
+      selected="" }>Make an amendment to the application</option>
+    <option value="withdraw" @if(action == Action.WITHDRAW) {
+      selected=""}>Withdraw the application</option>
+    </select>
+  </form>
+</div>
+
+@action match {
+  case Action.AMEND => {
+    @amendApplicationPanel(appId, "TODO: Text for this heading", form)
+  }
+  case Action.WITHDRAW => {
+    @amendApplicationPanel(appId, "Please provide a reason to withdraw the application.", form)
+  }
+  case default => {
+    <hr/>
+  }
+}

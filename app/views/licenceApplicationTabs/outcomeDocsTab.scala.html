@@ -1,7 +1,15 @@
 @import models.view.ApplicationSummaryView
+@import page._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, showDocuments: Boolean)
 
-  @ApplicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount, null) {
-    @outcomeDocs()
+@applicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount, null) {
+  @if(showDocuments) {
+    @outcomeDocuments()
+  } else {
+    Your application is still being processed.
+    <p>
+      Outcome documents will appear here when processing is complete.
+    </p>
   }
+}

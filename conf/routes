@@ -9,14 +9,14 @@ GET         /                                                     controllers.Ap
 GET         /applications                                         controllers.ApplicationListController.applicationList(tab: Option[String], date: Option[String], status: Option[String], show: Option[String], company: Option[String], createdBy: Option[String], page: Option[Integer])
 
 # Application tabs
-GET         /application/*applicationRef/status-tracker           controllers.ApplicationDetailsController.statusTab(applicationRef: String)
-GET         /application/*applicationRef/rfi                      controllers.RfiTabController.rfiTab(applicationRef: String)
+GET         /application/*applicationRef/status-tracker           controllers.StatusTabController.showStatusTab(applicationRef: String)
+GET         /application/*applicationRef/rfi                      controllers.RfiTabController.showRfiTab(applicationRef: String)
 GET         /application/*applicationRef/rfi/*rfiId               controllers.RfiTabController.respond(applicationRef: String, rfiId: String)
 POST        /application/*applicationRef/rfi                      controllers.RfiTabController.submitResponse(applicationRef: String)
 GET         /application/*applicationRef/amend-application        controllers.AmendTabController.showAmendTab(applicationRef: String, action ?= null)
 POST        /application/*applicationRef/amend-application        controllers.AmendTabController.amendApplication(applicationRef: String)
-GET         /application/*applicationRef/outcome-documents        controllers.ApplicationDetailsController.outcomeTab(applicationRef: String)
-GET         /application/*applicationRef                          controllers.ApplicationDetailsController.statusTab(applicationRef: String)
+GET         /application/*applicationRef/outcome-documents        controllers.OutcomeTabController.showOutcomeTab(applicationRef: String)
+GET         /application/*applicationRef                          controllers.StatusTabController.showStatusTab(applicationRef: String)
 
 # Licences tabs
 GET         /licences                                             controllers.LicenceListController.licenceList(tab: Option[String], reference: Option[String], licensee: Option[String], site: Option[String], date: Option[String], page: Option[Integer])

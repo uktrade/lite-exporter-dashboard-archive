@@ -2,9 +2,10 @@
 
 @import licenceApplicationTabs._
 @import models.view.{ApplicationSummaryView, StatusItemView}
+@import page._
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
 
-  @ApplicationDetails(applyLink, applicationSummaryView, "statusTracker", rfiViewCount, null) {
+  @applicationDetails(applyLink, applicationSummaryView, "statusTracker", rfiViewCount, null) {
     @statusTracker(statusItemViews)
   }

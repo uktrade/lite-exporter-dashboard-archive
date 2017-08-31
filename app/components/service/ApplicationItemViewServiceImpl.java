@@ -33,7 +33,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final StatusService statusService;
   private final RfiDao rfiDao;
   private final RfiResponseDao rfiResponseDao;
-  private final ApplicationSummaryViewService applicationSummaryViewService;
+  private final ApplicationService applicationService;
   private final CustomerServiceClient customerServiceClient;
   private final UserService userService;
 
@@ -44,7 +44,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
                                         StatusService statusService,
                                         RfiDao rfiDao,
                                         RfiResponseDao rfiResponseDao,
-                                        ApplicationSummaryViewService applicationSummaryViewService,
+                                        ApplicationService applicationService,
                                         CustomerServiceClient customerServiceClient,
                                         UserService userService) {
     this.applicationDao = applicationDao;
@@ -53,7 +53,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     this.statusService = statusService;
     this.rfiDao = rfiDao;
     this.rfiResponseDao = rfiResponseDao;
-    this.applicationSummaryViewService = applicationSummaryViewService;
+    this.applicationService = applicationService;
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
   }
@@ -92,7 +92,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     String applicationStatus;
     long statusTimestamp;
 
-    StatusUpdate maxStatusUpdate = applicationSummaryViewService.getMaxStatusUpdate(statusUpdates).orElse(null);
+    StatusUpdate maxStatusUpdate = applicationService.getMaxStatusUpdate(statusUpdates).orElse(null);
     if (maxStatusUpdate != null) {
       applicationStatus = statusService.getStatus(maxStatusUpdate.getStatusType());
       statusTimestamp = maxStatusUpdate.getStartTimestamp();
@@ -113,7 +113,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
     String createdById = application.getCreatedBy();
     String createdByName = userService.getUser(createdById).getName();
-    String destination = applicationSummaryViewService.getDestination(application);
+    String destination = applicationService.getDestination(application);
 
     return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
