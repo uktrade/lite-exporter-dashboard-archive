@@ -13,8 +13,8 @@ GET         /application/*applicationRef/status-tracker           controllers.Ap
 GET         /application/*applicationRef/rfi                      controllers.RfiTabController.rfiTab(applicationRef: String)
 GET         /application/*applicationRef/rfi/*rfiId               controllers.RfiTabController.respond(applicationRef: String, rfiId: String)
 POST        /application/*applicationRef/rfi                      controllers.RfiTabController.submitResponse(applicationRef: String)
-GET         /application/*applicationRef/amend-application        controllers.ApplicationDetailsController.amendTab(applicationRef: String, action: Option[String])
-POST        /application/*applicationRef/amend-application        controllers.ApplicationDetailsController.amendApplication(applicationRef: String)
+GET         /application/*applicationRef/amend-application        controllers.AmendTabController.showAmendTab(applicationRef: String, action ?= null)
+POST        /application/*applicationRef/amend-application        controllers.AmendTabController.amendApplication(applicationRef: String)
 GET         /application/*applicationRef/outcome-documents        controllers.ApplicationDetailsController.outcomeTab(applicationRef: String)
 GET         /application/*applicationRef                          controllers.ApplicationDetailsController.statusTab(applicationRef: String)
 

@@ -52,10 +52,10 @@ public class RfiTabController extends Controller {
     Form<RfiResponseForm> rfiResponseForm = formFactory.form(RfiResponseForm.class).bindFromRequest();
     String rfiId = rfiResponseForm.data().get("rfiId");
     if (alreadyHasResponse(rfiId)) {
-      LOGGER.error("Response with rfiId {} already exists", rfiId);
+      LOGGER.error("Response to rfiId {} and appId {} not possible since a response already exists", rfiId, appId);
       return rfiTab(appId);
     } else if (!allowResponses(appId)) {
-      LOGGER.error("Response with rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
+      LOGGER.error("Response to rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
       return rfiTab(appId);
     } else if (rfiResponseForm.hasErrors()) {
       return respond(appId, rfiId, rfiResponseForm);
@@ -70,10 +70,10 @@ public class RfiTabController extends Controller {
 
   public Result respond(String appId, String rfiId) {
     if (alreadyHasResponse(rfiId)) {
-      LOGGER.error("Response with rfiId {} already exists", rfiId);
+      LOGGER.error("Response to rfiId {} and appId {} not possible since a response already exists", rfiId);
       return rfiTab(appId);
     } else if (!allowResponses(appId)) {
-      LOGGER.error("Response with rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
+      LOGGER.error("Response to rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
       return rfiTab(appId);
     } else {
       RfiResponseForm rfiResponseForm = new RfiResponseForm();

@@ -2,7 +2,8 @@
 @import models.view.OfficerView
 @import page._
 
-@(applicationRef: String, action: Action, form: play.data.Form[_], officerView: OfficerView)
+@(appId: String, action: models.enums.Action, form: play.data.Form[_])
+
 <p>Use this form to make an amendment or withdraw your application.</p>
 
 <div class="form-group">
@@ -22,49 +23,12 @@
 
   @action match {
     case Action.AMEND => {
-      @amendApplicationPanel(applicationRef, "TODO: Text for this heading", form)
+      @amendApplicationPanel(appId, "TODO: Text for this heading", form)
     }
     case Action.WITHDRAW => {
-      @amendApplicationPanel(applicationRef, "Please provide a reason to withdraw the application.", form)
+      @amendApplicationPanel(appId, "Please provide a reason to withdraw the application.", form)
     }
     case default => {
       <hr/>
     }
-  }
-
-<p>For general enquiries related to this application, please contact your case officer</p>
-
-  @if(officerView != null) {
-    <div class="grid-row">
-
-      <div class="column-one-quarter">
-        <div class="heading-small" id="case-officer-name">
-          Case Officer
-        </div>
-        <div aria-labelledby="case-officer-name">
-        @officerView.getName
-        </div>
-      </div>
-
-      <div class="column-one-quarter">
-        <div class="heading-small" id="case-officer-telephone">
-          Telephone
-        </div>
-        <div aria-labelledby="case-officer-telephone">
-        @telephoneLink(officerView.getTelephone)
-        </div>
-      </div>
-
-      <div class="column-one-quarter">
-        <div class="heading-small" id="case-officer-email">
-          Email
-        </div>
-        <div aria-labelledby="case-officer-email">
-          <a href="mailto:j.mcguire@@trade.gov.uk?subject=@applicationRef - applicant enquiry">@officerView.getEmail</a>
-        </div>
-      </div>
-
-    </div>
-  } else {
-    No officer assigned yet.
   }
