@@ -2,17 +2,29 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.dao.ApplicationDao;
+import play.inject.ApplicationLifecycle;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class StartUpServiceImpl implements StartUpService {
+
+  private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
 
   private final ApplicationDao applicationDao;
   private final TestDataService testDataService;
 
   @Inject
-  public StartUpServiceImpl(ApplicationDao applicationDao, TestDataService testDataService) {
+  public StartUpServiceImpl(ApplicationLifecycle lifecycle, ApplicationDao applicationDao, TestDataService testDataService) {
     this.applicationDao = applicationDao;
     this.testDataService = testDataService;
-    //startUp();
+    lifecycle.addStopHook(() -> {
+      EXECUTOR.shutdown();
+      return CompletableFuture.completedFuture(null);
+    });
+    EXECUTOR.schedule(this::startUp, 2, TimeUnit.SECONDS);
   }
 
   private void startUp() {
