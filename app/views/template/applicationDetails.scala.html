@@ -1,5 +1,5 @@
 @import models.view.ApplicationSummaryView
-@import page._
+@import template._
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, activeTab: String, rfiViewCount: Integer, message: String)(content: Html)
   @standardPage(applicationSummaryView.getCaseId + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {

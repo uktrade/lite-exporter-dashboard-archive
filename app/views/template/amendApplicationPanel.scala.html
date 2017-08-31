@@ -1,4 +1,3 @@
-@import models.view.AddRfiResponseView
 @import play.data.Form
 @import views.html.common.form._
 
@@ -10,12 +9,12 @@
     <h4 class="heading-small">@heading</h4>
     <div>
 
-      <form action="@routes.ApplicationDetailsController.amendTab(appId, Option(null))" method="POST">
+      <form action="@routes.AmendTabController.showAmendTab(appId)" method="POST">
         @formTextarea(form("message"), rows = "4", cssClass = "form-control-wide") {
 
         }
-        <input type="hidden" name="action" value="@form("action").value" >
-        <button class="button">Send</button>
+      <input type="hidden" name="action" value="@form("action").value" >
+      <button class="button">Send</button>
       </form>
 
     </div>

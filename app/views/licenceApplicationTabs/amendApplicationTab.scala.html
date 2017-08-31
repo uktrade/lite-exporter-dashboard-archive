@@ -1,8 +1,0 @@
-@import models.enums.Action
-@import models.view.{ApplicationSummaryView, OfficerView}
-
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, action: Action, form: play.data.Form[_], officerView: OfficerView)
-
-  @ApplicationDetails(applyLink, applicationSummaryView, "amend", rfiViewCount, null) {
-    @amendApplication(applicationSummaryView.getAppId, action, form, officerView)
-  }

@@ -40,6 +40,8 @@ import components.service.ApplicationFilterService;
 import components.service.ApplicationFilterServiceImpl;
 import components.service.ApplicationItemViewService;
 import components.service.ApplicationItemViewServiceImpl;
+import components.service.ApplicationService;
+import components.service.ApplicationServiceImpl;
 import components.service.ApplicationSortService;
 import components.service.ApplicationSortServiceImpl;
 import components.service.ApplicationSummaryViewService;
@@ -119,6 +121,7 @@ public class GuiceModule extends AbstractModule {
         .to(configuration.getString("licenceApplication.address"));
     // Service
     bind(JourneySerialiser.class).to(JourneySerialiserMock.class);
+    bind(ApplicationService.class).to(ApplicationServiceImpl.class);
     bind(TimeFormatService.class).to(TimeFormatServiceImpl.class);
     bind(StatusService.class).to(StatusServiceImpl.class);
     bind(StatusItemViewService.class).to(StatusItemViewServiceImpl.class);

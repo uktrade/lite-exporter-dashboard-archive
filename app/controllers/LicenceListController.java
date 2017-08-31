@@ -18,7 +18,6 @@ import models.view.OgelRegistrationItemView;
 import models.view.OgelRegistrationListView;
 import play.mvc.Controller;
 import play.mvc.Result;
-import scala.Option;
 import views.html.licenceDetails;
 import views.html.licenceList;
 import views.html.ogelDetails;
@@ -50,7 +49,7 @@ public class LicenceListController extends Controller {
     this.licenceApplicationAddress = licenceApplicationAddress;
   }
 
-  public Result licenceList(Option<String> tab, Option<String> reference, Option<String> licensee, Option<String> site, Option<String> date, Option<Integer> page) {
+  public Result licenceList(String tab, String reference, String licensee, String site, String date, Integer page) {
     User currentUser = userService.getCurrentUser();
 
     LicenceListState state = cacheService.getLicenseListState(tab, reference, licensee, site, date, page);

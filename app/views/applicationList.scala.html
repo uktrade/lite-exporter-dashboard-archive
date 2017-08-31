@@ -1,6 +1,6 @@
 @import models.enums.{ApplicationListTab, StatusTypeFilter}
 @import models.view.ApplicationListView
-@import page._
+@import template._
 @(applyLink: String, applicationListView: ApplicationListView)
 @standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
@@ -73,7 +73,7 @@
           </th>
           <td>
           @if(applicationItemView.getCaseId != null) {
-            <a href="@routes.ApplicationDetailsController.statusTab(applicationItemView.getAppId)" class="bold">
+            <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
             @applicationItemView.getCaseId
             </a>
             <br>
@@ -91,7 +91,7 @@
             @applicationItemView.getApplicationStatusDate
             </p>
             @if(applicationItemView.getOpenRfiId != null) {
-              @rfiLabel(routes.RfiTabController.rfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
+              @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
             }
           </td>
           <td>

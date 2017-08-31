@@ -21,9 +21,18 @@ public class ProcessingDescriptionServiceImpl implements ProcessingDescriptionSe
   @Override
   public String getProcessingDescription(StatusUpdate statusUpdate) {
     if (statusUpdate.getStatusType() == StatusType.COMPLETE) {
-      return "";
+      return getCompleteProcessingDescription(statusUpdate);
     } else {
       return getNonCompleteProcessingDescription(statusUpdate);
+    }
+  }
+
+  private String getCompleteProcessingDescription(StatusUpdate statusUpdate) {
+    if (statusUpdate.getStartTimestamp() == null) {
+      return "";
+    } else {
+      String time = timeFormatService.formatDateAndTime(statusUpdate.getStartTimestamp());
+      return "Decision reached on " + time;
     }
   }
 

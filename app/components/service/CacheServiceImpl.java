@@ -21,26 +21,26 @@ public class CacheServiceImpl implements CacheService {
   private static final String LICENSE_LIST_STATE = "licenseListState";
 
   @Override
-  public ApplicationListState getApplicationListState(Option<String> tab, Option<String> date, Option<String> status, Option<String> show, Option<String> company, Option<String> createdBy, Option<Integer> page) {
+  public ApplicationListState getApplicationListState(String tab, String date, String status, String show, String company, String createdBy, Integer page) {
     ApplicationListState state = null;
-    if (tab.isEmpty() && date.isEmpty() && status.isEmpty() && show.isEmpty() && company.isEmpty() && createdBy.isEmpty() && page.isEmpty()) {
+    if (tab == null && date == null && status == null && show == null && company == null && createdBy == null && page == null) {
       state = getFromSession(APPLICATION_LIST_STATE, ApplicationListState.class);
     }
     if (state == null) {
-      state = new ApplicationListState(parse(tab), parse(date), parse(status), parse(show), parse(company), parse(createdBy), parseNumber(page));
+      state = new ApplicationListState(tab, date, status, show, company, createdBy, page);
       save(APPLICATION_LIST_STATE, state);
     }
     return state;
   }
 
   @Override
-  public LicenceListState getLicenseListState(Option<String> tab, Option<String> reference, Option<String> licensee, Option<String> site, Option<String> date, Option<Integer> page) {
+  public LicenceListState getLicenseListState(String tab, String reference, String licensee, String site, String date, Integer page) {
     LicenceListState state = null;
-    if (tab.isEmpty() && reference.isEmpty() && licensee.isEmpty() && site.isEmpty() && date.isEmpty() && page.isEmpty()) {
+    if (tab != null && reference != null && licensee != null && site != null && date != null && page != null) {
       state = getFromSession(LICENSE_LIST_STATE, LicenceListState.class);
     }
     if (state == null) {
-      state = new LicenceListState(parse(tab), parse(reference), parse(licensee), parse(site), parse(date), parseNumber(page));
+      state = new LicenceListState(tab, reference, licensee, site, date, page);
       save(LICENSE_LIST_STATE, state);
     }
     return state;

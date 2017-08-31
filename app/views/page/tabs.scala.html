@@ -1,9 +1,0 @@
-@(id: String, size: String = "normal", width: String = "normal", fitToPage: Boolean = false)(tabs: Html)
-
-<div id="@id" class="tabs-float-container">
-  <div class="nav-tabs">
-    <ul class="tabs-nav @if(fitToPage){fit-tabs-to-page} @if(size == "large"){large-tabs} @if(width == "wide"){wide-tabs}" role="tablist">
-      @tabs
-    </ul>
-  </div>
-</div>
