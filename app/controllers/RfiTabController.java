@@ -86,14 +86,14 @@ public class RfiTabController extends Controller {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
     AddRfiResponseView addRfiResponseView = rfiViewService.getAddRfiResponseView(rfiId);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), null, rfiResponseForm, addRfiResponseView));
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), rfiResponseForm, addRfiResponseView));
   }
 
   public Result showRfiTab(String appId) {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
     String message = flash().getOrDefault("success", null);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), message, null, null));
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), null, null));
   }
 
   private boolean alreadyHasResponse(String rfiId) {
