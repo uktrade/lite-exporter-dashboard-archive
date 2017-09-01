@@ -1,6 +1,6 @@
 package models.view;
 
-import models.enums.StatusType;
+import models.enums.ApplicationProgress;
 
 public class ApplicationItemView {
 
@@ -14,14 +14,29 @@ public class ApplicationItemView {
   private final String date;
   private final String caseId;
   private final String caseDescription;
-  private final StatusType statusType;
+  private final ApplicationProgress applicationProgress;
   private final String applicationStatus;
   private final String applicationStatusDate;
   private final long applicationStatusTimestamp;
   private final String destination;
   private final String openRfiId;
 
-  public ApplicationItemView(String appId, String companyId, String companyName, String createdById, String createdByName, Long createdTimestamp, Long submittedTimestamp, String date, String caseId, String caseDescription, StatusType statusType, String applicationStatus, String applicationStatusDate, long applicationStatusTimestamp, String destination, String openRfiId) {
+  public ApplicationItemView(String appId,
+                             String companyId,
+                             String companyName,
+                             String createdById,
+                             String createdByName,
+                             Long createdTimestamp,
+                             Long submittedTimestamp,
+                             String date,
+                             String caseId,
+                             String caseDescription,
+                             ApplicationProgress applicationProgress,
+                             String applicationStatus,
+                             String applicationStatusDate,
+                             long applicationStatusTimestamp,
+                             String destination,
+                             String openRfiId) {
     this.appId = appId;
     this.companyId = companyId;
     this.companyName = companyName;
@@ -32,7 +47,7 @@ public class ApplicationItemView {
     this.date = date;
     this.caseId = caseId;
     this.caseDescription = caseDescription;
-    this.statusType = statusType;
+    this.applicationProgress = applicationProgress;
     this.applicationStatus = applicationStatus;
     this.applicationStatusDate = applicationStatusDate;
     this.applicationStatusTimestamp = applicationStatusTimestamp;
@@ -80,8 +95,8 @@ public class ApplicationItemView {
     return caseDescription;
   }
 
-  public StatusType getStatusType() {
-    return statusType;
+  public ApplicationProgress getApplicationProgress() {
+    return applicationProgress;
   }
 
   public String getApplicationStatus() {
@@ -103,4 +118,5 @@ public class ApplicationItemView {
   public String getOpenRfiId() {
     return openRfiId;
   }
+
 }

@@ -2,8 +2,9 @@ package models.view;
 
 import models.Page;
 import models.enums.ApplicationListTab;
+import models.enums.ApplicationProgress;
+import models.enums.ApplicationSortType;
 import models.enums.SortDirection;
-import models.enums.StatusTypeFilter;
 import models.view.route.ApplicationRoute;
 
 import java.util.List;
@@ -14,10 +15,9 @@ public class ApplicationListView {
   private final String companyId;
   private final List<CompanySelectItemView> companySelectItemViews;
   private final boolean showCompanyTab;
-  private final SortDirection date;
-  private final SortDirection status;
-  private final SortDirection createdBy;
-  private final StatusTypeFilter statusTypeFilter;
+  private final ApplicationSortType applicationSortType;
+  private final SortDirection sortDirection;
+  private final ApplicationProgress applicationProgress;
   private final long allCount;
   private final long draftCount;
   private final long currentCount;
@@ -28,10 +28,9 @@ public class ApplicationListView {
                              String companyId,
                              List<CompanySelectItemView> companySelectItemViews,
                              boolean showCompanyTab,
-                             SortDirection date,
-                             SortDirection status,
-                             SortDirection createdBy,
-                             StatusTypeFilter statusTypeFilter,
+                             ApplicationSortType applicationSortType,
+                             SortDirection sortDirection,
+                             ApplicationProgress applicationProgress,
                              long allCount,
                              long draftCount,
                              long currentCount,
@@ -41,10 +40,9 @@ public class ApplicationListView {
     this.companyId = companyId;
     this.companySelectItemViews = companySelectItemViews;
     this.showCompanyTab = showCompanyTab;
-    this.date = date;
-    this.status = status;
-    this.createdBy = createdBy;
-    this.statusTypeFilter = statusTypeFilter;
+    this.applicationSortType = applicationSortType;
+    this.sortDirection = sortDirection;
+    this.applicationProgress = applicationProgress;
     this.allCount = allCount;
     this.draftCount = draftCount;
     this.currentCount = currentCount;
@@ -68,20 +66,16 @@ public class ApplicationListView {
     return showCompanyTab;
   }
 
-  public SortDirection getDate() {
-    return date;
+  public ApplicationSortType getApplicationSortType() {
+    return applicationSortType;
   }
 
-  public SortDirection getStatus() {
-    return status;
+  public SortDirection getSortDirection() {
+    return sortDirection;
   }
 
-  public SortDirection getCreatedBy() {
-    return createdBy;
-  }
-
-  public StatusTypeFilter getStatusTypeFilter() {
-    return statusTypeFilter;
+  public ApplicationProgress getApplicationProgress() {
+    return applicationProgress;
   }
 
   public long getAllCount() {
@@ -105,7 +99,7 @@ public class ApplicationListView {
   }
 
   public ApplicationRoute getApplicationRoute() {
-    return new ApplicationRoute(applicationListTab, companyId, date, status, createdBy, statusTypeFilter, page.getCurrentPage());
+    return new ApplicationRoute(applicationListTab, companyId, applicationSortType, sortDirection, applicationProgress, page.getCurrentPage());
   }
 
 }

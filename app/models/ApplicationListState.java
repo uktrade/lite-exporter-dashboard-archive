@@ -6,27 +6,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ApplicationListState {
 
   private final String tab;
-  private final String date;
-  private final String status;
-  private final String show;
+  private final String sort;
+  private final String direction;
   private final String company;
-  private final String createdBy;
+  private final String show;
   private final Integer page;
 
   @JsonCreator
   public ApplicationListState(@JsonProperty("tab") String tab,
-                              @JsonProperty("date") String date,
-                              @JsonProperty("status") String status,
-                              @JsonProperty("show") String show,
+                              @JsonProperty("sort") String sort,
+                              @JsonProperty("direction") String direction,
                               @JsonProperty("company") String company,
-                              @JsonProperty("createdBy") String createdBy,
+                              @JsonProperty("show") String show,
                               @JsonProperty("page") Integer page) {
     this.tab = tab;
-    this.date = date;
-    this.status = status;
-    this.show = show;
+    this.sort = sort;
+    this.direction = direction;
     this.company = company;
-    this.createdBy = createdBy;
+    this.show = show;
     this.page = page;
   }
 
@@ -34,28 +31,23 @@ public class ApplicationListState {
     return tab;
   }
 
-  public String getDate() {
-    return date;
+  public String getSort() {
+    return sort;
   }
 
-  public String getStatus() {
-    return status;
-  }
-
-  public String getShow() {
-    return show;
+  public String getDirection() {
+    return direction;
   }
 
   public String getCompany() {
     return company;
   }
 
-  public String getCreatedBy() {
-    return createdBy;
+  public String getShow() {
+    return show;
   }
 
   public Integer getPage() {
     return page;
   }
-
 }

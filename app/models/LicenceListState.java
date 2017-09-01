@@ -6,24 +6,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class LicenceListState {
 
   private final String tab;
-  private final String reference;
-  private final String licensee;
-  private final String site;
-  private final String date;
+  private final String sort;
+  private final String direction;
   private final Integer page;
 
   @JsonCreator
   public LicenceListState(@JsonProperty("tab") String tab,
-                          @JsonProperty("reference") String reference,
-                          @JsonProperty("licensee") String licensee,
-                          @JsonProperty("site") String site,
-                          @JsonProperty("date") String date,
+                          @JsonProperty("sort") String sort,
+                          @JsonProperty("direction") String direction,
                           @JsonProperty("page") Integer page) {
     this.tab = tab;
-    this.reference = reference;
-    this.licensee = licensee;
-    this.site = site;
-    this.date = date;
+    this.sort = sort;
+    this.direction = direction;
     this.page = page;
   }
 
@@ -31,20 +25,12 @@ public class LicenceListState {
     return tab;
   }
 
-  public String getReference() {
-    return reference;
+  public String getSort() {
+    return sort;
   }
 
-  public String getLicensee() {
-    return licensee;
-  }
-
-  public String getSite() {
-    return site;
-  }
-
-  public String getDate() {
-    return date;
+  public String getDirection() {
+    return direction;
   }
 
   public Integer getPage() {

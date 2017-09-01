@@ -8,10 +8,12 @@ import components.service.OgelRegistrationItemViewService;
 import components.service.PageService;
 import components.service.UserService;
 import components.util.EnumUtil;
+import components.util.SortUtil;
 import models.LicenceListState;
 import models.Page;
 import models.User;
 import models.enums.LicenceListTab;
+import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.OgelDetailsView;
 import models.view.OgelRegistrationItemView;
@@ -23,8 +25,6 @@ import views.html.licenceList;
 import views.html.ogelDetails;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 public class LicenceListController extends Controller {
 
@@ -49,37 +49,22 @@ public class LicenceListController extends Controller {
     this.licenceApplicationAddress = licenceApplicationAddress;
   }
 
-  public Result licenceList(String tab, String reference, String licensee, String site, String date, Integer page) {
+  public Result licenceList(String tab, String sort, String direction, Integer page) {
     User currentUser = userService.getCurrentUser();
 
-    LicenceListState state = cacheService.getLicenseListState(tab, reference, licensee, site, date, page);
-
-    SortDirection referenceSortDirection = EnumUtil.parse(state.getReference(), SortDirection.class);
-    SortDirection licenseeSortDirection = EnumUtil.parse(state.getLicensee(), SortDirection.class);
-    SortDirection siteSortDirection = EnumUtil.parse(state.getSite(), SortDirection.class);
-    SortDirection dateSortDirection = EnumUtil.parse(state.getDate(), SortDirection.class);
-
-    long definedCount = Stream.of(referenceSortDirection, licenseeSortDirection, siteSortDirection, dateSortDirection).filter(Objects::nonNull).count();
-    if (definedCount != 1) {
-      referenceSortDirection = SortDirection.DESC;
-      licenseeSortDirection = null;
-      siteSortDirection = null;
-      dateSortDirection = null;
-    }
-
+    LicenceListState state = cacheService.getLicenseListState(tab, sort, direction, page);
+    SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
+    LicenceSortType licenceSortType = EnumUtil.parse(state.getSort(), LicenceSortType.class, LicenceSortType.REFERENCE);
     LicenceListTab licenceListTab = EnumUtil.parse(state.getTab(), LicenceListTab.class, LicenceListTab.OGELS);
 
     Page<OgelRegistrationItemView> pageData = null;
     if (licenceListTab == LicenceListTab.OGELS) {
-      List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(currentUser.getId(), referenceSortDirection, licenseeSortDirection, siteSortDirection, dateSortDirection);
+      List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(currentUser.getId(), licenceSortType, sortDirection);
+      SortUtil.sort(ogelRegistrationItemViews, licenceSortType, sortDirection);
       pageData = pageService.getPage(state.getPage(), ogelRegistrationItemViews);
     }
 
-    OgelRegistrationListView ogelRegistrationListView = new OgelRegistrationListView(referenceSortDirection,
-        licenseeSortDirection,
-        siteSortDirection,
-        dateSortDirection,
-        pageData);
+    OgelRegistrationListView ogelRegistrationListView = new OgelRegistrationListView(licenceSortType, sortDirection, pageData);
 
     return ok(licenceList.render(licenceApplicationAddress, licenceListTab, ogelRegistrationListView));
   }

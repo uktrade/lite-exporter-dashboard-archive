@@ -1,34 +1,50 @@
+@import models.enums.LicenceSortType
 @import models.view.OgelRegistrationListView
 @import template._
-
 @(ogelRegistrationListView: OgelRegistrationListView)
 <div class="scrollable-table">
   <table class="table-font-xsmall table-align-top">
     <thead>
       <tr>
         <th>
-          <a href="@ogelRegistrationListView.getLicenceRoute.nextReference().toString">
+          <a href="@ogelRegistrationListView.getLicenceRoute.nextSort(LicenceSortType.REFERENCE).toString">
             Reference
           </a>
-          @sortArrow(ogelRegistrationListView.getReference)
+          @if(ogelRegistrationListView.getLicenceSortType == LicenceSortType.REFERENCE) {
+            @sortArrow(ogelRegistrationListView.getSortDirection)
+          } else {
+            @sortArrow(null)
+          }
         </th>
         <th>
-          <a href="@ogelRegistrationListView.getLicenceRoute.nextLicensee.toString">
+          <a href="@ogelRegistrationListView.getLicenceRoute.nextSort(LicenceSortType.LICENSEE).toString">
             Licensee
           </a>
-          @sortArrow(ogelRegistrationListView.getLicensee)
+          @if(ogelRegistrationListView.getLicenceSortType == LicenceSortType.LICENSEE) {
+            @sortArrow(ogelRegistrationListView.getSortDirection)
+          } else {
+            @sortArrow(null)
+          }
         </th>
         <th>
-          <a href="@ogelRegistrationListView.getLicenceRoute.nextSite.toString">
+          <a href="@ogelRegistrationListView.getLicenceRoute.nextSort(LicenceSortType.SITE).toString">
             Site
           </a>
-          @sortArrow(ogelRegistrationListView.getSite)
+          @if(ogelRegistrationListView.getLicenceSortType == LicenceSortType.SITE) {
+            @sortArrow(ogelRegistrationListView.getSortDirection)
+          } else {
+            @sortArrow(null)
+          }
         </th>
         <th>
-          <a href="@ogelRegistrationListView.getLicenceRoute.nextRegistrationDate.toString">
+          <a href="@ogelRegistrationListView.getLicenceRoute.nextSort(LicenceSortType.DATE).toString">
             Registration date
           </a>
-          @sortArrow(ogelRegistrationListView.getRegistrationDate)
+          @if(ogelRegistrationListView.getLicenceSortType == LicenceSortType.DATE) {
+            @sortArrow(ogelRegistrationListView.getSortDirection)
+          } else {
+            @sortArrow(null)
+          }
         </th>
       </tr>
     </thead>

@@ -1,12 +1,12 @@
 package models.enums;
 
-public enum LicenceListTab {
+public enum ApplicationProgress {
 
-  OGELS("ogels"), SIELS("siels");
+  DRAFT("draft"), CURRENT("current"), COMPLETED("completed");
 
   private final String text;
 
-  LicenceListTab(String text) {
+  ApplicationProgress(String text) {
     this.text = text;
   }
 

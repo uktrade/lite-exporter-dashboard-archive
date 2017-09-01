@@ -4,20 +4,20 @@ import static components.util.StreamUtil.distinctByKey;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.service.ApplicationFilterService;
 import components.service.ApplicationItemViewService;
-import components.service.ApplicationSortService;
 import components.service.CacheService;
 import components.service.PageService;
 import components.service.UserService;
 import components.util.EnumUtil;
+import components.util.FilterUtil;
+import components.util.SortUtil;
 import models.ApplicationListState;
 import models.Page;
 import models.User;
 import models.enums.ApplicationListTab;
+import models.enums.ApplicationProgress;
+import models.enums.ApplicationSortType;
 import models.enums.SortDirection;
-import models.enums.StatusType;
-import models.enums.StatusTypeFilter;
 import models.view.ApplicationItemView;
 import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
@@ -27,9 +27,7 @@ import views.html.applicationList;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ApplicationListController extends Controller {
 
@@ -38,57 +36,38 @@ public class ApplicationListController extends Controller {
   private final CacheService cacheService;
   private final PageService pageService;
   private final UserService userService;
-  private final ApplicationFilterService applicationFilterService;
-  private final ApplicationSortService applicationSortService;
 
   @Inject
   public ApplicationListController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
                                    ApplicationItemViewService applicationItemViewService,
                                    CacheService cacheService,
                                    PageService pageService,
-                                   UserService userService,
-                                   ApplicationFilterService applicationFilterService,
-                                   ApplicationSortService applicationSortService) {
+                                   UserService userService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.applicationItemViewService = applicationItemViewService;
     this.cacheService = cacheService;
     this.pageService = pageService;
     this.userService = userService;
-    this.applicationFilterService = applicationFilterService;
-    this.applicationSortService = applicationSortService;
   }
 
   public Result index() {
     return redirect("/applications");
   }
 
-  public Result applicationList(String tab, String date, String status, String show, String company, String createdBy, Integer page) {
+  public Result applicationList(String tab, String sort, String direction, String company, String show, Integer page) {
     User currentUser = userService.getCurrentUser();
 
-    ApplicationListState state = cacheService.getApplicationListState(tab, date, status, show, company, createdBy, page);
-
-    StatusTypeFilter statusTypeFilter = EnumUtil.parse(state.getShow(), StatusTypeFilter.class, StatusTypeFilter.ALL);
-
-    SortDirection dateSortDirection = EnumUtil.parse(state.getDate(), SortDirection.class);
-    SortDirection statusSortDirection = EnumUtil.parse(state.getStatus(), SortDirection.class);
-    SortDirection createdBySortDirection = EnumUtil.parse(state.getCreatedBy(), SortDirection.class);
-
+    ApplicationListState state = cacheService.getApplicationListState(tab, sort, direction, company, show, page);
+    ApplicationProgress applicationProgress = EnumUtil.parse(state.getShow(), ApplicationProgress.class);
+    ApplicationSortType applicationSortType = EnumUtil.parse(state.getSort(), ApplicationSortType.class, ApplicationSortType.DATE);
+    SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
     ApplicationListTab applicationListTab = EnumUtil.parse(state.getTab(), ApplicationListTab.class, ApplicationListTab.USER);
 
-    if (applicationListTab != ApplicationListTab.COMPANY) {
-      createdBySortDirection = null;
-    }
-
-    long definedCount = Stream.of(dateSortDirection, statusSortDirection, createdBySortDirection).filter(Objects::nonNull).count();
-    if (definedCount != 1) {
-      dateSortDirection = SortDirection.DESC;
-      statusSortDirection = null;
-      createdBySortDirection = null;
+    if (applicationSortType == ApplicationSortType.CREATED_BY && applicationListTab != ApplicationListTab.COMPANY) {
+      applicationSortType = ApplicationSortType.DATE;
     }
 
     List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(currentUser.getId());
-
-    applicationSortService.sort(views, dateSortDirection, statusSortDirection, createdBySortDirection);
 
     long otherUserCount = views.stream()
         .map(ApplicationItemView::getCreatedById)
@@ -97,7 +76,7 @@ public class ApplicationListController extends Controller {
         .count();
     boolean showCompanyTab = otherUserCount > 0;
 
-    List<ApplicationItemView> userFilteredViews = applicationFilterService.filterByUser(currentUser.getId(), applicationListTab, views);
+    List<ApplicationItemView> userFilteredViews = FilterUtil.filterByUser(currentUser.getId(), applicationListTab, views);
 
     List<CompanySelectItemView> companyNames = views.stream()
         .filter(distinctByKey(ApplicationItemView::getCompanyId))
@@ -106,18 +85,16 @@ public class ApplicationListController extends Controller {
         .collect(Collectors.toList());
 
     String companyId = state.getCompany();
-    List<ApplicationItemView> companyFilteredViews = applicationFilterService.filterByCompanyId(companyId, userFilteredViews);
+    List<ApplicationItemView> companyFilteredViews = FilterUtil.filterByCompanyId(companyId, userFilteredViews);
 
     long allCount = companyFilteredViews.size();
-    long draftCount = companyFilteredViews.stream()
-        .filter(view -> view.getSubmittedTimestamp() == null)
-        .count();
-    long completedCount = companyFilteredViews.stream()
-        .filter(view -> view.getStatusType() == StatusType.COMPLETE)
-        .count();
+    long draftCount = count(companyFilteredViews, ApplicationProgress.DRAFT);
+    long completedCount = count(companyFilteredViews, ApplicationProgress.COMPLETED);
     long currentCount = allCount - draftCount - completedCount;
 
-    List<ApplicationItemView> statusTypeFilteredViews = applicationFilterService.filterByStatusType(statusTypeFilter, companyFilteredViews);
+    List<ApplicationItemView> statusTypeFilteredViews = FilterUtil.filterByApplicationProgress(applicationProgress, companyFilteredViews);
+
+    SortUtil.sort(statusTypeFilteredViews, applicationSortType, sortDirection);
 
     Page<ApplicationItemView> pageData = pageService.getPage(state.getPage(), statusTypeFilteredViews);
 
@@ -125,10 +102,9 @@ public class ApplicationListController extends Controller {
         companyId,
         companyNames,
         showCompanyTab,
-        dateSortDirection,
-        statusSortDirection,
-        createdBySortDirection,
-        statusTypeFilter,
+        applicationSortType,
+        sortDirection,
+        applicationProgress,
         allCount,
         draftCount,
         currentCount,
@@ -136,6 +112,12 @@ public class ApplicationListController extends Controller {
         pageData);
 
     return ok(applicationList.render(licenceApplicationAddress, applicationListView));
+  }
+
+  private long count(List<ApplicationItemView> applicationItemViews, ApplicationProgress applicationProgress) {
+    return applicationItemViews.stream()
+        .filter(view -> view.getApplicationProgress() == applicationProgress)
+        .count();
   }
 
 }

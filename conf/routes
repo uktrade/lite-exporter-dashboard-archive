@@ -2,11 +2,11 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-->        /common                                                 common.Routes
+->          /common                                               common.Routes
 
 # Application list
 GET         /                                                     controllers.ApplicationListController.index
-GET         /applications                                         controllers.ApplicationListController.applicationList(tab ?= null, date ?= null, status ?= null, show ?= null, company ?= null, createdBy ?= null, page: Integer ?= null)
+GET         /applications                                         controllers.ApplicationListController.applicationList(tab ?= null, sort ?= null, direction ?=null, company ?= null, show ?= null, page: Integer ?= null)
 
 # Application tabs
 GET         /application/*applicationRef/status-tracker           controllers.StatusTabController.showStatusTab(applicationRef: String)
@@ -19,7 +19,7 @@ GET         /application/*applicationRef/outcome-documents        controllers.Ou
 GET         /application/*applicationRef                          controllers.StatusTabController.showStatusTab(applicationRef: String)
 
 # Licences tabs
-GET         /licences                                             controllers.LicenceListController.licenceList(tab ?= null, reference ?= null, licensee ?= null, site ?= null, date ?= null, page: Integer ?= null)
+GET         /licences                                             controllers.LicenceListController.licenceList(tab ?= null, sort ?= null, direction ?=null, page: Integer ?= null)
 
 # Licence details
 GET         /licence/*licenceRef                                  controllers.LicenceListController.licenceDetails(licenceRef: String)

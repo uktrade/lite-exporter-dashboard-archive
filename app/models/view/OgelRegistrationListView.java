@@ -1,39 +1,28 @@
 package models.view;
 
 import models.Page;
+import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.route.LicenceRoute;
 
 public class OgelRegistrationListView {
 
-  private final SortDirection reference;
-  private final SortDirection licensee;
-  private final SortDirection site;
-  private final SortDirection registrationDate;
+  private final LicenceSortType licenceSortType;
+  private final SortDirection sortDirection;
   private final Page<OgelRegistrationItemView> page;
 
-  public OgelRegistrationListView(SortDirection reference, SortDirection licensee, SortDirection site, SortDirection registrationDate, Page<OgelRegistrationItemView> page) {
-    this.reference = reference;
-    this.licensee = licensee;
-    this.site = site;
-    this.registrationDate = registrationDate;
+  public OgelRegistrationListView(LicenceSortType licenceSortType, SortDirection sortDirection, Page<OgelRegistrationItemView> page) {
+    this.licenceSortType = licenceSortType;
+    this.sortDirection = sortDirection;
     this.page = page;
   }
 
-  public SortDirection getReference() {
-    return reference;
+  public LicenceSortType getLicenceSortType() {
+    return licenceSortType;
   }
 
-  public SortDirection getLicensee() {
-    return licensee;
-  }
-
-  public SortDirection getSite() {
-    return site;
-  }
-
-  public SortDirection getRegistrationDate() {
-    return registrationDate;
+  public SortDirection getSortDirection() {
+    return sortDirection;
   }
 
   public Page<OgelRegistrationItemView> getPage() {
@@ -41,7 +30,7 @@ public class OgelRegistrationListView {
   }
 
   public LicenceRoute getLicenceRoute() {
-    return new LicenceRoute(reference, licensee, site, registrationDate, page.getCurrentPage());
+    return new LicenceRoute(licenceSortType, sortDirection, page.getCurrentPage());
   }
 
 }

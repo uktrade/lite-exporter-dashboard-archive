@@ -1,12 +1,12 @@
 package models.enums;
 
-public enum LicenceListTab {
+public enum LicenceSortType {
 
-  OGELS("ogels"), SIELS("siels");
+  REFERENCE("reference"), LICENSEE("licensee"), SITE("site"), DATE("date");
 
   private final String text;
 
-  LicenceListTab(String text) {
+  LicenceSortType(String text) {
     this.text = text;
   }
 

@@ -6,7 +6,7 @@ public enum ApplicationListTab {
 
   private final String text;
 
-  ApplicationListTab(final String text) {
+  ApplicationListTab(String text) {
     this.text = text;
   }
 

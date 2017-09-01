@@ -12,6 +12,7 @@ import models.Application;
 import models.Rfi;
 import models.RfiResponse;
 import models.StatusUpdate;
+import models.enums.ApplicationProgress;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
@@ -88,7 +89,6 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
   private ApplicationItemView getApplicationItemView(Application application, String companyName, Collection<StatusUpdate> statusUpdates, String openRfiId) {
 
-    StatusType statusType;
     String applicationStatus;
     long statusTimestamp;
 
@@ -96,9 +96,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     if (maxStatusUpdate != null) {
       applicationStatus = statusService.getStatus(maxStatusUpdate.getStatusType());
       statusTimestamp = maxStatusUpdate.getStartTimestamp();
-      statusType = maxStatusUpdate.getStatusType();
     } else {
-      statusType = null;
       if (application.getSubmittedTimestamp() != null) {
         applicationStatus = statusService.getSubmitted();
         statusTimestamp = application.getSubmittedTimestamp();
@@ -115,6 +113,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     String createdByName = userService.getUser(createdById).getName();
     String destination = applicationService.getDestination(application);
 
+    ApplicationProgress applicationProgress = getApplicationProgress(maxStatusUpdate, application);
+
     return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
         companyName,
@@ -125,13 +125,23 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         date,
         application.getCaseReference(),
         application.getApplicantReference(),
-        statusType,
+        applicationProgress,
         applicationStatus,
         applicationStatusDate,
         statusTimestamp,
         destination,
         openRfiId
     );
+  }
+
+  private ApplicationProgress getApplicationProgress(StatusUpdate maxStatusUpdate, Application application) {
+    if (application.getSubmittedTimestamp() == null) {
+      return ApplicationProgress.DRAFT;
+    } else if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
+      return ApplicationProgress.COMPLETED;
+    } else {
+      return ApplicationProgress.CURRENT;
+    }
   }
 
   private String getDate(Application application) {

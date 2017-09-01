@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.client.OgelServiceClient;
 import components.client.PermissionsServiceClient;
+import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.OgelRegistrationItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
@@ -14,34 +15,12 @@ import uk.gov.bis.lite.ogel.api.view.OgelFullView;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItemViewService {
-
-  private static final Map<SortDirection, Comparator<OgelRegistrationItemView>> REFERENCE_COMPARATORS = new EnumMap<>(SortDirection.class);
-  private static final Map<SortDirection, Comparator<OgelRegistrationItemView>> LICENSEE_COMPARATORS = new EnumMap<>(SortDirection.class);
-  private static final Map<SortDirection, Comparator<OgelRegistrationItemView>> SITE_COMPARATORS = new EnumMap<>(SortDirection.class);
-  private static final Map<SortDirection, Comparator<OgelRegistrationItemView>> DATE_COMPARATORS = new EnumMap<>(SortDirection.class);
-
-  static {
-    Comparator<OgelRegistrationItemView> referenceComparator = Comparator.comparing(OgelRegistrationItemView::getRegistrationReference);
-    Comparator<OgelRegistrationItemView> licenseeComparator = Comparator.comparing(OgelRegistrationItemView::getLicensee);
-    Comparator<OgelRegistrationItemView> siteComparator = Comparator.comparing(OgelRegistrationItemView::getSite);
-    Comparator<OgelRegistrationItemView> dateComparator = Comparator.comparing(OgelRegistrationItemView::getRegistrationDate);
-    REFERENCE_COMPARATORS.put(SortDirection.ASC, referenceComparator);
-    REFERENCE_COMPARATORS.put(SortDirection.DESC, referenceComparator.reversed());
-    LICENSEE_COMPARATORS.put(SortDirection.ASC, licenseeComparator);
-    LICENSEE_COMPARATORS.put(SortDirection.DESC, licenseeComparator.reversed());
-    SITE_COMPARATORS.put(SortDirection.ASC, siteComparator);
-    SITE_COMPARATORS.put(SortDirection.DESC, siteComparator.reversed());
-    DATE_COMPARATORS.put(SortDirection.ASC, dateComparator);
-    DATE_COMPARATORS.put(SortDirection.DESC, dateComparator.reversed());
-  }
 
   private final PermissionsServiceClient permissionsServiceClient;
   private final TimeFormatService timeFormatService;
@@ -60,7 +39,7 @@ public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItem
   }
 
   @Override
-  public List<OgelRegistrationItemView> getOgelRegistrationItemViews(String userId, SortDirection reference, SortDirection licensee, SortDirection site, SortDirection date) {
+  public List<OgelRegistrationItemView> getOgelRegistrationItemViews(String userId, LicenceSortType licenceSortType, SortDirection sortDirection) {
     List<OgelRegistrationView> ogelRegistrationViews = permissionsServiceClient.getOgelRegistrations(userId);
     Map<String, SiteView> sites = getSites(ogelRegistrationViews);
     Map<String, CustomerView> customers = getCustomers(ogelRegistrationViews);
@@ -77,8 +56,6 @@ public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItem
 
     // TODO Remove recycling of data when we have more mock data available
     ogelRegistrationItemViews = recycle(ogelRegistrationItemViews.get(0));
-
-    sort(ogelRegistrationItemViews, reference, licensee, site, date);
 
     return ogelRegistrationItemViews;
   }
@@ -115,21 +92,6 @@ public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItem
       recycledViews.add(new OgelRegistrationItemView(base.getRegistrationReference(), base.getDescription(), base.getLicensee() + add, base.getSite() + add, time));
     }
     return recycledViews;
-  }
-
-  private void sort(List<OgelRegistrationItemView> ogelRegistrationItemViews, SortDirection reference, SortDirection licensee, SortDirection site, SortDirection date) {
-    if (reference != null) {
-      ogelRegistrationItemViews.sort(REFERENCE_COMPARATORS.get(reference));
-    }
-    if (licensee != null) {
-      ogelRegistrationItemViews.sort(LICENSEE_COMPARATORS.get(licensee));
-    }
-    if (site != null) {
-      ogelRegistrationItemViews.sort(SITE_COMPARATORS.get(site));
-    }
-    if (date != null) {
-      ogelRegistrationItemViews.sort(DATE_COMPARATORS.get(date));
-    }
   }
 
   private OgelRegistrationItemView getOgelRegistrationItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView, SiteView siteView, OgelFullView ogelFullView) {

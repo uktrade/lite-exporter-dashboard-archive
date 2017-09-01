@@ -5,8 +5,8 @@ import models.LicenceListState;
 
 public interface CacheService {
 
-  ApplicationListState getApplicationListState(String tab, String date, String status, String show, String company, String createdBy, Integer page);
+  ApplicationListState getApplicationListState(String tab, String sort, String direction, String show, String company, Integer page);
 
-  LicenceListState getLicenseListState(String tab, String reference, String licensee, String site, String date, Integer page);
+  LicenceListState getLicenseListState(String tab, String sort, String direction, Integer page);
 
 }

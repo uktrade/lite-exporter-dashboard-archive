@@ -1,47 +1,49 @@
 package models.view.route;
 
 import models.enums.ApplicationListTab;
+import models.enums.ApplicationProgress;
+import models.enums.ApplicationSortType;
 import models.enums.SortDirection;
-import models.enums.StatusTypeFilter;
 
 public class ApplicationRoute {
 
   private ApplicationListTab applicationListTab;
   private String companyId;
-  private SortDirection date;
-  private SortDirection status;
-  private SortDirection createdBy;
-  private StatusTypeFilter statusTypeFilter;
+  private ApplicationSortType applicationSortType;
+  private SortDirection sortDirection;
+  private ApplicationProgress applicationProgress;
   private Integer page;
 
   public ApplicationRoute(ApplicationListTab applicationListTab,
                           String companyId,
-                          SortDirection date,
-                          SortDirection status,
-                          SortDirection createdBy,
-                          StatusTypeFilter statusTypeFilter,
+                          ApplicationSortType applicationSortType,
+                          SortDirection sortDirection,
+                          ApplicationProgress applicationProgress,
                           Integer page) {
     this.applicationListTab = applicationListTab;
     this.companyId = companyId;
-    this.date = date;
-    this.status = status;
-    this.createdBy = createdBy;
-    this.statusTypeFilter = statusTypeFilter;
+    this.applicationSortType = applicationSortType;
+    this.sortDirection = sortDirection;
+    this.applicationProgress = applicationProgress;
     this.page = page;
   }
 
-  private SortDirection next(SortDirection sortDirection) {
-    if (sortDirection == SortDirection.DESC) {
-      return SortDirection.ASC;
+  public ApplicationRoute nextSort(ApplicationSortType sortType) {
+    if (applicationSortType == sortType) {
+      nextSortDirection();
     } else {
-      return SortDirection.DESC;
+      applicationSortType = sortType;
+      sortDirection = SortDirection.DESC;
     }
+    return this;
   }
 
-  private void clearSortDirections() {
-    date = null;
-    status = null;
-    createdBy = null;
+  private void nextSortDirection() {
+    if (sortDirection == SortDirection.DESC) {
+      sortDirection = SortDirection.ASC;
+    } else {
+      sortDirection = SortDirection.DESC;
+    }
   }
 
   public ApplicationRoute setApplicationListTab(ApplicationListTab applicationListTab) {
@@ -54,29 +56,8 @@ public class ApplicationRoute {
     return this;
   }
 
-  public ApplicationRoute nextDate() {
-    SortDirection next = next(date);
-    clearSortDirections();
-    this.date = next;
-    return this;
-  }
-
-  public ApplicationRoute nextStatus() {
-    SortDirection next = next(status);
-    clearSortDirections();
-    this.status = next;
-    return this;
-  }
-
-  public ApplicationRoute nextCreatedBy() {
-    SortDirection next = next(createdBy);
-    clearSortDirections();
-    this.createdBy = next;
-    return this;
-  }
-
-  public ApplicationRoute setStatusTypeFilter(StatusTypeFilter statusTypeFilter) {
-    this.statusTypeFilter = statusTypeFilter;
+  public ApplicationRoute setApplicationProgress(ApplicationProgress applicationProgress) {
+    this.applicationProgress = applicationProgress;
     return this;
   }
 
@@ -95,21 +76,19 @@ public class ApplicationRoute {
       stringBuilder.append("&company=");
       stringBuilder.append(companyId);
     }
-    if (date != null) {
-      stringBuilder.append("&date=");
-      stringBuilder.append(date);
+    if (applicationSortType != null) {
+      stringBuilder.append("&sort=");
+      stringBuilder.append(applicationSortType);
     }
-    if (status != null) {
-      stringBuilder.append("&status=");
-      stringBuilder.append(status);
+    if (sortDirection != null) {
+      stringBuilder.append("&direction=");
+      stringBuilder.append(sortDirection);
     }
-    if (createdBy != null && applicationListTab == ApplicationListTab.COMPANY) {
-      stringBuilder.append("&createdBy=");
-      stringBuilder.append(createdBy);
-    }
-    if (statusTypeFilter != null) {
-      stringBuilder.append("&show=");
-      stringBuilder.append(statusTypeFilter);
+    stringBuilder.append("&show=");
+    if (applicationProgress != null) {
+      stringBuilder.append(applicationProgress);
+    } else {
+      stringBuilder.append("all");
     }
     if (page != null && page != 1) {
       stringBuilder.append("&page=");
