@@ -8,6 +8,8 @@ import components.dao.ApplicationDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
 import components.dao.StatusUpdateDao;
+import components.util.ApplicationUtil;
+import components.util.TimeUtil;
 import models.Application;
 import models.Rfi;
 import models.RfiResponse;
@@ -30,31 +32,22 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
   private final ApplicationDao applicationDao;
   private final StatusUpdateDao statusUpdateDao;
-  private final TimeFormatService timeFormatService;
-  private final StatusService statusService;
   private final RfiDao rfiDao;
   private final RfiResponseDao rfiResponseDao;
-  private final ApplicationService applicationService;
   private final CustomerServiceClient customerServiceClient;
   private final UserService userService;
 
   @Inject
   public ApplicationItemViewServiceImpl(ApplicationDao applicationDao,
                                         StatusUpdateDao statusUpdateDao,
-                                        TimeFormatService timeFormatService,
-                                        StatusService statusService,
                                         RfiDao rfiDao,
                                         RfiResponseDao rfiResponseDao,
-                                        ApplicationService applicationService,
                                         CustomerServiceClient customerServiceClient,
                                         UserService userService) {
     this.applicationDao = applicationDao;
     this.statusUpdateDao = statusUpdateDao;
-    this.timeFormatService = timeFormatService;
-    this.statusService = statusService;
     this.rfiDao = rfiDao;
     this.rfiResponseDao = rfiResponseDao;
-    this.applicationService = applicationService;
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
   }
@@ -92,26 +85,26 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     String applicationStatus;
     long statusTimestamp;
 
-    StatusUpdate maxStatusUpdate = applicationService.getMaxStatusUpdate(statusUpdates).orElse(null);
+    StatusUpdate maxStatusUpdate = ApplicationUtil.getMaxStatusUpdate(statusUpdates);
     if (maxStatusUpdate != null) {
-      applicationStatus = statusService.getStatus(maxStatusUpdate.getStatusType());
+      applicationStatus = ApplicationUtil.getStatusName(maxStatusUpdate.getStatusType());
       statusTimestamp = maxStatusUpdate.getStartTimestamp();
     } else {
       if (application.getSubmittedTimestamp() != null) {
-        applicationStatus = statusService.getSubmitted();
+        applicationStatus = ApplicationUtil.SUBMITTED;
         statusTimestamp = application.getSubmittedTimestamp();
       } else {
-        applicationStatus = statusService.getDraft();
+        applicationStatus = ApplicationUtil.DRAFT;
         statusTimestamp = application.getCreatedTimestamp();
       }
     }
 
     String date = getDate(application);
-    String applicationStatusDate = String.format("Since: %s", timeFormatService.formatDateWithSlashes(statusTimestamp));
+    String applicationStatusDate = String.format("Since: %s", TimeUtil.formatDateWithSlashes(statusTimestamp));
 
     String createdById = application.getCreatedBy();
     String createdByName = userService.getUser(createdById).getName();
-    String destination = applicationService.getDestination(application);
+    String destination = ApplicationUtil.getDestination(application);
 
     ApplicationProgress applicationProgress = getApplicationProgress(maxStatusUpdate, application);
 
@@ -151,7 +144,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     } else {
       dateTimestamp = application.getCreatedTimestamp();
     }
-    return timeFormatService.formatDateWithSlashes(dateTimestamp);
+    return TimeUtil.formatDateWithSlashes(dateTimestamp);
   }
 
   private Map<String, String> getAppIdToOpenRfiIdMap(List<String> appIds) {

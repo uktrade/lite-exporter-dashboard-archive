@@ -4,12 +4,11 @@ import static components.util.StreamUtil.distinctByKey;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import components.cache.SessionCache;
 import components.service.ApplicationItemViewService;
-import components.service.CacheService;
-import components.service.PageService;
 import components.service.UserService;
 import components.util.EnumUtil;
-import components.util.FilterUtil;
+import components.util.PageUtil;
 import components.util.SortUtil;
 import models.ApplicationListState;
 import models.Page;
@@ -33,20 +32,14 @@ public class ApplicationListController extends Controller {
 
   private final String licenceApplicationAddress;
   private final ApplicationItemViewService applicationItemViewService;
-  private final CacheService cacheService;
-  private final PageService pageService;
   private final UserService userService;
 
   @Inject
   public ApplicationListController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
                                    ApplicationItemViewService applicationItemViewService,
-                                   CacheService cacheService,
-                                   PageService pageService,
                                    UserService userService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.applicationItemViewService = applicationItemViewService;
-    this.cacheService = cacheService;
-    this.pageService = pageService;
     this.userService = userService;
   }
 
@@ -57,7 +50,7 @@ public class ApplicationListController extends Controller {
   public Result applicationList(String tab, String sort, String direction, String company, String show, Integer page) {
     User currentUser = userService.getCurrentUser();
 
-    ApplicationListState state = cacheService.getApplicationListState(tab, sort, direction, company, show, page);
+    ApplicationListState state = SessionCache.getApplicationListState(tab, sort, direction, company, show, page);
     ApplicationProgress applicationProgress = EnumUtil.parse(state.getShow(), ApplicationProgress.class);
     ApplicationSortType applicationSortType = EnumUtil.parse(state.getSort(), ApplicationSortType.class, ApplicationSortType.DATE);
     SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
@@ -76,7 +69,7 @@ public class ApplicationListController extends Controller {
         .count();
     boolean showCompanyTab = otherUserCount > 0;
 
-    List<ApplicationItemView> userFilteredViews = FilterUtil.filterByUser(currentUser.getId(), applicationListTab, views);
+    List<ApplicationItemView> userFilteredViews = filterByUser(currentUser.getId(), applicationListTab, views);
 
     List<CompanySelectItemView> companyNames = views.stream()
         .filter(distinctByKey(ApplicationItemView::getCompanyId))
@@ -85,18 +78,18 @@ public class ApplicationListController extends Controller {
         .collect(Collectors.toList());
 
     String companyId = state.getCompany();
-    List<ApplicationItemView> companyFilteredViews = FilterUtil.filterByCompanyId(companyId, userFilteredViews);
+    List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, userFilteredViews);
 
     long allCount = companyFilteredViews.size();
     long draftCount = count(companyFilteredViews, ApplicationProgress.DRAFT);
     long completedCount = count(companyFilteredViews, ApplicationProgress.COMPLETED);
     long currentCount = allCount - draftCount - completedCount;
 
-    List<ApplicationItemView> statusTypeFilteredViews = FilterUtil.filterByApplicationProgress(applicationProgress, companyFilteredViews);
+    List<ApplicationItemView> statusTypeFilteredViews = filterByApplicationProgress(applicationProgress, companyFilteredViews);
 
     SortUtil.sort(statusTypeFilteredViews, applicationSortType, sortDirection);
 
-    Page<ApplicationItemView> pageData = pageService.getPage(state.getPage(), statusTypeFilteredViews);
+    Page<ApplicationItemView> pageData = PageUtil.getPage(state.getPage(), statusTypeFilteredViews);
 
     ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
         companyId,
@@ -118,6 +111,36 @@ public class ApplicationListController extends Controller {
     return applicationItemViews.stream()
         .filter(view -> view.getApplicationProgress() == applicationProgress)
         .count();
+  }
+
+  private List<ApplicationItemView> filterByUser(String userId, ApplicationListTab applicationListTab, List<ApplicationItemView> applicationItemViews) {
+    if (applicationListTab == ApplicationListTab.USER) {
+      return applicationItemViews.stream()
+          .filter(view -> userId.equals(view.getCreatedById()))
+          .collect(Collectors.toList());
+    } else {
+      return applicationItemViews;
+    }
+  }
+
+  private List<ApplicationItemView> filterByCompanyId(String companyId, List<ApplicationItemView> applicationItemViews) {
+    if (companyId != null && !companyId.equals("all")) {
+      return applicationItemViews.stream()
+          .filter(view -> companyId.equals(view.getCompanyId()))
+          .collect(Collectors.toList());
+    } else {
+      return applicationItemViews;
+    }
+  }
+
+  private List<ApplicationItemView> filterByApplicationProgress(ApplicationProgress applicationProgress, List<ApplicationItemView> applicationItemViews) {
+    if (applicationProgress != null) {
+      return applicationItemViews.stream()
+          .filter(view -> view.getApplicationProgress() == applicationProgress)
+          .collect(Collectors.toList());
+    } else {
+      return applicationItemViews;
+    }
   }
 
 }

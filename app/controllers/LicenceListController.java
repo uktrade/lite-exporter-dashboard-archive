@@ -2,12 +2,12 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.service.CacheService;
+import components.cache.SessionCache;
 import components.service.OgelDetailsViewService;
 import components.service.OgelRegistrationItemViewService;
-import components.service.PageService;
 import components.service.UserService;
 import components.util.EnumUtil;
+import components.util.PageUtil;
 import components.util.SortUtil;
 import models.LicenceListState;
 import models.Page;
@@ -28,22 +28,17 @@ import java.util.List;
 
 public class LicenceListController extends Controller {
 
-  private final CacheService cacheService;
   private final OgelRegistrationItemViewService ogelRegistrationItemViewService;
-  private final PageService pageService;
   private final OgelDetailsViewService ogelDetailsViewService;
   private final UserService userService;
   private final String licenceApplicationAddress;
 
   @Inject
-  public LicenceListController(CacheService cacheService,
-                               OgelRegistrationItemViewService ogelRegistrationItemViewService,
-                               PageService pageService, OgelDetailsViewService ogelDetailsViewService,
+  public LicenceListController(OgelRegistrationItemViewService ogelRegistrationItemViewService,
+                               OgelDetailsViewService ogelDetailsViewService,
                                UserService userService,
                                @Named("licenceApplicationAddress") String licenceApplicationAddress) {
-    this.cacheService = cacheService;
     this.ogelRegistrationItemViewService = ogelRegistrationItemViewService;
-    this.pageService = pageService;
     this.ogelDetailsViewService = ogelDetailsViewService;
     this.userService = userService;
     this.licenceApplicationAddress = licenceApplicationAddress;
@@ -52,7 +47,7 @@ public class LicenceListController extends Controller {
   public Result licenceList(String tab, String sort, String direction, Integer page) {
     User currentUser = userService.getCurrentUser();
 
-    LicenceListState state = cacheService.getLicenseListState(tab, sort, direction, page);
+    LicenceListState state = SessionCache.getLicenseListState(tab, sort, direction, page);
     SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
     LicenceSortType licenceSortType = EnumUtil.parse(state.getSort(), LicenceSortType.class, LicenceSortType.REFERENCE);
     LicenceListTab licenceListTab = EnumUtil.parse(state.getTab(), LicenceListTab.class, LicenceListTab.OGELS);
@@ -61,7 +56,7 @@ public class LicenceListController extends Controller {
     if (licenceListTab == LicenceListTab.OGELS) {
       List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(currentUser.getId(), licenceSortType, sortDirection);
       SortUtil.sort(ogelRegistrationItemViews, licenceSortType, sortDirection);
-      pageData = pageService.getPage(state.getPage(), ogelRegistrationItemViews);
+      pageData = PageUtil.getPage(state.getPage(), ogelRegistrationItemViews);
     }
 
     OgelRegistrationListView ogelRegistrationListView = new OgelRegistrationListView(licenceSortType, sortDirection, pageData);

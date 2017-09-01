@@ -8,6 +8,8 @@ import components.dao.ApplicationDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
 import components.dao.StatusUpdateDao;
+import components.util.ApplicationUtil;
+import components.util.TimeUtil;
 import models.Application;
 import models.Rfi;
 import models.RfiResponse;
@@ -16,8 +18,8 @@ import models.enums.StatusType;
 import models.view.StatusItemRfiView;
 import models.view.StatusItemView;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -28,41 +30,18 @@ import java.util.stream.Collectors;
 
 public class StatusItemViewServiceImpl implements StatusItemViewService {
 
-  private final static List<StatusType> STATUS_TYPE_LIST = Arrays.asList(
-      StatusType.INITIAL_CHECKS,
-      StatusType.TECHNICAL_ASSESSMENT,
-      StatusType.LU_PROCESSING,
-      StatusType.WITH_OGD,
-      StatusType.FINAL_ASSESSMENT,
-      StatusType.COMPLETE);
-
   private final StatusUpdateDao statusUpdateDao;
   private final RfiDao rfiDao;
-  private final TimeFormatService timeFormatService;
-  private final ProcessingDescriptionService processingDescriptionService;
-  private final StatusExplanationService statusExplanationService;
-  private final ProcessingLabelService processingLabelService;
-  private final StatusService statusService;
   private final ApplicationDao applicationDao;
   private final RfiResponseDao rfiResponseDao;
 
   @Inject
   public StatusItemViewServiceImpl(StatusUpdateDao statusUpdateDao,
                                    RfiDao rfiDao,
-                                   TimeFormatService timeFormatService,
-                                   ProcessingDescriptionService processingDescriptionService,
-                                   StatusExplanationService statusExplanationService,
-                                   ProcessingLabelService processingLabelService,
-                                   StatusService statusService,
                                    ApplicationDao applicationDao,
                                    RfiResponseDao rfiResponseDao) {
     this.statusUpdateDao = statusUpdateDao;
     this.rfiDao = rfiDao;
-    this.timeFormatService = timeFormatService;
-    this.processingDescriptionService = processingDescriptionService;
-    this.statusExplanationService = statusExplanationService;
-    this.processingLabelService = processingLabelService;
-    this.statusService = statusService;
     this.applicationDao = applicationDao;
     this.rfiResponseDao = rfiResponseDao;
   }
@@ -83,18 +62,25 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   }
 
   private StatusItemView createDraftStatusItemView(Application application) {
-    String status = statusService.getDraft();
-    String statusExplanation = statusExplanationService.getDraftStatusExplanation();
-    String processingLabel = processingLabelService.getDraftProcessingLabel();
-    String processingDescription = processingDescriptionService.getDraftProcessingDescription(application);
+    String status = ApplicationUtil.DRAFT;
+    String statusExplanation = "";
+    String processingLabel = "Finished";
+    String processingDescription = "Created on " + TimeUtil.formatDateAndTime(application.getCreatedTimestamp());
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
 
   private StatusItemView createSubmittedStatusItemView(Application application) {
-    String status = statusService.getSubmitted();
-    String statusExplanation = statusExplanationService.getSubmittedStatusExplanation();
-    String processingLabel = processingLabelService.getSubmittedProcessingLabel(application);
-    String processingDescription = processingDescriptionService.getSubmittedProcessingDescription(application);
+    String status = ApplicationUtil.SUBMITTED;
+    String statusExplanation = "";
+    String processingLabel;
+    String processingDescription;
+    if (application.getSubmittedTimestamp() == null) {
+      processingLabel = "Not started";
+      processingDescription = "Submitted on " + TimeUtil.formatDateAndTime(application.getSubmittedTimestamp());
+    } else {
+      processingLabel = "Finished";
+      processingDescription = "";
+    }
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
 
@@ -121,7 +107,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   private List<StatusUpdate> getStatusUpdates(String appId) {
     Map<StatusType, StatusUpdate> statusUpdateMap = new EnumMap<>(StatusType.class);
     statusUpdateDao.getStatusUpdates(appId).forEach(su -> statusUpdateMap.put(su.getStatusType(), su));
-    return STATUS_TYPE_LIST.stream().map(statusType -> {
+    return ApplicationUtil.getAscendingStatusTypeList().stream().map(statusType -> {
       StatusUpdate statusUpdate = statusUpdateMap.get(statusType);
       if (statusUpdate != null) {
         return statusUpdate;
@@ -132,10 +118,10 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   }
 
   private StatusItemView getStatusItemView(StatusUpdate statusUpdate, Collection<Rfi> rfiList, Map<String, RfiResponse> rfiIdToRfiResponseMap) {
-    String status = statusService.getStatus(statusUpdate.getStatusType());
-    String statusExplanation = statusExplanationService.getStatusExplanation(statusUpdate.getStatusType());
-    String processingLabel = processingLabelService.getProcessingLabel(statusUpdate);
-    String processingDescription = processingDescriptionService.getProcessingDescription(statusUpdate);
+    String status = ApplicationUtil.getStatusName(statusUpdate.getStatusType());
+    String statusExplanation = ApplicationUtil.getStatusExplanation(statusUpdate.getStatusType());
+    String processingLabel = getProcessingLabel(statusUpdate);
+    String processingDescription = getProcessingDescription(statusUpdate);
     List<StatusItemRfiView> statusItemRfiViews = rfiList.stream()
         .sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
         .map(rfi -> getStatusItemRfiView(rfi, rfiIdToRfiResponseMap.get(rfi.getRfiId())))
@@ -143,13 +129,54 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, statusItemRfiViews);
   }
 
+  private String getProcessingLabel(StatusUpdate statusUpdate) {
+    if (statusUpdate.getStatusType() == StatusType.COMPLETE) {
+      if (statusUpdate.getStartTimestamp() != null || statusUpdate.getEndTimestamp() != null) {
+        return "Finished";
+      } else {
+        return "Not started";
+      }
+    } else if (statusUpdate.getStartTimestamp() == null && statusUpdate.getEndTimestamp() == null) {
+      return "Not started";
+    } else if (statusUpdate.getEndTimestamp() != null) {
+      return "Finished";
+    } else {
+      return "In progress";
+    }
+  }
+
+  private String getProcessingDescription(StatusUpdate statusUpdate) {
+    if (statusUpdate.getStatusType() == StatusType.COMPLETE) {
+      if (statusUpdate.getStartTimestamp() == null) {
+        return "";
+      } else {
+        return "Decision reached on " + TimeUtil.formatDateAndTime(statusUpdate.getStartTimestamp());
+      }
+    } else {
+      Long startTimestamp = statusUpdate.getStartTimestamp();
+      Long endTimestamp = statusUpdate.getEndTimestamp();
+      if (startTimestamp != null) {
+        if (endTimestamp != null) {
+          long duration = TimeUtil.daysBetweenWithStartBeforeEnd(startTimestamp, endTimestamp);
+          return "Processed in " + duration + " working days";
+        } else {
+          String started = TimeUtil.formatDateAndTime(startTimestamp);
+          long duration = TimeUtil.daysBetweenWithStartBeforeEnd(startTimestamp, Instant.now().toEpochMilli());
+          return String.format("Started on %s<br>(%d days ago)", started, duration);
+        }
+      } else {
+        return "";
+      }
+    }
+  }
+
   private StatusItemRfiView getStatusItemRfiView(Rfi rfi, RfiResponse rfiResponse) {
     if (rfiResponse == null) {
-      String time = timeFormatService.formatDateAndTime(rfi.getReceivedTimestamp());
+      String time = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
       String description = "Received on " + time;
       return new StatusItemRfiView(rfi.getAppId(), rfi.getRfiId(), description);
     } else {
-      String time = timeFormatService.formatDateAndTime(rfiResponse.getSentTimestamp());
+      String time = TimeUtil.formatDateAndTime(rfiResponse.getSentTimestamp());
       String description = "Replied to on " + time;
       return new StatusItemRfiView(rfi.getAppId(), rfi.getRfiId(), description);
     }

@@ -1,9 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
-import components.service.CacheService;
 import components.service.TestDataService;
-import controllers.common.routes;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -12,7 +10,7 @@ public class TestDataController extends Controller {
   private final TestDataService testDataService;
 
   @Inject
-  public TestDataController(TestDataService testDataService, CacheService cacheService) {
+  public TestDataController(TestDataService testDataService) {
     this.testDataService = testDataService;
   }
 

@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.client.OgelServiceClient;
 import components.client.PermissionsServiceClient;
+import components.util.TimeUtil;
 import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.OgelRegistrationItemView;
@@ -23,17 +24,14 @@ import java.util.stream.Collectors;
 public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItemViewService {
 
   private final PermissionsServiceClient permissionsServiceClient;
-  private final TimeFormatService timeFormatService;
   private final CustomerServiceClient customerServiceClient;
   private final OgelServiceClient ogelServiceClient;
 
   @Inject
   public OgelRegistrationItemViewServiceImpl(PermissionsServiceClient permissionsServiceClient,
-                                             TimeFormatService timeFormatService,
                                              CustomerServiceClient customerServiceClient,
                                              OgelServiceClient ogelServiceClient) {
     this.permissionsServiceClient = permissionsServiceClient;
-    this.timeFormatService = timeFormatService;
     this.customerServiceClient = customerServiceClient;
     this.ogelServiceClient = ogelServiceClient;
   }
@@ -88,15 +86,15 @@ public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItem
     List<OgelRegistrationItemView> recycledViews = new ArrayList<>();
     for (int i = 1; i < 22; i++) {
       String add = i % 2 == 0 ? "_A" : "_B";
-      String time = timeFormatService.formatOgelRegistrationDate(time(2017, 2, 2 + i, 16, 20 + i));
+      String time = TimeUtil.formatOgelRegistrationDate(time(2017, 2, 2 + i, 16, 20 + i));
       recycledViews.add(new OgelRegistrationItemView(base.getRegistrationReference(), base.getDescription(), base.getLicensee() + add, base.getSite() + add, time));
     }
     return recycledViews;
   }
 
   private OgelRegistrationItemView getOgelRegistrationItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView, SiteView siteView, OgelFullView ogelFullView) {
-    long registrationDateMillis = timeFormatService.parseOgelRegistrationDate(ogelRegistrationView.getRegistrationDate());
-    String registrationDate = timeFormatService.formatDate(registrationDateMillis);
+    long registrationDateMillis = TimeUtil.parseOgelRegistrationDate(ogelRegistrationView.getRegistrationDate());
+    String registrationDate = TimeUtil.formatDate(registrationDateMillis);
     return new OgelRegistrationItemView(ogelRegistrationView.getRegistrationReference(),
         ogelFullView.getName(),
         customerView.getCompanyName(),

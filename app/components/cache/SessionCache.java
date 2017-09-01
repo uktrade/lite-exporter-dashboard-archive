@@ -1,4 +1,4 @@
-package components.service;
+package components.cache;
 
 import static play.mvc.Controller.session;
 
@@ -11,16 +11,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class CacheServiceImpl implements CacheService {
+public class SessionCache {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SessionCache.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private static final String APPLICATION_LIST_STATE = "applicationListState";
   private static final String LICENSE_LIST_STATE = "licenseListState";
 
-  @Override
-  public ApplicationListState getApplicationListState(String tab, String sort, String direction, String company, String show, Integer page) {
+  public static ApplicationListState getApplicationListState(String tab, String sort, String direction, String company, String show, Integer page) {
     ApplicationListState state = null;
     if (tab == null && sort == null && direction == null && company == null && show == null && page == null) {
       state = getFromSession(APPLICATION_LIST_STATE, ApplicationListState.class);
@@ -32,8 +31,7 @@ public class CacheServiceImpl implements CacheService {
     return state;
   }
 
-  @Override
-  public LicenceListState getLicenseListState(String tab, String sort, String direction, Integer page) {
+  public static LicenceListState getLicenseListState(String tab, String sort, String direction, Integer page) {
     LicenceListState state = null;
     if (tab != null && sort != null && direction != null && page != null) {
       state = getFromSession(LICENSE_LIST_STATE, LicenceListState.class);
@@ -45,7 +43,7 @@ public class CacheServiceImpl implements CacheService {
     return state;
   }
 
-  private void save(String key, Object value) {
+  private static void save(String key, Object value) {
     try {
       session(key, MAPPER.writeValueAsString(value));
     } catch (JsonProcessingException error) {
@@ -53,7 +51,7 @@ public class CacheServiceImpl implements CacheService {
     }
   }
 
-  private <T> T getFromSession(String key, Class<T> clazz) {
+  private static <T> T getFromSession(String key, Class<T> clazz) {
     String value = session(key);
     if (value != null) {
       try {

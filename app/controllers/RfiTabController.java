@@ -4,10 +4,8 @@ import com.google.inject.Inject;
 import components.dao.RfiResponseDao;
 import components.service.ApplicationService;
 import components.service.ApplicationSummaryViewService;
+import components.service.RfiResponseService;
 import components.service.RfiViewService;
-import components.service.UserService;
-import models.RfiResponse;
-import models.User;
 import models.view.AddRfiResponseView;
 import models.view.ApplicationSummaryView;
 import models.view.RfiView;
@@ -20,7 +18,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.rfiListTab;
 
-import java.time.Instant;
 import java.util.List;
 
 public class RfiTabController extends Controller {
@@ -28,26 +25,31 @@ public class RfiTabController extends Controller {
   private static final Logger LOGGER = LoggerFactory.getLogger(RfiTabController.class);
 
   private final String licenceApplicationAddress;
-  private final UserService userService;
   private final FormFactory formFactory;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final RfiViewService rfiViewService;
   private final RfiResponseDao rfiResponseDao;
   private final ApplicationService applicationService;
+  private final RfiResponseService rfiResponseService;
 
   @Inject
-  public RfiTabController(String licenceApplicationAddress, UserService userService, FormFactory formFactory, ApplicationSummaryViewService applicationSummaryViewService, RfiViewService rfiViewService, RfiResponseDao rfiResponseDao, ApplicationService applicationService) {
+  public RfiTabController(String licenceApplicationAddress,
+                          FormFactory formFactory,
+                          ApplicationSummaryViewService applicationSummaryViewService,
+                          RfiViewService rfiViewService,
+                          RfiResponseDao rfiResponseDao,
+                          ApplicationService applicationService,
+                          RfiResponseService rfiResponseService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
-    this.userService = userService;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.rfiViewService = rfiViewService;
     this.rfiResponseDao = rfiResponseDao;
     this.applicationService = applicationService;
+    this.rfiResponseService = rfiResponseService;
   }
 
   public Result submitResponse(String appId) {
-    User currentUser = userService.getCurrentUser();
     Form<RfiResponseForm> rfiResponseForm = formFactory.form(RfiResponseForm.class).bindFromRequest();
     String rfiId = rfiResponseForm.data().get("rfiId");
     if (alreadyHasResponse(rfiId)) {
@@ -60,8 +62,7 @@ public class RfiTabController extends Controller {
       return respond(appId, rfiId, rfiResponseForm);
     } else {
       String responseMessage = rfiResponseForm.get().responseMessage;
-      RfiResponse rfiResponse = new RfiResponse(rfiId, currentUser.getId(), Instant.now().toEpochMilli(), responseMessage, null);
-      rfiResponseDao.insertRfiResponse(rfiResponse);
+      rfiResponseService.insertRfiResponse(rfiId, responseMessage);
       flash("success", "Your message has been sent.");
       return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
     }
@@ -92,7 +93,6 @@ public class RfiTabController extends Controller {
   public Result showRfiTab(String appId) {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
-    String message = flash().getOrDefault("success", null);
     return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), null, null));
   }
 
