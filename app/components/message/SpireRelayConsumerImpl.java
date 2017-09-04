@@ -87,9 +87,9 @@ public class SpireRelayConsumerImpl extends DefaultConsumer implements SpireRela
   private StatusType parseStatusCode(SpireCaseParam spireCaseParam) {
     try {
       return StatusType.valueOf(spireCaseParam.getStatusCode());
-    } catch (IllegalArgumentException iae) {
+    } catch (IllegalArgumentException | NullPointerException exception) {
       String errorMessage = "Unknown statusCode " + spireCaseParam.getStatusCode();
-      throw new ParseException(errorMessage, iae);
+      throw new ParseException(errorMessage, exception);
     }
   }
 

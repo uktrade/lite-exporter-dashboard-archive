@@ -34,6 +34,8 @@ import components.message.QueueManager;
 import components.message.QueueManagerImpl;
 import components.message.SpireRelayConsumer;
 import components.message.SpireRelayConsumerImpl;
+import components.message.SpireRelayPublisher;
+import components.message.SpireRelayPublisherImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
 import components.service.AmendmentService;
@@ -85,26 +87,19 @@ public class GuiceModule extends AbstractModule {
   @Override
   protected void configure() {
     // CustomerServiceClient
-    bindConstant().annotatedWith(Names.named("customerServiceAddress"))
-        .to(configuration.getString("customerService.address"));
-    bindConstant().annotatedWith(Names.named("customerServiceTimeout"))
-        .to(configuration.getString("customerService.timeout"));
+    bindConstant("customerServiceAddress", "customerService.address");
+    bindConstant("customerServiceTimeout", "customerService.timeout");
     bind(CustomerServiceClient.class).to(CustomerServiceClientImpl.class);
     // PermissionsServiceClient
-    bindConstant().annotatedWith(Names.named("permissionsServiceAddress"))
-        .to(configuration.getString("permissionsService.address"));
-    bindConstant().annotatedWith(Names.named("permissionsServiceTimeout"))
-        .to(configuration.getString("permissionsService.timeout"));
+    bindConstant("permissionsServiceAddress", "permissionsService.address");
+    bindConstant("permissionsServiceTimeout", "permissionsService.timeout");
     bind(PermissionsServiceClient.class).to(PermissionsServiceClientImpl.class);
     // OgelServiceClient
-    bindConstant().annotatedWith(Names.named("ogelServiceAddress"))
-        .to(configuration.getString("ogelService.address"));
-    bindConstant().annotatedWith(Names.named("ogelServiceTimeout"))
-        .to(configuration.getString("ogelService.timeout"));
+    bindConstant("ogelServiceAddress", "ogelService.address");
+    bindConstant("ogelServiceTimeout", "ogelService.timeout");
     bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
     // LicenceApplication
-    bindConstant().annotatedWith(Names.named("licenceApplicationAddress"))
-        .to(configuration.getString("licenceApplication.address"));
+    bindConstant("licenceApplicationAddress", "licenceApplication.address");
     // Service
     bind(JourneySerialiser.class).to(JourneySerialiserMock.class);
     bind(ApplicationService.class).to(ApplicationServiceImpl.class);
@@ -133,16 +128,24 @@ public class GuiceModule extends AbstractModule {
     // Queue
     boolean enabled = configuration.getBoolean("spireRelayService.enabled", false);
     if (enabled) {
-      bindConstant().annotatedWith(Names.named("rabbitMqUrl"))
-          .to(configuration.getString("spireRelayService.rabbitMqUrl"));
-      bindConstant().annotatedWith(Names.named("consumerQueueName"))
-          .to(configuration.getString("spireRelayService.consumerQueueName"));
+      bindConstant("exchangeName", "spireRelayService.exchangeName");
+      bindConstant("rabbitMqUrl", "spireRelayService.rabbitMqUrl");
+      bindConstant("consumerQueueName", "spireRelayService.consumerQueueName");
+      bindConstant("publisherQueueName", "spireRelayService.publisherQueueName");
       bind(ConnectionManager.class).to(ConnectionManagerImpl.class).asEagerSingleton();
       bind(QueueManager.class).to(QueueManagerImpl.class).asEagerSingleton();
       bind(SpireRelayConsumer.class).to(SpireRelayConsumerImpl.class).asEagerSingleton();
+      bind(SpireRelayPublisher.class).to(SpireRelayPublisherImpl.class);
     } else {
       bind(ConnectionManager.class).toInstance(() -> null);
+      bind(SpireRelayPublisher.class).toInstance((routingKey, object) -> {
+      });
     }
+
+  }
+
+  private void bindConstant(String name, String configKey) {
+    bindConstant().annotatedWith(Names.named(name)).to(configuration.getString(configKey));
   }
 
   @Provides
