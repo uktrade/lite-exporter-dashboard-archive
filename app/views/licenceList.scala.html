@@ -1,7 +1,7 @@
 @import licenceListTabs._
+@import models.enums.LicenceListTab
 @import models.view.OgelRegistrationListView
 @import template._
-@import models.enums.LicenceListTab
 @(applyLink: String, licenceListTab: LicenceListTab, ogelRegistrationListView: OgelRegistrationListView)
   @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
@@ -19,7 +19,11 @@
         @sielList()
       }
       case LicenceListTab.OGELS => {
-        @ogelList(ogelRegistrationListView)
+        @if(ogelRegistrationListView.getPage.getItems.isEmpty) {
+          No OGELs available.
+        } else {
+          @ogelList(ogelRegistrationListView)
+        }
       }
     }
   }

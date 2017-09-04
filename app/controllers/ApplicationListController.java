@@ -62,34 +62,25 @@ public class ApplicationListController extends Controller {
 
     List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(currentUser.getId());
 
-    long otherUserCount = views.stream()
-        .map(ApplicationItemView::getCreatedById)
-        .filter(id -> !currentUser.getId().equals(id))
-        .distinct()
-        .count();
-    boolean showCompanyTab = otherUserCount > 0;
+    boolean showCompanyTab = isShowCompanyTab(currentUser.getId(), views);
 
     List<ApplicationItemView> userFilteredViews = filterByUser(currentUser.getId(), applicationListTab, views);
 
-    List<CompanySelectItemView> companyNames = views.stream()
-        .filter(distinctByKey(ApplicationItemView::getCompanyId))
-        .map(view -> new CompanySelectItemView(view.getCompanyId(), view.getCompanyName()))
-        .sorted(Comparator.comparing(CompanySelectItemView::getCompanyName))
-        .collect(Collectors.toList());
+    List<CompanySelectItemView> companyNames = collectCompanyNames(userFilteredViews);
 
     String companyId = state.getCompany();
     List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, userFilteredViews);
 
     long allCount = companyFilteredViews.size();
-    long draftCount = count(companyFilteredViews, ApplicationProgress.DRAFT);
-    long completedCount = count(companyFilteredViews, ApplicationProgress.COMPLETED);
+    long draftCount = countByApplicationProgress(companyFilteredViews, ApplicationProgress.DRAFT);
+    long completedCount = countByApplicationProgress(companyFilteredViews, ApplicationProgress.COMPLETED);
     long currentCount = allCount - draftCount - completedCount;
 
-    List<ApplicationItemView> statusTypeFilteredViews = filterByApplicationProgress(applicationProgress, companyFilteredViews);
+    List<ApplicationItemView> applicationProgressFilteredViews = filterByApplicationProgress(applicationProgress, companyFilteredViews);
 
-    SortUtil.sort(statusTypeFilteredViews, applicationSortType, sortDirection);
+    SortUtil.sort(applicationProgressFilteredViews, applicationSortType, sortDirection);
 
-    Page<ApplicationItemView> pageData = PageUtil.getPage(state.getPage(), statusTypeFilteredViews);
+    Page<ApplicationItemView> pageData = PageUtil.getPage(state.getPage(), applicationProgressFilteredViews);
 
     ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
         companyId,
@@ -107,7 +98,21 @@ public class ApplicationListController extends Controller {
     return ok(applicationList.render(licenceApplicationAddress, applicationListView));
   }
 
-  private long count(List<ApplicationItemView> applicationItemViews, ApplicationProgress applicationProgress) {
+  private List<CompanySelectItemView> collectCompanyNames(List<ApplicationItemView> applicationItemViews) {
+    return applicationItemViews.stream()
+        .filter(distinctByKey(ApplicationItemView::getCompanyId))
+        .map(view -> new CompanySelectItemView(view.getCompanyId(), view.getCompanyName()))
+        .sorted(Comparator.comparing(CompanySelectItemView::getCompanyName))
+        .collect(Collectors.toList());
+  }
+
+  private boolean isShowCompanyTab(String currentUserId, List<ApplicationItemView> applicationItemViews) {
+    return applicationItemViews.stream()
+        .map(ApplicationItemView::getCreatedById)
+        .anyMatch(id -> !currentUserId.equals(id));
+  }
+
+  private long countByApplicationProgress(List<ApplicationItemView> applicationItemViews, ApplicationProgress applicationProgress) {
     return applicationItemViews.stream()
         .filter(view -> view.getApplicationProgress() == applicationProgress)
         .count();

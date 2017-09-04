@@ -1,25 +1,31 @@
-@import models.enums.{ApplicationListTab, ApplicationSortType, ApplicationProgress}
+@import models.enums.{ApplicationListTab, ApplicationProgress, ApplicationSortType}
 @import models.view.ApplicationListView
 @import template._
 @(applyLink: String, applicationListView: ApplicationListView)
-  @standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
+@standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-  } {
+} {
 
-    @dashboardTopNav(applyLink)
+  @dashboardTopNav(applyLink)
 
-    <div class="heading-medium">Applications</div>
+  <div class="heading-medium">Applications</div>
 
-    @tabs("application-list-tabs", size = "large", width = "wide") {
-      @tab("Created by you",
-        applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.USER).toString,
-        applicationListView.getApplicationListTab == ApplicationListTab.USER)
-      @if(applicationListView.isShowCompanyTab) {
-        @tab("Created by your company",
-          applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.COMPANY).toString,
-          applicationListView.getApplicationListTab == ApplicationListTab.COMPANY)
-      }
+  @tabs("application-list-tabs", size = "large", width = "wide") {
+    @tab("Created by you",
+      applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.USER).toString,
+      applicationListView.getApplicationListTab == ApplicationListTab.USER)
+    @if(applicationListView.isShowCompanyTab) {
+      @tab("Created by your company",
+        applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.COMPANY).toString,
+        applicationListView.getApplicationListTab == ApplicationListTab.COMPANY)
     }
+  }
+
+  @if(applicationListView.getPage.getItems.isEmpty) {
+
+    You have no applications.
+
+  } else {
 
     @if(applicationListView.getCompanySelectItemViews.size() > 1) {
       @companySelect(applicationListView)
@@ -125,3 +131,5 @@
     </p>
 
   }
+
+}

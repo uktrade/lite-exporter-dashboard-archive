@@ -3,6 +3,8 @@ package controllers;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.cache.SessionCache;
+import components.client.CustomerServiceClient;
+import components.dao.ApplicationDao;
 import components.service.OgelDetailsViewService;
 import components.service.OgelRegistrationItemViewService;
 import components.service.UserService;
@@ -20,11 +22,14 @@ import models.view.OgelRegistrationItemView;
 import models.view.OgelRegistrationListView;
 import play.mvc.Controller;
 import play.mvc.Result;
+import uk.gov.bis.lite.customer.api.view.CustomerView;
 import views.html.licenceDetails;
 import views.html.licenceList;
 import views.html.ogelDetails;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LicenceListController extends Controller {
 
@@ -32,16 +37,22 @@ public class LicenceListController extends Controller {
   private final OgelDetailsViewService ogelDetailsViewService;
   private final UserService userService;
   private final String licenceApplicationAddress;
+  private final CustomerServiceClient customerServiceClient;
+  private final ApplicationDao applicationDao;
 
   @Inject
   public LicenceListController(OgelRegistrationItemViewService ogelRegistrationItemViewService,
                                OgelDetailsViewService ogelDetailsViewService,
                                UserService userService,
-                               @Named("licenceApplicationAddress") String licenceApplicationAddress) {
+                               @Named("licenceApplicationAddress") String licenceApplicationAddress,
+                               CustomerServiceClient customerServiceClient,
+                               ApplicationDao applicationDao) {
     this.ogelRegistrationItemViewService = ogelRegistrationItemViewService;
     this.ogelDetailsViewService = ogelDetailsViewService;
     this.userService = userService;
     this.licenceApplicationAddress = licenceApplicationAddress;
+    this.customerServiceClient = customerServiceClient;
+    this.applicationDao = applicationDao;
   }
 
   public Result licenceList(String tab, String sort, String direction, Integer page) {
@@ -54,7 +65,13 @@ public class LicenceListController extends Controller {
 
     Page<OgelRegistrationItemView> pageData = null;
     if (licenceListTab == LicenceListTab.OGELS) {
-      List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(currentUser.getId(), licenceSortType, sortDirection);
+      List<OgelRegistrationItemView> ogelRegistrationItemViews;
+      // TODO This is a hack for testing. We only show OGELS if there is at least one application.
+      if (isShowOgels()) {
+        ogelRegistrationItemViews = ogelRegistrationItemViewService.getOgelRegistrationItemViews(currentUser.getId(), licenceSortType, sortDirection);
+      } else {
+        ogelRegistrationItemViews = new ArrayList<>();
+      }
       SortUtil.sort(ogelRegistrationItemViews, licenceSortType, sortDirection);
       pageData = PageUtil.getPage(state.getPage(), ogelRegistrationItemViews);
     }
@@ -72,6 +89,14 @@ public class LicenceListController extends Controller {
       OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(currentUser.getId(), licenceRef);
       return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView));
     }
+  }
+
+  private boolean isShowOgels() {
+    User currentUser = userService.getCurrentUser();
+    List<String> customerViews = customerServiceClient.getCustomers(currentUser.getId()).stream()
+        .map(CustomerView::getCustomerId)
+        .collect(Collectors.toList());
+    return !applicationDao.getApplications(customerViews).isEmpty();
   }
 
 }
