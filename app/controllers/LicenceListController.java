@@ -65,6 +65,7 @@ public class LicenceListController extends Controller {
 
     Page<OgelRegistrationItemView> pageData = null;
     if (licenceListTab == LicenceListTab.OGELS) {
+
       List<OgelRegistrationItemView> ogelRegistrationItemViews;
       // TODO This is a hack for testing. We only show OGELS if there is at least one application.
       if (isShowOgels()) {

@@ -59,12 +59,12 @@ public class AmendTabController extends Controller {
     Action action = EnumUtil.parse(actionParam, Action.class);
     if (action == null) {
       LOGGER.error("Amending application with action {} not possible", actionParam);
-      return showAmendTab(appId, null);
+      return showAmendTab(appId, null, null);
     } else if (!allowAmendment(appId)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since application is complete.", appId, action);
-      return showAmendTab(appId, null);
+      return showAmendTab(appId, null, null);
     } else if (amendApplicationForm.hasErrors()) {
-      return showAmendTab(appId, action.toString());
+      return showAmendTab(appId, action, amendApplicationForm);
     } else {
       String message = amendApplicationForm.get().message;
       if (action == Action.AMEND) {
@@ -72,26 +72,30 @@ public class AmendTabController extends Controller {
       } else if (action == Action.WITHDRAW) {
         withdrawalRequestService.insertWithdrawalRequest(appId, message);
       }
-      return showAmendTab(appId, null);
+      return showAmendTab(appId, null, null);
     }
   }
 
   public Result showAmendTab(String appId, String actionParam) {
     Action action = EnumUtil.parse(actionParam, Action.class);
-    if (!allowAmendment(appId) && action != null) {
+    if (action == null) {
+      return showAmendTab(appId, null, null);
+    } else if (!allowAmendment(appId)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since application is complete.", appId, actionParam);
-      return showAmendTab(appId, null);
+      return showAmendTab(appId, null, null);
     } else {
-      ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
       AmendApplicationForm amendApplicationForm = new AmendApplicationForm();
-      if (action != null) {
-        amendApplicationForm.action = action.toString();
-      }
+      amendApplicationForm.action = action.toString();
       Form<AmendApplicationForm> form = formFactory.form(AmendApplicationForm.class).fill(amendApplicationForm);
-      OfficerView officerView = officerViewService.getOfficerView(appId);
-      int rfiViewCount = rfiViewService.getRfiViewCount(appId);
-      return ok(amendApplicationTab.render(licenceApplicationAddress, applicationSummaryView, rfiViewCount, allowAmendment(appId), action, form, officerView));
+      return showAmendTab(appId, action, form);
     }
+  }
+
+  private Result showAmendTab(String appId, Action action, Form<AmendApplicationForm> form) {
+    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
+    OfficerView officerView = officerViewService.getOfficerView(appId);
+    int rfiViewCount = rfiViewService.getRfiViewCount(appId);
+    return ok(amendApplicationTab.render(licenceApplicationAddress, applicationSummaryView, rfiViewCount, allowAmendment(appId), action, form, officerView));
   }
 
   private boolean allowAmendment(String appId) {

@@ -45,7 +45,7 @@
     </div>
 
     @if(allowResponses && rfiView.getRfiResponseView == null) {
-      <a href="@routes.RfiTabController.respond(rfiView.getAppId, rfiView.getRfiId).withFragment("reply")" class="rfi-reply-link"><span class="icon-reply"></span>
+      <a href="@routes.RfiTabController.showResponseForm(rfiView.getAppId, rfiView.getRfiId).withFragment("reply")" class="rfi-reply-link"><span class="icon-reply"></span>
         Reply to this message</a>
     }
   </article>

@@ -33,7 +33,7 @@ public class SessionCache {
 
   public static LicenceListState getLicenseListState(String tab, String sort, String direction, Integer page) {
     LicenceListState state = null;
-    if (tab != null && sort != null && direction != null && page != null) {
+    if (tab == null && sort == null && direction == null && page == null) {
       state = getFromSession(LICENSE_LIST_STATE, LicenceListState.class);
     }
     if (state == null) {

@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +28,7 @@ public class ApplicationUtil {
   private static final List<StatusType> INVERSE_STATUS_TYPE_LIST;
 
   static {
-    Map<StatusType, String> statuses = new HashMap<>();
+    Map<StatusType, String> statuses = new EnumMap<>(StatusType.class);
     statuses.put(StatusType.INITIAL_CHECKS, "Initial Checks");
     statuses.put(StatusType.TECHNICAL_ASSESSMENT, "Technical assessment");
     statuses.put(StatusType.LU_PROCESSING, "Licensing unit processing");
@@ -38,7 +37,7 @@ public class ApplicationUtil {
     statuses.put(StatusType.COMPLETE, "Decision reached");
     STATUS_NAME_MAP = Collections.unmodifiableMap(statuses);
 
-    Map<StatusType, String> statusExplanations = new HashMap<>();
+    Map<StatusType, String> statusExplanations = new EnumMap<>(StatusType.class);
     statusExplanations.put(StatusType.INITIAL_CHECKS, "Checking your organisation details");
     statusExplanations.put(StatusType.TECHNICAL_ASSESSMENT, "Technical assessment");
     statusExplanations.put(StatusType.LU_PROCESSING, "Checking application form details and other documentation");

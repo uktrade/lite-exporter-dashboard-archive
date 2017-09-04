@@ -11,7 +11,7 @@ GET         /applications                                         controllers.Ap
 # Application tabs
 GET         /application/*applicationRef/status-tracker           controllers.StatusTabController.showStatusTab(applicationRef: String)
 GET         /application/*applicationRef/rfi                      controllers.RfiTabController.showRfiTab(applicationRef: String)
-GET         /application/*applicationRef/rfi/*rfiId               controllers.RfiTabController.respond(applicationRef: String, rfiId: String)
+GET         /application/*applicationRef/rfi/*rfiId               controllers.RfiTabController.showResponseForm(applicationRef: String, rfiId: String)
 POST        /application/*applicationRef/rfi                      controllers.RfiTabController.submitResponse(applicationRef: String)
 GET         /application/*applicationRef/amend-application        controllers.AmendTabController.showAmendTab(applicationRef: String, action ?= null)
 POST        /application/*applicationRef/amend-application        controllers.AmendTabController.submitAmendment(applicationRef: String)

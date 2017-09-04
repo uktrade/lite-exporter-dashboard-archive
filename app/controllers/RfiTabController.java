@@ -59,7 +59,7 @@ public class RfiTabController extends Controller {
       LOGGER.error("Response to rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
       return showRfiTab(appId);
     } else if (rfiResponseForm.hasErrors()) {
-      return respond(appId, rfiId, rfiResponseForm);
+      return showResponseForm(appId, rfiId, rfiResponseForm);
     } else {
       String responseMessage = rfiResponseForm.get().responseMessage;
       rfiResponseService.insertRfiResponse(rfiId, responseMessage);
@@ -68,7 +68,7 @@ public class RfiTabController extends Controller {
     }
   }
 
-  public Result respond(String appId, String rfiId) {
+  public Result showResponseForm(String appId, String rfiId) {
     if (alreadyHasResponse(rfiId)) {
       LOGGER.error("Response to rfiId {} and appId {} not possible since a response already exists", rfiId);
       return showRfiTab(appId);
@@ -79,11 +79,11 @@ public class RfiTabController extends Controller {
       RfiResponseForm rfiResponseForm = new RfiResponseForm();
       rfiResponseForm.rfiId = rfiId;
       Form<RfiResponseForm> form = formFactory.form(RfiResponseForm.class).fill(rfiResponseForm);
-      return respond(appId, rfiId, form);
+      return showResponseForm(appId, rfiId, form);
     }
   }
 
-  private Result respond(String appId, String rfiId, Form<RfiResponseForm> rfiResponseForm) {
+  private Result showResponseForm(String appId, String rfiId, Form<RfiResponseForm> rfiResponseForm) {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
     AddRfiResponseView addRfiResponseView = rfiViewService.getAddRfiResponseView(rfiId);
