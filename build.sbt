@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   javaJdbc,
   cache,
   javaWs,
+  filters,
   "org.flywaydb" %% "flyway-play" % "3.2.0",
   "org.xerial" % "sqlite-jdbc" % "3.19.3",
   "org.jdbi" % "jdbi" % "2.78",
