@@ -19,7 +19,7 @@ public class MessagePublisherImpl implements MessagePublisher {
   private final ConnectionManager connectionManager;
 
   @Inject
-  public MessagePublisherImpl(@Named("exchangeName") String exchangeName,
+  public MessagePublisherImpl(@Named("publisherExchangeName") String exchangeName,
                               @Named("publisherQueueName") String publisherQueueName,
                               ConnectionManager connectionManager) {
     this.exchangeName = exchangeName;
@@ -32,7 +32,7 @@ public class MessagePublisherImpl implements MessagePublisher {
     Channel channel = null;
     try {
       channel = connectionManager.createChannel();
-      channel.exchangeDeclare(exchangeName, "direct", true);
+      channel.exchangeDeclare(exchangeName, "topic", true);
       channel.queueDeclare(publisherQueueName, true, false, false, null);
       channel.queueBind(publisherQueueName, exchangeName, routingKey.toString());
       channel.basicPublish(exchangeName, routingKey.toString(), new AMQP.BasicProperties.Builder().build(), MAPPER.writeValueAsBytes(object));

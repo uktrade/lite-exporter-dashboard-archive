@@ -128,7 +128,8 @@ public class GuiceModule extends AbstractModule {
     // Queue
     boolean enabled = configuration.getBoolean("spireRelayService.enabled", false);
     if (enabled) {
-      bindConstant("exchangeName", "spireRelayService.exchangeName");
+      bindConstant("consumerExchangeName", "spireRelayService.consumerExchangeName");
+      bindConstant("publisherExchangeName", "spireRelayService.publisherExchangeName");
       bindConstant("rabbitMqUrl", "spireRelayService.rabbitMqUrl");
       bindConstant("consumerQueueName", "spireRelayService.consumerQueueName");
       bindConstant("publisherQueueName", "spireRelayService.publisherQueueName");
