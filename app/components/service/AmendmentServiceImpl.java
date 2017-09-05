@@ -2,7 +2,7 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.dao.AmendmentDao;
-import components.message.SpireRelayPublisher;
+import components.message.MessagePublisher;
 import components.util.RandomUtil;
 import models.Amendment;
 import models.User;
@@ -14,13 +14,13 @@ public class AmendmentServiceImpl implements AmendmentService {
 
   private final UserService userService;
   private final AmendmentDao amendmentDao;
-  private final SpireRelayPublisher spireRelayPublisher;
+  private final MessagePublisher messagePublisher;
 
   @Inject
-  public AmendmentServiceImpl(UserService userService, AmendmentDao amendmentDao, SpireRelayPublisher spireRelayPublisher) {
+  public AmendmentServiceImpl(UserService userService, AmendmentDao amendmentDao, MessagePublisher messagePublisher) {
     this.userService = userService;
     this.amendmentDao = amendmentDao;
-    this.spireRelayPublisher = spireRelayPublisher;
+    this.messagePublisher = messagePublisher;
   }
 
   @Override
@@ -28,7 +28,7 @@ public class AmendmentServiceImpl implements AmendmentService {
     User currentUser = userService.getCurrentUser();
     Amendment amendment = new Amendment(RandomUtil.random("AME"), appId, Instant.now().toEpochMilli(), currentUser.getId(), message, null);
     amendmentDao.insertAmendment(amendment);
-    spireRelayPublisher.sendMessage(RoutingKey.AMEND_CREATE, amendment);
+    messagePublisher.sendMessage(RoutingKey.AMEND_CREATE, amendment);
   }
 
 }

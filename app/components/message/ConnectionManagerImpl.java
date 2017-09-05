@@ -38,7 +38,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         connection = factory.newConnection();
         return connection;
       } catch (Exception exception) {
-        String errorMessage = "Unable to connect to rabbitMQ at url " + rabbitMqUrl;
+        String errorMessage = "Unable to connect to rabbitMq at url " + rabbitMqUrl;
         LOGGER.error(errorMessage, exception);
         throw new QueueException(errorMessage, exception);
       }

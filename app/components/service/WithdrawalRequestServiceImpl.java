@@ -2,7 +2,7 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.dao.WithdrawalRequestDao;
-import components.message.SpireRelayPublisher;
+import components.message.MessagePublisher;
 import components.util.RandomUtil;
 import models.User;
 import models.enums.RoutingKey;
@@ -13,13 +13,13 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
   private final UserService userService;
   private final WithdrawalRequestDao withdrawalRequestDao;
-  private final SpireRelayPublisher spireRelayPublisher;
+  private final MessagePublisher messagePublisher;
 
   @Inject
-  public WithdrawalRequestServiceImpl(UserService userService, WithdrawalRequestDao withdrawalRequestDao, SpireRelayPublisher spireRelayPublisher) {
+  public WithdrawalRequestServiceImpl(UserService userService, WithdrawalRequestDao withdrawalRequestDao, MessagePublisher messagePublisher) {
     this.userService = userService;
     this.withdrawalRequestDao = withdrawalRequestDao;
-    this.spireRelayPublisher = spireRelayPublisher;
+    this.messagePublisher = messagePublisher;
   }
 
   @Override
@@ -35,7 +35,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
         null,
         null);
     withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
-    spireRelayPublisher.sendMessage(RoutingKey.WITHDRAW_REQUEST_CREATE, withdrawalRequest);
+    messagePublisher.sendMessage(RoutingKey.WITHDRAW_REQUEST_CREATE, withdrawalRequest);
   }
 
 }

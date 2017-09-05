@@ -30,12 +30,12 @@ import components.dao.WithdrawalRequestDao;
 import components.dao.WithdrawalRequestDaoImpl;
 import components.message.ConnectionManager;
 import components.message.ConnectionManagerImpl;
+import components.message.MessageConsumer;
+import components.message.MessageConsumerImpl;
+import components.message.MessagePublisher;
+import components.message.MessagePublisherImpl;
 import components.message.QueueManager;
 import components.message.QueueManagerImpl;
-import components.message.SpireRelayConsumer;
-import components.message.SpireRelayConsumerImpl;
-import components.message.SpireRelayPublisher;
-import components.message.SpireRelayPublisherImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
 import components.service.AmendmentService;
@@ -134,14 +134,13 @@ public class GuiceModule extends AbstractModule {
       bindConstant("publisherQueueName", "spireRelayService.publisherQueueName");
       bind(ConnectionManager.class).to(ConnectionManagerImpl.class).asEagerSingleton();
       bind(QueueManager.class).to(QueueManagerImpl.class).asEagerSingleton();
-      bind(SpireRelayConsumer.class).to(SpireRelayConsumerImpl.class).asEagerSingleton();
-      bind(SpireRelayPublisher.class).to(SpireRelayPublisherImpl.class);
+      bind(MessageConsumer.class).to(MessageConsumerImpl.class).asEagerSingleton();
+      bind(MessagePublisher.class).to(MessagePublisherImpl.class);
     } else {
       bind(ConnectionManager.class).toInstance(() -> null);
-      bind(SpireRelayPublisher.class).toInstance((routingKey, object) -> {
+      bind(MessagePublisher.class).toInstance((routingKey, object) -> {
       });
     }
-
   }
 
   private void bindConstant(String name, String configKey) {

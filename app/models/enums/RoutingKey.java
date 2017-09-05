@@ -2,7 +2,11 @@ package models.enums;
 
 public enum RoutingKey {
 
-  RFI_REPLY("rfi.reply"), WITHDRAW_REQUEST_CREATE("withdrawrequest.create"), AMEND_CREATE("amend.create");
+  RFI_CREATE("rfi.create"),
+  STATUS_UPDATE("status.update"),
+  RFI_REPLY("rfi.reply"),
+  WITHDRAW_REQUEST_CREATE("withdrawrequest.create"),
+  AMEND_CREATE("amend.create");
 
   private final String text;
 

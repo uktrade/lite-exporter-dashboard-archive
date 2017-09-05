@@ -9,9 +9,9 @@ import models.enums.RoutingKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SpireRelayPublisherImpl implements SpireRelayPublisher {
+public class MessagePublisherImpl implements MessagePublisher {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SpireRelayPublisherImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MessagePublisherImpl.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private final String exchangeName;
@@ -19,9 +19,9 @@ public class SpireRelayPublisherImpl implements SpireRelayPublisher {
   private final ConnectionManager connectionManager;
 
   @Inject
-  public SpireRelayPublisherImpl(@Named("exchangeName") String exchangeName,
-                                 @Named("publisherQueueName") String publisherQueueName,
-                                 ConnectionManager connectionManager) {
+  public MessagePublisherImpl(@Named("exchangeName") String exchangeName,
+                              @Named("publisherQueueName") String publisherQueueName,
+                              ConnectionManager connectionManager) {
     this.exchangeName = exchangeName;
     this.publisherQueueName = publisherQueueName;
     this.connectionManager = connectionManager;
