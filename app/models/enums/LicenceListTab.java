@@ -6,7 +6,7 @@ public enum LicenceListTab {
 
   private final String text;
 
-  LicenceListTab(final String text) {
+  LicenceListTab(String text) {
     this.text = text;
   }
 

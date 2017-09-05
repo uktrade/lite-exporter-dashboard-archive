@@ -15,21 +15,19 @@
       @if(applicationListView.getApplicationListTab != null) {
         <input type="hidden" name="tab" value="@applicationListView.getApplicationListTab"/>
       }
-      @if(applicationListView.getDate != null) {
-        <input type="hidden" name="date" value="@applicationListView.getDate"/>
+      @if(applicationListView.getApplicationSortType != null) {
+        <input type="hidden" name="sort" value="@applicationListView.getApplicationSortType"/>
       }
-      @if(applicationListView.getStatus != null) {
-        <input type="hidden" name="status" value="@applicationListView.getStatus"/>
+      @if(applicationListView.getSortDirection != null) {
+        <input type="hidden" name="direction" value="@applicationListView.getSortDirection"/>
       }
-      @if(applicationListView.getCreatedBy != null) {
-        <input type="hidden" name="createdBy" value="@applicationListView.getCreatedBy"/>
-      }
-      @if(applicationListView.getStatusTypeFilter != null) {
-        <input type="hidden" name="show" value="@applicationListView.getStatusTypeFilter.toString.toLowerCase"/>
+      @if(applicationListView.getApplicationProgress != null) {
+        <input type="hidden" name="show" value="@applicationListView.getApplicationProgress.toString.toLowerCase"/>
       }
       @if(applicationListView.getPage.getCurrentPage != 0) {
         <input type="hidden" name="page" value="@applicationListView.getPage.getCurrentPage"/>
       }
     </select>
+    <button class="js-hidden button">Submit</button>
   </form>
 </div>

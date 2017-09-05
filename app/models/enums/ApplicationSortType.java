@@ -1,12 +1,12 @@
 package models.enums;
 
-public enum StatusTypeFilter {
+public enum ApplicationSortType {
 
-  ALL("all"), DRAFT("draft"), CURRENT("current"), COMPLETED("completed");
+  DATE("date"), STATUS("status"), CREATED_BY("createdBy");
 
   private final String text;
 
-  StatusTypeFilter(final String text) {
+  ApplicationSortType(String text) {
     this.text = text;
   }
 
@@ -14,6 +14,5 @@ public enum StatusTypeFilter {
   public String toString() {
     return text;
   }
-
 
 }

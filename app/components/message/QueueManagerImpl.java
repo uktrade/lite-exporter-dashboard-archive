@@ -8,16 +8,21 @@ import components.exceptions.QueueException;
 public class QueueManagerImpl implements QueueManager {
 
   @Inject
-  public QueueManagerImpl(@Named("consumerQueueName") String consumerQueueName, Channel channel, SpireRelayConsumer spireRelayConsumer) {
-    init(consumerQueueName, channel, spireRelayConsumer);
+  public QueueManagerImpl(@Named("consumerExchangeName") String consumerExchangeName,
+                          @Named("consumerQueueName") String consumerQueueName,
+                          Channel channel,
+                          MessageConsumer messageConsumer) {
+    init(consumerExchangeName, consumerQueueName, channel, messageConsumer);
   }
 
-  private void init(String consumerQueueName, Channel channel, SpireRelayConsumer spireRelayConsumer) {
+  private void init(String consumerExchangeName, String consumerQueueName, Channel channel, MessageConsumer messageConsumer) {
     try {
+      channel.exchangeDeclare(consumerExchangeName, "topic", true);
       channel.queueDeclare(consumerQueueName, true, false, false, null);
-      channel.basicConsume(consumerQueueName, false, spireRelayConsumer);
+      channel.queueBind(consumerQueueName, consumerExchangeName, "#");
+      channel.basicConsume(consumerQueueName, false, messageConsumer);
     } catch (Exception exception) {
-      String message = "Unable to listen to rabbitMQ queue " + consumerQueueName;
+      String message = "Unable to listen to rabbitMq queue " + consumerQueueName;
       throw new QueueException(message, exception);
     }
   }

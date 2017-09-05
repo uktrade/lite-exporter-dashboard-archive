@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   javaJdbc,
   cache,
   javaWs,
+  filters,
   "org.flywaydb" %% "flyway-play" % "3.2.0",
   "org.xerial" % "sqlite-jdbc" % "3.19.3",
   "org.jdbi" % "jdbi" % "2.78",
@@ -36,6 +37,7 @@ libraryDependencies += "uk.gov.bis.lite" % "lite-ogel-service-api" % "1.0"
 libraryDependencies += "org.antlr" % "stringtemplate" % "3.2.1"
 
 libraryDependencies += "au.com.dius" % "pact-jvm-consumer-junit_2.11" % "3.3.10" % "test"
+libraryDependencies += "au.com.dius" % "pact-jvm-provider-junit_2.11" % "3.3.10" % "test"
 libraryDependencies += "com.itv" %% "scalapact-scalatest" % "2.1.2" % "test"
 libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
 

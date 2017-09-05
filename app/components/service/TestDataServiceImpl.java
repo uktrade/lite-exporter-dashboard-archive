@@ -1,7 +1,6 @@
 package components.service;
 
 import static components.util.RandomUtil.random;
-import static components.util.RandomUtil.randomNumber;
 import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
@@ -17,6 +16,7 @@ import models.RfiResponse;
 import models.StatusUpdate;
 import models.enums.RfiStatus;
 import models.enums.StatusType;
+import org.apache.commons.lang3.RandomUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -309,6 +309,14 @@ public class TestDataServiceImpl implements TestDataService {
         OFFICER_ID,
         "This is a rfi.");
     rfiDao.insertRfi(rfi);
+  }
+
+  private String randomNumber(String prefix) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (int i = 0; i < 12; i++) {
+      stringBuilder.append(RandomUtils.nextInt(0, 9));
+    }
+    return prefix + stringBuilder.toString();
   }
 
 }

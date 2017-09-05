@@ -3,7 +3,7 @@
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, showDocuments: Boolean)
 
-@applicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount, null) {
+@applicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount) {
   @if(showDocuments) {
     @outcomeDocuments()
   } else {

@@ -8,10 +8,13 @@ import components.dao.ApplicationDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
 import components.dao.StatusUpdateDao;
+import components.util.ApplicationUtil;
+import components.util.TimeUtil;
 import models.Application;
 import models.Rfi;
 import models.RfiResponse;
 import models.StatusUpdate;
+import models.enums.ApplicationProgress;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
@@ -29,31 +32,22 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
   private final ApplicationDao applicationDao;
   private final StatusUpdateDao statusUpdateDao;
-  private final TimeFormatService timeFormatService;
-  private final StatusService statusService;
   private final RfiDao rfiDao;
   private final RfiResponseDao rfiResponseDao;
-  private final ApplicationService applicationService;
   private final CustomerServiceClient customerServiceClient;
   private final UserService userService;
 
   @Inject
   public ApplicationItemViewServiceImpl(ApplicationDao applicationDao,
                                         StatusUpdateDao statusUpdateDao,
-                                        TimeFormatService timeFormatService,
-                                        StatusService statusService,
                                         RfiDao rfiDao,
                                         RfiResponseDao rfiResponseDao,
-                                        ApplicationService applicationService,
                                         CustomerServiceClient customerServiceClient,
                                         UserService userService) {
     this.applicationDao = applicationDao;
     this.statusUpdateDao = statusUpdateDao;
-    this.timeFormatService = timeFormatService;
-    this.statusService = statusService;
     this.rfiDao = rfiDao;
     this.rfiResponseDao = rfiResponseDao;
-    this.applicationService = applicationService;
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
   }
@@ -88,32 +82,31 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
   private ApplicationItemView getApplicationItemView(Application application, String companyName, Collection<StatusUpdate> statusUpdates, String openRfiId) {
 
-    StatusType statusType;
     String applicationStatus;
     long statusTimestamp;
 
-    StatusUpdate maxStatusUpdate = applicationService.getMaxStatusUpdate(statusUpdates).orElse(null);
+    StatusUpdate maxStatusUpdate = ApplicationUtil.getMaxStatusUpdate(statusUpdates);
     if (maxStatusUpdate != null) {
-      applicationStatus = statusService.getStatus(maxStatusUpdate.getStatusType());
+      applicationStatus = ApplicationUtil.getStatusName(maxStatusUpdate.getStatusType());
       statusTimestamp = maxStatusUpdate.getStartTimestamp();
-      statusType = maxStatusUpdate.getStatusType();
     } else {
-      statusType = null;
       if (application.getSubmittedTimestamp() != null) {
-        applicationStatus = statusService.getSubmitted();
+        applicationStatus = ApplicationUtil.SUBMITTED;
         statusTimestamp = application.getSubmittedTimestamp();
       } else {
-        applicationStatus = statusService.getDraft();
+        applicationStatus = ApplicationUtil.DRAFT;
         statusTimestamp = application.getCreatedTimestamp();
       }
     }
 
     String date = getDate(application);
-    String applicationStatusDate = String.format("Since: %s", timeFormatService.formatDateWithSlashes(statusTimestamp));
+    String applicationStatusDate = String.format("Since: %s", TimeUtil.formatDateWithSlashes(statusTimestamp));
 
     String createdById = application.getCreatedBy();
     String createdByName = userService.getUser(createdById).getName();
-    String destination = applicationService.getDestination(application);
+    String destination = ApplicationUtil.getDestination(application);
+
+    ApplicationProgress applicationProgress = getApplicationProgress(maxStatusUpdate, application);
 
     return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
@@ -125,13 +118,23 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         date,
         application.getCaseReference(),
         application.getApplicantReference(),
-        statusType,
+        applicationProgress,
         applicationStatus,
         applicationStatusDate,
         statusTimestamp,
         destination,
         openRfiId
     );
+  }
+
+  private ApplicationProgress getApplicationProgress(StatusUpdate maxStatusUpdate, Application application) {
+    if (application.getSubmittedTimestamp() == null) {
+      return ApplicationProgress.DRAFT;
+    } else if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
+      return ApplicationProgress.COMPLETED;
+    } else {
+      return ApplicationProgress.CURRENT;
+    }
   }
 
   private String getDate(Application application) {
@@ -141,7 +144,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     } else {
       dateTimestamp = application.getCreatedTimestamp();
     }
-    return timeFormatService.formatDateWithSlashes(dateTimestamp);
+    return TimeUtil.formatDateWithSlashes(dateTimestamp);
   }
 
   private Map<String, String> getAppIdToOpenRfiIdMap(List<String> appIds) {

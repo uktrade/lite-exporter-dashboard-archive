@@ -2,6 +2,6 @@ package components.message;
 
 import com.rabbitmq.client.Consumer;
 
-public interface SpireRelayConsumer extends Consumer {
+public interface MessageConsumer extends Consumer {
 
 }

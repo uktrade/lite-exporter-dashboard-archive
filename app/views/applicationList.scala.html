@@ -1,4 +1,4 @@
-@import models.enums.{ApplicationListTab, StatusTypeFilter}
+@import models.enums.ApplicationListTab
 @import models.view.ApplicationListView
 @import template._
 @(applyLink: String, applicationListView: ApplicationListView)
@@ -21,95 +21,32 @@
     }
   }
 
-  @if(applicationListView.getCompanySelectItemViews.size() > 1) {
-    @companySelect(applicationListView)
-  }
+  @if(applicationListView.getAllCount == 0) {
 
-  @statusPanel(applicationListView)
+    You have no applications.
 
-  <div class="scrollable-table">
-    <table class="table-font-xsmall table-align-top">
-      <thead>
-        <tr>
-          <th nowrap>
-            <a href="@applicationListView.getApplicationRoute.nextDate().toString">
-            @if(applicationListView.getStatusTypeFilter == StatusTypeFilter.DRAFT) {
-              Date created
-            } else {
-              Date submitted
-            }
-            </a>
-            @sortArrow(applicationListView.getDate)
-          </th>
-          <th>
-            References
-          </th>
-          <th nowrap>
-            <a href="@applicationListView.getApplicationRoute.nextStatus().toString">
-              Application status
-            </a>
-            @sortArrow(applicationListView.getStatus)
-          </th>
-          <th>
-            Destination
-          </th>
-          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-            <th nowrap>
-              <a href="@applicationListView.getApplicationRoute.nextCreatedBy().toString">
-                Created by
-              </a>
-              @sortArrow(applicationListView.getCreatedBy)
-            </th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-      @for(applicationItemView <- applicationListView.getPage.getItems) {
-        <tr>
-          <th scope="row">
-          @if(applicationListView.getStatusTypeFilter != StatusTypeFilter.ALL || applicationItemView.getSubmittedTimestamp != null) {
-            @applicationItemView.getDate
-          }
-          </th>
-          <td>
-          @if(applicationItemView.getCaseId != null) {
-            <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
-            @applicationItemView.getCaseId
-            </a>
-            <br>
-            @applicationItemView.getCaseDescription
-          } else {
-            <a href="#" class="bold">
-            @applicationItemView.getCaseDescription
-            </a>
-          }
-          </td>
-          <td>
-            <p>
-              @applicationItemView.getApplicationStatus
-            <br>
-            @applicationItemView.getApplicationStatusDate
-            </p>
-            @if(applicationItemView.getOpenRfiId != null) {
-              @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
-            }
-          </td>
-          <td>
-          @applicationItemView.getDestination
-          </td>
-          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-            <td>
-            @applicationItemView.getCreatedByName
-            </td>
-          }
-        </tr>
+  } else {
+
+    @if(applicationListView.getCompanySelectItemViews.size() > 1) {
+      @companySelect(applicationListView)
+    }
+
+    @statusPanel(applicationListView)
+
+    @if(!applicationListView.getPage.getItems.isEmpty) {
+      @applicationListTable(applicationListView)
+    } else {
+      @if(applicationListView.getApplicationListTab == ApplicationListTab.USER) {
+        There are no @applicationListView.getApplicationProgress.toString applications created by you.
+      } else {
+        There are no @applicationListView.getApplicationProgress.toString applications.
       }
-      </tbody>
-    </table>
-  </div>
+    }
 
-  <p>
-  @applicationListFooter(applicationListView)
-  </p>
+    <p>
+    @applicationListFooter(applicationListView)
+    </p>
+
+  }
 
 }

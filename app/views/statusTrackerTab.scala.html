@@ -5,6 +5,6 @@
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, statusItemViews: util.List[StatusItemView])
 
-  @applicationDetails(applyLink, applicationSummaryView, "statusTracker", rfiViewCount, null) {
+  @applicationDetails(applyLink, applicationSummaryView, "statusTracker", rfiViewCount) {
     @statusTracker(statusItemViews)
   }

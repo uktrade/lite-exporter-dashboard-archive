@@ -1,6 +1,6 @@
 @import models.view.AddRfiResponseView
-@import template._
 @import play.data.Form
+@import template._
 @import views.html.common.form._
 
 @(appId: String, rfiId: String, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
@@ -31,6 +31,9 @@
     <div>
 
       <form action="@routes.RfiTabController.submitResponse(appId)" method="POST">
+
+        @views.html.helper.CSRF.formField
+
         @formTextarea(rfiResponseForm("responseMessage"), rows = "4", cssClass = "form-control-wide") {
 
         }

@@ -3,6 +3,7 @@ package components.service;
 import com.google.inject.Inject;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
+import components.util.TimeUtil;
 import models.Rfi;
 import models.RfiResponse;
 import models.view.AddRfiResponseView;
@@ -16,20 +17,14 @@ import java.util.stream.Collectors;
 
 public class RfiViewServiceImpl implements RfiViewService {
 
-  private final TimeFormatService timeFormatService;
-  private final WorkingDaysCalculatorService workingDaysCalculatorService;
   private final RfiDao rfiDao;
   private final RfiResponseDao rfiResponseDao;
   private final UserService userService;
 
   @Inject
-  public RfiViewServiceImpl(TimeFormatService timeFormatService,
-                            WorkingDaysCalculatorService workingDaysCalculatorService,
-                            RfiDao rfiDao,
+  public RfiViewServiceImpl(RfiDao rfiDao,
                             RfiResponseDao rfiResponseDao,
                             UserService userService) {
-    this.timeFormatService = timeFormatService;
-    this.workingDaysCalculatorService = workingDaysCalculatorService;
     this.rfiDao = rfiDao;
     this.rfiResponseDao = rfiResponseDao;
     this.userService = userService;
@@ -51,11 +46,11 @@ public class RfiViewServiceImpl implements RfiViewService {
 
   @Override
   public AddRfiResponseView getAddRfiResponseView(String rfiId) {
-    return new AddRfiResponseView(timeFormatService.formatDate(Instant.now().toEpochMilli()), rfiId);
+    return new AddRfiResponseView(TimeUtil.formatDate(Instant.now().toEpochMilli()), rfiId);
   }
 
   private RfiView getRfiView(Rfi rfi) {
-    String receivedOn = timeFormatService.formatDateAndTime(rfi.getReceivedTimestamp());
+    String receivedOn = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
     String replyBy = getReplyBy(rfi);
     String sender = userService.getUser(rfi.getSentBy()).getName();
     RfiResponseView rfiResponseView = getRfiResponseView(rfi.getRfiId());
@@ -66,7 +61,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     RfiResponse rfiResponse = rfiResponseDao.getRfiResponse(rfiId);
     if (rfiResponse != null) {
       String sentBy = userService.getUser(rfiResponse.getSentBy()).getName();
-      String sentAt = timeFormatService.formatDate(rfiResponse.getSentTimestamp());
+      String sentAt = TimeUtil.formatDate(rfiResponse.getSentTimestamp());
       String message = rfiResponse.getMessage();
       return new RfiResponseView(sentBy, sentAt, message);
     } else {
@@ -76,8 +71,8 @@ public class RfiViewServiceImpl implements RfiViewService {
 
   private String getReplyBy(Rfi rfi) {
     if (rfi.getDueTimestamp() != null) {
-      Long daysRemaining = workingDaysCalculatorService.calculateWithStartBeforeEnd(Instant.now().toEpochMilli(), rfi.getDueTimestamp());
-      String dueBy = timeFormatService.formatDate(rfi.getDueTimestamp());
+      Long daysRemaining = TimeUtil.daysBetweenWithStartBeforeEnd(Instant.now().toEpochMilli(), rfi.getDueTimestamp());
+      String dueBy = TimeUtil.formatDate(rfi.getDueTimestamp());
       if (daysRemaining >= 0) {
         return String.format("%s (%d days remaining)", dueBy, daysRemaining);
       } else {

@@ -2,8 +2,8 @@
 @import play.data.Form
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViews: java.util.List[RfiView], allowResponses: Boolean, message: String, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViews: java.util.List[RfiView], allowResponses: Boolean, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
-@applicationDetails(applyLink, applicationSummaryView, "rfi", rfiViews.size, message) {
+@applicationDetails(applyLink, applicationSummaryView, "rfi", rfiViews.size) {
   @rfiList(rfiViews, allowResponses, rfiResponseForm, addRfiResponseView)
 }

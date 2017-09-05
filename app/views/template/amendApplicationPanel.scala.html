@@ -10,11 +10,14 @@
     <div>
 
       <form action="@routes.AmendTabController.showAmendTab(appId)" method="POST">
+
+        @views.html.helper.CSRF.formField
+        
         @formTextarea(form("message"), rows = "4", cssClass = "form-control-wide") {
 
         }
-      <input type="hidden" name="action" value="@form("action").value" >
-      <button class="button">Send</button>
+        <input type="hidden" name="action" value="@form("action").value" >
+        <button class="button">Send</button>
       </form>
 
     </div>

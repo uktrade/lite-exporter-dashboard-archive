@@ -6,7 +6,7 @@ public enum SortDirection {
 
   private final String text;
 
-  SortDirection(final String text) {
+  SortDirection(String text) {
     this.text = text;
   }
 
