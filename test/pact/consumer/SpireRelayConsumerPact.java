@@ -42,7 +42,7 @@ public class SpireRelayConsumerPact {
   }
 
   @Test
-  @PactVerification({PROVIDER, "initial checks have started"})
+  @PactVerification(value = PROVIDER, fragment = "initial checks have started")
   public void test() throws Exception {
     StatusUpdateDao statusUpdateDao = mock(StatusUpdateDao.class);
     Channel channel = mock(Channel.class);
