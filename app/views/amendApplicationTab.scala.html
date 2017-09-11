@@ -4,7 +4,7 @@
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, allowAmendment: Boolean, action: Action, form: play.data.Form[_], officerView: OfficerView)
 
-@applicationDetails(applyLink, applicationSummaryView, "amend", rfiViewCount) {
+@applicationDetails(applyLink, applicationSummaryView, "amend", rfiViewCount, null) {
   @if(allowAmendment) {
     @amendApplication(applicationSummaryView.getAppId, action, form)
   }

@@ -20,6 +20,8 @@ import components.dao.AmendmentDao;
 import components.dao.AmendmentDaoImpl;
 import components.dao.ApplicationDao;
 import components.dao.ApplicationDaoImpl;
+import components.dao.DraftRfiResponseDao;
+import components.dao.DraftRfiResponseDaoImpl;
 import components.dao.RfiDao;
 import components.dao.RfiDaoImpl;
 import components.dao.RfiResponseDao;
@@ -86,6 +88,8 @@ public class GuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    // Upload
+    bindConstant("uploadFolder", "upload.folder");
     // CustomerServiceClient
     bindConstant("customerServiceAddress", "customerService.address");
     bindConstant("customerServiceTimeout", "customerService.timeout");
@@ -114,6 +118,7 @@ public class GuiceModule extends AbstractModule {
     bind(AmendmentService.class).to(AmendmentServiceImpl.class);
     bind(WithdrawalRequestService.class).to(WithdrawalRequestServiceImpl.class);
     bind(RfiResponseService.class).to(RfiResponseServiceImpl.class);
+    bind(RfiResponseService.class).to(RfiResponseServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);
@@ -121,6 +126,7 @@ public class GuiceModule extends AbstractModule {
     bind(ApplicationDao.class).to(ApplicationDaoImpl.class);
     bind(WithdrawalRequestDao.class).to(WithdrawalRequestDaoImpl.class);
     bind(AmendmentDao.class).to(AmendmentDaoImpl.class);
+    bind(DraftRfiResponseDao.class).to(DraftRfiResponseDaoImpl.class).asEagerSingleton();
     // Database test data
     bind(TestDataService.class).to(TestDataServiceImpl.class);
     // Start up

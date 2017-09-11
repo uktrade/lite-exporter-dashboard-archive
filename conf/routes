@@ -2,32 +2,37 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-->          /common                                               common.Routes
+->          /common                                      common.Routes
 
 # Application list
-GET         /                                                     controllers.ApplicationListController.index
-GET         /applications                                         controllers.ApplicationListController.applicationList(tab ?= null, sort ?= null, direction ?=null, company ?= null, show ?= null, page: Integer ?= null)
+GET         /                                            controllers.ApplicationListController.index
+GET         /applications                                controllers.ApplicationListController.applicationList(tab ?= null, sort ?= null, direction ?=null, company ?= null, show ?= null, page: Integer ?= null)
 
 # Application tabs
-GET         /application/*applicationRef/status-tracker           controllers.StatusTabController.showStatusTab(applicationRef: String)
-GET         /application/*applicationRef/rfi                      controllers.RfiTabController.showRfiTab(applicationRef: String)
-GET         /application/*applicationRef/rfi/*rfiId               controllers.RfiTabController.showResponseForm(applicationRef: String, rfiId: String)
-POST        /application/*applicationRef/rfi                      controllers.RfiTabController.submitResponse(applicationRef: String)
-GET         /application/*applicationRef/amend-application        controllers.AmendTabController.showAmendTab(applicationRef: String, action ?= null)
-POST        /application/*applicationRef/amend-application        controllers.AmendTabController.submitAmendment(applicationRef: String)
-GET         /application/*applicationRef/outcome-documents        controllers.OutcomeTabController.showOutcomeTab(applicationRef: String)
-GET         /application/*applicationRef                          controllers.StatusTabController.showStatusTab(applicationRef: String)
+GET         /application/*appId/status-tracker           controllers.StatusTabController.showStatusTab(appId: String)
+GET         /application/*appId/rfi                      controllers.RfiTabController.showRfiTab(appId: String)
+GET         /application/*appId/rfi/*rfiId               controllers.RfiTabController.showResponseForm(appId: String, rfiId: String)
+POST        /application/*appId/rfi                      controllers.RfiTabController.submitResponse(appId: String)
+POST        /application/*appId/rfi/file/*fileId         controllers.RfiTabController.deleteFileById(appId, fileId)
+GET         /application/*appId/amend-application        controllers.AmendTabController.showAmendTab(appId: String, action ?= null)
+POST        /application/*appId/amend-application        controllers.AmendTabController.submitAmendment(appId: String)
+GET         /application/*appId/outcome-documents        controllers.OutcomeTabController.showOutcomeTab(appId: String)
+GET         /application/*appId                          controllers.StatusTabController.showStatusTab(appId: String)
 
 # Licences tabs
-GET         /licences                                             controllers.LicenceListController.licenceList(tab ?= null, sort ?= null, direction ?=null, page: Integer ?= null)
+GET         /licences                                    controllers.LicenceListController.licenceList(tab ?= null, sort ?= null, direction ?=null, page: Integer ?= null)
 
 # Licence details
-GET         /licence/*licenceRef                                  controllers.LicenceListController.licenceDetails(licenceRef: String)
+GET         /licence/*licenceRef                         controllers.LicenceListController.licenceDetails(licenceRef: String)
 
 # Test data
-GET         /test                                                 controllers.TestDataController.insertDefaultTestData()
-GET         /test/                                                controllers.TestDataController.insertDefaultTestData()
-GET         /test/*testType                                       controllers.TestDataController.insertTestData(testType: String)
+GET         /test                                        controllers.TestDataController.insertDefaultTestData()
+GET         /test/                                       controllers.TestDataController.insertDefaultTestData()
+GET         /test/*testType                              controllers.TestDataController.insertTestData(testType: String)
+
+POST        /upload/accept/rfi/*rfiId                    controllers.RfiTabController.submitFiles(rfiId: String)
+POST        /upload/delete                               controllers.RfiTabController.deleteFile()
+GET         /files/rfi/*rfiId/*fileId                    controllers.RfiTabController.getFile(rfiId,fileId)
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                                         controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)

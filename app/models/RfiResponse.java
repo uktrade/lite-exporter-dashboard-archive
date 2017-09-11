@@ -1,14 +1,16 @@
 package models;
 
+import java.util.List;
+
 public class RfiResponse {
 
   private final String rfiId;
   private final String sentBy;
   private final Long sentTimestamp;
   private final String message;
-  private final String attachments;
+  private final List<File> attachments;
 
-  public RfiResponse(String rfiId, String sentBy, Long sentTimestamp, String message, String attachments) {
+  public RfiResponse(String rfiId, String sentBy, Long sentTimestamp, String message, List<File> attachments) {
     this.rfiId = rfiId;
     this.sentBy = sentBy;
     this.sentTimestamp = sentTimestamp;
@@ -32,8 +34,7 @@ public class RfiResponse {
     return message;
   }
 
-  public String getAttachments() {
+  public List<File> getAttachments() {
     return attachments;
   }
-
 }

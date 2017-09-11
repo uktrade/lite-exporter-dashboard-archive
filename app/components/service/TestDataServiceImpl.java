@@ -6,6 +6,7 @@ import static components.util.TimeUtil.time;
 import com.google.inject.Inject;
 import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
+import components.dao.DraftRfiResponseDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
 import components.dao.StatusUpdateDao;
@@ -44,6 +45,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final ApplicationDao applicationDao;
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final AmendmentDao amendmentDao;
+  private final DraftRfiResponseDao draftRfiResponseDao;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -51,13 +53,15 @@ public class TestDataServiceImpl implements TestDataService {
                              RfiResponseDao rfiResponseDao,
                              ApplicationDao applicationDao,
                              WithdrawalRequestDao withdrawalRequestDao,
-                             AmendmentDao amendmentDao) {
+                             AmendmentDao amendmentDao,
+                             DraftRfiResponseDao draftRfiResponseDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiResponseDao = rfiResponseDao;
     this.applicationDao = applicationDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.amendmentDao = amendmentDao;
+    this.draftRfiResponseDao = draftRfiResponseDao;
   }
 
   @Override
@@ -95,6 +99,7 @@ public class TestDataServiceImpl implements TestDataService {
     rfiResponseDao.deleteAllRfiResponses();
     withdrawalRequestDao.deleteAllWithdrawalRequests();
     amendmentDao.deleteAllAmendments();
+    draftRfiResponseDao.deleteAllDraftRfiResponses();
   }
 
   private void createEmptyQueueApplication() {
@@ -127,7 +132,10 @@ public class TestDataServiceImpl implements TestDataService {
           OFFICER_ID);
       applicationDao.insert(app);
       if (!isDraft) {
-        StatusUpdate initialChecks = new StatusUpdate(app.getAppId(), StatusType.INITIAL_CHECKS, time(2017, 4, 4 + i, i, i), null);
+        StatusUpdate initialChecks = new StatusUpdate(app.getAppId(),
+            StatusType.INITIAL_CHECKS,
+            time(2017, 4, 4 + i, i, i),
+            null);
         statusUpdateDao.insertStatusUpdate(initialChecks);
         String rfiId = random("RFI");
         Rfi rfi = new Rfi(rfiId,
@@ -139,7 +147,11 @@ public class TestDataServiceImpl implements TestDataService {
             "Please answer this rfi.");
         rfiDao.insertRfi(rfi);
         if (i % 2 != 0) {
-          RfiResponse rfiResponse = new RfiResponse(rfiId, APPLICANT_ID, time(2017, 4, 5 + i, i, i), "This is a reply.", null);
+          RfiResponse rfiResponse = new RfiResponse(rfiId,
+              APPLICANT_ID,
+              time(2017, 4, 5 + i, i, i),
+              "This is a reply.",
+              new ArrayList<>());
           rfiResponseDao.insertRfiResponse(rfiResponse);
         }
       }
@@ -179,7 +191,13 @@ public class TestDataServiceImpl implements TestDataService {
   private void createAdvancedApplication() {
     String appId = random("APP");
     String rfiId = random("RFI");
-    Application application = new Application(appId, COMPANY_ID_TWO, APPLICANT_ID, time(2016, 11, 4, 13, 10), time(2016, 11, 4, 14, 10), Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(), randomNumber("ECO"), OFFICER_ID);
+    Application application = new Application(appId,
+        COMPANY_ID_TWO,
+        APPLICANT_ID,
+        time(2016, 11, 4, 13, 10),
+        time(2016, 11, 4, 14, 10),
+        Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(),
+        randomNumber("ECO"), OFFICER_ID);
     applicationDao.insert(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(appId, rfiId).forEach(rfiDao::insertRfi);
@@ -194,12 +212,12 @@ public class TestDataServiceImpl implements TestDataService {
             + "Please see attached the specifications and design plans showing the original design.</p>"
             + "<p>Kind regards,</p>"
             + "<p>Kathryn Smith</p>",
-        null);
+        new ArrayList<>());
     RfiResponse rfiResponseTwo = new RfiResponse(rfiId,
         APPLICANT_ID,
         time(2017, 5, 14, 17, 14),
         "This is another test reply.",
-        null);
+        new ArrayList<>());
     List<RfiResponse> rfiResponses = new ArrayList<>();
     rfiResponses.add(rfiResponse);
     rfiResponses.add(rfiResponseTwo);
@@ -268,7 +286,10 @@ public class TestDataServiceImpl implements TestDataService {
         randomNumber("ECO"),
         null);
     applicationDao.insert(application);
-    StatusUpdate statusUpdate = new StatusUpdate(appId, StatusType.INITIAL_CHECKS, time(2016, 12, 5, 3, 3), null);
+    StatusUpdate statusUpdate = new StatusUpdate(appId,
+        StatusType.INITIAL_CHECKS,
+        time(2016, 12, 5, 3, 3),
+        null);
     statusUpdateDao.insertStatusUpdate(statusUpdate);
   }
 

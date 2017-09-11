@@ -1,17 +1,15 @@
-@import java.util
-
 @import models.view.{AddRfiResponseView, RfiView}
 @import play.data.Form
 @import template._
 
-@(rfiViews: util.List[RfiView], allowResponses: Boolean, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+@(rfiViews: java.util.List[RfiView], allowResponses: Boolean, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
-@for(rfiView <- rfiViews) {
-  @rfiPanel(rfiView, allowResponses)
-  @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
-    @addRfiReplyPanel(rfiView.getAppId, rfiView.getRfiId, rfiResponseForm, addRfiResponseView)
+  @for(rfiView <- rfiViews) {
+    @rfiPanel(rfiView, allowResponses)
+    @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
+      @addRfiReplyPanel(rfiView.getAppId, rfiResponseForm, addRfiResponseView)
+    }
+    @if(rfiView.getRfiResponseView != null) {
+      @rfiReplyPanel(rfiView.getRfiResponseView)
+    }
   }
-  @if(rfiView.getRfiResponseView != null) {
-    @rfiReplyPanel(rfiView.getRfiResponseView)
-  }
-}
