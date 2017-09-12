@@ -8,7 +8,8 @@ public class ApplicationItemView {
   private final String companyId;
   private final String companyName;
   private final String createdById;
-  private final String createdByName;
+  private final String createdByFirstName;
+  private final String createdByLastName;
   private final Long createdTimestamp;
   private final Long submittedTimestamp;
   private final String date;
@@ -25,7 +26,8 @@ public class ApplicationItemView {
                              String companyId,
                              String companyName,
                              String createdById,
-                             String createdByName,
+                             String createdByFirstName,
+                             String createdByLastName,
                              Long createdTimestamp,
                              Long submittedTimestamp,
                              String date,
@@ -41,7 +43,8 @@ public class ApplicationItemView {
     this.companyId = companyId;
     this.companyName = companyName;
     this.createdById = createdById;
-    this.createdByName = createdByName;
+    this.createdByFirstName = createdByFirstName;
+    this.createdByLastName = createdByLastName;
     this.createdTimestamp = createdTimestamp;
     this.submittedTimestamp = submittedTimestamp;
     this.date = date;
@@ -71,8 +74,12 @@ public class ApplicationItemView {
     return createdById;
   }
 
-  public String getCreatedByName() {
-    return createdByName;
+  public String getCreatedByFirstName() {
+    return createdByFirstName;
+  }
+
+  public String getCreatedByLastName() {
+    return createdByLastName;
   }
 
   public Long getCreatedTimestamp() {

@@ -22,7 +22,7 @@ public class OfficerViewServiceImpl implements OfficerViewService {
     Application application = applicationDao.getApplication(appId);
     if (application.getCaseOfficerId() != null) {
       User user = userService.getUser(application.getCaseOfficerId());
-      return new OfficerView(user.getName(), user.getTelephone(), user.getEmail());
+      return new OfficerView(user.getFirstName() + " " + user.getLastName(), user.getTelephone(), user.getEmail());
     } else {
       return null;
     }

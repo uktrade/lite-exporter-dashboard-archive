@@ -74,7 +74,7 @@ public class RfiViewServiceImpl implements RfiViewService {
   private RfiView getRfiView(Rfi rfi) {
     String receivedOn = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
     String replyBy = getReplyBy(rfi);
-    String sender = userService.getUser(rfi.getSentBy()).getName();
+    String sender = userService.getUsername(rfi.getSentBy());
     RfiResponseView rfiResponseView = getRfiResponseView(rfi.getAppId(), rfi.getRfiId());
     return new RfiView(rfi.getAppId(), rfi.getRfiId(), receivedOn, replyBy, sender, rfi.getMessage(), rfiResponseView);
   }
@@ -82,7 +82,7 @@ public class RfiViewServiceImpl implements RfiViewService {
   private RfiResponseView getRfiResponseView(String appId, String rfiId) {
     RfiResponse rfiResponse = rfiResponseDao.getRfiResponse(rfiId);
     if (rfiResponse != null) {
-      String sentBy = userService.getUser(rfiResponse.getSentBy()).getName();
+      String sentBy = userService.getUsername(rfiResponse.getSentBy());
       String sentAt = TimeUtil.formatDate(rfiResponse.getSentTimestamp());
       String message = rfiResponse.getMessage();
       List<FileView> fileViews = createFileViews(appId, rfiId, rfiResponse.getAttachments());

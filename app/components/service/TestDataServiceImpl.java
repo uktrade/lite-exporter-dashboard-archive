@@ -70,6 +70,7 @@ public class TestDataServiceImpl implements TestDataService {
     createApplications();
     createSecondUserApplications();
     createAdvancedApplication();
+    createSecondUserApplications();
   }
 
   @Override

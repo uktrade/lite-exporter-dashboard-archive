@@ -20,7 +20,7 @@ public class SortUtil {
 
   static {
     APPLICATION_COMPARATORS = new EnumMap<>(ApplicationSortType.class);
-    APPLICATION_COMPARATORS.put(ApplicationSortType.CREATED_BY, createComparators(ApplicationItemView::getCreatedByName));
+    APPLICATION_COMPARATORS.put(ApplicationSortType.CREATED_BY, createComparators(view -> view.getCreatedByLastName() + view.getCreatedByFirstName()));
     Comparator<ApplicationItemView> dateComparator = new ApplicationDateComparator();
     APPLICATION_COMPARATORS.put(ApplicationSortType.DATE, createComparators(dateComparator));
     Comparator<ApplicationItemView> statusComparator = Comparator.comparing(ApplicationItemView::getApplicationStatusTimestamp);

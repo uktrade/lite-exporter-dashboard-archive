@@ -11,9 +11,15 @@ public class UserServiceMockImpl implements UserService {
   private static final Map<String, User> users = new HashMap<>();
 
   static {
-    users.put("24492", new User("24492", "Kathryn Smith", null, null));
-    users.put("2", new User("2", "Christoph", null, null));
-    users.put("3", new User("3", "Jerry McGuire", "j.mcguire@trade.gov.uk", "01234 567890"));
+    users.put("24492", new User("24492", "Kathryn", "Smith", null, null));
+    users.put("2", new User("2", "Christoph", "Mueller", null, null));
+    users.put("3", new User("3", "Jerry", "McGuire", "j.mcguire@trade.gov.uk", "01234 567890"));
+  }
+
+  @Override
+  public String getUsername(String userId) {
+    User user = getUser(userId);
+    return user.getFirstName() + " " + user.getLastName();
   }
 
   @Override

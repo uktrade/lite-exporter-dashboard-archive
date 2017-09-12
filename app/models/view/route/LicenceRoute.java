@@ -21,7 +21,11 @@ public class LicenceRoute {
       nextSortDirection();
     } else {
       licenceSortType = sortType;
-      sortDirection = SortDirection.DESC;
+      if (licenceSortType == LicenceSortType.DATE) {
+        sortDirection = SortDirection.DESC;
+      } else {
+        sortDirection = SortDirection.ASC;
+      }
     }
     return this;
   }

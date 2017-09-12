@@ -54,7 +54,7 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
 
   private String getOfficerName(Application application) {
     if (application.getCaseOfficerId() != null) {
-      return userService.getUser(application.getCaseOfficerId()).getName();
+      return userService.getUsername(application.getCaseOfficerId());
     } else {
       return "Not assigned yet";
     }
