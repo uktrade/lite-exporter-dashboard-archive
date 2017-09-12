@@ -20,8 +20,8 @@ import components.dao.AmendmentDao;
 import components.dao.AmendmentDaoImpl;
 import components.dao.ApplicationDao;
 import components.dao.ApplicationDaoImpl;
-import components.dao.DraftRfiResponseDao;
-import components.dao.DraftRfiResponseDaoImpl;
+import components.dao.DraftDao;
+import components.dao.DraftDaoImpl;
 import components.dao.RfiDao;
 import components.dao.RfiDaoImpl;
 import components.dao.RfiResponseDao;
@@ -126,7 +126,7 @@ public class GuiceModule extends AbstractModule {
     bind(ApplicationDao.class).to(ApplicationDaoImpl.class);
     bind(WithdrawalRequestDao.class).to(WithdrawalRequestDaoImpl.class);
     bind(AmendmentDao.class).to(AmendmentDaoImpl.class);
-    bind(DraftRfiResponseDao.class).to(DraftRfiResponseDaoImpl.class).asEagerSingleton();
+    bind(DraftDao.class).to(DraftDaoImpl.class).asEagerSingleton();
     // Database test data
     bind(TestDataService.class).to(TestDataServiceImpl.class);
     // Start up

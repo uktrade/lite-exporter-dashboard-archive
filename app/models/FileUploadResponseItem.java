@@ -6,16 +6,18 @@ public class FileUploadResponseItem {
   private final String url;
   private final String error;
   private final String size;
-  private final String fileid;
-  private final String filetype;
+  private final String relatedId;
+  private final String fileId;
+  private final String fileType;
 
-  public FileUploadResponseItem(String name, String url, String error, String size, String fileid, String filetype) {
+  public FileUploadResponseItem(String name, String url, String error, String size, String relatedId, String fileId, String fileType) {
     this.name = name;
     this.url = url;
     this.error = error;
     this.size = size;
-    this.fileid = fileid;
-    this.filetype = filetype;
+    this.relatedId = relatedId;
+    this.fileId = fileId;
+    this.fileType = fileType;
   }
 
   public String getName() {
@@ -34,12 +36,16 @@ public class FileUploadResponseItem {
     return size;
   }
 
-  public String getFileid() {
-    return fileid;
+  public String getRelatedId() {
+    return relatedId;
   }
 
-  public String getFiletype() {
-    return filetype;
+  public String getFileId() {
+    return fileId;
+  }
+
+  public String getFileType() {
+    return fileType;
   }
 
 }

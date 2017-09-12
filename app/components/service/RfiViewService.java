@@ -8,9 +8,9 @@ import java.util.List;
 public interface RfiViewService {
 
   List<RfiView> getRfiViews(String appId);
-  
+
   int getRfiViewCount(String appId);
 
-  AddRfiResponseView getAddRfiResponseView(String rfiId);
+  AddRfiResponseView getAddRfiResponseView(String appId, String rfiId);
 
 }

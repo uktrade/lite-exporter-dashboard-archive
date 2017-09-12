@@ -80,8 +80,9 @@ $(function () {
       var error = data.result.files[0].error;
       var size = data.result.files[0].size;
       var filename = data.result.files[0].name;
-      var fileid = data.result.files[0].fileid;
-      var filetype = data.result.files[0].filetype;
+      var relatedId = data.result.files[0].relatedId;
+      var fileId = data.result.files[0].fileId;
+      var fileType = data.result.files[0].fileType;
       var url = data.result.files[0].url;
 
       if (error) {
@@ -101,8 +102,10 @@ $(function () {
           }, 2000);
 
           // Create the delete action
-          data.context.find('.file-upload-actions').html('<a href="#" data-file-id="' + fileid + '" data-file-type="' + filetype + '" ' +
-            'class="file-delete-link">Remove<span class="visually-hidden"> ' + filename + '</span></a>');
+          data.context.find('.file-upload-actions').html('<a href="#" data-related-id="' + relatedId +
+            '" data-file-id="' + fileId +
+            '" data-file-type="' + fileType +
+            '"class="file-delete-link">Remove<span class="visually-hidden"> ' + filename + '</span></a>');
           // data.context.find('.file-delete-link').click(deleteFile);
         }, 1000 - (doneTimestamp - data.submitTimestamp)); //Ensure the progress bar displays for at least one second
       }
@@ -140,6 +143,7 @@ $('#fileupload').attr('tabindex', '-1');
 
 //Bind click events to file delete links
 $('body').on('click', '.file-delete-link', function (e) {
+  var relatedId = $(this).attr('data-related-id');
   var fileId = $(this).attr('data-file-id');
   var fileType = $(this).attr('data-file-type');
   var $fileRow = $(this).closest('tr');
@@ -154,6 +158,7 @@ $('body').on('click', '.file-delete-link', function (e) {
     data: {
       uploadKey: $('input[name=uploadKey]').val(),
       uploadTarget: $('input[name=uploadTarget]').val(),
+      relatedId: relatedId,
       fileId: fileId,
       fileType: fileType
     },

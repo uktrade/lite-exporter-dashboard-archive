@@ -1,11 +1,14 @@
 package components.dao;
 
+import components.util.JsonUtil;
+import models.File;
 import models.WithdrawalRequest;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 public class WithdrawalRequestRSMapper implements ResultSetMapper<WithdrawalRequest> {
 
@@ -16,7 +19,8 @@ public class WithdrawalRequestRSMapper implements ResultSetMapper<WithdrawalRequ
     Long sentTimestamp = LongMapper.getLong(r, "sent_timestamp");
     String sentBy = r.getString("sentBy");
     String message = r.getString("message");
-    String attachments = r.getString("attachments");
+    String attachmentsJson = r.getString("attachments");
+    List<File> attachments = JsonUtil.convertJsonToFiles(attachmentsJson);
     String rejectedBy = r.getString("rejected_by");
     Long rejectedTimestamp = LongMapper.getLong(r, "rejected_timestamp");
     String rejectedMessage = r.getString("rejected_message");

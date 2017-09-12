@@ -1,12 +1,13 @@
 @import models.enums.Action
+@import models.view.AddAmendmentView
 @import models.view.{ApplicationSummaryView, OfficerView}
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, allowAmendment: Boolean, action: Action, form: play.data.Form[_], officerView: OfficerView)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, allowAmendment: Boolean, action: Action, form: play.data.Form[_], officerView: OfficerView, addAmendmentView: AddAmendmentView)
 
-@applicationDetails(applyLink, applicationSummaryView, "amend", rfiViewCount, null) {
+@applicationDetails(applyLink, applicationSummaryView, "amend", rfiViewCount, form) {
   @if(allowAmendment) {
-    @amendApplication(applicationSummaryView.getAppId, action, form)
+    @amendApplication(applicationSummaryView.getAppId, action, form, addAmendmentView)
   }
   @officer(applicationSummaryView.getAppId, officerView)
 }

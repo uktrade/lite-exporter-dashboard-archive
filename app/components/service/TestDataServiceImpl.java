@@ -6,7 +6,7 @@ import static components.util.TimeUtil.time;
 import com.google.inject.Inject;
 import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
-import components.dao.DraftRfiResponseDao;
+import components.dao.DraftDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
 import components.dao.StatusUpdateDao;
@@ -45,7 +45,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final ApplicationDao applicationDao;
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final AmendmentDao amendmentDao;
-  private final DraftRfiResponseDao draftRfiResponseDao;
+  private final DraftDao draftDao;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -54,14 +54,14 @@ public class TestDataServiceImpl implements TestDataService {
                              ApplicationDao applicationDao,
                              WithdrawalRequestDao withdrawalRequestDao,
                              AmendmentDao amendmentDao,
-                             DraftRfiResponseDao draftRfiResponseDao) {
+                             DraftDao draftDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiResponseDao = rfiResponseDao;
     this.applicationDao = applicationDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.amendmentDao = amendmentDao;
-    this.draftRfiResponseDao = draftRfiResponseDao;
+    this.draftDao = draftDao;
   }
 
   @Override
@@ -99,7 +99,7 @@ public class TestDataServiceImpl implements TestDataService {
     rfiResponseDao.deleteAllRfiResponses();
     withdrawalRequestDao.deleteAllWithdrawalRequests();
     amendmentDao.deleteAllAmendments();
-    draftRfiResponseDao.deleteAllDraftRfiResponses();
+    draftDao.deleteAllDrafts();
   }
 
   private void createEmptyQueueApplication() {

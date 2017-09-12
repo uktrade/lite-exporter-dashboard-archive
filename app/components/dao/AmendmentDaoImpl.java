@@ -1,6 +1,7 @@
 package components.dao;
 
 import com.google.inject.Inject;
+import components.util.JsonUtil;
 import models.Amendment;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -33,7 +34,7 @@ public class AmendmentDaoImpl implements AmendmentDao {
           amendment.getSentTimestamp(),
           amendment.getSentBy(),
           amendment.getMessage(),
-          amendment.getAttachments());
+          JsonUtil.convertFilesToJson(amendment.getAttachments()));
     }
   }
 

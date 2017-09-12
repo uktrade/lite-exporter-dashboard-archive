@@ -1,7 +1,9 @@
 @import models.enums.Action
-@import template._
+@import models.view.AddAmendmentView
+@import template.amendApplicationPanel
+@import play.data.Form
 
-@(appId: String, action: models.enums.Action, form: play.data.Form[_])
+@(appId: String, action: models.enums.Action, form: play.data.Form[_], addAmendmentView: AddAmendmentView)
 
 <p>Use this form to make an amendment or withdraw your application.</p>
 
@@ -23,10 +25,10 @@
 
 @action match {
   case Action.AMEND => {
-    @amendApplicationPanel(appId, "TODO: Text for this heading", form)
+    @amendApplicationPanel(appId, "TODO: Text for this heading", form, addAmendmentView, action)
   }
   case Action.WITHDRAW => {
-    @amendApplicationPanel(appId, "Please provide a reason to withdraw the application.", form)
+    @amendApplicationPanel(appId, "Please provide a reason to withdraw the application.", form, addAmendmentView, action)
   }
   case default => {
     <hr/>

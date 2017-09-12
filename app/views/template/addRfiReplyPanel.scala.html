@@ -1,3 +1,4 @@
+@import models.enums.DraftType
 @import models.view.AddRfiResponseView
 @import play.data.Form
 @import template._
@@ -40,7 +41,7 @@
         <input type="hidden" name="rfiId" value="@rfiResponseForm("rfiId").value" >
 
         <h4 class="heading-small">Attach a file</h4>
-        @fileUpload(appId, addRfiResponseView.getRfiId, addRfiResponseView.getFileViews)
+        @fileUpload(addRfiResponseView.getRfiId, DraftType.RFI_RESPONSE, addRfiResponseView.getFileViews)
 
         <button class="button">Send</button>
 

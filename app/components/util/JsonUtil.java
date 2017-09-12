@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import models.File;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class JsonUtil {
@@ -20,7 +21,8 @@ public class JsonUtil {
 
   public static String convertListToJson(List<String> list) {
     try {
-      return OBJECT_MAPPER.writeValueAsString(list);
+      List<String> insert = emptyIfNull(list);
+      return OBJECT_MAPPER.writeValueAsString(insert);
     } catch (JsonProcessingException jpe) {
       throw new RuntimeException("Failed to convert list to json.", jpe);
     }
@@ -36,7 +38,8 @@ public class JsonUtil {
 
   public static String convertFilesToJson(List<File> files) {
     try {
-      return OBJECT_MAPPER.writeValueAsString(files);
+      List<File> insert = emptyIfNull(files);
+      return OBJECT_MAPPER.writeValueAsString(insert);
     } catch (JsonProcessingException jpe) {
       throw new RuntimeException("Failed to convert files to json.", jpe);
     }
@@ -48,6 +51,11 @@ public class JsonUtil {
     } catch (IOException ioe) {
       throw new RuntimeException("Failed to convert json to files.", ioe);
     }
+  }
+
+  // From apache commons
+  private static <T> List<T> emptyIfNull(final List<T> list) {
+    return list == null ? Collections.emptyList() : list;
   }
 
 }
