@@ -94,3 +94,7 @@ th[aria-sort=descending]:after {
   content: '\25BC';
   color: $link-colour;
 }
+
+.row-header-secondary-info {
+  font-weight: normal;
+}

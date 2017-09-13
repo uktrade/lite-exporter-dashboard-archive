@@ -44,11 +44,12 @@
         <td>
         @ogelItemView.getOgelStatus
         </td>
-        <td scope="row">
+        <th scope="row">
           <a href="@routes.LicenceListController.ogelDetails(ogelItemView.getRegistrationReference)" class="bold">@ogelItemView.getRegistrationReference</a>
-          <br>
-          @ogelItemView.getDescription
-        </td>
+          <div class="row-header-secondary-info">
+            @ogelItemView.getDescription
+          </div>
+        </th>
         <td>
         @ogelItemView.getLicensee
         </td>
