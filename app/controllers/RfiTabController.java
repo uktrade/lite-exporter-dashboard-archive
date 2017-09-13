@@ -100,7 +100,8 @@ public class RfiTabController extends Controller {
   public Result showResponseForm(String appId, String rfiId) {
     if (alreadyHasResponse(rfiId)) {
       LOGGER.error("Response to rfiId {} and appId {} not possible since a response already exists", rfiId);
-      return showRfiTab(appId);
+      flash(rfiId, "You have already submitted your reply to this RFI - you cannot edit or re-submit it.");
+      return redirect(routes.RfiTabController.showRfiTab(appId).withFragment(rfiId));
     } else if (!allowResponses(appId)) {
       LOGGER.error("Response to rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
       return showRfiTab(appId);
