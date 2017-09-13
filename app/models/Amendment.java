@@ -1,5 +1,7 @@
 package models;
 
+import java.util.List;
+
 public class Amendment {
 
   private final String amendmentId;
@@ -7,9 +9,9 @@ public class Amendment {
   private final Long sentTimestamp;
   private final String sentBy;
   private final String message;
-  private final String attachments;
+  private final List<File> attachments;
 
-  public Amendment(String amendmentId, String appId, Long sentTimestamp, String sentBy, String message, String attachments) {
+  public Amendment(String amendmentId, String appId, Long sentTimestamp, String sentBy, String message, List<File> attachments) {
     this.amendmentId = amendmentId;
     this.appId = appId;
     this.sentTimestamp = sentTimestamp;
@@ -38,7 +40,7 @@ public class Amendment {
     return message;
   }
 
-  public String getAttachments() {
+  public List<File> getAttachments() {
     return attachments;
   }
 

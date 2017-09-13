@@ -65,7 +65,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     String status = ApplicationUtil.DRAFT;
     String statusExplanation = "";
     String processingLabel = "Finished";
-    String processingDescription = "Created on " + TimeUtil.formatDateAndTime(application.getCreatedTimestamp());
+    String processingDescription = "Created on " + TimeUtil.formatDate(application.getCreatedTimestamp());
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
 
@@ -76,10 +76,10 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     String processingDescription;
     if (application.getSubmittedTimestamp() == null) {
       processingLabel = "Not started";
-      processingDescription = "Submitted on " + TimeUtil.formatDateAndTime(application.getSubmittedTimestamp());
+      processingDescription = "";
     } else {
       processingLabel = "Finished";
-      processingDescription = "";
+      processingDescription = "Submitted on " + TimeUtil.formatDate(application.getSubmittedTimestamp());
     }
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
@@ -150,7 +150,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
       if (statusUpdate.getStartTimestamp() == null) {
         return "";
       } else {
-        return "Decision reached on " + TimeUtil.formatDateAndTime(statusUpdate.getStartTimestamp());
+        return "Decision reached on " + TimeUtil.formatDate(statusUpdate.getStartTimestamp());
       }
     } else {
       Long startTimestamp = statusUpdate.getStartTimestamp();
@@ -160,7 +160,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
           long duration = TimeUtil.daysBetweenWithStartBeforeEnd(startTimestamp, endTimestamp);
           return "Processed in " + duration + " working days";
         } else {
-          String started = TimeUtil.formatDateAndTime(startTimestamp);
+          String started = TimeUtil.formatDate(startTimestamp);
           long duration = TimeUtil.daysBetweenWithStartBeforeEnd(startTimestamp, Instant.now().toEpochMilli());
           return String.format("Started on %s<br>(%d days ago)", started, duration);
         }

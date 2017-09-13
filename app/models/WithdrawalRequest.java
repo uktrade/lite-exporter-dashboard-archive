@@ -1,5 +1,7 @@
 package models;
 
+import java.util.List;
+
 public class WithdrawalRequest {
 
   private final String withdrawalRequestId;
@@ -7,12 +9,12 @@ public class WithdrawalRequest {
   private final Long sentTimestamp;
   private final String sentBy;
   private final String message;
-  private final String attachments;
+  private final List<File> attachments;
   private final String rejectedBy;
   private final Long rejectedTimestamp;
   private final String rejectedMessage;
 
-  public WithdrawalRequest(String withdrawalRequestId, String appId, Long sentTimestamp, String sentBy, String message, String attachments, String rejectedBy, Long rejectedTimestamp, String rejectedMessage) {
+  public WithdrawalRequest(String withdrawalRequestId, String appId, Long sentTimestamp, String sentBy, String message, List<File> attachments, String rejectedBy, Long rejectedTimestamp, String rejectedMessage) {
     this.withdrawalRequestId = withdrawalRequestId;
     this.appId = appId;
     this.sentTimestamp = sentTimestamp;
@@ -44,7 +46,7 @@ public class WithdrawalRequest {
     return message;
   }
 
-  public String getAttachments() {
+  public List<File> getAttachments() {
     return attachments;
   }
 

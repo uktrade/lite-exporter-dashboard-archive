@@ -14,6 +14,7 @@ import models.Application;
 import models.Rfi;
 import models.RfiResponse;
 import models.StatusUpdate;
+import models.User;
 import models.enums.ApplicationProgress;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
@@ -103,8 +104,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     String applicationStatusDate = String.format("Since: %s", TimeUtil.formatDateWithSlashes(statusTimestamp));
 
     String createdById = application.getCreatedBy();
-    String createdByName = userService.getUser(createdById).getName();
-    String destination = ApplicationUtil.getDestination(application);
+    User user = userService.getUser(createdById);
+    String destination = ApplicationUtil.getDestinations(application.getDestinationList());
 
     ApplicationProgress applicationProgress = getApplicationProgress(maxStatusUpdate, application);
 
@@ -112,7 +113,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         application.getCompanyId(),
         companyName,
         createdById,
-        createdByName,
+        user.getFirstName(),
+        user.getLastName(),
         application.getCreatedTimestamp(),
         application.getSubmittedTimestamp(),
         date,

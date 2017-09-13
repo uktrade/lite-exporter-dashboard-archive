@@ -6,7 +6,7 @@ public class RfiResponseForm {
 
   public String rfiId;
 
-  @Constraints.Required
+  @Constraints.Required(message = "Please provide a message.")
   public String responseMessage;
 
 }

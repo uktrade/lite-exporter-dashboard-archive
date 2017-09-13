@@ -32,7 +32,7 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
     return new ApplicationSummaryView(application.getAppId(),
         application.getCaseReference(),
         application.getApplicantReference(),
-        ApplicationUtil.getDestination(application),
+        ApplicationUtil.getDestinations(application.getDestinationList()),
         getDateSubmitted(application),
         getStatus(appId),
         getOfficerName(application));
@@ -54,7 +54,7 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
 
   private String getOfficerName(Application application) {
     if (application.getCaseOfficerId() != null) {
-      return userService.getUser(application.getCaseOfficerId()).getName();
+      return userService.getUsername(application.getCaseOfficerId());
     } else {
       return "Not assigned yet";
     }

@@ -3,13 +3,15 @@ package models;
 public class User {
 
   private final String id;
-  private final String name;
+  private final String firstName;
+  private final String lastName;
   private final String email;
   private final String telephone;
 
-  public User(String id, String name, String email, String telephone) {
+  public User(String id, String firstName, String lastName, String email, String telephone) {
     this.id = id;
-    this.name = name;
+    this.firstName = firstName;
+    this.lastName = lastName;
     this.email = email;
     this.telephone = telephone;
   }
@@ -18,8 +20,12 @@ public class User {
     return id;
   }
 
-  public String getName() {
-    return name;
+  public String getFirstName() {
+    return firstName;
+  }
+
+  public String getLastName() {
+    return lastName;
   }
 
   public String getEmail() {
@@ -29,5 +35,4 @@ public class User {
   public String getTelephone() {
     return telephone;
   }
-
 }

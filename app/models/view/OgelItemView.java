@@ -1,19 +1,23 @@
 package models.view;
 
-public class OgelRegistrationItemView {
+public class OgelItemView {
 
   private final String registrationReference;
   private final String description;
   private final String licensee;
   private final String site;
   private final String registrationDate;
+  private final long registrationTimestamp;
+  private final String ogelStatus;
 
-  public OgelRegistrationItemView(String registrationReference, String description, String licensee, String site, String registrationDate) {
+  public OgelItemView(String registrationReference, String description, String licensee, String site, String registrationDate, long registrationTimestamp, String ogelStatus) {
     this.registrationReference = registrationReference;
     this.description = description;
     this.licensee = licensee;
     this.site = site;
     this.registrationDate = registrationDate;
+    this.registrationTimestamp = registrationTimestamp;
+    this.ogelStatus = ogelStatus;
   }
 
   public String getRegistrationReference() {
@@ -34,6 +38,14 @@ public class OgelRegistrationItemView {
 
   public String getRegistrationDate() {
     return registrationDate;
+  }
+
+  public long getRegistrationTimestamp() {
+    return registrationTimestamp;
+  }
+
+  public String getOgelStatus() {
+    return ogelStatus;
   }
 
 }

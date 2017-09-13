@@ -1,6 +1,7 @@
 package components.dao;
 
 import com.google.inject.Inject;
+import components.util.JsonUtil;
 import models.WithdrawalRequest;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -31,7 +32,7 @@ public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
           withdrawalRequest.getSentTimestamp(),
           withdrawalRequest.getSentBy(),
           withdrawalRequest.getMessage(),
-          withdrawalRequest.getAttachments(),
+          JsonUtil.convertFilesToJson(withdrawalRequest.getAttachments()),
           withdrawalRequest.getRejectedBy(),
           withdrawalRequest.getRejectedTimestamp(),
           withdrawalRequest.getRejectedMessage());

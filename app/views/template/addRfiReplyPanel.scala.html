@@ -1,9 +1,10 @@
+@import models.enums.DraftType
 @import models.view.AddRfiResponseView
 @import play.data.Form
 @import template._
 @import views.html.common.form._
 
-@(appId: String, rfiId: String, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+@(appId: String, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
 <div class="message-panel message-reply-panel" id="reply" >
   <header>
@@ -30,7 +31,7 @@
     <h4 class="heading-small">Message</h4>
     <div>
 
-      <form action="@routes.RfiTabController.submitResponse(appId)" method="POST">
+      <form action="@routes.RfiTabController.submitResponse(appId)" method="POST" enctype="multipart/form-data">
 
         @views.html.helper.CSRF.formField
 
@@ -40,7 +41,7 @@
         <input type="hidden" name="rfiId" value="@rfiResponseForm("rfiId").value" >
 
         <h4 class="heading-small">Attach a file</h4>
-        @fileUpload()
+        @fileUpload(addRfiResponseView.getRfiId, DraftType.RFI_RESPONSE, addRfiResponseView.getFileViews)
 
         <button class="button">Send</button>
 

@@ -1,0 +1,16 @@
+@import util._
+@import template._
+@import views.html.common.page._
+@import licenceDetailTypes._
+@import models.view.SielDetailsView
+
+@(applyLink: String, sielDetailsView: SielDetailsView)
+@standardPage(sielDetailsView.getCaseReference + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
+
+}{
+
+  @dashboardTopNav(applyLink)
+
+  @sielLicenceDetails(sielDetailsView)
+  
+}

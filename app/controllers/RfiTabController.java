@@ -1,11 +1,17 @@
 package controllers;
 
 import com.google.inject.Inject;
+import components.dao.DraftDao;
 import components.dao.RfiResponseDao;
+import components.exceptions.DatabaseException;
 import components.service.ApplicationService;
 import components.service.ApplicationSummaryViewService;
 import components.service.RfiResponseService;
 import components.service.RfiViewService;
+import components.upload.UploadFile;
+import components.upload.UploadMultipartParser;
+import components.util.FileUtil;
+import models.enums.DraftType;
 import models.view.AddRfiResponseView;
 import models.view.ApplicationSummaryView;
 import models.view.RfiView;
@@ -14,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.rfiListTab;
@@ -31,6 +38,7 @@ public class RfiTabController extends Controller {
   private final RfiResponseDao rfiResponseDao;
   private final ApplicationService applicationService;
   private final RfiResponseService rfiResponseService;
+  private final DraftDao draftDao;
 
   @Inject
   public RfiTabController(String licenceApplicationAddress,
@@ -39,7 +47,8 @@ public class RfiTabController extends Controller {
                           RfiViewService rfiViewService,
                           RfiResponseDao rfiResponseDao,
                           ApplicationService applicationService,
-                          RfiResponseService rfiResponseService) {
+                          RfiResponseService rfiResponseService,
+                          DraftDao draftDao) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -47,11 +56,31 @@ public class RfiTabController extends Controller {
     this.rfiResponseDao = rfiResponseDao;
     this.applicationService = applicationService;
     this.rfiResponseService = rfiResponseService;
+    this.draftDao = draftDao;
   }
 
+  @BodyParser.Of(UploadMultipartParser.class)
+  public Result deleteFileById(String appId, String fileId) {
+    Form<RfiResponseForm> rfiResponseForm = formFactory.form(RfiResponseForm.class).bindFromRequest();
+    String rfiId = rfiResponseForm.data().get("rfiId");
+    try {
+      draftDao.deleteFile(rfiId, fileId, DraftType.RFI_RESPONSE);
+    } catch (DatabaseException databaseException) {
+      // Since this error could occur if the user refreshes the page, we do not return a bad request.
+      LOGGER.warn("Unable to delete file.", databaseException);
+    }
+    rfiResponseForm.discardErrors();
+    return showResponseForm(appId, rfiId, rfiResponseForm);
+  }
+
+  @BodyParser.Of(UploadMultipartParser.class)
   public Result submitResponse(String appId) {
     Form<RfiResponseForm> rfiResponseForm = formFactory.form(RfiResponseForm.class).bindFromRequest();
     String rfiId = rfiResponseForm.data().get("rfiId");
+
+    List<UploadFile> uploadFiles = FileUtil.getUploadFiles(request());
+    FileUtil.processErrors(rfiResponseForm, uploadFiles);
+
     if (alreadyHasResponse(rfiId)) {
       LOGGER.error("Response to rfiId {} and appId {} not possible since a response already exists", rfiId, appId);
       return showRfiTab(appId);
@@ -62,7 +91,7 @@ public class RfiTabController extends Controller {
       return showResponseForm(appId, rfiId, rfiResponseForm);
     } else {
       String responseMessage = rfiResponseForm.get().responseMessage;
-      rfiResponseService.insertRfiResponse(rfiId, responseMessage);
+      rfiResponseService.insertRfiResponse(rfiId, responseMessage, uploadFiles);
       flash("success", "Your message has been sent.");
       return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
     }
@@ -86,7 +115,7 @@ public class RfiTabController extends Controller {
   private Result showResponseForm(String appId, String rfiId, Form<RfiResponseForm> rfiResponseForm) {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
-    AddRfiResponseView addRfiResponseView = rfiViewService.getAddRfiResponseView(rfiId);
+    AddRfiResponseView addRfiResponseView = rfiViewService.getAddRfiResponseView(appId, rfiId);
     return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), rfiResponseForm, addRfiResponseView));
   }
 

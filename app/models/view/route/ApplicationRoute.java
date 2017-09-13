@@ -33,7 +33,11 @@ public class ApplicationRoute {
       nextSortDirection();
     } else {
       applicationSortType = sortType;
-      sortDirection = SortDirection.DESC;
+      if (applicationSortType == ApplicationSortType.CREATED_BY) {
+        sortDirection = SortDirection.ASC;
+      } else {
+        sortDirection = SortDirection.DESC;
+      }
     }
     return this;
   }

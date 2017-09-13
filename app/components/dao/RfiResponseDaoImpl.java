@@ -1,6 +1,7 @@
 package components.dao;
 
 import com.google.inject.Inject;
+import components.util.JsonUtil;
 import models.RfiResponse;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -45,7 +46,7 @@ public class RfiResponseDaoImpl implements RfiResponseDao {
           rfiResponse.getSentBy(),
           rfiResponse.getSentTimestamp(),
           rfiResponse.getMessage(),
-          rfiResponse.getAttachments());
+          JsonUtil.convertFilesToJson(rfiResponse.getAttachments()));
     }
   }
 

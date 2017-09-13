@@ -1,12 +1,17 @@
 package components.service;
 
 import com.google.inject.Inject;
+import components.dao.DraftDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
+import components.util.FileUtil;
 import components.util.TimeUtil;
+import models.File;
 import models.Rfi;
 import models.RfiResponse;
+import models.enums.DraftType;
 import models.view.AddRfiResponseView;
+import models.view.FileView;
 import models.view.RfiResponseView;
 import models.view.RfiView;
 
@@ -20,14 +25,17 @@ public class RfiViewServiceImpl implements RfiViewService {
   private final RfiDao rfiDao;
   private final RfiResponseDao rfiResponseDao;
   private final UserService userService;
+  private final DraftDao draftDao;
 
   @Inject
   public RfiViewServiceImpl(RfiDao rfiDao,
                             RfiResponseDao rfiResponseDao,
-                            UserService userService) {
+                            UserService userService,
+                            DraftDao draftDao) {
     this.rfiDao = rfiDao;
     this.rfiResponseDao = rfiResponseDao;
     this.userService = userService;
+    this.draftDao = draftDao;
   }
 
   @Override
@@ -45,25 +53,40 @@ public class RfiViewServiceImpl implements RfiViewService {
   }
 
   @Override
-  public AddRfiResponseView getAddRfiResponseView(String rfiId) {
-    return new AddRfiResponseView(TimeUtil.formatDate(Instant.now().toEpochMilli()), rfiId);
+  public AddRfiResponseView getAddRfiResponseView(String appId, String rfiId) {
+    List<File> draftAttachments = draftDao.getDraftAttachments(rfiId, DraftType.RFI_RESPONSE);
+    List<FileView> fileViews = createFileViews(appId, rfiId, draftAttachments);
+    return new AddRfiResponseView(TimeUtil.formatDate(Instant.now().toEpochMilli()), rfiId, fileViews);
+  }
+
+  private List<FileView> createFileViews(String appId, String rfiId, List<File> files) {
+    return files.stream()
+        .map(file -> createFileView(appId, rfiId, file))
+        .collect(Collectors.toList());
+  }
+
+  private FileView createFileView(String appId, String rfiId, File file) {
+    String link = controllers.routes.DownloadController.getRfiFile(rfiId, file.getFileId()).toString();
+    String deleteLink = controllers.routes.RfiTabController.deleteFileById(appId, file.getFileId()).toString();
+    return new FileView(file.getFileId(), rfiId, file.getName(), link, deleteLink, FileUtil.getReadableFileSize(file.getPath()));
   }
 
   private RfiView getRfiView(Rfi rfi) {
     String receivedOn = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
     String replyBy = getReplyBy(rfi);
-    String sender = userService.getUser(rfi.getSentBy()).getName();
-    RfiResponseView rfiResponseView = getRfiResponseView(rfi.getRfiId());
+    String sender = userService.getUsername(rfi.getSentBy());
+    RfiResponseView rfiResponseView = getRfiResponseView(rfi.getAppId(), rfi.getRfiId());
     return new RfiView(rfi.getAppId(), rfi.getRfiId(), receivedOn, replyBy, sender, rfi.getMessage(), rfiResponseView);
   }
 
-  private RfiResponseView getRfiResponseView(String rfiId) {
+  private RfiResponseView getRfiResponseView(String appId, String rfiId) {
     RfiResponse rfiResponse = rfiResponseDao.getRfiResponse(rfiId);
     if (rfiResponse != null) {
-      String sentBy = userService.getUser(rfiResponse.getSentBy()).getName();
+      String sentBy = userService.getUsername(rfiResponse.getSentBy());
       String sentAt = TimeUtil.formatDate(rfiResponse.getSentTimestamp());
       String message = rfiResponse.getMessage();
-      return new RfiResponseView(sentBy, sentAt, message);
+      List<FileView> fileViews = createFileViews(appId, rfiId, rfiResponse.getAttachments());
+      return new RfiResponseView(sentBy, sentAt, message, fileViews);
     } else {
       return null;
     }

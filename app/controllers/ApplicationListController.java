@@ -56,8 +56,9 @@ public class ApplicationListController extends Controller {
     SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
     ApplicationListTab applicationListTab = EnumUtil.parse(state.getTab(), ApplicationListTab.class, ApplicationListTab.USER);
 
-    if (applicationSortType == ApplicationSortType.CREATED_BY && applicationListTab != ApplicationListTab.COMPANY) {
+    if (applicationSortType == ApplicationSortType.CREATED_BY && applicationListTab == ApplicationListTab.USER) {
       applicationSortType = ApplicationSortType.DATE;
+      sortDirection = SortDirection.DESC;
     }
 
     List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(currentUser.getId());
