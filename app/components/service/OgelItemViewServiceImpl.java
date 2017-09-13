@@ -1,61 +1,62 @@
 package components.service;
 
-import static components.util.TimeUtil.time;
-
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.client.OgelServiceClient;
 import components.client.PermissionsServiceClient;
+import components.util.EnumUtil;
+import components.util.LicenceUtil;
 import components.util.TimeUtil;
-import models.enums.LicenceSortType;
-import models.enums.SortDirection;
-import models.view.OgelRegistrationItemView;
+import models.enums.OgelStatus;
+import models.view.OgelItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
 import uk.gov.bis.lite.ogel.api.view.OgelFullView;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItemViewService {
+public class OgelItemViewServiceImpl implements OgelItemViewService {
 
   private final PermissionsServiceClient permissionsServiceClient;
   private final CustomerServiceClient customerServiceClient;
   private final OgelServiceClient ogelServiceClient;
+  private final TestDataService testDataService;
 
   @Inject
-  public OgelRegistrationItemViewServiceImpl(PermissionsServiceClient permissionsServiceClient,
-                                             CustomerServiceClient customerServiceClient,
-                                             OgelServiceClient ogelServiceClient) {
+  public OgelItemViewServiceImpl(PermissionsServiceClient permissionsServiceClient,
+                                 CustomerServiceClient customerServiceClient,
+                                 OgelServiceClient ogelServiceClient,
+                                 TestDataService testDataService) {
     this.permissionsServiceClient = permissionsServiceClient;
     this.customerServiceClient = customerServiceClient;
     this.ogelServiceClient = ogelServiceClient;
+    this.testDataService = testDataService;
   }
 
   @Override
-  public List<OgelRegistrationItemView> getOgelRegistrationItemViews(String userId, LicenceSortType licenceSortType, SortDirection sortDirection) {
+  public List<OgelItemView> getOgelItemViews(String userId) {
     List<OgelRegistrationView> ogelRegistrationViews = permissionsServiceClient.getOgelRegistrations(userId);
     Map<String, SiteView> sites = getSites(ogelRegistrationViews);
     Map<String, CustomerView> customers = getCustomers(ogelRegistrationViews);
     Map<String, OgelFullView> ogels = getOgels(ogelRegistrationViews);
 
-    List<OgelRegistrationItemView> ogelRegistrationItemViews = ogelRegistrationViews.stream()
+    List<OgelItemView> ogelItemViews = ogelRegistrationViews.stream()
         .map(view -> {
           CustomerView customerView = customers.get(view.getCustomerId());
           SiteView siteView = sites.get(view.getSiteId());
           OgelFullView ogelFullView = ogels.get(view.getOgelType());
-          return getOgelRegistrationItemView(view, customerView, siteView, ogelFullView);
+          return getOgelItemView(view, customerView, siteView, ogelFullView);
         })
         .collect(Collectors.toList());
 
     // TODO Remove recycling of data when we have more mock data available
-    ogelRegistrationItemViews = recycle(ogelRegistrationItemViews.get(0));
+    ogelItemViews = testDataService.recycleOgelItemView(ogelItemViews.get(0));
 
-    return ogelRegistrationItemViews;
+    return ogelItemViews;
   }
 
   private Map<String, OgelFullView> getOgels(List<OgelRegistrationView> ogelRegistrationViews) {
@@ -82,24 +83,18 @@ public class OgelRegistrationItemViewServiceImpl implements OgelRegistrationItem
         .collect(Collectors.toMap(CustomerView::getCustomerId, Function.identity()));
   }
 
-  private List<OgelRegistrationItemView> recycle(OgelRegistrationItemView base) {
-    List<OgelRegistrationItemView> recycledViews = new ArrayList<>();
-    for (int i = 1; i < 22; i++) {
-      String add = i % 2 == 0 ? "_A" : "_B";
-      String time = TimeUtil.formatOgelRegistrationDate(time(2017, 2, 2 + i, 16, 20 + i));
-      recycledViews.add(new OgelRegistrationItemView(base.getRegistrationReference(), base.getDescription(), base.getLicensee() + add, base.getSite() + add, time));
-    }
-    return recycledViews;
-  }
-
-  private OgelRegistrationItemView getOgelRegistrationItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView, SiteView siteView, OgelFullView ogelFullView) {
-    long registrationDateMillis = TimeUtil.parseOgelRegistrationDate(ogelRegistrationView.getRegistrationDate());
-    String registrationDate = TimeUtil.formatDate(registrationDateMillis);
-    return new OgelRegistrationItemView(ogelRegistrationView.getRegistrationReference(),
+  private OgelItemView getOgelItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView, SiteView siteView, OgelFullView ogelFullView) {
+    long registrationTimestamp = TimeUtil.parseOgelRegistrationDate(ogelRegistrationView.getRegistrationDate());
+    String registrationDate = TimeUtil.formatDate(registrationTimestamp);
+    OgelStatus ogelStatus = EnumUtil.parse(ogelRegistrationView.getStatus().toString(), OgelStatus.class, OgelStatus.UNKNOWN);
+    String ogelStatusName = LicenceUtil.getOgelStatusName(ogelStatus);
+    return new OgelItemView(ogelRegistrationView.getRegistrationReference(),
         ogelFullView.getName(),
         customerView.getCompanyName(),
         siteView.getSiteName(),
-        registrationDate);
+        registrationDate,
+        registrationTimestamp,
+        ogelStatusName);
   }
 
 }

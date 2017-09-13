@@ -105,7 +105,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
     String createdById = application.getCreatedBy();
     User user = userService.getUser(createdById);
-    String destination = ApplicationUtil.getDestination(application);
+    String destination = ApplicationUtil.getDestinations(application.getDestinationList());
 
     ApplicationProgress applicationProgress = getApplicationProgress(maxStatusUpdate, application);
 

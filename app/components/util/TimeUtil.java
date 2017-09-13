@@ -31,10 +31,6 @@ public class TimeUtil {
     return date + " at " + time;
   }
 
-  public static String formatOgelRegistrationDate(long millis) {
-    return ogelDateFormatter.format(Instant.ofEpochMilli(millis));
-  }
-
   public static long parseOgelRegistrationDate(String ogelRegistrationDate) {
     TemporalAccessor temporalAccessor = ogelDateFormatter.parse(ogelRegistrationDate);
     return Instant.from(temporalAccessor).toEpochMilli();

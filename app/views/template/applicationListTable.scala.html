@@ -61,15 +61,15 @@
           }
           </th>
           <td>
-          @if(applicationItemView.getCaseId != null) {
+          @if(applicationItemView.getCaseReference != null) {
             <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
-            @applicationItemView.getCaseId
+            @applicationItemView.getCaseReference
             </a>
             <br>
-            @applicationItemView.getCaseDescription
+            @applicationItemView.getApplicantReference
           } else {
             <a href="#" class="bold">
-            @applicationItemView.getCaseDescription
+            @applicationItemView.getApplicantReference
             </a>
           }
           </td>

@@ -6,11 +6,13 @@ import models.enums.SortDirection;
 
 public class LicenceRoute {
 
+  private LicenceListTab licenceListTab;
   private LicenceSortType licenceSortType;
   private SortDirection sortDirection;
   private Integer page;
 
-  public LicenceRoute(LicenceSortType licenceSortType, SortDirection sortDirection, Integer page) {
+  public LicenceRoute(LicenceListTab licenceListTab, LicenceSortType licenceSortType, SortDirection sortDirection, Integer page) {
+    this.licenceListTab = licenceListTab;
     this.licenceSortType = licenceSortType;
     this.sortDirection = sortDirection;
     this.page = page;
@@ -21,7 +23,7 @@ public class LicenceRoute {
       nextSortDirection();
     } else {
       licenceSortType = sortType;
-      if (licenceSortType == LicenceSortType.DATE) {
+      if (licenceSortType == LicenceSortType.REGISTRATION_DATE || licenceSortType == LicenceSortType.EXPIRY_DATE) {
         sortDirection = SortDirection.DESC;
       } else {
         sortDirection = SortDirection.ASC;
@@ -38,6 +40,11 @@ public class LicenceRoute {
     }
   }
 
+  public LicenceRoute setLicenceListTab(LicenceListTab licenceListTab) {
+    this.licenceListTab = licenceListTab;
+    return this;
+  }
+
   public LicenceRoute setPage(int page) {
     this.page = page;
     return this;
@@ -46,7 +53,7 @@ public class LicenceRoute {
   public String toString() {
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("/licences?tab=");
-    stringBuilder.append(LicenceListTab.OGELS);
+    stringBuilder.append(licenceListTab);
     if (licenceSortType != null) {
       stringBuilder.append("&sort=");
       stringBuilder.append(licenceSortType);

@@ -1,7 +1,6 @@
 package components.util;
 
 import com.google.common.collect.Lists;
-import models.Application;
 import models.StatusUpdate;
 import models.enums.StatusType;
 import org.apache.commons.collections.CollectionUtils;
@@ -83,10 +82,10 @@ public class ApplicationUtil {
     return null;
   }
 
-  public static String getDestination(Application application) {
-    int destinationCount = application.getDestinationList().size();
+  public static String getDestinations(List<String> destinationList) {
+    int destinationCount = destinationList.size();
     if (destinationCount == 1) {
-      return application.getDestinationList().get(0);
+      return destinationList.get(0);
     } else if (destinationCount > 1) {
       return String.format("%d destinations", destinationCount);
     } else {

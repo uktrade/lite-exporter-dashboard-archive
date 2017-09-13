@@ -1,5 +1,9 @@
 package components.service;
 
+import models.view.OgelItemView;
+
+import java.util.List;
+
 public interface TestDataService {
 
   void deleteAllDataAndInsertTwoCompaniesTestData();
@@ -9,4 +13,7 @@ public interface TestDataService {
   void deleteAllData();
 
   void deleteAllDataAndInsertOtherUserApplications();
+
+  List<OgelItemView> recycleOgelItemView(OgelItemView base);
+
 }

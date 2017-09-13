@@ -26,6 +26,8 @@ import components.dao.RfiDao;
 import components.dao.RfiDaoImpl;
 import components.dao.RfiResponseDao;
 import components.dao.RfiResponseDaoImpl;
+import components.dao.SielDao;
+import components.dao.SielDaoImpl;
 import components.dao.StatusUpdateDao;
 import components.dao.StatusUpdateDaoImpl;
 import components.dao.WithdrawalRequestDao;
@@ -52,12 +54,16 @@ import components.service.OfficerViewService;
 import components.service.OfficerViewServiceImpl;
 import components.service.OgelDetailsViewService;
 import components.service.OgelDetailsViewServiceImpl;
-import components.service.OgelRegistrationItemViewService;
-import components.service.OgelRegistrationItemViewServiceImpl;
+import components.service.OgelItemViewService;
+import components.service.OgelItemViewServiceImpl;
 import components.service.RfiResponseService;
 import components.service.RfiResponseServiceImpl;
 import components.service.RfiViewService;
 import components.service.RfiViewServiceImpl;
+import components.service.SielDetailsViewService;
+import components.service.SielDetailsViewServiceImpl;
+import components.service.SielItemViewService;
+import components.service.SielItemViewServiceImpl;
 import components.service.StartUpService;
 import components.service.StartUpServiceImpl;
 import components.service.StatusItemViewService;
@@ -112,13 +118,14 @@ public class GuiceModule extends AbstractModule {
     bind(UserService.class).to(UserServiceMockImpl.class);
     bind(ApplicationItemViewService.class).to(ApplicationItemViewServiceImpl.class);
     bind(ApplicationSummaryViewService.class).to(ApplicationSummaryViewServiceImpl.class);
-    bind(OgelRegistrationItemViewService.class).to(OgelRegistrationItemViewServiceImpl.class);
+    bind(OgelItemViewService.class).to(OgelItemViewServiceImpl.class);
     bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
+    bind(SielDetailsViewService.class).to(SielDetailsViewServiceImpl.class);
     bind(OfficerViewService.class).to(OfficerViewServiceImpl.class);
     bind(AmendmentService.class).to(AmendmentServiceImpl.class);
     bind(WithdrawalRequestService.class).to(WithdrawalRequestServiceImpl.class);
     bind(RfiResponseService.class).to(RfiResponseServiceImpl.class);
-    bind(RfiResponseService.class).to(RfiResponseServiceImpl.class);
+    bind(SielItemViewService.class).to(SielItemViewServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiResponseDao.class).to(RfiResponseDaoImpl.class);
@@ -127,6 +134,7 @@ public class GuiceModule extends AbstractModule {
     bind(WithdrawalRequestDao.class).to(WithdrawalRequestDaoImpl.class);
     bind(AmendmentDao.class).to(AmendmentDaoImpl.class);
     bind(DraftDao.class).to(DraftDaoImpl.class).asEagerSingleton();
+    bind(SielDao.class).to(SielDaoImpl.class);
     // Database test data
     bind(TestDataService.class).to(TestDataServiceImpl.class);
     // Start up

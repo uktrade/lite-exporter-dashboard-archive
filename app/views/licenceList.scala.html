@@ -1,8 +1,8 @@
 @import licenceListTabs._
 @import models.enums.LicenceListTab
-@import models.view.OgelRegistrationListView
+@import models.view.LicenceListView
 @import template._
-@(applyLink: String, licenceListTab: LicenceListTab, ogelRegistrationListView: OgelRegistrationListView)
+@(applyLink: String, licenceListView: LicenceListView)
   @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
   } {
@@ -10,19 +10,23 @@
     @dashboardTopNav(applyLink)
 
     @tabs("licences-tabs", size = "large", width = "wide") {
-      @tab("SIELs", "/licences?tab=siels", licenceListTab == LicenceListTab.SIELS)
-      @tab("OGELs", "/licences?tab=ogels", licenceListTab == LicenceListTab.OGELS)
+      @tab("SIELs", licenceListView.getLicenceRoute.setLicenceListTab(LicenceListTab.SIELS).toString, licenceListView.getLicenceListTab == LicenceListTab.SIELS)
+      @tab("OGELs", licenceListView.getLicenceRoute.setLicenceListTab(LicenceListTab.OGELS).toString, licenceListView.getLicenceListTab == LicenceListTab.OGELS)
     }
 
-    @licenceListTab match {
+    @licenceListView.getLicenceListTab match {
       case LicenceListTab.SIELS => {
-        @sielList()
+        @if(licenceListView.getSielPage.getItems.isEmpty) {
+          No SIELs available.
+        } else {
+          @sielList(licenceListView)
+        }
       }
       case LicenceListTab.OGELS => {
-        @if(ogelRegistrationListView.getPage.getItems.isEmpty) {
+        @if(licenceListView.getOgelPage.getItems.isEmpty) {
           No OGELs available.
         } else {
-          @ogelList(ogelRegistrationListView)
+          @ogelList(licenceListView)
         }
       }
     }

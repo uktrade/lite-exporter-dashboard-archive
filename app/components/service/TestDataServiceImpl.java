@@ -9,14 +9,21 @@ import components.dao.ApplicationDao;
 import components.dao.DraftDao;
 import components.dao.RfiDao;
 import components.dao.RfiResponseDao;
+import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalRequestDao;
+import components.util.LicenceUtil;
+import components.util.TimeUtil;
 import models.Application;
 import models.Rfi;
 import models.RfiResponse;
+import models.Siel;
 import models.StatusUpdate;
+import models.enums.OgelStatus;
 import models.enums.RfiStatus;
+import models.enums.SielStatus;
 import models.enums.StatusType;
+import models.view.OgelItemView;
 import org.apache.commons.lang3.RandomUtils;
 
 import java.util.ArrayList;
@@ -46,6 +53,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final AmendmentDao amendmentDao;
   private final DraftDao draftDao;
+  private final SielDao sielDao;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -54,7 +62,8 @@ public class TestDataServiceImpl implements TestDataService {
                              ApplicationDao applicationDao,
                              WithdrawalRequestDao withdrawalRequestDao,
                              AmendmentDao amendmentDao,
-                             DraftDao draftDao) {
+                             DraftDao draftDao,
+                             SielDao sielDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiResponseDao = rfiResponseDao;
@@ -62,6 +71,7 @@ public class TestDataServiceImpl implements TestDataService {
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.amendmentDao = amendmentDao;
     this.draftDao = draftDao;
+    this.sielDao = sielDao;
   }
 
   @Override
@@ -71,6 +81,7 @@ public class TestDataServiceImpl implements TestDataService {
     createSecondUserApplications();
     createAdvancedApplication();
     createSecondUserApplications();
+    createSiels();
   }
 
   @Override
@@ -101,6 +112,46 @@ public class TestDataServiceImpl implements TestDataService {
     withdrawalRequestDao.deleteAllWithdrawalRequests();
     amendmentDao.deleteAllAmendments();
     draftDao.deleteAllDrafts();
+    sielDao.deleteAllSiels();
+  }
+
+  private void createSiels() {
+    for (int i = 1; i < 22; i++) {
+      String companyId = i % 2 == 0 ? COMPANY_ID_ONE : COMPANY_ID_TWO;
+      SielStatus sielStatus = SielStatus.values()[i % SielStatus.values().length];
+      List<String> destinationList = i % 2 == 0 ? Arrays.asList(GERMANY) : Arrays.asList(ICELAND, FRANCE);
+      Long expiryTimestamp = sielStatus == SielStatus.ACTIVE ? time(2017, 3, i, 15, 10) : time(2016, 3, i, 15, 10);
+      Siel siel = new Siel(random("SIE"),
+          companyId,
+          getApplicantReference(),
+          "GBSIE2017/417" + String.format("%02d", i),
+          time(2015, 3, i, 15, 10),
+          expiryTimestamp,
+          sielStatus,
+          "SAR1_SITE1",
+          destinationList);
+      sielDao.insert(siel);
+    }
+  }
+
+  @Override
+  public List<OgelItemView> recycleOgelItemView(OgelItemView base) {
+    List<OgelItemView> recycledViews = new ArrayList<>();
+    for (int i = 1; i < 22; i++) {
+      String add = i % 2 == 0 ? "_A" : "_B";
+      long registrationTimestamp = time(2017, 2, 2 + i, 16, 20 + i);
+      String registrationDate = TimeUtil.formatDateWithSlashes(registrationTimestamp);
+      OgelStatus ogelStatus = OgelStatus.values()[i % (OgelStatus.values().length - 1)];
+      String ogelStatusName = LicenceUtil.getOgelStatusName(ogelStatus);
+      OgelItemView ogelItemView = new OgelItemView(base.getRegistrationReference(),
+          base.getDescription(),
+          base.getLicensee() + add,
+          base.getSite() + add,
+          registrationDate, registrationTimestamp,
+          ogelStatusName);
+      recycledViews.add(ogelItemView);
+    }
+    return recycledViews;
   }
 
   private void createEmptyQueueApplication() {
@@ -110,7 +161,7 @@ public class TestDataServiceImpl implements TestDataService {
         time(2015, 1, 1, 1, 1),
         time(2015, 2, 1, 1, 1),
         Collections.singletonList(GERMANY),
-        getCas(),
+        getApplicantReference(),
         randomNumber("ECO"),
         OFFICER_ID);
     applicationDao.insert(application);
@@ -128,7 +179,7 @@ public class TestDataServiceImpl implements TestDataService {
           time(2017, 3, 3 + i, i, i),
           submittedTimestamp,
           Collections.singletonList(GERMANY),
-          getCas(),
+          getApplicantReference(),
           caseReference,
           OFFICER_ID);
       applicationDao.insert(app);
@@ -170,14 +221,14 @@ public class TestDataServiceImpl implements TestDataService {
           time(2017, 1, 3 + i, i, i),
           null,
           Collections.singletonList(FRANCE),
-          getCas(),
+          getApplicantReference(),
           null,
           OFFICER_ID);
       applicationDao.insert(app);
     }
   }
 
-  private String getCas() {
+  private String getApplicantReference() {
     String cas = "Purchase order: " + randomNumber("GB") + " ";
     if (Math.random() < 0.33) {
       cas = cas + "Thingyma for Deep Blue Holland";
@@ -197,7 +248,8 @@ public class TestDataServiceImpl implements TestDataService {
         APPLICANT_ID,
         time(2016, 11, 4, 13, 10),
         time(2016, 11, 4, 14, 10),
-        Arrays.asList(GERMANY, ICELAND, FRANCE), getCas(),
+        Arrays.asList(GERMANY, ICELAND, FRANCE),
+        getApplicantReference(),
         randomNumber("ECO"), OFFICER_ID);
     applicationDao.insert(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
@@ -283,7 +335,7 @@ public class TestDataServiceImpl implements TestDataService {
         APPLICANT_ID,
         time(2016, 11, 3, 3, 3),
         time(2016, 12, 4, 3, 3),
-        Collections.singletonList(FRANCE), getCas(),
+        Collections.singletonList(FRANCE), getApplicantReference(),
         randomNumber("ECO"),
         null);
     applicationDao.insert(application);
@@ -301,7 +353,7 @@ public class TestDataServiceImpl implements TestDataService {
         APPLICANT_ID,
         time(2015, 3, 3, 3, 3),
         time(2015, 4, 3, 3, 3),
-        Collections.singletonList(FRANCE), getCas(),
+        Collections.singletonList(FRANCE), getApplicantReference(),
         randomNumber("ECO"),
         OFFICER_ID);
     applicationDao.insert(application);

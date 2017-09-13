@@ -17,19 +17,20 @@ POST        /application/*appId/rfi/file/*fileId                      controller
 GET         /application/*appId/amend-application                     controllers.AmendTabController.showAmendTab(appId, action ?= null)
 POST        /application/*appId/amend-application                     controllers.AmendTabController.submitAmendment(appId)
 POST        /application/*appId/amend-application/file/*fileId        controllers.AmendTabController.deleteFileById(appId, fileId)
-GET         /application/*appId/outcome-documents                     controllers.OutcomeTabController.showOutcomeTab(appId: String)
-GET         /application/*appId                                       controllers.StatusTabController.showStatusTab(appId: String)
+GET         /application/*appId/outcome-documents                     controllers.OutcomeTabController.showOutcomeTab(appId)
+GET         /application/*appId                                       controllers.StatusTabController.showStatusTab(appId)
 
 # Licences tabs
 GET         /licences                                                 controllers.LicenceListController.licenceList(tab ?= null, sort ?= null, direction ?=null, page: Integer ?= null)
 
 # Licence details
-GET         /licence/*licenceRef                                      controllers.LicenceListController.licenceDetails(licenceRef: String)
+GET         /licence/ogel/*registrationReference                      controllers.LicenceListController.ogelDetails(registrationReference)
+GET         /licence/siel/*registrationReference                     controllers.LicenceListController.sielDetails(registrationReference)
 
 # Test data
 GET         /test                                                     controllers.TestDataController.insertDefaultTestData()
 GET         /test/                                                    controllers.TestDataController.insertDefaultTestData()
-GET         /test/*testType                                           controllers.TestDataController.insertTestData(testType: String)
+GET         /test/*testType                                           controllers.TestDataController.insertTestData(testType)
 
 POST        /upload/accept/*draftType/*relatedId                      controllers.UploadController.submitFiles(draftType, relatedId)
 POST        /upload/delete                                            controllers.UploadController.deleteFile()

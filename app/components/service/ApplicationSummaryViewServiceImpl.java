@@ -32,7 +32,7 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
     return new ApplicationSummaryView(application.getAppId(),
         application.getCaseReference(),
         application.getApplicantReference(),
-        ApplicationUtil.getDestination(application),
+        ApplicationUtil.getDestinations(application.getDestinationList()),
         getDateSubmitted(application),
         getStatus(appId),
         getOfficerName(application));

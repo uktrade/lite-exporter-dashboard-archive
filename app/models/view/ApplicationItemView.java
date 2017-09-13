@@ -13,8 +13,8 @@ public class ApplicationItemView {
   private final Long createdTimestamp;
   private final Long submittedTimestamp;
   private final String date;
-  private final String caseId;
-  private final String caseDescription;
+  private final String caseReference;
+  private final String applicantReference;
   private final ApplicationProgress applicationProgress;
   private final String applicationStatus;
   private final String applicationStatusDate;
@@ -31,8 +31,8 @@ public class ApplicationItemView {
                              Long createdTimestamp,
                              Long submittedTimestamp,
                              String date,
-                             String caseId,
-                             String caseDescription,
+                             String caseReference,
+                             String applicantReference,
                              ApplicationProgress applicationProgress,
                              String applicationStatus,
                              String applicationStatusDate,
@@ -48,8 +48,8 @@ public class ApplicationItemView {
     this.createdTimestamp = createdTimestamp;
     this.submittedTimestamp = submittedTimestamp;
     this.date = date;
-    this.caseId = caseId;
-    this.caseDescription = caseDescription;
+    this.caseReference = caseReference;
+    this.applicantReference = applicantReference;
     this.applicationProgress = applicationProgress;
     this.applicationStatus = applicationStatus;
     this.applicationStatusDate = applicationStatusDate;
@@ -94,12 +94,12 @@ public class ApplicationItemView {
     return date;
   }
 
-  public String getCaseId() {
-    return caseId;
+  public String getCaseReference() {
+    return caseReference;
   }
 
-  public String getCaseDescription() {
-    return caseDescription;
+  public String getApplicantReference() {
+    return applicantReference;
   }
 
   public ApplicationProgress getApplicationProgress() {
