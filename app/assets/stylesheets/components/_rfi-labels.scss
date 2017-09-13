@@ -5,6 +5,10 @@
 
   @include link-underline-on-hover;
 
+  a {
+    white-space: nowrap;
+  }
+
   .rfi-icon {
     margin-left: -1.7em;
   }
