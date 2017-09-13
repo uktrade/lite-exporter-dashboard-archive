@@ -116,13 +116,13 @@ public class RfiTabController extends Controller {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
     AddRfiResponseView addRfiResponseView = rfiViewService.getAddRfiResponseView(appId, rfiId);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), rfiResponseForm, addRfiResponseView));
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), rfiResponseForm, addRfiResponseView)).withHeader("Cache-Control", "no-store");
   }
 
   public Result showRfiTab(String appId) {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), null, null));
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), null, null)).withHeader("Cache-Control", "no-store");
   }
 
   private boolean alreadyHasResponse(String rfiId) {
