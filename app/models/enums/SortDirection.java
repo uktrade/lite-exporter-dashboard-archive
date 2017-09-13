@@ -15,4 +15,6 @@ public enum SortDirection {
     return text;
   }
 
+  public String toAriaString() { return text + "ending"; }
+
 }

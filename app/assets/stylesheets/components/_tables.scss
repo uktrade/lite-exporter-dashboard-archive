@@ -1,3 +1,11 @@
+th {
+  @include link-underline-on-hover;
+
+  a:visited {
+    color: $link-colour;
+  }
+}
+
 .table-align-top {
   th {
     vertical-align: bottom;
@@ -59,4 +67,30 @@
 .sort-arrow {
   display: inline-block;
   width: 0.5em;
+}
+
+th[aria-sort] a {
+  display: inline-block;
+  padding-right: 1em;
+}
+
+th[aria-sort]:after {
+  content: '\25BC';
+  color: $grey-2;
+  font-size: 0.8em;
+  transform: scaleY(0.8);
+  display: inline-block;
+  margin-left: -1em;
+  text-decoration: none;
+  pointer-events: none;
+}
+
+th[aria-sort=ascending]:after {
+  content: '\25B2';
+  color: $link-colour;
+}
+
+th[aria-sort=descending]:after {
+  content: '\25BC';
+  color: $link-colour;
 }
