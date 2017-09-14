@@ -1,0 +1,41 @@
+@import models.view.route.Route
+
+@(from: Integer, to: Integer, total: Integer, objectPlural: String, pageCount: Integer, currentPage: Integer, route: Route)
+
+@if(total != 0) {
+  <div class="pagination">
+    Showing @from &ndash; @to of @total @objectPlural
+    @if(pageCount != 1) {
+      <nav class="pagination-links" aria-label="Pagination navigation">
+        <ul>
+
+          @if(currentPage > 1) {
+            <li>
+              <a href="@route.setPage(currentPage - 1).toString">
+                Prev<span class="visually-hidden">ious page</span>
+              </a>
+            </li>
+          }
+
+          @for(i <- 1 to pageCount) {
+            <li>
+              @if(i != currentPage) {
+                <a href="@route.setPage(i).toString"><span class="visually-hidden">Go to page </span>@i</a>
+              } else {
+                <a href="@route.setPage(i).toString" aria-current="true"><span class="visually-hidden">Current page, page </span>@i</a>
+              }
+            </li>
+          }
+
+          @if(currentPage < pageCount) {
+            <li>
+              <a href="@route.setPage(currentPage + 1).toString">
+                Next<span class="visually-hidden"> page</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+  </div>
+}

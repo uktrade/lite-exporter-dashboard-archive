@@ -1,36 +1,14 @@
 @import models.view.ApplicationListView
+@import template.paginationControls
 
 @(applicationListView: ApplicationListView)
-<table>
-  <tr>
-    @if(applicationListView.getPage.getTotal != 0) {
-      <td align="left" width="100%" style="border: 0">
-        Showing @applicationListView.getPage.getFrom - @applicationListView.getPage.getTo of @applicationListView.getPage.getTotal applications
-      </td>
-    }
-    @if(applicationListView.getPage.getPageCount != 1) {
-      <td align="right" nowrap style="padding: 0;
-        margin: 0;
-        border: 0">
-        @for(i <- 1 to applicationListView.getPage.getPageCount) {
-          @if(i != applicationListView.getPage.getCurrentPage) {
-            <a href="@applicationListView.getApplicationRoute.setPage(i).toString">@i</a>
-          } else {
-            @i
-          }
-          @if(i < applicationListView.getPage.getPageCount) {
-            <span style="display: inline-block;
-              width: 1em"> </span>
-          }
-        }
-        @if(applicationListView.getPage.getCurrentPage < applicationListView.getPage.getPageCount) {
-          <span style="display: inline-block;
-            width: 1em"> </span>
-          <a href="@applicationListView.getApplicationRoute.setPage(applicationListView.getPage.getCurrentPage + 1).toString">
-            Next
-          </a>
-        }
-      </td>
-    }
-  </tr>
-</table>
+
+@paginationControls(
+  applicationListView.getPage.getFrom(),
+  applicationListView.getPage.getTo(),
+  applicationListView.getPage.getTotal(),
+  "applications",
+  applicationListView.getPage.getPageCount(),
+  applicationListView.getPage.getCurrentPage(),
+  applicationListView.getApplicationRoute()
+)

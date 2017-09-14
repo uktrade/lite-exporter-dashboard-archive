@@ -5,7 +5,7 @@ import models.enums.ApplicationProgress;
 import models.enums.ApplicationSortType;
 import models.enums.SortDirection;
 
-public class ApplicationRoute {
+public class ApplicationRoute extends Route {
 
   private ApplicationListTab applicationListTab;
   private String companyId;
