@@ -16,7 +16,7 @@
     <table class="table-font-xsmall table-align-top">
       <thead>
         <tr>
-          <th nowrap role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
+          <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
             <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.DATE).toString">
             @if(applicationListView.getApplicationProgress == ApplicationProgress.DRAFT) {
               Date created
@@ -28,7 +28,7 @@
           <th role="columnheader">
             References
           </th>
-          <th nowrap role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
+          <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
             <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.STATUS).toString">
               Application status
             </a>
@@ -37,7 +37,7 @@
             Destination
           </th>
           @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-            <th nowrap role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
               <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
                 Created by
               </a>
