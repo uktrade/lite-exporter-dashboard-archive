@@ -11,7 +11,7 @@ public class PageUtil {
   public static <T> Page<T> getPage(Integer pageRequested, List<T> completeList) {
     int total = completeList.size();
     int currentPage = getCurrentPage(pageRequested, total);
-    int pageCount = total / SIZE + 1;
+    int pageCount = (int) Math.ceil((double) total / (double) SIZE);
     int from = getFrom(currentPage);
     int to = getTo(currentPage, total);
     List<T> items = completeList.subList(from - 1, to);
