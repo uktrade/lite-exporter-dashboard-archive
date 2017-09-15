@@ -67,13 +67,11 @@
           }
           </td>
           <td>
-            <p>
               @applicationItemView.getApplicationStatus
             <br>
             @applicationItemView.getApplicationStatusDate
-            </p>
             @if(applicationItemView.getOpenRfiId != null) {
-              @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
+              @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString, "", true)
             }
           </td>
           <td>
