@@ -1,7 +1,7 @@
 .application-summary-panel {
   background: $grey-4;
-  margin-bottom: $gutter;
-  padding: $gutter-two-thirds;
+  margin: $gutter-two-thirds 0 $gutter*2 0;
+  padding: $gutter $gutter-two-thirds $gutter+$gutter-half $gutter-two-thirds;
   
   .view-application-link {
     float: right;
