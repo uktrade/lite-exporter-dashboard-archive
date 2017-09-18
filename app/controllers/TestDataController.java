@@ -1,11 +1,10 @@
 package controllers;
 
 import com.google.inject.Inject;
-import components.service.TestDataService;
-import play.mvc.Controller;
+import components.service.test.TestDataService;
 import play.mvc.Result;
 
-public class TestDataController extends Controller {
+public class TestDataController extends SamlController {
 
   private final TestDataService testDataService;
 
@@ -19,15 +18,16 @@ public class TestDataController extends Controller {
   }
 
   public Result insertTestData(String testType) {
-    session().clear();
     if ("one".equals(testType)) {
-      testDataService.deleteAllDataAndInsertOneCompanyTestData();
+      testDataService.deleteCurrentUserAndInsertOneCompany();
     } else if ("del".equals(testType)) {
-      testDataService.deleteAllData();
+      testDataService.deleteCurrentUser();
+    } else if ("del-all".equals(testType)) {
+      testDataService.deleteAllUsers();
     } else if ("other".equals(testType)) {
-      testDataService.deleteAllDataAndInsertOtherUserApplications();
+      testDataService.deleteCurrentUserAndInsertOtherUserApplications();
     } else {
-      testDataService.deleteAllDataAndInsertTwoCompaniesTestData();
+      testDataService.deleteCurrentUserAndInsertTwoCompanies();
     }
     return redirect(controllers.routes.ApplicationListController.index());
   }

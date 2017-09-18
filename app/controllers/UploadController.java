@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
-import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.util.List;
@@ -26,7 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-public class UploadController extends Controller {
+public class UploadController extends SamlController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UploadController.class);
 

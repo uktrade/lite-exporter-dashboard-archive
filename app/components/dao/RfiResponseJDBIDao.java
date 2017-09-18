@@ -31,4 +31,7 @@ public interface RfiResponseJDBIDao {
   @SqlUpdate("DELETE FROM RFI_RESPONSE")
   void truncateTable();
 
+  @SqlUpdate("DELETE FROM RFI_RESPONSE WHERE RFI_ID in (<rfiIds>)")
+  void deleteRfiResponsesByRfiIds(@BindIn("rfiIds") List<String> rfiIds);
+
 }

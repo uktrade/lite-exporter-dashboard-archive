@@ -2,6 +2,7 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.dao.ApplicationDao;
+import components.service.test.TestDataService;
 import play.inject.ApplicationLifecycle;
 
 import java.util.concurrent.CompletableFuture;
@@ -24,13 +25,14 @@ public class StartUpServiceImpl implements StartUpService {
       EXECUTOR.shutdown();
       return CompletableFuture.completedFuture(null);
     });
-    EXECUTOR.schedule(this::startUp, 2, TimeUnit.SECONDS);
+    EXECUTOR.schedule(this::startUp, 3, TimeUnit.SECONDS);
   }
 
   private void startUp() {
     long applicationCount = applicationDao.getApplicationCount();
     if (applicationCount == 0) {
-      testDataService.deleteAllDataAndInsertTwoCompaniesTestData();
+      testDataService.deleteAllUsers();
+      testDataService.deleteCurrentUserAndInsertTwoCompanies();
     }
   }
 

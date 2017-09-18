@@ -14,4 +14,6 @@ public interface SielDao {
 
   void deleteAllSiels();
 
+  void deleteSielsByCompanyIds(List<String> companyIds);
+
 }

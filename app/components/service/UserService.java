@@ -8,6 +8,6 @@ public interface UserService {
 
   User getUser(String userId);
 
-  User getCurrentUser();
+  String getCurrentUserId();
 
 }

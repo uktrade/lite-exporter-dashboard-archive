@@ -8,6 +8,7 @@ import components.service.ApplicationService;
 import components.service.ApplicationSummaryViewService;
 import components.service.RfiResponseService;
 import components.service.RfiViewService;
+import components.service.UserService;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.FileUtil;
@@ -21,13 +22,12 @@ import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.BodyParser;
-import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.rfiListTab;
 
 import java.util.List;
 
-public class RfiTabController extends Controller {
+public class RfiTabController extends SamlController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RfiTabController.class);
 
@@ -39,6 +39,7 @@ public class RfiTabController extends Controller {
   private final ApplicationService applicationService;
   private final RfiResponseService rfiResponseService;
   private final DraftDao draftDao;
+  private final UserService userService;
 
   @Inject
   public RfiTabController(String licenceApplicationAddress,
@@ -48,7 +49,7 @@ public class RfiTabController extends Controller {
                           RfiResponseDao rfiResponseDao,
                           ApplicationService applicationService,
                           RfiResponseService rfiResponseService,
-                          DraftDao draftDao) {
+                          DraftDao draftDao, UserService userService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -57,6 +58,7 @@ public class RfiTabController extends Controller {
     this.applicationService = applicationService;
     this.rfiResponseService = rfiResponseService;
     this.draftDao = draftDao;
+    this.userService = userService;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
@@ -90,8 +92,9 @@ public class RfiTabController extends Controller {
     } else if (rfiResponseForm.hasErrors()) {
       return showResponseForm(appId, rfiId, rfiResponseForm);
     } else {
+      String userId = userService.getCurrentUserId();
       String responseMessage = rfiResponseForm.get().responseMessage;
-      rfiResponseService.insertRfiResponse(rfiId, responseMessage, uploadFiles);
+      rfiResponseService.insertRfiResponse(userId, rfiId, responseMessage, uploadFiles);
       flash("success", "Your message has been sent.");
       return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
     }

@@ -2,6 +2,8 @@ package components.dao;
 
 import models.WithdrawalRequest;
 
+import java.util.List;
+
 public interface WithdrawalRequestDao {
 
   WithdrawalRequest getWithdrawalRequest(String appId);
@@ -9,5 +11,7 @@ public interface WithdrawalRequestDao {
   void insertWithdrawalRequest(WithdrawalRequest withdrawalRequest);
 
   void deleteAllWithdrawalRequests();
+
+  void deleteWithdrawalRequestsByAppIds(List<String> appIds);
 
 }

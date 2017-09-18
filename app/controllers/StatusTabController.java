@@ -7,13 +7,12 @@ import components.service.RfiViewService;
 import components.service.StatusItemViewService;
 import models.view.ApplicationSummaryView;
 import models.view.StatusItemView;
-import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.statusTrackerTab;
 
 import java.util.List;
 
-public class StatusTabController extends Controller {
+public class StatusTabController extends SamlController {
 
   private final String licenceApplicationAddress;
   private final StatusItemViewService statusItemViewService;

@@ -14,4 +14,6 @@ public interface StatusUpdateDao {
 
   void deleteAllStatusUpdates();
 
+  void deleteStatusUpdatesByAppIds(List<String> appIds);
+
 }

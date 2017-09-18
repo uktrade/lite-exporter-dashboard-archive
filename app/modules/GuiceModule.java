@@ -5,12 +5,14 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 import com.rabbitmq.client.Channel;
+import components.auth.SamlModule;
 import components.client.CustomerServiceClient;
-import components.client.CustomerServiceClientImpl;
 import components.client.OgelServiceClient;
 import components.client.OgelServiceClientImpl;
 import components.client.PermissionsServiceClient;
 import components.client.PermissionsServiceClientImpl;
+import components.client.test.TestCustomerServiceClientImpl;
+import components.client.test.TestPermissionsServiceClientImpl;
 import components.common.journey.JourneyContextParamProvider;
 import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
@@ -55,7 +57,6 @@ import components.service.OfficerViewServiceImpl;
 import components.service.OgelDetailsViewService;
 import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelItemViewService;
-import components.service.OgelItemViewServiceImpl;
 import components.service.RfiResponseService;
 import components.service.RfiResponseServiceImpl;
 import components.service.RfiViewService;
@@ -68,12 +69,13 @@ import components.service.StartUpService;
 import components.service.StartUpServiceImpl;
 import components.service.StatusItemViewService;
 import components.service.StatusItemViewServiceImpl;
-import components.service.TestDataService;
-import components.service.TestDataServiceImpl;
+import components.service.test.TestDataService;
+import components.service.test.TestDataServiceImpl;
+import components.service.test.TestUserServiceImpl;
 import components.service.UserService;
-import components.service.UserServiceMockImpl;
 import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
+import components.service.test.TestOgelItemViewServiceImpl;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
@@ -94,16 +96,21 @@ public class GuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
+
+    install(new SamlModule(configuration));
+
     // Upload
     bindConstant("uploadFolder", "upload.folder");
     // CustomerServiceClient
     bindConstant("customerServiceAddress", "customerService.address");
     bindConstant("customerServiceTimeout", "customerService.timeout");
-    bind(CustomerServiceClient.class).to(CustomerServiceClientImpl.class);
+    // TODO Test
+    bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
     // PermissionsServiceClient
     bindConstant("permissionsServiceAddress", "permissionsService.address");
     bindConstant("permissionsServiceTimeout", "permissionsService.timeout");
-    bind(PermissionsServiceClient.class).to(PermissionsServiceClientImpl.class);
+    // TODO Test
+    bind(PermissionsServiceClient.class).to(TestPermissionsServiceClientImpl.class);
     // OgelServiceClient
     bindConstant("ogelServiceAddress", "ogelService.address");
     bindConstant("ogelServiceTimeout", "ogelService.timeout");
@@ -115,10 +122,12 @@ public class GuiceModule extends AbstractModule {
     bind(ApplicationService.class).to(ApplicationServiceImpl.class);
     bind(StatusItemViewService.class).to(StatusItemViewServiceImpl.class);
     bind(RfiViewService.class).to(RfiViewServiceImpl.class);
-    bind(UserService.class).to(UserServiceMockImpl.class);
+    // TODO Test
+    bind(UserService.class).to(TestUserServiceImpl.class);
     bind(ApplicationItemViewService.class).to(ApplicationItemViewServiceImpl.class);
     bind(ApplicationSummaryViewService.class).to(ApplicationSummaryViewServiceImpl.class);
-    bind(OgelItemViewService.class).to(OgelItemViewServiceImpl.class);
+    // TODO Test
+    bind(OgelItemViewService.class).to(TestOgelItemViewServiceImpl.class);
     bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
     bind(SielDetailsViewService.class).to(SielDetailsViewServiceImpl.class);
     bind(OfficerViewService.class).to(OfficerViewServiceImpl.class);
@@ -136,6 +145,7 @@ public class GuiceModule extends AbstractModule {
     bind(DraftDao.class).to(DraftDaoImpl.class).asEagerSingleton();
     bind(SielDao.class).to(SielDaoImpl.class);
     // Database test data
+    // TODO Test
     bind(TestDataService.class).to(TestDataServiceImpl.class);
     // Start up
     bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();

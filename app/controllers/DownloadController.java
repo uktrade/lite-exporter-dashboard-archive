@@ -8,13 +8,12 @@ import models.RfiResponse;
 import models.enums.DraftType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.util.List;
 import java.util.Optional;
 
-public class DownloadController extends Controller {
+public class DownloadController extends SamlController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DownloadController.class);
 

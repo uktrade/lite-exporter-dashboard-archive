@@ -10,6 +10,7 @@ import components.service.ApplicationService;
 import components.service.ApplicationSummaryViewService;
 import components.service.OfficerViewService;
 import components.service.RfiViewService;
+import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
@@ -28,14 +29,13 @@ import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.BodyParser;
-import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.amendApplicationTab;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AmendTabController extends Controller {
+public class AmendTabController extends SamlController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AmendTabController.class);
 
@@ -48,6 +48,7 @@ public class AmendTabController extends Controller {
   private final AmendmentService amendmentService;
   private final WithdrawalRequestService withdrawalRequestService;
   private final DraftDao draftDao;
+  private final UserService userService;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -58,7 +59,8 @@ public class AmendTabController extends Controller {
                             ApplicationService applicationService,
                             AmendmentService amendmentService,
                             WithdrawalRequestService withdrawalRequestService,
-                            DraftDao draftDao) {
+                            DraftDao draftDao,
+                            UserService userService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -68,6 +70,7 @@ public class AmendTabController extends Controller {
     this.amendmentService = amendmentService;
     this.withdrawalRequestService = withdrawalRequestService;
     this.draftDao = draftDao;
+    this.userService = userService;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
@@ -104,11 +107,12 @@ public class AmendTabController extends Controller {
     } else if (amendApplicationForm.hasErrors()) {
       return showAmendTab(appId, action, amendApplicationForm);
     } else {
+      String userId = userService.getCurrentUserId();
       String message = amendApplicationForm.get().message;
       if (action == Action.AMEND) {
-        amendmentService.insertAmendment(appId, message, uploadFiles);
+        amendmentService.insertAmendment(userId, appId, message, uploadFiles);
       } else if (action == Action.WITHDRAW) {
-        withdrawalRequestService.insertWithdrawalRequest(appId, message, uploadFiles);
+        withdrawalRequestService.insertWithdrawalRequest(userId, appId, message, uploadFiles);
       }
       return showAmendTab(appId, null, null);
     }

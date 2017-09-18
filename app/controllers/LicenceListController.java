@@ -24,7 +24,6 @@ import models.view.OgelDetailsView;
 import models.view.OgelItemView;
 import models.view.SielDetailsView;
 import models.view.SielItemView;
-import play.mvc.Controller;
 import play.mvc.Result;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import views.html.licenceList;
@@ -36,7 +35,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LicenceListController extends Controller {
+public class LicenceListController extends SamlController {
 
   private static final EnumSet<LicenceSortType> OGEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.REGISTRATION_DATE, LicenceSortType.SITE);
   private static final EnumSet<LicenceSortType> SIEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.EXPIRY_DATE);
@@ -70,7 +69,7 @@ public class LicenceListController extends Controller {
   }
 
   public Result licenceList(String tab, String sort, String direction, Integer page) {
-    User currentUser = userService.getCurrentUser();
+    String userId = userService.getCurrentUserId();
 
     LicenceListState state = SessionCache.getLicenseListState(tab, sort, direction, page);
     SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.ASC);
@@ -87,10 +86,10 @@ public class LicenceListController extends Controller {
     Page<SielItemView> sielPage = null;
     int currentPage;
     if (licenceListTab == LicenceListTab.OGELS) {
-      ogelPage = getOgelPage(currentUser, licenceSortType, sortDirection, state.getPage());
+      ogelPage = getOgelPage(userId, licenceSortType, sortDirection, state.getPage());
       currentPage = ogelPage.getCurrentPage();
     } else {
-      sielPage = getSielPage(currentUser, licenceSortType, sortDirection, state.getPage());
+      sielPage = getSielPage(userId, licenceSortType, sortDirection, state.getPage());
       currentPage = sielPage.getCurrentPage();
     }
 
@@ -99,10 +98,10 @@ public class LicenceListController extends Controller {
     return ok(licenceList.render(licenceApplicationAddress, licenceListView));
   }
 
-  private Page<OgelItemView> getOgelPage(User currentUser, LicenceSortType licenceSortType, SortDirection sortDirection, Integer page) {
+  private Page<OgelItemView> getOgelPage(String userId, LicenceSortType licenceSortType, SortDirection sortDirection, Integer page) {
     List<OgelItemView> ogelItemViews;
     if (isShowLicences()) {
-      ogelItemViews = ogelItemViewService.getOgelItemViews(currentUser.getId());
+      ogelItemViews = ogelItemViewService.getOgelItemViews(userId);
     } else {
       ogelItemViews = new ArrayList<>();
     }
@@ -110,10 +109,10 @@ public class LicenceListController extends Controller {
     return PageUtil.getPage(page, ogelItemViews);
   }
 
-  private Page<SielItemView> getSielPage(User currentUser, LicenceSortType licenceSortType, SortDirection sortDirection, Integer page) {
+  private Page<SielItemView> getSielPage(String userId, LicenceSortType licenceSortType, SortDirection sortDirection, Integer page) {
     List<SielItemView> sielItemViews;
     if (isShowLicences()) {
-      sielItemViews = sielItemViewService.getSielItemViews(currentUser.getId());
+      sielItemViews = sielItemViewService.getSielItemViews(userId);
     } else {
       sielItemViews = new ArrayList<>();
     }
@@ -122,8 +121,8 @@ public class LicenceListController extends Controller {
   }
 
   public Result ogelDetails(String registrationReference) {
-    User currentUser = userService.getCurrentUser();
-    OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(currentUser.getId(), registrationReference);
+    String userId = userService.getCurrentUserId();
+    OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(userId, registrationReference);
     return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView));
   }
 
@@ -134,8 +133,8 @@ public class LicenceListController extends Controller {
 
   // This is a hack for testing. We only show OGELS or SIELS if there is at least one application.
   private boolean isShowLicences() {
-    User currentUser = userService.getCurrentUser();
-    List<String> customerViews = customerServiceClient.getCustomers(currentUser.getId()).stream()
+    String userId = userService.getCurrentUserId();
+    List<String> customerViews = customerServiceClient.getCustomers(userId).stream()
         .map(CustomerView::getCustomerId)
         .collect(Collectors.toList());
     return !applicationDao.getApplications(customerViews).isEmpty();

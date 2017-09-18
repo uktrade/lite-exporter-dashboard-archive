@@ -5,9 +5,12 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
+import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
+import org.skife.jdbi.v2.unstable.BindIn;
 
 import java.util.List;
 
+@UseStringTemplate3StatementLocator
 public interface AmendmentJDBIDao {
 
   @RegisterMapper(AmendmentRSMapper.class)
@@ -25,5 +28,8 @@ public interface AmendmentJDBIDao {
 
   @SqlUpdate("DELETE FROM AMENDMENT")
   void truncateTable();
+
+  @SqlUpdate("DELETE FROM AMENDMENT WHERE APP_ID in (<appIds>)")
+  void deleteAmendmentsByAppIds(@BindIn("appIds") List<String> appIds);
 
 }

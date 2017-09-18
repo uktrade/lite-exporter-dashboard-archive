@@ -16,23 +16,21 @@ import java.util.List;
 
 public class RfiResponseServiceImpl implements RfiResponseService {
 
-  private final UserService userService;
   private final RfiResponseDao rfiResponseDao;
   private final DraftDao draftDao;
   private final MessagePublisher messagePublisher;
 
   @Inject
-  public RfiResponseServiceImpl(UserService userService, RfiResponseDao rfiResponseDao, DraftDao draftDao, MessagePublisher messagePublisher) {
-    this.userService = userService;
+  public RfiResponseServiceImpl(RfiResponseDao rfiResponseDao, DraftDao draftDao, MessagePublisher messagePublisher) {
     this.rfiResponseDao = rfiResponseDao;
     this.draftDao = draftDao;
     this.messagePublisher = messagePublisher;
   }
 
   @Override
-  public void insertRfiResponse(String rfiId, String message, List<UploadFile> files) {
+  public void insertRfiResponse(String sentBy, String rfiId, String message, List<UploadFile> files) {
     List<File> attachments = getAttachments(rfiId, files);
-    RfiResponse rfiResponse = new RfiResponse(rfiId, userService.getCurrentUser().getId(), Instant.now().toEpochMilli(), message, attachments);
+    RfiResponse rfiResponse = new RfiResponse(rfiId, sentBy, Instant.now().toEpochMilli(), message, attachments);
     rfiResponseDao.insertRfiResponse(rfiResponse);
     draftDao.deleteDraft(rfiId, DraftType.RFI_RESPONSE);
     messagePublisher.sendMessage(RoutingKey.RFI_REPLY, rfiResponse);

@@ -6,6 +6,8 @@ import models.WithdrawalRequest;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import java.util.List;
+
 public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
 
   private final DBI dbi;
@@ -44,6 +46,16 @@ public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
     try (final Handle handle = dbi.open()) {
       WithdrawalRequestJDBIDao withdrawalRequestJDBIDao = handle.attach(WithdrawalRequestJDBIDao.class);
       withdrawalRequestJDBIDao.truncateTable();
+    }
+  }
+
+  @Override
+  public void deleteWithdrawalRequestsByAppIds(List<String> appIds) {
+    if (!appIds.isEmpty()) {
+      try (final Handle handle = dbi.open()) {
+        WithdrawalRequestJDBIDao withdrawalRequestJDBIDao = handle.attach(WithdrawalRequestJDBIDao.class);
+        withdrawalRequestJDBIDao.deleteWithdrawalRequestsByAppIds(appIds);
+      }
     }
   }
 
