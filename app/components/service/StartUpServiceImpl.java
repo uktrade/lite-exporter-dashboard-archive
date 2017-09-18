@@ -25,13 +25,14 @@ public class StartUpServiceImpl implements StartUpService {
       EXECUTOR.shutdown();
       return CompletableFuture.completedFuture(null);
     });
-    EXECUTOR.schedule(this::startUp, 2, TimeUnit.SECONDS);
+    EXECUTOR.schedule(this::startUp, 3, TimeUnit.SECONDS);
   }
 
   private void startUp() {
     long applicationCount = applicationDao.getApplicationCount();
     if (applicationCount == 0) {
-      testDataService.deleteAllDataAndInsertTwoCompaniesTestData();
+      testDataService.deleteAllUsers();
+      testDataService.deleteCurrentUserAndInsertTwoCompanies();
     }
   }
 

@@ -19,13 +19,15 @@ public class TestDataController extends SamlController {
 
   public Result insertTestData(String testType) {
     if ("one".equals(testType)) {
-      testDataService.deleteAllDataAndInsertOneCompanyTestData();
+      testDataService.deleteCurrentUserAndInsertOneCompany();
     } else if ("del".equals(testType)) {
-      testDataService.deleteAllData();
+      testDataService.deleteCurrentUser();
+    } else if ("del-all".equals(testType)) {
+      testDataService.deleteAllUsers();
     } else if ("other".equals(testType)) {
-      testDataService.deleteAllDataAndInsertOtherUserApplications();
+      testDataService.deleteCurrentUserAndInsertOtherUserApplications();
     } else {
-      testDataService.deleteAllDataAndInsertTwoCompaniesTestData();
+      testDataService.deleteCurrentUserAndInsertTwoCompanies();
     }
     return redirect(controllers.routes.ApplicationListController.index());
   }

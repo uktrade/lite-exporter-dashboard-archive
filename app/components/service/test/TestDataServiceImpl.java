@@ -5,6 +5,7 @@ import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
+import components.common.auth.SpireAuthManager;
 import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
 import components.dao.DraftDao;
@@ -58,6 +59,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final SielDao sielDao;
   private final UserService userService;
   private final CustomerServiceClient customerServiceClient;
+  private final SpireAuthManager spireAuthManager;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -69,7 +71,8 @@ public class TestDataServiceImpl implements TestDataService {
                              DraftDao draftDao,
                              SielDao sielDao,
                              UserService userService,
-                             CustomerServiceClient customerServiceClient) {
+                             CustomerServiceClient customerServiceClient,
+                             SpireAuthManager spireAuthManager) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiResponseDao = rfiResponseDao;
@@ -80,11 +83,12 @@ public class TestDataServiceImpl implements TestDataService {
     this.sielDao = sielDao;
     this.userService = userService;
     this.customerServiceClient = customerServiceClient;
+    this.spireAuthManager = spireAuthManager;
   }
 
   @Override
-  public void deleteAllDataAndInsertTwoCompaniesTestData() {
-    delete();
+  public void deleteCurrentUserAndInsertTwoCompanies() {
+    deleteCurrent();
     createApplications();
     createSecondUserApplications();
     createAdvancedApplication();
@@ -93,8 +97,8 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   @Override
-  public void deleteAllDataAndInsertOneCompanyTestData() {
-    delete();
+  public void deleteCurrentUserAndInsertOneCompany() {
+    deleteCurrent();
     createCompleteApplication();
     createNoCaseOfficerApplication();
     createAdvancedApplication();
@@ -103,17 +107,22 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   @Override
-  public void deleteAllData() {
+  public void deleteCurrentUser() {
+    deleteCurrent();
+  }
+
+  @Override
+  public void deleteAllUsers() {
     deleteAll();
   }
 
   @Override
-  public void deleteAllDataAndInsertOtherUserApplications() {
-    delete();
+  public void deleteCurrentUserAndInsertOtherUserApplications() {
+    deleteCurrent();
     createSecondUserApplications();
   }
 
-  private void delete() {
+  private void deleteCurrent() {
     List<String> customerIds = customerServiceClient.getCustomers(userId()).stream()
         .map(CustomerView::getCustomerId)
         .collect(Collectors.toList());
@@ -405,9 +414,15 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private String userId() {
-    return userService.getCurrentUserId();
+    String userId;
+    if (!spireAuthManager.getAuthInfoFromContext().isAuthenticated()) {
+      userId = APPLICANT_ID;
+    } else {
+      userId = userService.getCurrentUserId();
+    }
+    return userId;
   }
-  
+
   public static String wrapCustomerId(String userId, String customerId) {
     return userId + "_" + customerId;
   }
