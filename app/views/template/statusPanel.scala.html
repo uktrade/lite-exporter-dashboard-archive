@@ -8,26 +8,26 @@
   <ul>
     <li @if(applicationListView.getApplicationProgress == null) {
       class="active" }>
-    <a href="@applicationListView.getApplicationRoute.setApplicationProgress(null).toString">
+    <a href="@applicationListView.getRoute.setApplicationProgress(null).toString">
       All (@applicationListView.getAllCount)
     </a>
     </li>
     <li @if(applicationListView.getApplicationProgress == ApplicationProgress.DRAFT) {
       class="active"}>
-      <a href="@applicationListView.getApplicationRoute.setApplicationProgress(ApplicationProgress.DRAFT).toString">
+      <a href="@applicationListView.getRoute.setApplicationProgress(ApplicationProgress.DRAFT).toString">
         Draft (@applicationListView.getDraftCount)
       </a>
     </li>
     <li @if(applicationListView.getApplicationProgress == ApplicationProgress.CURRENT) {
       class="active"}>
-      <a href="@applicationListView.getApplicationRoute.setApplicationProgress(ApplicationProgress.CURRENT).toString">
+      <a href="@applicationListView.getRoute.setApplicationProgress(ApplicationProgress.CURRENT).toString">
         Current (@applicationListView.getCurrentCount)
       </a>
     </li>
     <li
       @if(applicationListView.getApplicationProgress == ApplicationProgress.COMPLETED) {
         class="active"}>
-      <a href="@applicationListView.getApplicationRoute.setApplicationProgress(ApplicationProgress.COMPLETED).toString">
+      <a href="@applicationListView.getRoute.setApplicationProgress(ApplicationProgress.COMPLETED).toString">
         Completed (@applicationListView.getCompletedCount)
       </a>
     </li>

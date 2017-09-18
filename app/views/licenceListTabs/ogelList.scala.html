@@ -5,11 +5,11 @@
 @(licenceListView: LicenceListView)
 
 @ariaSortAttr(licenceSortType: LicenceSortType) = {
-  @if(licenceListView.getLicenceSortType == licenceSortType) {
-    aria-sort="@licenceListView.getSortDirection.toAriaString()"
-  } else {
-    aria-sort="none"
-  }
+@if(licenceListView.getLicenceSortType == licenceSortType) {
+  aria-sort="@licenceListView.getSortDirection.toAriaString()"
+} else {
+  aria-sort="none"
+}
 }
 
 <div class="scrollable-table">
@@ -17,27 +17,27 @@
     <thead>
       <tr>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.STATUS)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.STATUS).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.STATUS).toString">
             Status
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.REFERENCE)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.REFERENCE).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.REFERENCE).toString">
             Reference
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.LICENSEE)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.LICENSEE).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.LICENSEE).toString">
             Licensee
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.SITE)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.SITE).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.SITE).toString">
             Site
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.REGISTRATION_DATE)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.REGISTRATION_DATE).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.REGISTRATION_DATE).toString">
             Registration date
           </a>
         </th>
@@ -52,7 +52,7 @@
         <th scope="row">
           <a href="@routes.LicenceListController.ogelDetails(ogelItemView.getRegistrationReference)" class="bold">@ogelItemView.getRegistrationReference</a>
           <div class="row-header-secondary-info">
-            @ogelItemView.getDescription
+          @ogelItemView.getDescription
           </div>
         </th>
         <td>
@@ -70,4 +70,4 @@
   </table>
 </div>
 
-@licenceListFooter(licenceListView, licenceListView.getOgelPage)
+@paginationControls(licenceListView, licenceListView.getOgelPage, "licences")

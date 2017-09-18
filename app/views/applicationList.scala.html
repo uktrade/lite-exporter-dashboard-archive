@@ -12,11 +12,11 @@
 
   @tabs("application-list-tabs", size = "large", width = "wide") {
     @tab("Created by you",
-      applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.USER).toString,
+      applicationListView.getRoute.setApplicationListTab(ApplicationListTab.USER).toString,
       applicationListView.getApplicationListTab == ApplicationListTab.USER)
     @if(applicationListView.isShowCompanyTab) {
       @tab("Created by your company",
-        applicationListView.getApplicationRoute.setApplicationListTab(ApplicationListTab.COMPANY).toString,
+        applicationListView.getRoute.setApplicationListTab(ApplicationListTab.COMPANY).toString,
         applicationListView.getApplicationListTab == ApplicationListTab.COMPANY)
     }
   }
@@ -44,7 +44,7 @@
     }
 
     <p>
-    @applicationListFooter(applicationListView)
+    @paginationControls(applicationListView, applicationListView.getPage, "applications")
     </p>
 
   }

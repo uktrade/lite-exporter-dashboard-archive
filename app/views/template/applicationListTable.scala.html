@@ -5,7 +5,7 @@
 
 @ariaSortAttr(applicationSortType: ApplicationSortType) = {
   @if(applicationListView.getApplicationSortType == applicationSortType) {
-    aria-sort="@applicationListView.getSortDirection.toAriaString()"
+    aria-sort="@applicationListView.getSortDirection.toAriaString"
   } else {
     aria-sort="none"
   }
@@ -17,7 +17,7 @@
       <thead>
         <tr>
           <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
-            <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.DATE).toString">
+            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DATE).toString">
             @if(applicationListView.getApplicationProgress == ApplicationProgress.DRAFT) {
               Date created
             } else {
@@ -29,7 +29,7 @@
             References
           </th>
           <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
-            <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.STATUS).toString">
+            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.STATUS).toString">
               Application status
             </a>
           </th>
@@ -38,7 +38,7 @@
           </th>
           @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
             <th role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
-              <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
                 Created by
               </a>
             </th>

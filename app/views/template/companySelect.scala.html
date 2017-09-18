@@ -3,7 +3,7 @@
 @(applicationListView: ApplicationListView)
 <div class="form-group">
   <label class="form-label left-label" for="company">Filter by company name</label>
-  <form action="@applicationListView.getApplicationRoute.setCompanyId(null).toString" method="GET">
+  <form action="@applicationListView.getRoute.setCompanyId(null).toString" method="GET">
     <select class="form-control" id="company" name="company" onChange="this.form.submit()">
       <option @if(applicationListView.getCompanyId == null) { selected="" }
       value="all">All companies

@@ -5,7 +5,7 @@
 
 @ariaSortAttr(licenceSortType: LicenceSortType) = {
   @if(licenceListView.getLicenceSortType == licenceSortType) {
-    aria-sort="@licenceListView.getSortDirection.toAriaString()"
+    aria-sort="@licenceListView.getSortDirection.toAriaString"
   } else {
     aria-sort="none"
   }
@@ -16,22 +16,22 @@
     <thead>
       <tr>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.STATUS)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.STATUS).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.STATUS).toString">
             Status
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.REFERENCE)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.REFERENCE).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.REFERENCE).toString">
             Reference
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.LICENSEE)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.LICENSEE).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.LICENSEE).toString">
             Licensee
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.EXPIRY_DATE)>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.EXPIRY_DATE).toString">
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.EXPIRY_DATE).toString">
             Expiry date
           </a>
         </th>
@@ -60,4 +60,4 @@
   </table>
 </div>
 
-@licenceListFooter(licenceListView, licenceListView.getSielPage)
+@paginationControls(licenceListView, licenceListView.getSielPage, "licences")

@@ -12,8 +12,8 @@
     <div class="heading-medium dashboard-section-heading">Licences</div>
 
     @tabs("licences-tabs", size = "large", width = "wide") {
-      @tab("SIELs", licenceListView.getLicenceRoute.setLicenceListTab(LicenceListTab.SIELS).toString, licenceListView.getLicenceListTab == LicenceListTab.SIELS)
-      @tab("OGELs", licenceListView.getLicenceRoute.setLicenceListTab(LicenceListTab.OGELS).toString, licenceListView.getLicenceListTab == LicenceListTab.OGELS)
+      @tab("SIELs", licenceListView.getRoute.setLicenceListTab(LicenceListTab.SIELS).toString, licenceListView.getLicenceListTab == LicenceListTab.SIELS)
+      @tab("OGELs", licenceListView.getRoute.setLicenceListTab(LicenceListTab.OGELS).toString, licenceListView.getLicenceListTab == LicenceListTab.OGELS)
     }
 
     @licenceListView.getLicenceListTab match {
