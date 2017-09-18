@@ -2,49 +2,38 @@
 @import models.view.LicenceListView
 @import template._
 @(licenceListView: LicenceListView)
+
+@ariaSortAttr(licenceSortType: LicenceSortType) = {
+  @if(licenceListView.getLicenceSortType == licenceSortType) {
+    aria-sort="@licenceListView.getSortDirection.toAriaString"
+  } else {
+    aria-sort="none"
+  }
+}
+
 <div class="scrollable-table">
   <table class="table-font-xsmall table-align-top">
     <thead>
       <tr>
-        <th nowrap>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.STATUS).toString">
+        <th role="columnheader" @ariaSortAttr(LicenceSortType.STATUS)>
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.STATUS).toString">
             Status
           </a>
-          @if(licenceListView.getLicenceSortType == LicenceSortType.STATUS) {
-            @sortArrow(licenceListView.getSortDirection)
-          } else {
-            @sortArrow(null)
-          }
         </th>
-        <th nowrap>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.REFERENCE).toString">
+        <th role="columnheader" @ariaSortAttr(LicenceSortType.REFERENCE)>
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.REFERENCE).toString">
             Reference
           </a>
-          @if(licenceListView.getLicenceSortType == LicenceSortType.REFERENCE) {
-            @sortArrow(licenceListView.getSortDirection)
-          } else {
-            @sortArrow(null)
-          }
         </th>
-        <th nowrap>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.LICENSEE).toString">
+        <th role="columnheader" @ariaSortAttr(LicenceSortType.LICENSEE)>
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.LICENSEE).toString">
             Licensee
           </a>
-          @if(licenceListView.getLicenceSortType == LicenceSortType.LICENSEE) {
-            @sortArrow(licenceListView.getSortDirection)
-          } else {
-            @sortArrow(null)
-          }
         </th>
-        <th nowrap>
-          <a href="@licenceListView.getLicenceRoute.nextSort(LicenceSortType.EXPIRY_DATE).toString">
+        <th role="columnheader" @ariaSortAttr(LicenceSortType.EXPIRY_DATE)>
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.EXPIRY_DATE).toString">
             Expiry date
           </a>
-          @if(licenceListView.getLicenceSortType == LicenceSortType.EXPIRY_DATE) {
-            @sortArrow(licenceListView.getSortDirection)
-          } else {
-            @sortArrow(null)
-          }
         </th>
       </tr>
     </thead>
@@ -69,9 +58,6 @@
     }
     </tbody>
   </table>
-
-  <p></p>
-
-  @ogelListFooter(licenceListView, licenceListView.getSielPage)
-
 </div>
+
+@paginationControls(licenceListView, licenceListView.getSielPage, "licences")

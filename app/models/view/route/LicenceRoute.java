@@ -4,7 +4,7 @@ import models.enums.LicenceListTab;
 import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 
-public class LicenceRoute {
+public class LicenceRoute implements Route {
 
   private LicenceListTab licenceListTab;
   private LicenceSortType licenceSortType;

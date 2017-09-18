@@ -6,7 +6,7 @@ import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.route.LicenceRoute;
 
-public class LicenceListView {
+public class LicenceListView implements ListView {
 
   private final LicenceListTab licenceListTab;
   private final LicenceSortType licenceSortType;
@@ -44,7 +44,7 @@ public class LicenceListView {
     return licenceListTab;
   }
 
-  public LicenceRoute getLicenceRoute() {
+  public LicenceRoute getRoute() {
     return new LicenceRoute(licenceListTab, licenceSortType, sortDirection, currentPage);
   }
 

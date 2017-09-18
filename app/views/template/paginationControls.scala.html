@@ -1,0 +1,43 @@
+@import models.Page
+@import models.view.ListView
+
+@(listView: ListView, page: Page[_], objectPlural: String)
+
+@if(page.getTotal != 0) {
+  <div class="pagination">
+    Showing @page.getFrom &ndash; @page.getTo of @page.getTotal @objectPlural
+    @if(page.getPageCount != 1) {
+      <nav class="pagination-links" aria-label="Pagination navigation">
+        <ul>
+
+          @if(page.getCurrentPage > 1) {
+            <li>
+              <a href="@listView.getRoute.setPage(page.getCurrentPage - 1).toString">
+                Prev<span class="visually-hidden">ious page</span>
+              </a>
+            </li>
+          }
+
+          @for(i <- 1 to page.getPageCount) {
+            <li>
+            @if(i != page.getCurrentPage) {
+              <a href="@listView.getRoute.setPage(i).toString"><span class="visually-hidden">Go to page </span>@i</a>
+            } else {
+              <a href="@listView.getRoute.setPage(i).toString" aria-current="true"><span class="visually-hidden">
+                Current page, page </span>@i</a>
+            }
+            </li>
+          }
+
+          @if(page.getCurrentPage < page.getPageCount) {
+            <li>
+              <a href="@listView.getRoute.setPage(page.getCurrentPage + 1).toString">
+                Next<span class="visually-hidden"> page</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+  </div>
+}

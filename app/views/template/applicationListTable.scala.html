@@ -3,51 +3,44 @@
 @import template._
 @(applicationListView: ApplicationListView)
 
+@ariaSortAttr(applicationSortType: ApplicationSortType) = {
+  @if(applicationListView.getApplicationSortType == applicationSortType) {
+    aria-sort="@applicationListView.getSortDirection.toAriaString"
+  } else {
+    aria-sort="none"
+  }
+}
+
 @if(!applicationListView.getPage.getItems.isEmpty) {
   <div class="scrollable-table">
     <table class="table-font-xsmall table-align-top">
       <thead>
         <tr>
-          <th nowrap>
-            <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.DATE).toString">
+          <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
+            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DATE).toString">
             @if(applicationListView.getApplicationProgress == ApplicationProgress.DRAFT) {
               Date created
             } else {
               Date submitted
             }
             </a>
-            @if(applicationListView.getApplicationSortType == ApplicationSortType.DATE) {
-              @sortArrow(applicationListView.getSortDirection)
-            } else {
-              @sortArrow(null)
-            }
           </th>
-          <th>
+          <th role="columnheader">
             References
           </th>
-          <th nowrap>
-            <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.STATUS).toString">
+          <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
+            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.STATUS).toString">
               Application status
             </a>
-            @if(applicationListView.getApplicationSortType == ApplicationSortType.STATUS) {
-              @sortArrow(applicationListView.getSortDirection)
-            } else {
-              @sortArrow(null)
-            }
           </th>
-          <th>
+          <th role="columnheader">
             Destination
           </th>
           @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-            <th nowrap>
-              <a href="@applicationListView.getApplicationRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
                 Created by
               </a>
-              @if(applicationListView.getApplicationSortType == ApplicationSortType.CREATED_BY) {
-                @sortArrow(applicationListView.getSortDirection)
-              } else {
-                @sortArrow(null)
-              }
             </th>
           }
         </tr>
@@ -74,13 +67,11 @@
           }
           </td>
           <td>
-            <p>
               @applicationItemView.getApplicationStatus
             <br>
             @applicationItemView.getApplicationStatusDate
-            </p>
             @if(applicationItemView.getOpenRfiId != null) {
-              @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString)
+              @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString, "", true)
             }
           </td>
           <td>

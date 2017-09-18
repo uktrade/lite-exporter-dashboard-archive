@@ -1,17 +1,17 @@
 .table-filters {
   @include core-19();
-  background: $panel-colour;
-  padding: $gutter-half;
+  border: 2px solid $panel-colour;
+  padding: $gutter-one-third $gutter-half;
   margin-bottom: $gutter;
 
   @include media(tablet) {
     ul {
       display: inline-block;
-      margin-left: 6em;
+      margin-left: 5.5em;
 
       li {
         display: inline-block;
-        margin-right: 2em;
+        margin-right: 1.5em;
       }
     }
   }
@@ -38,7 +38,6 @@
 
   li.active a {
     color: $text-colour;
-    font-weight: bold;
   }
 
   li.active a:hover {

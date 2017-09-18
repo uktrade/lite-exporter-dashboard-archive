@@ -25,10 +25,10 @@
 
 @action match {
   case Action.AMEND => {
-    @amendApplicationPanel(appId, "TODO: Text for this heading", form, addAmendmentView, action)
+    @amendApplicationPanel(appId, "Please provide details of the amendment you would like to make to the application", form, addAmendmentView, action)
   }
   case Action.WITHDRAW => {
-    @amendApplicationPanel(appId, "Please provide a reason to withdraw the application.", form, addAmendmentView, action)
+    @amendApplicationPanel(appId, "Please provide your reason for withdrawing the application", form, addAmendmentView, action)
   }
   case default => {
     <hr/>

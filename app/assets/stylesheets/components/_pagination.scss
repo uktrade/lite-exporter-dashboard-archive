@@ -1,0 +1,40 @@
+.pagination {
+  margin-top: $gutter;
+}
+
+nav.pagination-links {
+  @include media(tablet) {
+    float: right;
+  }
+
+  ul {
+    list-style-type: none;
+
+    li {
+      display: inline-block;
+
+      @include link-underline-on-hover;
+
+      a {
+        padding: 0 0.25em;
+
+        &:visited {
+          color: $link-colour;
+        }
+
+        &[aria-current=true] {
+          color: $black;
+          text-decoration: none;
+        }
+      }
+
+      &:first-child a {
+        padding-left: 0;
+      }
+
+      &:last-child a {
+        padding-right: 0;
+      }
+    }
+  }
+}

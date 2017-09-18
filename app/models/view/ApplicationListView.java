@@ -9,7 +9,7 @@ import models.view.route.ApplicationRoute;
 
 import java.util.List;
 
-public class ApplicationListView {
+public class ApplicationListView implements ListView {
 
   private final ApplicationListTab applicationListTab;
   private final String companyId;
@@ -98,7 +98,7 @@ public class ApplicationListView {
     return page;
   }
 
-  public ApplicationRoute getApplicationRoute() {
+  public ApplicationRoute getRoute() {
     return new ApplicationRoute(applicationListTab, companyId, applicationSortType, sortDirection, applicationProgress, page.getCurrentPage());
   }
 
