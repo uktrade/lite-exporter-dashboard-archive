@@ -24,17 +24,14 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
   private final PermissionsServiceClient permissionsServiceClient;
   private final CustomerServiceClient customerServiceClient;
   private final OgelServiceClient ogelServiceClient;
-  private final TestDataService testDataService;
 
   @Inject
   public OgelItemViewServiceImpl(PermissionsServiceClient permissionsServiceClient,
                                  CustomerServiceClient customerServiceClient,
-                                 OgelServiceClient ogelServiceClient,
-                                 TestDataService testDataService) {
+                                 OgelServiceClient ogelServiceClient) {
     this.permissionsServiceClient = permissionsServiceClient;
     this.customerServiceClient = customerServiceClient;
     this.ogelServiceClient = ogelServiceClient;
-    this.testDataService = testDataService;
   }
 
   @Override
@@ -44,7 +41,7 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
     Map<String, CustomerView> customers = getCustomers(ogelRegistrationViews);
     Map<String, OgelFullView> ogels = getOgels(ogelRegistrationViews);
 
-    List<OgelItemView> ogelItemViews = ogelRegistrationViews.stream()
+    return ogelRegistrationViews.stream()
         .map(view -> {
           CustomerView customerView = customers.get(view.getCustomerId());
           SiteView siteView = sites.get(view.getSiteId());
@@ -52,11 +49,6 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
           return getOgelItemView(view, customerView, siteView, ogelFullView);
         })
         .collect(Collectors.toList());
-
-    // TODO Remove recycling of data when we have more mock data available
-    ogelItemViews = testDataService.recycleOgelItemView(ogelItemViews.get(0));
-
-    return ogelItemViews;
   }
 
   private Map<String, OgelFullView> getOgels(List<OgelRegistrationView> ogelRegistrationViews) {

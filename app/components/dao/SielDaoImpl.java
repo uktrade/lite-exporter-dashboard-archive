@@ -62,4 +62,14 @@ public class SielDaoImpl implements SielDao {
     }
   }
 
+  @Override
+  public void deleteSielsByCompanyIds(List<String> companyIds) {
+    if (!companyIds.isEmpty()) {
+      try (final Handle handle = dbi.open()) {
+        SielJDBIDao sielJDBIDao = handle.attach(SielJDBIDao.class);
+        sielJDBIDao.deleteSielsByCompanyIds(companyIds);
+      }
+    }
+  }
+
 }

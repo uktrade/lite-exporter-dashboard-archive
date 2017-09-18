@@ -16,4 +16,6 @@ public interface ApplicationDao {
 
   void deleteAllApplications();
 
+  void deleteApplication(String appId);
+
 }

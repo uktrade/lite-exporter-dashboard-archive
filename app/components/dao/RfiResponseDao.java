@@ -14,4 +14,6 @@ public interface RfiResponseDao {
 
   void deleteAllRfiResponses();
 
+  void deleteRfiResponsesByRfiIds(List<String> rfiIds);
+
 }

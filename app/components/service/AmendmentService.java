@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface AmendmentService {
 
-  void insertAmendment(String appId, String message, List<UploadFile> files);
+  void insertAmendment(String sentBy, String appId, String message, List<UploadFile> files);
 
 }

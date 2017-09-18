@@ -18,24 +18,21 @@ import java.util.List;
 
 public class AmendmentServiceImpl implements AmendmentService {
 
-  private final UserService userService;
   private final AmendmentDao amendmentDao;
   private final MessagePublisher messagePublisher;
   private final DraftDao draftDao;
 
   @Inject
-  public AmendmentServiceImpl(UserService userService, AmendmentDao amendmentDao, MessagePublisher messagePublisher, DraftDao draftDao) {
-    this.userService = userService;
+  public AmendmentServiceImpl(AmendmentDao amendmentDao, MessagePublisher messagePublisher, DraftDao draftDao) {
     this.amendmentDao = amendmentDao;
     this.messagePublisher = messagePublisher;
     this.draftDao = draftDao;
   }
 
   @Override
-  public void insertAmendment(String appId, String message, List<UploadFile> files) {
-    User currentUser = userService.getCurrentUser();
+  public void insertAmendment(String sentBy, String appId, String message, List<UploadFile> files) {
     List<File> attachments = getAttachments(appId, files);
-    Amendment amendment = new Amendment(RandomUtil.random("AME"), appId, Instant.now().toEpochMilli(), currentUser.getId(), message, attachments);
+    Amendment amendment = new Amendment(RandomUtil.random("AME"), appId, Instant.now().toEpochMilli(), sentBy, message, attachments);
     amendmentDao.insertAmendment(amendment);
     draftDao.deleteDraft(appId, DraftType.AMENDMENT);
     messagePublisher.sendMessage(RoutingKey.AMEND_CREATE, amendment);

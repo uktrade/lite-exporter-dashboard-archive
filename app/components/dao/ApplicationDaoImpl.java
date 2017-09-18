@@ -70,4 +70,13 @@ public class ApplicationDaoImpl implements ApplicationDao {
     }
   }
 
+
+  @Override
+  public void deleteApplication(String appId) {
+    try (final Handle handle = dbi.open()) {
+      ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
+      applicationJDBIDao.delete(appId);
+    }
+  }
+
 }

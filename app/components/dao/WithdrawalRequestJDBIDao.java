@@ -5,7 +5,12 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
+import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
+import org.skife.jdbi.v2.unstable.BindIn;
 
+import java.util.List;
+
+@UseStringTemplate3StatementLocator
 public interface WithdrawalRequestJDBIDao {
 
   @Mapper(WithdrawalRequestRSMapper.class)
@@ -26,5 +31,8 @@ public interface WithdrawalRequestJDBIDao {
 
   @SqlUpdate("DELETE FROM WITHDRAWAL_REQUEST")
   void truncateTable();
+
+  @SqlUpdate("DELETE FROM WITHDRAWAL_REQUEST WHERE APP_ID in (<appIds>)")
+  void deleteWithdrawalRequestsByAppIds(@BindIn("appIds") List<String> appIds);
 
 }

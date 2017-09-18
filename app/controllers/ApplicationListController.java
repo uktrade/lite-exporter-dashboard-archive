@@ -20,7 +20,6 @@ import models.enums.SortDirection;
 import models.view.ApplicationItemView;
 import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
-import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.applicationList;
 
@@ -28,7 +27,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ApplicationListController extends Controller {
+public class ApplicationListController extends SamlController {
 
   private final String licenceApplicationAddress;
   private final ApplicationItemViewService applicationItemViewService;
@@ -48,7 +47,7 @@ public class ApplicationListController extends Controller {
   }
 
   public Result applicationList(String tab, String sort, String direction, String company, String show, Integer page) {
-    User currentUser = userService.getCurrentUser();
+    String userId = userService.getCurrentUserId();
 
     ApplicationListState state = SessionCache.getApplicationListState(tab, sort, direction, company, show, page);
     ApplicationProgress applicationProgress = EnumUtil.parse(state.getShow(), ApplicationProgress.class);
@@ -61,11 +60,11 @@ public class ApplicationListController extends Controller {
       sortDirection = SortDirection.DESC;
     }
 
-    List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(currentUser.getId());
+    List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(userId);
 
-    boolean showCompanyTab = isShowCompanyTab(currentUser.getId(), views);
+    boolean showCompanyTab = isShowCompanyTab(userId, views);
 
-    List<ApplicationItemView> userFilteredViews = filterByUser(currentUser.getId(), applicationListTab, views);
+    List<ApplicationItemView> userFilteredViews = filterByUser(userId, applicationListTab, views);
 
     List<CompanySelectItemView> companyNames = collectCompanyNames(userFilteredViews);
 

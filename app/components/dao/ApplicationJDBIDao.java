@@ -36,6 +36,9 @@ public interface ApplicationJDBIDao {
               @Bind("caseReference") String caseReference,
               @Bind("caseOfficerId") String caseOfficerId);
 
+  @SqlUpdate("DELETE FROM APPLICATION WHERE APP_ID = :appId")
+  void delete(@Bind("appId") String appId);
+
   @SqlUpdate("DELETE FROM APPLICATION")
   void truncateTable();
 

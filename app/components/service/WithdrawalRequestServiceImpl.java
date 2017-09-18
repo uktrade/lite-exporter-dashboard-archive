@@ -17,27 +17,24 @@ import java.util.List;
 
 public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
-  private final UserService userService;
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final MessagePublisher messagePublisher;
   private final DraftDao draftDao;
 
   @Inject
-  public WithdrawalRequestServiceImpl(UserService userService, WithdrawalRequestDao withdrawalRequestDao, MessagePublisher messagePublisher, DraftDao draftDao) {
-    this.userService = userService;
+  public WithdrawalRequestServiceImpl(WithdrawalRequestDao withdrawalRequestDao, MessagePublisher messagePublisher, DraftDao draftDao) {
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.messagePublisher = messagePublisher;
     this.draftDao = draftDao;
   }
 
   @Override
-  public void insertWithdrawalRequest(String appId, String message, List<UploadFile> files) {
-    User currentUser = userService.getCurrentUser();
+  public void insertWithdrawalRequest(String sentBy, String appId, String message, List<UploadFile> files) {
     List<File> attachments = getAttachments(appId, files);
     models.WithdrawalRequest withdrawalRequest = new models.WithdrawalRequest(RandomUtil.random("WIT"),
         appId,
         Instant.now().toEpochMilli(),
-        currentUser.getId(),
+        sentBy,
         message,
         attachments,
         null,

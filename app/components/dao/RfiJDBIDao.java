@@ -38,4 +38,7 @@ public interface RfiJDBIDao {
   @SqlUpdate("DELETE FROM RFI")
   void truncateTable();
 
+  @SqlUpdate("DELETE FROM RFI WHERE APP_ID in (<appIds>)")
+  void deleteRfiListByAppIds(@BindIn("appIds") List<String> appIds);
+
 }

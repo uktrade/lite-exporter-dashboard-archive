@@ -58,4 +58,14 @@ public class RfiResponseDaoImpl implements RfiResponseDao {
     }
   }
 
+  @Override
+  public void deleteRfiResponsesByRfiIds(List<String> rfiIds) {
+    if (!rfiIds.isEmpty()) {
+      try (final Handle handle = dbi.open()) {
+        RfiResponseJDBIDao rfiResponseJDBIDao = handle.attach(RfiResponseJDBIDao.class);
+        rfiResponseJDBIDao.deleteRfiResponsesByRfiIds(rfiIds);
+      }
+    }
+  }
+
 }
