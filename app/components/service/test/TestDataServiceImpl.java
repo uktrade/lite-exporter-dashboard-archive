@@ -175,7 +175,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private void createEmptyQueueApplication() {
-    Application application = new Application(APP_QUEUE_ID,
+    Application application = new Application(userId() + APP_QUEUE_ID,
         wrapCustomerId(userId(), COMPANY_ID_TWO),
         userId(),
         time(2015, 1, 1, 1, 1),
