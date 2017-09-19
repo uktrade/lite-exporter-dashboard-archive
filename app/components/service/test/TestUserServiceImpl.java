@@ -51,11 +51,11 @@ public class TestUserServiceImpl implements UserService {
 
   @Override
   public String getCurrentUserId() {
-    String currentUserId = spireAuthManager.getAuthInfoFromContext().getId();
-    if (StringUtils.isBlank(currentUserId)) {
+    AuthInfo authInfo = spireAuthManager.getAuthInfoFromContext();
+    if (!authInfo.isAuthenticated()) {
       throw new ServiceException("Unable to get current user id since no user is logged in.");
     } else {
-      return currentUserId;
+      return authInfo.getId();
     }
   }
 

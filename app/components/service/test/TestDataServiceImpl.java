@@ -5,7 +5,6 @@ import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
-import components.common.auth.SpireAuthManager;
 import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
 import components.dao.DraftDao;
@@ -14,7 +13,6 @@ import components.dao.RfiResponseDao;
 import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalRequestDao;
-import components.service.UserService;
 import models.Application;
 import models.Rfi;
 import models.RfiResponse;
@@ -36,6 +34,10 @@ import java.util.stream.Collectors;
 public class TestDataServiceImpl implements TestDataService {
 
   public static final String APPLICANT_ID = "24492";
+  public static final String APPLICANT_TWO_ID = "24493";
+  public static final String APPLICANT_THREE_ID = "24494";
+  public static final String ADMIN_ID = "1";
+
   public static final String OTHER_APPLICANT_ID = "2";
   public static final String OFFICER_ID = "3";
 
@@ -57,9 +59,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final AmendmentDao amendmentDao;
   private final DraftDao draftDao;
   private final SielDao sielDao;
-  private final UserService userService;
   private final CustomerServiceClient customerServiceClient;
-  private final SpireAuthManager spireAuthManager;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -70,9 +70,7 @@ public class TestDataServiceImpl implements TestDataService {
                              AmendmentDao amendmentDao,
                              DraftDao draftDao,
                              SielDao sielDao,
-                             UserService userService,
-                             CustomerServiceClient customerServiceClient,
-                             SpireAuthManager spireAuthManager) {
+                             CustomerServiceClient customerServiceClient) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiResponseDao = rfiResponseDao;
@@ -81,49 +79,42 @@ public class TestDataServiceImpl implements TestDataService {
     this.amendmentDao = amendmentDao;
     this.draftDao = draftDao;
     this.sielDao = sielDao;
-    this.userService = userService;
     this.customerServiceClient = customerServiceClient;
-    this.spireAuthManager = spireAuthManager;
   }
 
   @Override
-  public void deleteCurrentUserAndInsertTwoCompanies() {
-    deleteCurrent();
-    createApplications();
-    createSecondUserApplications();
-    createAdvancedApplication();
-    createSecondUserApplications();
-    createSiels();
+  public void deleteAllUsersAndInsertStartData() {
+    deleteAllUsers();
+    insertOneCompany(TestDataServiceImpl.APPLICANT_ID);
+    insertTwoCompanies(TestDataServiceImpl.APPLICANT_TWO_ID);
+    insertOtherUserApplications(TestDataServiceImpl.APPLICANT_THREE_ID);
   }
 
   @Override
-  public void deleteCurrentUserAndInsertOneCompany() {
-    deleteCurrent();
-    createCompleteApplication();
-    createNoCaseOfficerApplication();
-    createAdvancedApplication();
-    createEmptyQueueApplication();
-    createSiels();
+  public void insertOneCompany(String userId) {
+    createCompleteApplication(userId);
+    createNoCaseOfficerApplication(userId);
+    createAdvancedApplication(userId);
+    createEmptyQueueApplication(userId);
+    createSiels(userId);
   }
 
   @Override
-  public void deleteCurrentUser() {
-    deleteCurrent();
+  public void insertTwoCompanies(String userId) {
+    createApplications(userId);
+    createSecondUserApplications(userId);
+    createAdvancedApplication(userId);
+    createSiels(userId);
   }
 
   @Override
-  public void deleteAllUsers() {
-    deleteAll();
+  public void insertOtherUserApplications(String userId) {
+    createSecondUserApplications(userId);
   }
 
   @Override
-  public void deleteCurrentUserAndInsertOtherUserApplications() {
-    deleteCurrent();
-    createSecondUserApplications();
-  }
-
-  private void deleteCurrent() {
-    List<String> customerIds = customerServiceClient.getCustomers(userId()).stream()
+  public void deleteCurrentUser(String userId) {
+    List<String> customerIds = customerServiceClient.getCustomers(userId).stream()
         .map(CustomerView::getCustomerId)
         .collect(Collectors.toList());
     List<String> appIds = applicationDao.getApplications(customerIds).stream()
@@ -144,7 +135,8 @@ public class TestDataServiceImpl implements TestDataService {
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT));
   }
 
-  private void deleteAll() {
+  @Override
+  public void deleteAllUsers() {
     applicationDao.deleteAllApplications();
     statusUpdateDao.deleteAllStatusUpdates();
     rfiDao.deleteAllRfiData();
@@ -155,9 +147,9 @@ public class TestDataServiceImpl implements TestDataService {
     sielDao.deleteAllSiels();
   }
 
-  private void createSiels() {
+  private void createSiels(String userId) {
     for (int i = 1; i < 22; i++) {
-      String companyId = i % 2 == 0 ? wrapCustomerId(userId(), COMPANY_ID_ONE) : wrapCustomerId(userId(), COMPANY_ID_TWO);
+      String companyId = i % 2 == 0 ? wrapCustomerId(userId, COMPANY_ID_ONE) : wrapCustomerId(userId, COMPANY_ID_TWO);
       SielStatus sielStatus = SielStatus.values()[i % SielStatus.values().length];
       List<String> destinationList = i % 2 == 0 ? Collections.singletonList(GERMANY) : Arrays.asList(ICELAND, FRANCE);
       Long expiryTimestamp = sielStatus == SielStatus.ACTIVE ? time(2017, 3, i, 15, 10) : time(2016, 3, i, 15, 10);
@@ -174,10 +166,10 @@ public class TestDataServiceImpl implements TestDataService {
     }
   }
 
-  private void createEmptyQueueApplication() {
-    Application application = new Application(userId() + APP_QUEUE_ID,
-        wrapCustomerId(userId(), COMPANY_ID_TWO),
-        userId(),
+  private void createEmptyQueueApplication(String userId) {
+    Application application = new Application(userId + "_" + APP_QUEUE_ID,
+        wrapCustomerId(userId, COMPANY_ID_TWO),
+        userId,
         time(2015, 1, 1, 1, 1),
         time(2015, 2, 1, 1, 1),
         Collections.singletonList(GERMANY),
@@ -187,15 +179,15 @@ public class TestDataServiceImpl implements TestDataService {
     applicationDao.insert(application);
   }
 
-  private void createApplications() {
+  private void createApplications(String userId) {
     for (int i = 0; i < 20; i++) {
       String appId = random("APP");
       boolean isDraft = i % 4 == 0;
       Long submittedTimestamp = isDraft ? null : time(2017, 4, 3 + i, i, i);
       String caseReference = isDraft ? null : randomNumber("ECO");
       Application app = new Application(appId,
-          wrapCustomerId(userId(), COMPANY_ID_ONE),
-          userId(),
+          wrapCustomerId(userId, COMPANY_ID_ONE),
+          userId,
           time(2017, 3, 3 + i, i, i),
           submittedTimestamp,
           Collections.singletonList(GERMANY),
@@ -220,7 +212,7 @@ public class TestDataServiceImpl implements TestDataService {
         rfiDao.insertRfi(rfi);
         if (i % 2 != 0) {
           RfiResponse rfiResponse = new RfiResponse(rfiId,
-              userId(),
+              userId,
               time(2017, 4, 5 + i, i, i),
               "This is a reply.",
               new ArrayList<>());
@@ -231,12 +223,12 @@ public class TestDataServiceImpl implements TestDataService {
 
   }
 
-  private void createSecondUserApplications() {
+  private void createSecondUserApplications(String userId) {
     // create applications by other applicant
     for (int i = 0; i < 4; i++) {
       String appId = random("APP");
       Application app = new Application(appId,
-          wrapCustomerId(userId(), COMPANY_ID_ONE),
+          wrapCustomerId(userId, COMPANY_ID_ONE),
           OTHER_APPLICANT_ID,
           time(2017, 1, 3 + i, i, i),
           null,
@@ -260,12 +252,12 @@ public class TestDataServiceImpl implements TestDataService {
     return cas;
   }
 
-  private void createAdvancedApplication() {
+  private void createAdvancedApplication(String userId) {
     String appId = random("APP");
     String rfiId = random("RFI");
     Application application = new Application(appId,
-        wrapCustomerId(userId(), COMPANY_ID_TWO),
-        userId(),
+        wrapCustomerId(userId, COMPANY_ID_TWO),
+        userId,
         time(2016, 11, 4, 13, 10),
         time(2016, 11, 4, 14, 10),
         Arrays.asList(GERMANY, ICELAND, FRANCE),
@@ -274,12 +266,12 @@ public class TestDataServiceImpl implements TestDataService {
     applicationDao.insert(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(appId, rfiId).forEach(rfiDao::insertRfi);
-    createRfiResponseTestData(rfiId).forEach(rfiResponseDao::insertRfiResponse);
+    createRfiResponseTestData(userId, rfiId).forEach(rfiResponseDao::insertRfiResponse);
   }
 
-  private List<RfiResponse> createRfiResponseTestData(String rfiId) {
+  private List<RfiResponse> createRfiResponseTestData(String userId, String rfiId) {
     RfiResponse rfiResponse = new RfiResponse(rfiId,
-        userId(),
+        userId,
         time(2017, 5, 13, 16, 10),
         "<p>All the items on my application were originally designed for the Eurofighter Typhoon FGR4. "
             + "Please see attached the specifications and design plans showing the original design.</p>"
@@ -287,7 +279,7 @@ public class TestDataServiceImpl implements TestDataService {
             + "<p>Kathryn Smith</p>",
         new ArrayList<>());
     RfiResponse rfiResponseTwo = new RfiResponse(rfiId,
-        userId(),
+        userId,
         time(2017, 5, 14, 17, 14),
         "This is another test reply.",
         new ArrayList<>());
@@ -348,11 +340,11 @@ public class TestDataServiceImpl implements TestDataService {
     return statusUpdates;
   }
 
-  private void createNoCaseOfficerApplication() {
+  private void createNoCaseOfficerApplication(String userId) {
     String appId = random("APP");
     Application application = new Application(appId,
-        wrapCustomerId(userId(), COMPANY_ID_TWO),
-        userId(),
+        wrapCustomerId(userId, COMPANY_ID_TWO),
+        userId,
         time(2016, 11, 3, 3, 3),
         time(2016, 12, 4, 3, 3),
         Collections.singletonList(FRANCE), getApplicantReference(),
@@ -366,11 +358,11 @@ public class TestDataServiceImpl implements TestDataService {
     statusUpdateDao.insertStatusUpdate(statusUpdate);
   }
 
-  private void createCompleteApplication() {
+  private void createCompleteApplication(String userId) {
     String appId = random("APP");
     Application application = new Application(appId,
-        wrapCustomerId(userId(), COMPANY_ID_TWO),
-        userId(),
+        wrapCustomerId(userId, COMPANY_ID_TWO),
+        userId,
         time(2015, 3, 3, 3, 3),
         time(2015, 4, 3, 3, 3),
         Collections.singletonList(FRANCE), getApplicantReference(),
@@ -411,16 +403,6 @@ public class TestDataServiceImpl implements TestDataService {
       stringBuilder.append(RandomUtils.nextInt(0, 9));
     }
     return prefix + stringBuilder.toString();
-  }
-
-  private String userId() {
-    String userId;
-    if (!spireAuthManager.getAuthInfoFromContext().isAuthenticated()) {
-      userId = APPLICANT_ID;
-    } else {
-      userId = userService.getCurrentUserId();
-    }
-    return userId;
   }
 
   public static String wrapCustomerId(String userId, String customerId) {

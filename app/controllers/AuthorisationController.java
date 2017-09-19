@@ -1,5 +1,6 @@
 package controllers;
 
+import static play.mvc.Controller.session;
 import static play.mvc.Results.forbidden;
 import static play.mvc.Results.ok;
 
@@ -17,6 +18,7 @@ public class AuthorisationController {
   }
 
   public Result loggedOut() {
+    session().clear();
     return ok(loggedOut.render());
   }
 

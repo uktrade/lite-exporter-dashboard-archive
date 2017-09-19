@@ -2,14 +2,16 @@ package components.service.test;
 
 public interface TestDataService {
 
-  void deleteCurrentUserAndInsertTwoCompanies();
+  void deleteAllUsersAndInsertStartData();
 
-  void deleteCurrentUserAndInsertOneCompany();
+  void insertTwoCompanies(String userId);
 
-  void deleteCurrentUser();
+  void insertOneCompany(String userId);
+
+  void deleteCurrentUser(String userId);
 
   void deleteAllUsers();
 
-  void deleteCurrentUserAndInsertOtherUserApplications();
+  void insertOtherUserApplications(String userId);
 
 }

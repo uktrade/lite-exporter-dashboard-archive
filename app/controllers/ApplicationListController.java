@@ -12,7 +12,6 @@ import components.util.PageUtil;
 import components.util.SortUtil;
 import models.ApplicationListState;
 import models.Page;
-import models.User;
 import models.enums.ApplicationListTab;
 import models.enums.ApplicationProgress;
 import models.enums.ApplicationSortType;

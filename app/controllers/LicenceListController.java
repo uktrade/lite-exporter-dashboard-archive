@@ -15,7 +15,6 @@ import components.util.PageUtil;
 import components.util.SortUtil;
 import models.LicenceListState;
 import models.Page;
-import models.User;
 import models.enums.LicenceListTab;
 import models.enums.LicenceSortType;
 import models.enums.SortDirection;
@@ -137,7 +136,8 @@ public class LicenceListController extends SamlController {
     List<String> customerViews = customerServiceClient.getCustomers(userId).stream()
         .map(CustomerView::getCustomerId)
         .collect(Collectors.toList());
-    return !applicationDao.getApplications(customerViews).isEmpty();
+    return applicationDao.getApplications(customerViews).stream()
+        .anyMatch(application -> userId.equals(application.getCreatedBy()));
   }
 
 }
