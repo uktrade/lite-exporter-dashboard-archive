@@ -1,9 +1,5 @@
 th {
   @include link-underline-on-hover;
-
-  a:visited {
-    color: $link-colour;
-  }
 }
 
 .table-align-top {
