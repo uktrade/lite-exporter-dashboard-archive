@@ -5,5 +5,9 @@
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViews: java.util.List[RfiView], allowResponses: Boolean, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
 
 @applicationDetails(applyLink, applicationSummaryView, "rfi", rfiViews.size, rfiResponseForm) {
-  @rfiList(rfiViews, allowResponses, rfiResponseForm, addRfiResponseView)
+  @if(rfiViews.size == 0) {
+    <p>You haven't received any requests for information yet.</p>
+  } else {
+    @rfiList(rfiViews, allowResponses, rfiResponseForm, addRfiResponseView)
+  }
 }
