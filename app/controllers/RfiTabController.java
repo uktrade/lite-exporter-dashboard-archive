@@ -95,7 +95,7 @@ public class RfiTabController extends SamlController {
       String userId = userService.getCurrentUserId();
       String responseMessage = rfiResponseForm.get().responseMessage;
       rfiResponseService.insertRfiResponse(userId, rfiId, responseMessage, uploadFiles);
-      flash("success", "Your message has been sent.");
+      flash("success", "Your message has been sent");
       return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
     }
   }

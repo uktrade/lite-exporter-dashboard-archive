@@ -7,8 +7,9 @@
 @for(rfiView <- rfiViews) {
   @rfiPanel(rfiView, allowResponses)
   @if(flash.containsKey(rfiView.getRfiId)) {
-    <div style="color: #FF0000">@flash.get(rfiView.getRfiId)</div>
-    <br>
+    <div class="form-group form-group-error">
+      <span class="error-message">@flash.get(rfiView.getRfiId)</span>
+    </div>
   }
   @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
     @addRfiReplyPanel(rfiView.getAppId, rfiResponseForm, addRfiResponseView)

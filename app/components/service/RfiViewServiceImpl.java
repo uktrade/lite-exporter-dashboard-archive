@@ -83,7 +83,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     RfiResponse rfiResponse = rfiResponseDao.getRfiResponse(rfiId);
     if (rfiResponse != null) {
       String sentBy = userService.getUsername(rfiResponse.getSentBy());
-      String sentAt = TimeUtil.formatDate(rfiResponse.getSentTimestamp());
+      String sentAt = TimeUtil.formatDateAndTime(rfiResponse.getSentTimestamp());
       String message = rfiResponse.getMessage();
       List<FileView> fileViews = createFileViews(appId, rfiId, rfiResponse.getAttachments());
       return new RfiResponseView(sentBy, sentAt, message, fileViews);

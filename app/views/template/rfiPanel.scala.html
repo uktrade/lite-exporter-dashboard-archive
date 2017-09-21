@@ -4,8 +4,10 @@
 
 <div class="message-panel" id=@rfiView.getRfiId>
   <header>
-    <h3 class="heading-small"><span class="rfi-icon"></span>
-      <abbr title="Request for information">RFI</abbr></h3>
+    <h3 class="heading-small">
+      <span class="rfi-icon"></span>
+      Request for information
+    </h3>
 
     <div class="grid-row">
 
@@ -14,7 +16,7 @@
           Received on:
         </span>
         <span>
-        @rfiView.getReceivedOn
+          @rfiView.getReceivedOn
         </span>
       </div>
 
@@ -23,7 +25,7 @@
           Sender:
         </span>
         <span>
-        @rfiView.getSender
+          @rfiView.getSender
         </span>
       </div>
 
@@ -33,7 +35,7 @@
       Reply by:
     </span>
     <span>
-    @rfiView.getReplyBy
+      @rfiView.getReplyBy
     </span>
 
   </header>
@@ -41,7 +43,7 @@
   <article>
     <h4 class="heading-small">Message</h4>
     <div>
-    @Html(rfiView.getMessage)
+      @Html(rfiView.getMessage)
     </div>
 
     @if(allowResponses && rfiView.getRfiResponseView == null) {

@@ -7,10 +7,18 @@
   &>header {
     padding: $gutter-two-thirds $gutter;
     border-bottom: 1px solid $border-colour;
+
+    @include media(mobile) {
+      padding: $gutter-two-thirds;
+    }
   }
 
   &>article {
     padding: $gutter;
+
+    @include media(mobile) {
+      padding: $gutter-two-thirds;
+    }
 
     p:last-child {
       margin-bottom: 0;

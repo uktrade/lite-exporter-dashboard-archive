@@ -10,8 +10,7 @@
   }
 
   @if(flash.containsKey("success")) {
-    <br>
-    <div style="color: #FF0000">@flash.get("success")</div>
+    @flashBanner("success") { @flash.get("success") }
   }
 
 } {

@@ -4,24 +4,7 @@
 
 <div class="message-panel message-reply-panel" >
   <header>
-
-    <div class="grid-row">
-
-      <div class="column-one-half">
-        <h3 class="heading-small">Reply from you...</h3>
-      </div>
-
-      <div class="column-one-half message-reply-sender">
-        <span class="heading-small">
-          @rfiResponseView.getSentBy
-        </span>
-        <span>
-        @rfiResponseView.getSentAt
-        </span>
-      </div>
-
-    </div>
-
+    <h3><span class="heading-small">Reply from:</span> @rfiResponseView.getSentBy on @rfiResponseView.getSentAt</h3>
   </header>
 
   <article>
@@ -31,24 +14,26 @@
     </div>
   </article>
 
-  <footer>
-    <h4 class="heading-small">Attached files</h4>
-    <table class="form-group @if(rfiResponseView.getFileViews.isEmpty) {empty-file-list}">
-      <thead>
-        <tr>
-          <th>File name</th>
-          <th style="min-width: 202px">Size</th>
-        </tr>
-      </thead>
-      <tbody>
-      @for(file <- rfiResponseView.getFileViews) {
-        <tr>
-          <td class="file-upload-filename"><a href="@file.getLink" target="_blank">@file.getName</a></td>
-          <td class="file-upload-status">@file.getSize</td>
-        </tr>
-      }
-      </tbody>
-    </table>
-  </footer>
+  @if(!rfiResponseView.getFileViews.isEmpty) {
+    <footer>
+      <h4 class="heading-small">Attached files</h4>
+      <table class="form-group">
+        <thead>
+          <tr>
+            <th>File name</th>
+            <th style="min-width: 202px">Size</th>
+          </tr>
+        </thead>
+        <tbody>
+        @for(file <- rfiResponseView.getFileViews) {
+          <tr>
+            <td class="file-upload-filename"><a href="@file.getLink" target="_blank">@file.getName</a></td>
+            <td class="file-upload-status">@file.getSize</td>
+          </tr>
+        }
+        </tbody>
+      </table>
+    </footer>
+  }
 
 </div>
