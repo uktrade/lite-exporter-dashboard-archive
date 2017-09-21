@@ -1,0 +1,4 @@
+@(flashType: String = "")(message: Html)
+<div class="flash @if(flashType != ""){ @flashType-flash }" role="alert">
+  @message
+</div>
