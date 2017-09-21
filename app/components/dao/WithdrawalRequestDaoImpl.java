@@ -2,7 +2,7 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.util.JsonUtil;
-import models.WithdrawalRequest;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
@@ -29,15 +29,12 @@ public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
   public void insertWithdrawalRequest(WithdrawalRequest withdrawalRequest) {
     try (final Handle handle = dbi.open()) {
       WithdrawalRequestJDBIDao withdrawalRequestJDBIDao = handle.attach(WithdrawalRequestJDBIDao.class);
-      withdrawalRequestJDBIDao.insert(withdrawalRequest.getWithdrawalRequestId(),
+      withdrawalRequestJDBIDao.insert(withdrawalRequest.getId(),
           withdrawalRequest.getAppId(),
-          withdrawalRequest.getSentTimestamp(),
-          withdrawalRequest.getSentBy(),
+          withdrawalRequest.getCreatedByUserId(),
+          withdrawalRequest.getCreatedTimestamp(),
           withdrawalRequest.getMessage(),
-          JsonUtil.convertFilesToJson(withdrawalRequest.getAttachments()),
-          withdrawalRequest.getRejectedBy(),
-          withdrawalRequest.getRejectedTimestamp(),
-          withdrawalRequest.getRejectedMessage());
+          JsonUtil.convertFilesToJson(withdrawalRequest.getAttachments()));
     }
   }
 

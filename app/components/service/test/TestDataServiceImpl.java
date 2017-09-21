@@ -9,19 +9,19 @@ import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
 import components.dao.DraftDao;
 import components.dao.RfiDao;
-import components.dao.RfiResponseDao;
+import components.dao.RfiReplyDao;
 import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalRequestDao;
 import models.Application;
 import models.Rfi;
-import models.RfiResponse;
 import models.Siel;
 import models.StatusUpdate;
 import models.enums.DraftType;
 import models.enums.RfiStatus;
 import models.enums.SielStatus;
 import models.enums.StatusType;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import org.apache.commons.lang3.RandomUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 
@@ -53,7 +53,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   private final RfiDao rfiDao;
   private final StatusUpdateDao statusUpdateDao;
-  private final RfiResponseDao rfiResponseDao;
+  private final RfiReplyDao rfiReplyDao;
   private final ApplicationDao applicationDao;
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final AmendmentDao amendmentDao;
@@ -64,7 +64,7 @@ public class TestDataServiceImpl implements TestDataService {
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
                              StatusUpdateDao statusUpdateDao,
-                             RfiResponseDao rfiResponseDao,
+                             RfiReplyDao rfiReplyDao,
                              ApplicationDao applicationDao,
                              WithdrawalRequestDao withdrawalRequestDao,
                              AmendmentDao amendmentDao,
@@ -73,7 +73,7 @@ public class TestDataServiceImpl implements TestDataService {
                              CustomerServiceClient customerServiceClient) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
-    this.rfiResponseDao = rfiResponseDao;
+    this.rfiReplyDao = rfiReplyDao;
     this.applicationDao = applicationDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.amendmentDao = amendmentDao;
@@ -127,10 +127,10 @@ public class TestDataServiceImpl implements TestDataService {
         .map(Rfi::getRfiId)
         .collect(Collectors.toList());
     rfiDao.deleteRfiListByAppIds(appIds);
-    rfiResponseDao.deleteRfiResponsesByRfiIds(rfiIds);
+    rfiReplyDao.deleteRfiRepliesByRfiIds(rfiIds);
     sielDao.deleteSielsByCompanyIds(customerIds);
     appIds.forEach(applicationDao::deleteApplication);
-    rfiIds.forEach(rfiId -> draftDao.deleteDraft(rfiId, DraftType.RFI_RESPONSE));
+    rfiIds.forEach(rfiId -> draftDao.deleteDraft(rfiId, DraftType.RFI_REPLY));
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.WITHDRAWAL));
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT));
   }
@@ -140,7 +140,7 @@ public class TestDataServiceImpl implements TestDataService {
     applicationDao.deleteAllApplications();
     statusUpdateDao.deleteAllStatusUpdates();
     rfiDao.deleteAllRfiData();
-    rfiResponseDao.deleteAllRfiResponses();
+    rfiReplyDao.deleteAllRfiReplies();
     withdrawalRequestDao.deleteAllWithdrawalRequests();
     amendmentDao.deleteAllAmendments();
     draftDao.deleteAllDrafts();
@@ -211,12 +211,14 @@ public class TestDataServiceImpl implements TestDataService {
             "Please answer this rfi.");
         rfiDao.insertRfi(rfi);
         if (i % 2 != 0) {
-          RfiResponse rfiResponse = new RfiResponse(rfiId,
-              userId,
-              time(2017, 4, 5 + i, i, i),
-              "This is a reply.",
-              new ArrayList<>());
-          rfiResponseDao.insertRfiResponse(rfiResponse);
+          RfiReply rfiReply = new RfiReply();
+          rfiReply.setId(random("REP"));
+          rfiReply.setRfiId(rfiId);
+          rfiReply.setCreatedByUserId(userId);
+          rfiReply.setCreatedTimestamp(time(2017, 4, 5 + i, i, i));
+          rfiReply.setMessage("This is a reply.");
+          rfiReply.setAttachments(new ArrayList<>());
+          rfiReplyDao.insertRfiReply(rfiReply);
         }
       }
     }
@@ -266,27 +268,30 @@ public class TestDataServiceImpl implements TestDataService {
     applicationDao.insert(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(appId, rfiId).forEach(rfiDao::insertRfi);
-    createRfiResponseTestData(userId, rfiId).forEach(rfiResponseDao::insertRfiResponse);
+    createRfiReplyTestData(userId, rfiId).forEach(rfiReplyDao::insertRfiReply);
   }
 
-  private List<RfiResponse> createRfiResponseTestData(String userId, String rfiId) {
-    RfiResponse rfiResponse = new RfiResponse(rfiId,
-        userId,
-        time(2017, 5, 13, 16, 10),
-        "<p>All the items on my application were originally designed for the Eurofighter Typhoon FGR4. "
-            + "Please see attached the specifications and design plans showing the original design.</p>"
-            + "<p>Kind regards,</p>"
-            + "<p>Kathryn Smith</p>",
-        new ArrayList<>());
-    RfiResponse rfiResponseTwo = new RfiResponse(rfiId,
-        userId,
-        time(2017, 5, 14, 17, 14),
-        "This is another test reply.",
-        new ArrayList<>());
-    List<RfiResponse> rfiResponses = new ArrayList<>();
-    rfiResponses.add(rfiResponse);
-    rfiResponses.add(rfiResponseTwo);
-    return rfiResponses;
+  private List<RfiReply> createRfiReplyTestData(String userId, String rfiId) {
+    RfiReply rfiReply = new RfiReply();
+    rfiReply.setId(random("REP"));
+    rfiReply.setRfiId(rfiId);
+    rfiReply.setCreatedByUserId(userId);
+    rfiReply.setCreatedTimestamp(time(2017, 5, 13, 16, 10));
+    rfiReply.setMessage("<p>All the items on my application were originally designed for the Eurofighter Typhoon FGR4. "
+        + "Please see attached the specifications and design plans showing the original design.</p>"
+        + "<p>Kind regards,</p>"
+        + "<p>Kathryn Smith</p>");
+    rfiReply.setAttachments(new ArrayList<>());
+
+    RfiReply rfiReplyTwo = new RfiReply();
+    rfiReplyTwo.setId(random("REP"));
+    rfiReplyTwo.setRfiId(rfiId);
+    rfiReplyTwo.setCreatedByUserId(userId);
+    rfiReplyTwo.setCreatedTimestamp(time(2017, 5, 14, 17, 14));
+    rfiReplyTwo.setMessage("This is another test reply.");
+    rfiReplyTwo.setAttachments(new ArrayList<>());
+
+    return Arrays.asList(rfiReply, rfiReplyTwo);
   }
 
   private List<Rfi> createRfiTestData(String appId, String rfiId) {

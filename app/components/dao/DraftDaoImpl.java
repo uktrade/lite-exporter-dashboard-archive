@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import components.exceptions.DatabaseException;
 import components.util.JsonUtil;
 import models.Draft;
-import models.File;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 import models.enums.DraftType;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -72,7 +72,7 @@ public class DraftDaoImpl implements DraftDao {
           throw new DatabaseException(errorMessage);
         } else {
           List<File> files = existingDraft.getAttachments().stream()
-              .filter(file -> !file.getFileId().equals(fileId))
+              .filter(file -> !file.getId().equals(fileId))
               .collect(Collectors.toList());
           if (files.size() == existingDraft.getAttachments().size()) {
             String errorMessage = String.format("Unable to delete file with relatedId %s and draftType %s and fileId %s since there is no such file.", relatedId, draftType, fileId);

@@ -1,8 +1,8 @@
 package components.dao;
 
 import components.util.JsonUtil;
-import models.File;
-import models.WithdrawalRequest;
+import uk.gov.bis.lite.exporterdashboard.api.File;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -14,17 +14,22 @@ public class WithdrawalRequestRSMapper implements ResultSetMapper<WithdrawalRequ
 
   @Override
   public WithdrawalRequest map(int index, ResultSet r, StatementContext ctx) throws SQLException {
-    String withdrawalRequestId = r.getString("withdrawal_request_id");
+    String id = r.getString("id");
     String appId = r.getString("app_id");
-    Long sentTimestamp = LongMapper.getLong(r, "sent_timestamp");
-    String sentBy = r.getString("sentBy");
+    Long createdTimestamp = LongMapper.getLong(r, "created_timestamp");
+    String createdByUserId = r.getString("created_by_user_id");
     String message = r.getString("message");
     String attachmentsJson = r.getString("attachments");
     List<File> attachments = JsonUtil.convertJsonToFiles(attachmentsJson);
-    String rejectedBy = r.getString("rejected_by");
-    Long rejectedTimestamp = LongMapper.getLong(r, "rejected_timestamp");
-    String rejectedMessage = r.getString("rejected_message");
-    return new WithdrawalRequest(withdrawalRequestId, appId, sentTimestamp, sentBy, message, attachments, rejectedBy, rejectedTimestamp, rejectedMessage);
+
+    WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
+    withdrawalRequest.setId(id);
+    withdrawalRequest.setAppId(appId);
+    withdrawalRequest.setCreatedByUserId(createdByUserId);
+    withdrawalRequest.setCreatedTimestamp(createdTimestamp);
+    withdrawalRequest.setMessage(message);
+    withdrawalRequest.setAttachments(attachments);
+    return withdrawalRequest;
   }
 
 }

@@ -2,20 +2,14 @@ package models.view;
 
 import java.util.List;
 
-public class AddRfiResponseView {
+public class AddRfiReplyView {
 
-  private final String sentAt;
   private final String rfiId;
   private final List<FileView> fileViews;
 
-  public AddRfiResponseView(String sentAt, String rfiId, List<FileView> fileViews) {
-    this.sentAt = sentAt;
+  public AddRfiReplyView(String rfiId, List<FileView> fileViews) {
     this.rfiId = rfiId;
     this.fileViews = fileViews;
-  }
-
-  public String getSentAt() {
-    return sentAt;
   }
 
   public String getRfiId() {

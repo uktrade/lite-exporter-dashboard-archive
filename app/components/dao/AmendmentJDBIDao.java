@@ -1,6 +1,6 @@
 package components.dao;
 
-import models.Amendment;
+import uk.gov.bis.lite.exporterdashboard.api.Amendment;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
@@ -17,12 +17,12 @@ public interface AmendmentJDBIDao {
   @SqlQuery("SELECT FROM AMENDMENT WHERE APP_ID = :appId")
   List<Amendment> getAmendments(@Bind("appId") String appId);
 
-  @SqlUpdate("INSERT INTO AMENDMENT ( AMENDMENT_ID, APP_ID, SENT_TIMESTAMP, SENT_BY, MESSAGE,  ATTACHMENTS) VALUES" +
-      "                             (:amendmentId, :appId, :sentTimestamp, :sentBy, :message, :attachments)")
-  void insertAmendment(@Bind("amendmentId") String amendmentId,
+  @SqlUpdate("INSERT INTO AMENDMENT (ID,  APP_ID, CREATED_BY_USER_ID, CREATED_TIMESTAMP, MESSAGE,  ATTACHMENTS) VALUES" +
+      "                            (:id, :appId, :createdByUserId,   :createdTimestamp, :message, :attachments)")
+  void insertAmendment(@Bind("id") String id,
                        @Bind("appId") String appId,
-                       @Bind("sentTimestamp") Long sentTimestamp,
-                       @Bind("sentBy") String sentBy,
+                       @Bind("createdByUserId") String createdByUserId,
+                       @Bind("createdTimestamp") Long createdTimestamp,
                        @Bind("message") String message,
                        @Bind("attachments") String attachments);
 

@@ -9,10 +9,11 @@ import components.exceptions.UnexpectedStateException;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.FileUtil;
-import models.File;
+import components.util.RandomUtil;
 import models.FileUploadResponse;
 import models.FileUploadResponseItem;
 import models.enums.DraftType;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -21,7 +22,6 @@ import play.mvc.Result;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -78,7 +78,7 @@ public class UploadController extends SamlController {
 
   private String getLink(String relatedId, String fileId, DraftType draftType) {
     switch (draftType) {
-      case RFI_RESPONSE:
+      case RFI_REPLY:
         return routes.DownloadController.getRfiFile(relatedId, fileId).toString();
       case WITHDRAWAL:
         return routes.DownloadController.getWithdrawalFile(relatedId, fileId).toString();
@@ -91,9 +91,12 @@ public class UploadController extends SamlController {
   }
 
   private String createNewFile(String relatedId, UploadFile uploadFile, DraftType draftType) {
-    File file = new File(UUID.randomUUID().toString(), uploadFile.getOriginalFilename(), uploadFile.getDestinationPath(), System.currentTimeMillis());
+    File file = new File();
+    file.setId(RandomUtil.random("FIL"));
+    file.setFilename(uploadFile.getOriginalFilename());
+    file.setUrl(uploadFile.getDestinationPath());
     draftDao.addFile(relatedId, file, draftType);
-    return file.getFileId();
+    return file.getId();
   }
 
 }

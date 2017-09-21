@@ -2,10 +2,10 @@ package controllers;
 
 import com.google.inject.Inject;
 import components.dao.DraftDao;
-import components.dao.RfiResponseDao;
-import models.File;
-import models.RfiResponse;
+import components.dao.RfiReplyDao;
 import models.enums.DraftType;
+import uk.gov.bis.lite.exporterdashboard.api.File;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Result;
@@ -17,21 +17,21 @@ public class DownloadController extends SamlController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DownloadController.class);
 
-  private final RfiResponseDao rfiResponseDao;
+  private final RfiReplyDao rfiReplyDao;
   private final DraftDao draftDao;
 
   @Inject
-  public DownloadController(RfiResponseDao rfiResponseDao, DraftDao draftDao) {
-    this.rfiResponseDao = rfiResponseDao;
+  public DownloadController(RfiReplyDao rfiReplyDao, DraftDao draftDao) {
+    this.rfiReplyDao = rfiReplyDao;
     this.draftDao = draftDao;
   }
 
   public Result getRfiFile(String rfiId, String fileId) {
-    RfiResponse rfiResponse = rfiResponseDao.getRfiResponse(rfiId);
-    if (rfiResponse != null) {
-      return getFile(rfiResponse.getAttachments(), fileId);
+    RfiReply rfiReply = rfiReplyDao.getRfiReply(rfiId);
+    if (rfiReply != null) {
+      return getFile(rfiReply.getAttachments(), fileId);
     } else {
-      List<File> files = draftDao.getDraftAttachments(rfiId, DraftType.RFI_RESPONSE);
+      List<File> files = draftDao.getDraftAttachments(rfiId, DraftType.RFI_REPLY);
       return getFile(files, fileId);
     }
   }
@@ -48,10 +48,10 @@ public class DownloadController extends SamlController {
 
   private Result getFile(List<File> files, String fileId) {
     Optional<File> file = files.stream()
-        .filter(f -> f.getFileId().equals(fileId))
+        .filter(f -> f.getId().equals(fileId))
         .findAny();
     if (file.isPresent()) {
-      return ok(new java.io.File(file.get().getPath()));
+      return ok(new java.io.File(file.get().getUrl()));
     } else {
       LOGGER.warn("No file found with fileId {}", fileId);
       return notFound();

@@ -10,3 +10,5 @@ target
 ehcachedir
 lite_*
 localExport.db
+.gradle/
+build/
