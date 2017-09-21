@@ -1,20 +1,20 @@
-@import models.view.{AddRfiResponseView, RfiView}
+@import models.view.{AddRfiReplyView, RfiView}
 @import play.data.Form
 @import template._
 
-@(rfiViews: java.util.List[RfiView], allowResponses: Boolean, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+@(rfiViews: java.util.List[RfiView], allowReplies: Boolean, rfiReplyForm: Form[_], addRfiReplyView: AddRfiReplyView)
 
 @for(rfiView <- rfiViews) {
-  @rfiPanel(rfiView, allowResponses)
+  @rfiPanel(rfiView, allowReplies)
   @if(flash.containsKey(rfiView.getRfiId)) {
     <div class="form-group form-group-error">
       <span class="error-message">@flash.get(rfiView.getRfiId)</span>
     </div>
   }
-  @if(addRfiResponseView != null && addRfiResponseView.getRfiId == rfiView.getRfiId) {
-    @addRfiReplyPanel(rfiView.getAppId, rfiResponseForm, addRfiResponseView)
+  @if(addRfiReplyView != null && addRfiReplyView.getRfiId == rfiView.getRfiId) {
+    @addRfiReplyPanel(rfiView.getAppId, rfiReplyForm, addRfiReplyView)
   }
-  @if(rfiView.getRfiResponseView != null) {
-    @rfiReplyPanel(rfiView.getRfiResponseView)
+  @if(rfiView.getRfiReplyView != null) {
+    @rfiReplyPanel(rfiView.getRfiReplyView)
   }
 }

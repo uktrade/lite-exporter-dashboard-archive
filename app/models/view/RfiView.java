@@ -8,16 +8,16 @@ public class RfiView {
   private final String replyBy;
   private final String sender;
   private final String message;
-  private final RfiResponseView rfiResponseView;
+  private final RfiReplyView rfiReplyView;
 
-  public RfiView(String appId, String rfiId, String receivedOn, String replyBy, String sender, String message, RfiResponseView rfiResponseView) {
+  public RfiView(String appId, String rfiId, String receivedOn, String replyBy, String sender, String message, RfiReplyView rfiReplyView) {
     this.appId = appId;
     this.rfiId = rfiId;
     this.receivedOn = receivedOn;
     this.replyBy = replyBy;
     this.sender = sender;
     this.message = message;
-    this.rfiResponseView = rfiResponseView;
+    this.rfiReplyView = rfiReplyView;
   }
 
   public String getAppId() {
@@ -44,8 +44,8 @@ public class RfiView {
     return message;
   }
 
-  public RfiResponseView getRfiResponseView() {
-    return rfiResponseView;
+  public RfiReplyView getRfiReplyView() {
+    return rfiReplyView;
   }
 
 }

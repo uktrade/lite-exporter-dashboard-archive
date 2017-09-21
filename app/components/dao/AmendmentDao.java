@@ -1,6 +1,6 @@
 package components.dao;
 
-import models.Amendment;
+import uk.gov.bis.lite.exporterdashboard.api.Amendment;
 
 import java.util.List;
 

@@ -16,9 +16,9 @@ import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.EnumUtil;
 import components.util.FileUtil;
-import models.File;
 import models.enums.Action;
 import models.enums.DraftType;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 import models.view.AddAmendmentView;
 import models.view.ApplicationSummaryView;
 import models.view.FileView;
@@ -167,9 +167,9 @@ public class AmendTabController extends SamlController {
   }
 
   private FileView createFileView(String appId, File file, DraftType draftType) {
-    String link = getLink(appId, file.getFileId(), draftType);
-    String deleteLink = routes.AmendTabController.deleteFileById(appId, file.getFileId()).toString();
-    return new FileView(file.getFileId(), appId, file.getName(), link, deleteLink, FileUtil.getReadableFileSize(file.getPath()));
+    String link = getLink(appId, file.getId(), draftType);
+    String deleteLink = routes.AmendTabController.deleteFileById(appId, file.getId()).toString();
+    return new FileView(file.getId(), appId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
   }
 
   private String getLink(String appId, String fileId, DraftType draftType) {

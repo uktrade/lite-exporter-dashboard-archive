@@ -1,6 +1,7 @@
 package models;
 
 import models.enums.DraftType;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 
 import java.util.List;
 
@@ -27,4 +28,5 @@ public class Draft {
   public List<File> getAttachments() {
     return attachments;
   }
+
 }

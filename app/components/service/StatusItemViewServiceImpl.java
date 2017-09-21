@@ -6,15 +6,15 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import components.dao.ApplicationDao;
 import components.dao.RfiDao;
-import components.dao.RfiResponseDao;
+import components.dao.RfiReplyDao;
 import components.dao.StatusUpdateDao;
 import components.util.ApplicationUtil;
 import components.util.TimeUtil;
 import models.Application;
 import models.Rfi;
-import models.RfiResponse;
 import models.StatusUpdate;
 import models.enums.StatusType;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import models.view.StatusItemRfiView;
 import models.view.StatusItemView;
 
@@ -33,17 +33,17 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   private final StatusUpdateDao statusUpdateDao;
   private final RfiDao rfiDao;
   private final ApplicationDao applicationDao;
-  private final RfiResponseDao rfiResponseDao;
+  private final RfiReplyDao rfiReplyDao;
 
   @Inject
   public StatusItemViewServiceImpl(StatusUpdateDao statusUpdateDao,
                                    RfiDao rfiDao,
                                    ApplicationDao applicationDao,
-                                   RfiResponseDao rfiResponseDao) {
+                                   RfiReplyDao rfiReplyDao) {
     this.statusUpdateDao = statusUpdateDao;
     this.rfiDao = rfiDao;
     this.applicationDao = applicationDao;
-    this.rfiResponseDao = rfiResponseDao;
+    this.rfiReplyDao = rfiReplyDao;
   }
 
   @Override
@@ -88,20 +88,20 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     List<StatusUpdate> statusUpdates = getStatusUpdates(appId);
     List<Rfi> rfiList = rfiDao.getRfiList(appId);
     Multimap<StatusUpdate, Rfi> rfiMultimap = createRfiMultimap(appId, statusUpdates, rfiList);
-    Map<String, RfiResponse> rfiIdToRfiResponseMap = createRfiIdToRfiResponseMap(rfiList);
+    Map<String, RfiReply> rfiIdToRfiRepliesMap = createRfiIdToRfiReplyMap(rfiList);
 
     return statusUpdates.stream()
-        .map(statusUpdate -> getStatusItemView(statusUpdate, rfiMultimap.get(statusUpdate), rfiIdToRfiResponseMap))
+        .map(statusUpdate -> getStatusItemView(statusUpdate, rfiMultimap.get(statusUpdate), rfiIdToRfiRepliesMap))
         .collect(Collectors.toList());
   }
 
-  private Map<String, RfiResponse> createRfiIdToRfiResponseMap(List<Rfi> rfiList) {
+  private Map<String, RfiReply> createRfiIdToRfiReplyMap(List<Rfi> rfiList) {
     List<String> rfiIds = rfiList.stream()
         .map(Rfi::getRfiId)
         .collect(Collectors.toList());
-    Map<String, RfiResponse> rfiIdToRfiResponseMap = new HashMap<>();
-    rfiResponseDao.getRfiResponses(rfiIds).forEach(rfiResponse -> rfiIdToRfiResponseMap.put(rfiResponse.getRfiId(), rfiResponse));
-    return rfiIdToRfiResponseMap;
+    Map<String, RfiReply> rfiIdToRfiReplyMap = new HashMap<>();
+    rfiReplyDao.getRfiReplies(rfiIds).forEach(rfiReply -> rfiIdToRfiReplyMap.put(rfiReply.getId(), rfiReply));
+    return rfiIdToRfiReplyMap;
   }
 
   private List<StatusUpdate> getStatusUpdates(String appId) {
@@ -117,14 +117,14 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     }).collect(Collectors.toList());
   }
 
-  private StatusItemView getStatusItemView(StatusUpdate statusUpdate, Collection<Rfi> rfiList, Map<String, RfiResponse> rfiIdToRfiResponseMap) {
+  private StatusItemView getStatusItemView(StatusUpdate statusUpdate, Collection<Rfi> rfiList, Map<String, RfiReply> rfiIdToRfiReplyMap) {
     String status = ApplicationUtil.getStatusName(statusUpdate.getStatusType());
     String statusExplanation = ApplicationUtil.getStatusExplanation(statusUpdate.getStatusType());
     String processingLabel = getProcessingLabel(statusUpdate);
     String processingDescription = getProcessingDescription(statusUpdate);
     List<StatusItemRfiView> statusItemRfiViews = rfiList.stream()
         .sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
-        .map(rfi -> getStatusItemRfiView(rfi, rfiIdToRfiResponseMap.get(rfi.getRfiId())))
+        .map(rfi -> getStatusItemRfiView(rfi, rfiIdToRfiReplyMap.get(rfi.getRfiId())))
         .collect(Collectors.toList());
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, statusItemRfiViews);
   }
@@ -170,13 +170,13 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     }
   }
 
-  private StatusItemRfiView getStatusItemRfiView(Rfi rfi, RfiResponse rfiResponse) {
-    if (rfiResponse == null) {
+  private StatusItemRfiView getStatusItemRfiView(Rfi rfi, RfiReply rfiReply) {
+    if (rfiReply == null) {
       String time = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
       String description = "Received on " + time;
       return new StatusItemRfiView(rfi.getAppId(), rfi.getRfiId(), description);
     } else {
-      String time = TimeUtil.formatDateAndTime(rfiResponse.getSentTimestamp());
+      String time = TimeUtil.formatDateAndTime(rfiReply.getCreatedTimestamp());
       String description = "Replied to on " + time;
       return new StatusItemRfiView(rfi.getAppId(), rfi.getRfiId(), description);
     }

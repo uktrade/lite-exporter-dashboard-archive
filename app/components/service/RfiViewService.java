@@ -1,6 +1,6 @@
 package components.service;
 
-import models.view.AddRfiResponseView;
+import models.view.AddRfiReplyView;
 import models.view.RfiView;
 
 import java.util.List;
@@ -11,6 +11,6 @@ public interface RfiViewService {
 
   int getRfiViewCount(String appId);
 
-  AddRfiResponseView getAddRfiResponseView(String appId, String rfiId);
+  AddRfiReplyView getAddRfiReplyView(String appId, String rfiId);
 
 }

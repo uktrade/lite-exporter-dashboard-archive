@@ -6,13 +6,13 @@ import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.dao.ApplicationDao;
 import components.dao.RfiDao;
-import components.dao.RfiResponseDao;
+import components.dao.RfiReplyDao;
 import components.dao.StatusUpdateDao;
 import components.util.ApplicationUtil;
 import components.util.TimeUtil;
 import models.Application;
 import models.Rfi;
-import models.RfiResponse;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import models.StatusUpdate;
 import models.User;
 import models.enums.ApplicationProgress;
@@ -34,7 +34,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final ApplicationDao applicationDao;
   private final StatusUpdateDao statusUpdateDao;
   private final RfiDao rfiDao;
-  private final RfiResponseDao rfiResponseDao;
+  private final RfiReplyDao rfiReplyDao;
   private final CustomerServiceClient customerServiceClient;
   private final UserService userService;
 
@@ -42,13 +42,13 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   public ApplicationItemViewServiceImpl(ApplicationDao applicationDao,
                                         StatusUpdateDao statusUpdateDao,
                                         RfiDao rfiDao,
-                                        RfiResponseDao rfiResponseDao,
+                                        RfiReplyDao rfiReplyDao,
                                         CustomerServiceClient customerServiceClient,
                                         UserService userService) {
     this.applicationDao = applicationDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiDao = rfiDao;
-    this.rfiResponseDao = rfiResponseDao;
+    this.rfiReplyDao = rfiReplyDao;
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
   }
@@ -157,8 +157,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     List<String> rfiIds = rfiList.stream()
         .map(Rfi::getRfiId)
         .collect(Collectors.toList());
-    Set<String> answeredRfiIds = rfiResponseDao.getRfiResponses(rfiIds).stream()
-        .map(RfiResponse::getRfiId)
+    Set<String> answeredRfiIds = rfiReplyDao.getRfiReplies(rfiIds).stream()
+        .map(RfiReply::getId)
         .collect(Collectors.toSet());
 
     Map<String, String> appIdToOpenRfiIdMap = new HashMap<>();

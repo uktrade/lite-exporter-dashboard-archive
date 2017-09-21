@@ -2,7 +2,7 @@ package components.dao;
 
 import components.util.JsonUtil;
 import models.Draft;
-import models.File;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 import models.enums.DraftType;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;

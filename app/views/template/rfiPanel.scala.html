@@ -1,6 +1,6 @@
 @import models.view.RfiView
 
-@(rfiView: RfiView, allowResponses: Boolean)
+@(rfiView: RfiView, allowReplies: Boolean)
 
 <div class="message-panel" id=@rfiView.getRfiId>
   <header>
@@ -46,8 +46,8 @@
       @Html(rfiView.getMessage)
     </div>
 
-    @if(allowResponses && rfiView.getRfiResponseView == null) {
-      <a href="@routes.RfiTabController.showResponseForm(rfiView.getAppId, rfiView.getRfiId).withFragment("reply")" class="rfi-reply-link"><span class="icon-reply"></span>
+    @if(allowReplies && rfiView.getRfiReplyView == null) {
+      <a href="@routes.RfiTabController.showReplyForm(rfiView.getAppId, rfiView.getRfiId).withFragment("reply")" class="rfi-reply-link"><span class="icon-reply"></span>
         Reply to this message</a>
     }
   </article>

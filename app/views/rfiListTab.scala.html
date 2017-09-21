@@ -1,13 +1,13 @@
-@import models.view.{AddRfiResponseView, ApplicationSummaryView, RfiView}
+@import models.view.{AddRfiReplyView, ApplicationSummaryView, RfiView}
 @import play.data.Form
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViews: java.util.List[RfiView], allowResponses: Boolean, rfiResponseForm: Form[_], addRfiResponseView: AddRfiResponseView)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViews: java.util.List[RfiView], allowReplies: Boolean, rfiReplyForm: Form[_], addRfiReplyView: AddRfiReplyView)
 
-@applicationDetails(applyLink, applicationSummaryView, "rfi", rfiViews.size, rfiResponseForm) {
-  @if(rfiViews.size == 0) {
-    <p>You haven't received any requests for information yet.</p>
-  } else {
-    @rfiList(rfiViews, allowResponses, rfiResponseForm, addRfiResponseView)
+  @applicationDetails(applyLink, applicationSummaryView, "rfi", rfiViews.size, rfiReplyForm) {
+    @if(rfiViews.size == 0) {
+      <p>You haven't received any requests for information yet.</p>
+    } else {
+      @rfiList(rfiViews, allowReplies, rfiReplyForm, addRfiReplyView)
+    }
   }
-}

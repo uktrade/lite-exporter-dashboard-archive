@@ -11,8 +11,8 @@ GET         /applications                                             controller
 # Application tabs
 GET         /application/*appId/status-tracker                        controllers.StatusTabController.showStatusTab(appId)
 GET         /application/*appId/rfi                                   controllers.RfiTabController.showRfiTab(appId)
-GET         /application/*appId/rfi/*rfiId                            controllers.RfiTabController.showResponseForm(appId, rfiId)
-POST        /application/*appId/rfi                                   controllers.RfiTabController.submitResponse(appId)
+GET         /application/*appId/rfi/*rfiId                            controllers.RfiTabController.showReplyForm(appId, rfiId)
+POST        /application/*appId/rfi                                   controllers.RfiTabController.submitReply(appId)
 POST        /application/*appId/rfi/file/*fileId                      controllers.RfiTabController.deleteFileById(appId, fileId)
 GET         /application/*appId/amend-application                     controllers.AmendTabController.showAmendTab(appId, action ?= null)
 POST        /application/*appId/amend-application                     controllers.AmendTabController.submitAmendment(appId)

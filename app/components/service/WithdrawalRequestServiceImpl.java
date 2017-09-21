@@ -7,10 +7,10 @@ import components.message.MessagePublisher;
 import components.upload.UploadFile;
 import components.util.FileUtil;
 import components.util.RandomUtil;
-import models.File;
-import models.User;
 import models.enums.DraftType;
 import models.enums.RoutingKey;
+import uk.gov.bis.lite.exporterdashboard.api.File;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 import java.time.Instant;
 import java.util.List;
@@ -29,17 +29,17 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
   }
 
   @Override
-  public void insertWithdrawalRequest(String sentBy, String appId, String message, List<UploadFile> files) {
+  public void insertWithdrawalRequest(String createdByUserId, String appId, String message, List<UploadFile> files) {
     List<File> attachments = getAttachments(appId, files);
-    models.WithdrawalRequest withdrawalRequest = new models.WithdrawalRequest(RandomUtil.random("WIT"),
-        appId,
-        Instant.now().toEpochMilli(),
-        sentBy,
-        message,
-        attachments,
-        null,
-        null,
-        null);
+
+    WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
+    withdrawalRequest.setId(RandomUtil.random("WIT"));
+    withdrawalRequest.setAppId(appId);
+    withdrawalRequest.setCreatedByUserId(createdByUserId);
+    withdrawalRequest.setCreatedTimestamp(Instant.now().toEpochMilli());
+    withdrawalRequest.setMessage(message);
+    withdrawalRequest.setAttachments(attachments);
+
     withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
     draftDao.deleteDraft(appId, DraftType.WITHDRAWAL);
     messagePublisher.sendMessage(RoutingKey.WITHDRAW_REQUEST_CREATE, withdrawalRequest);

@@ -1,20 +1,20 @@
-@import models.view.RfiResponseView
+@import models.view.RfiReplyView
 
-@(rfiResponseView: RfiResponseView)
+@(rfiReplyView: RfiReplyView)
 
 <div class="message-panel message-reply-panel" >
   <header>
-    <h3><span class="heading-small">Reply from:</span> @rfiResponseView.getSentBy on @rfiResponseView.getSentAt</h3>
+    <h3><span class="heading-small">Reply from:</span> @rfiReplyView.getSentBy on @rfiReplyView.getSentAt</h3>
   </header>
 
   <article>
     <h4 class="heading-small">Message</h4>
     <div>
-    @Html(rfiResponseView.getMessage)
+    @Html(rfiReplyView.getMessage)
     </div>
   </article>
 
-  @if(!rfiResponseView.getFileViews.isEmpty) {
+  @if(!rfiReplyView.getFileViews.isEmpty) {
     <footer>
       <h4 class="heading-small">Attached files</h4>
       <table class="form-group">
@@ -25,7 +25,7 @@
           </tr>
         </thead>
         <tbody>
-        @for(file <- rfiResponseView.getFileViews) {
+        @for(file <- rfiReplyView.getFileViews) {
           <tr>
             <td class="file-upload-filename"><a href="@file.getLink" target="_blank">@file.getName</a></td>
             <td class="file-upload-status">@file.getSize</td>

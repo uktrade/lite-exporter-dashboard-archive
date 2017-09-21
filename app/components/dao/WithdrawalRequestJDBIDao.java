@@ -1,6 +1,6 @@
 package components.dao;
 
-import models.WithdrawalRequest;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
@@ -17,17 +17,14 @@ public interface WithdrawalRequestJDBIDao {
   @SqlQuery("SELECT * FROM WITHDRAWAL_REQUEST WHERE APP_ID = :appId")
   WithdrawalRequest getWithdrawalRequest(String appId);
 
-  @SqlUpdate("INSERT INTO WITHDRAWAL_REQUEST (WITHDRAWAL_REQUEST_ID, APP_ID, SENT_TIMESTAMP, SENT_BY, MESSAGE,  ATTACHMENTS,  REJECTED_BY, REJECTED_TIMESTAMP, REJECTED_MESSAGE) VALUES " +
-      "                                     (:withdrawalRequestId,  :appId, :sentTimestamp, :sentBy, :message, :attachments, :rejectedBy, :rejectedTimestamp, :rejectedMessage)")
-  void insert(@Bind("withdrawalRequestId") String withdrawalRequestId,
+  @SqlUpdate("INSERT INTO WITHDRAWAL_REQUEST (ID,  APP_ID, CREATED_BY_USER_ID, CREATED_TIMESTAMP, MESSAGE,  ATTACHMENTS) VALUES " +
+      "                                     (:id, :appId, :createdByUserId,   :createdTimestamp, :message, :attachments)")
+  void insert(@Bind("id") String id,
               @Bind("appId") String appId,
-              @Bind("sentTimestamp") Long sentTimestamp,
-              @Bind("sentBy") String sentBy,
+              @Bind("createdByUserId") String createdByUserId,
+              @Bind("createdTimestamp") Long createdTimestamp,
               @Bind("message") String message,
-              @Bind("attachments") String attachments,
-              @Bind("rejectedBy") String rejectedBy,
-              @Bind("rejectedTimestamp") Long rejectedTimestamp,
-              @Bind("rejectedMessage") String rejectedMessage);
+              @Bind("attachments") String attachments);
 
   @SqlUpdate("DELETE FROM WITHDRAWAL_REQUEST")
   void truncateTable();

@@ -3,7 +3,7 @@ package components.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import models.File;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 
 import java.io.IOException;
 import java.util.Collections;

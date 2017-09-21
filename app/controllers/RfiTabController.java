@@ -2,21 +2,21 @@ package controllers;
 
 import com.google.inject.Inject;
 import components.dao.DraftDao;
-import components.dao.RfiResponseDao;
+import components.dao.RfiReplyDao;
 import components.exceptions.DatabaseException;
 import components.service.ApplicationService;
 import components.service.ApplicationSummaryViewService;
-import components.service.RfiResponseService;
+import components.service.RfiReplyService;
 import components.service.RfiViewService;
 import components.service.UserService;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.FileUtil;
 import models.enums.DraftType;
-import models.view.AddRfiResponseView;
+import models.view.AddRfiReplyView;
 import models.view.ApplicationSummaryView;
 import models.view.RfiView;
-import models.view.form.RfiResponseForm;
+import models.view.form.RfiReplyForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
@@ -35,9 +35,9 @@ public class RfiTabController extends SamlController {
   private final FormFactory formFactory;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final RfiViewService rfiViewService;
-  private final RfiResponseDao rfiResponseDao;
+  private final RfiReplyDao rfiReplyDao;
   private final ApplicationService applicationService;
-  private final RfiResponseService rfiResponseService;
+  private final RfiReplyService rfiReplyService;
   private final DraftDao draftDao;
   private final UserService userService;
 
@@ -46,94 +46,94 @@ public class RfiTabController extends SamlController {
                           FormFactory formFactory,
                           ApplicationSummaryViewService applicationSummaryViewService,
                           RfiViewService rfiViewService,
-                          RfiResponseDao rfiResponseDao,
+                          RfiReplyDao rfiReplyDao,
                           ApplicationService applicationService,
-                          RfiResponseService rfiResponseService,
+                          RfiReplyService rfiReplyService,
                           DraftDao draftDao, UserService userService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.rfiViewService = rfiViewService;
-    this.rfiResponseDao = rfiResponseDao;
+    this.rfiReplyDao = rfiReplyDao;
     this.applicationService = applicationService;
-    this.rfiResponseService = rfiResponseService;
+    this.rfiReplyService = rfiReplyService;
     this.draftDao = draftDao;
     this.userService = userService;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
   public Result deleteFileById(String appId, String fileId) {
-    Form<RfiResponseForm> rfiResponseForm = formFactory.form(RfiResponseForm.class).bindFromRequest();
-    String rfiId = rfiResponseForm.data().get("rfiId");
+    Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
+    String rfiId = rfiReplyForm.data().get("rfiId");
     try {
-      draftDao.deleteFile(rfiId, fileId, DraftType.RFI_RESPONSE);
+      draftDao.deleteFile(rfiId, fileId, DraftType.RFI_REPLY);
     } catch (DatabaseException databaseException) {
       // Since this error could occur if the user refreshes the page, we do not return a bad request.
       LOGGER.warn("Unable to delete file.", databaseException);
     }
-    rfiResponseForm.discardErrors();
-    return showResponseForm(appId, rfiId, rfiResponseForm);
+    rfiReplyForm.discardErrors();
+    return showReplyForm(appId, rfiId, rfiReplyForm);
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
-  public Result submitResponse(String appId) {
-    Form<RfiResponseForm> rfiResponseForm = formFactory.form(RfiResponseForm.class).bindFromRequest();
-    String rfiId = rfiResponseForm.data().get("rfiId");
+  public Result submitReply(String appId) {
+    Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
+    String rfiId = rfiReplyForm.data().get("rfiId");
 
     List<UploadFile> uploadFiles = FileUtil.getUploadFiles(request());
-    FileUtil.processErrors(rfiResponseForm, uploadFiles);
+    FileUtil.processErrors(rfiReplyForm, uploadFiles);
 
-    if (alreadyHasResponse(rfiId)) {
-      LOGGER.error("Response to rfiId {} and appId {} not possible since a response already exists", rfiId, appId);
+    if (alreadyHasReply(rfiId)) {
+      LOGGER.error("Reply to rfiId {} and appId {} not possible since a reply already exists", rfiId, appId);
       return showRfiTab(appId);
-    } else if (!allowResponses(appId)) {
-      LOGGER.error("Response to rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
+    } else if (!allowReplies(appId)) {
+      LOGGER.error("Reply to rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
       return showRfiTab(appId);
-    } else if (rfiResponseForm.hasErrors()) {
-      return showResponseForm(appId, rfiId, rfiResponseForm);
+    } else if (rfiReplyForm.hasErrors()) {
+      return showReplyForm(appId, rfiId, rfiReplyForm);
     } else {
       String userId = userService.getCurrentUserId();
-      String responseMessage = rfiResponseForm.get().responseMessage;
-      rfiResponseService.insertRfiResponse(userId, rfiId, responseMessage, uploadFiles);
-      flash("success", "Your message has been sent");
+      String message = rfiReplyForm.get().replyMessage;
+      rfiReplyService.insertRfiReply(userId, rfiId, message, uploadFiles);
+      flash("success", "Your message has been sent.");
       return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
     }
   }
 
-  public Result showResponseForm(String appId, String rfiId) {
-    if (alreadyHasResponse(rfiId)) {
-      LOGGER.error("Response to rfiId {} and appId {} not possible since a response already exists", rfiId);
+  public Result showReplyForm(String appId, String rfiId) {
+    if (alreadyHasReply(rfiId)) {
+      LOGGER.error("Reply to rfiId {} and appId {} not possible since a reply already exists", rfiId);
       flash(rfiId, "You have already submitted your reply to this RFI - you cannot edit or re-submit it.");
       return redirect(routes.RfiTabController.showRfiTab(appId).withFragment(rfiId));
-    } else if (!allowResponses(appId)) {
-      LOGGER.error("Response to rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
+    } else if (!allowReplies(appId)) {
+      LOGGER.error("Reply to rfiId {} and appId {} not possible since application is complete.", rfiId, appId);
       return showRfiTab(appId);
     } else {
-      RfiResponseForm rfiResponseForm = new RfiResponseForm();
-      rfiResponseForm.rfiId = rfiId;
-      Form<RfiResponseForm> form = formFactory.form(RfiResponseForm.class).fill(rfiResponseForm);
-      return showResponseForm(appId, rfiId, form);
+      RfiReplyForm rfiReplyForm = new RfiReplyForm();
+      rfiReplyForm.rfiId = rfiId;
+      Form<RfiReplyForm> form = formFactory.form(RfiReplyForm.class).fill(rfiReplyForm);
+      return showReplyForm(appId, rfiId, form);
     }
   }
 
-  private Result showResponseForm(String appId, String rfiId, Form<RfiResponseForm> rfiResponseForm) {
+  private Result showReplyForm(String appId, String rfiId, Form<RfiReplyForm> rfiReplyForm) {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
-    AddRfiResponseView addRfiResponseView = rfiViewService.getAddRfiResponseView(appId, rfiId);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), rfiResponseForm, addRfiResponseView)).withHeader("Cache-Control", "no-store");
+    AddRfiReplyView addRfiReplyView = rfiViewService.getAddRfiReplyView(appId, rfiId);
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowReplies(appId), rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store");
   }
 
   public Result showRfiTab(String appId) {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appId);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowResponses(appId), null, null)).withHeader("Cache-Control", "no-store");
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, rfiViews, allowReplies(appId), null, null)).withHeader("Cache-Control", "no-store");
   }
 
-  private boolean alreadyHasResponse(String rfiId) {
-    return rfiResponseDao.getRfiResponse(rfiId) != null;
+  private boolean alreadyHasReply(String rfiId) {
+    return rfiReplyDao.getRfiReply(rfiId) != null;
   }
 
-  private boolean allowResponses(String appId) {
+  private boolean allowReplies(String appId) {
     return applicationService.isApplicationInProgress(appId);
   }
 
