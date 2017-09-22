@@ -2,9 +2,9 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.util.JsonUtil;
-import uk.gov.bis.lite.exporterdashboard.api.Amendment;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import uk.gov.bis.lite.exporterdashboard.api.Amendment;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class AmendmentDaoImpl implements AmendmentDao {
           amendment.getCreatedByUserId(),
           amendment.getCreatedTimestamp(),
           amendment.getMessage(),
-          JsonUtil.convertFilesToJson(amendment.getAttachments()));
+          JsonUtil.convertListToJson(amendment.getAttachments()));
     }
   }
 

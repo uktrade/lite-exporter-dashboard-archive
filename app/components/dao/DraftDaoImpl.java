@@ -4,10 +4,10 @@ import com.google.inject.Inject;
 import components.exceptions.DatabaseException;
 import components.util.JsonUtil;
 import models.Draft;
-import uk.gov.bis.lite.exporterdashboard.api.File;
 import models.enums.DraftType;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ public class DraftDaoImpl implements DraftDao {
           attachments.addAll(existingDraft.getAttachments());
         }
         attachments.add(file);
-        String attachmentsJson = JsonUtil.convertFilesToJson(attachments);
+        String attachmentsJson = JsonUtil.convertListToJson(attachments);
         draftJDBIDao.deleteDraft(relatedId, draftType);
         draftJDBIDao.insertDraft(relatedId, draftType, attachmentsJson);
       });
@@ -79,7 +79,7 @@ public class DraftDaoImpl implements DraftDao {
             throw new DatabaseException(errorMessage);
           } else {
             draftJDBIDao.deleteDraft(relatedId, draftType);
-            draftJDBIDao.insertDraft(relatedId, draftType, JsonUtil.convertFilesToJson(files));
+            draftJDBIDao.insertDraft(relatedId, draftType, JsonUtil.convertListToJson(files));
           }
         }
       });

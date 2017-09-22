@@ -2,9 +2,9 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.util.JsonUtil;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
           withdrawalRequest.getCreatedByUserId(),
           withdrawalRequest.getCreatedTimestamp(),
           withdrawalRequest.getMessage(),
-          JsonUtil.convertFilesToJson(withdrawalRequest.getAttachments()));
+          JsonUtil.convertListToJson(withdrawalRequest.getAttachments()));
     }
   }
 

@@ -1,21 +1,45 @@
-@import views.html.common.page.twoThirdsColumn
+@import models.view.OutcomeView
+@import views.html.common.page.{detailPanel, twoThirdsColumn}
+@(outcomeViews: java.util.List[OutcomeView])
 
 @twoThirdsColumn {
   <p class="bold">A decision on your application has been made.</p>
 
   <p>Please review the documents below which state the outcome for each of the goods lines on your application.</p>
 
-  <h3 class="heading-small">Outcome documents</h3>
+  @if(!outcomeViews.isEmpty) {
+    <br>
+    <h3 class="heading-small">Outcome documents</h3>
+    <ul class="outcome-documents-list">
+    @for(document <- outcomeViews.get(0).getDocuments) {
+      <li><a href="#"> @document <span class="visually-hidden">(opens in a new tab)</span></a></li>
+    }
+    </ul>
+  }
 
-  <ul class="outcome-documents-list">
-    <li><a href="/document">
-      Licence SIE2017/00001 granted for some or all of your items (PDF, 50kb)<span class="visually-hidden">
-      (opens in a new tab)</span></a></li>
-    <li><a href="/document">
-      Letter explaining the licence refusal of some or all of your items (PDF, 21kb)<span class="visually-hidden">
-      (opens in a new tab)</span></a></li>
-    <li><a href="/document">
-      Letter confirming that no licence is required for some or all of your items (PDF, 29kb)<span class="visually-hidden">
-      (opens in a new tab)</span></a></li>
-  </ul>
+  @if(outcomeViews.size() > 1) {
+    <br>
+    <h3 class="heading-small">Previous outcome documents</h3>
+    <p></p>
+
+    @detailPanel("Previous outcome documents") {View older versions of the outcome documents from this application} {
+
+      These documents have been replaced and are no longer valid.
+      They are available here for reference only and do not form part of your licence.
+
+      @for(i <- 1 until outcomeViews.size()) {
+        <br>
+        <h3 class="heading-small">Issued on @outcomeViews.get(i).getIssuedOn, voided on @outcomeViews.get(i).getVoidedOn</h3>
+        <ul class="outcome-documents-list">
+        @for(document <- outcomeViews.get(i).getDocuments) {
+          <li><a href="#"> @document <span class="visually-hidden">(opens in a new tab)</span></a>
+          </li>
+        }
+        </ul>
+      }
+
+    }
+
+  }
+
 }

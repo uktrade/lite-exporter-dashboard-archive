@@ -8,27 +8,32 @@ import components.client.CustomerServiceClient;
 import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
 import components.dao.DraftDao;
+import components.dao.OutcomeDao;
 import components.dao.RfiDao;
 import components.dao.RfiReplyDao;
 import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalRequestDao;
 import models.Application;
+import models.Document;
+import models.Outcome;
 import models.Rfi;
 import models.Siel;
 import models.StatusUpdate;
+import models.enums.DocumentType;
 import models.enums.DraftType;
 import models.enums.RfiStatus;
 import models.enums.SielStatus;
 import models.enums.StatusType;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import org.apache.commons.lang3.RandomUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class TestDataServiceImpl implements TestDataService {
@@ -59,6 +64,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final AmendmentDao amendmentDao;
   private final DraftDao draftDao;
   private final SielDao sielDao;
+  private final OutcomeDao outcomeDao;
   private final CustomerServiceClient customerServiceClient;
 
   @Inject
@@ -70,6 +76,7 @@ public class TestDataServiceImpl implements TestDataService {
                              AmendmentDao amendmentDao,
                              DraftDao draftDao,
                              SielDao sielDao,
+                             OutcomeDao outcomeDao,
                              CustomerServiceClient customerServiceClient) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
@@ -79,6 +86,7 @@ public class TestDataServiceImpl implements TestDataService {
     this.amendmentDao = amendmentDao;
     this.draftDao = draftDao;
     this.sielDao = sielDao;
+    this.outcomeDao = outcomeDao;
     this.customerServiceClient = customerServiceClient;
   }
 
@@ -92,7 +100,8 @@ public class TestDataServiceImpl implements TestDataService {
 
   @Override
   public void insertOneCompany(String userId) {
-    createCompleteApplication(userId);
+    createCompleteApplication(userId, false);
+    createCompleteApplication(userId, true);
     createNoCaseOfficerApplication(userId);
     createAdvancedApplication(userId);
     createEmptyQueueApplication(userId);
@@ -120,6 +129,7 @@ public class TestDataServiceImpl implements TestDataService {
     List<String> appIds = applicationDao.getApplications(customerIds).stream()
         .map(Application::getAppId)
         .collect(Collectors.toList());
+    outcomeDao.deleteOutcomesByAppIds(appIds);
     statusUpdateDao.deleteStatusUpdatesByAppIds(appIds);
     withdrawalRequestDao.deleteWithdrawalRequestsByAppIds(appIds);
     amendmentDao.deleteAmendmentsByAppIds(appIds);
@@ -145,6 +155,7 @@ public class TestDataServiceImpl implements TestDataService {
     amendmentDao.deleteAllAmendments();
     draftDao.deleteAllDrafts();
     sielDao.deleteAllSiels();
+    outcomeDao.deleteAllOutcomes();
   }
 
   private void createSiels(String userId) {
@@ -363,7 +374,7 @@ public class TestDataServiceImpl implements TestDataService {
     statusUpdateDao.insertStatusUpdate(statusUpdate);
   }
 
-  private void createCompleteApplication(String userId) {
+  private void createCompleteApplication(String userId, boolean hasAmendments) {
     String appId = random("APP");
     Application application = new Application(appId,
         wrapCustomerId(userId, COMPANY_ID_TWO),
@@ -400,6 +411,40 @@ public class TestDataServiceImpl implements TestDataService {
         OFFICER_ID,
         "This is a rfi.");
     rfiDao.insertRfi(rfi);
+
+    String letter = "Cover letter";
+    String licence = "Licence SIE2017/000001 granted for some or all of your items";
+    String refusal = "Letter explaining the licence refusal of some or all of your items";
+    String nlr = "Letter confirming that no licence is required for some or all of your items";
+    List<String> licenceRefs = Arrays.asList(letter, licence, refusal, nlr);
+
+    List<DocumentType> issueDocumentTypes = Arrays.asList(DocumentType.ISSUE_LETTER, DocumentType.ISSUE_LICENCE, DocumentType.ISSUE_REFUSAL, DocumentType.ISSUE_NLR);
+    List<DocumentType> amendDocumentTypes = Arrays.asList(DocumentType.AMEND_LETTER, DocumentType.AMEND_LICENCE, DocumentType.AMEND_REFUSAL, DocumentType.AMEND_NLR);
+
+    int max = hasAmendments ? 4 : 1;
+
+    for (int i = 0; i < max; i++) {
+      long createdTimestamp = time(2010 + i, 2 + i, 10 + i, 13, 17);
+      String outcomeId = random("OUT");
+      Outcome outcome = new Outcome();
+      outcome.setId(outcomeId);
+      outcome.setAppId(appId);
+      outcome.setCreatedTimestamp(createdTimestamp);
+      outcome.setCreatedByUserId(userId);
+      outcome.setRecipientUserIds(new ArrayList<>());
+      List<Document> documents = new ArrayList<>();
+      for (int j = 0; j < 4; j++) {
+        DocumentType documentType = i == 0 ? issueDocumentTypes.get(j) : amendDocumentTypes.get(j);
+        Document document = new Document();
+        document.setDocumentType(documentType);
+        document.setFilename(UUID.randomUUID().toString() + ".pdf");
+        document.setLicenceRef(licenceRefs.get(j));
+        document.setUrl("http://nourl.com");
+        documents.add(document);
+      }
+      outcome.setDocuments(documents);
+      outcomeDao.insertOutcome(outcome);
+    }
   }
 
   private String randomNumber(String prefix) {

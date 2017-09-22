@@ -23,6 +23,8 @@ import components.dao.ApplicationDao;
 import components.dao.ApplicationDaoImpl;
 import components.dao.DraftDao;
 import components.dao.DraftDaoImpl;
+import components.dao.OutcomeDao;
+import components.dao.OutcomeDaoImpl;
 import components.dao.RfiDao;
 import components.dao.RfiDaoImpl;
 import components.dao.RfiReplyDao;
@@ -68,13 +70,13 @@ import components.service.StartUpService;
 import components.service.StartUpServiceImpl;
 import components.service.StatusItemViewService;
 import components.service.StatusItemViewServiceImpl;
-import components.service.test.TestDataService;
-import components.service.test.TestDataServiceImpl;
-import components.service.test.TestUserServiceImpl;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
+import components.service.test.TestDataService;
+import components.service.test.TestDataServiceImpl;
 import components.service.test.TestOgelItemViewServiceImpl;
+import components.service.test.TestUserServiceImpl;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
@@ -143,6 +145,7 @@ public class GuiceModule extends AbstractModule {
     bind(AmendmentDao.class).to(AmendmentDaoImpl.class);
     bind(DraftDao.class).to(DraftDaoImpl.class).asEagerSingleton();
     bind(SielDao.class).to(SielDaoImpl.class);
+    bind(OutcomeDao.class).to(OutcomeDaoImpl.class);
     // Database test data
     // TODO Test
     bind(TestDataService.class).to(TestDataServiceImpl.class);
