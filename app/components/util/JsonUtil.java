@@ -3,6 +3,7 @@ package components.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import models.Document;
 import uk.gov.bis.lite.exporterdashboard.api.File;
 
 import java.io.IOException;
@@ -19,13 +20,11 @@ public class JsonUtil {
   private static final TypeReference<List<File>> FILE_LIST_TYPE_REFERENCE = new TypeReference<List<File>>() {
   };
 
-  public static String convertListToJson(List<String> list) {
-    try {
-      List<String> insert = emptyIfNull(list);
-      return OBJECT_MAPPER.writeValueAsString(insert);
-    } catch (JsonProcessingException jpe) {
-      throw new RuntimeException("Failed to convert list to json.", jpe);
-    }
+  private static final TypeReference<List<Document>> DOCUMENT_LIST_TYPE_REFERENCE = new TypeReference<List<Document>>() {
+  };
+
+  public static String convertListToJson(List list) {
+    return toJson(emptyIfNull(list));
   }
 
   public static List<String> convertJsonToList(String json) {
@@ -33,15 +32,6 @@ public class JsonUtil {
       return OBJECT_MAPPER.readValue(json, STRING_LIST_TYPE_REFERENCE);
     } catch (IOException ioe) {
       throw new RuntimeException("Failed to convert json to list.", ioe);
-    }
-  }
-
-  public static String convertFilesToJson(List<File> files) {
-    try {
-      List<File> insert = emptyIfNull(files);
-      return OBJECT_MAPPER.writeValueAsString(insert);
-    } catch (JsonProcessingException jpe) {
-      throw new RuntimeException("Failed to convert files to json.", jpe);
     }
   }
 
@@ -53,8 +43,23 @@ public class JsonUtil {
     }
   }
 
-  // From apache commons
-  private static <T> List<T> emptyIfNull(final List<T> list) {
+  public static List<Document> convertJsonToDocuments(String json) {
+    try {
+      return OBJECT_MAPPER.readValue(json, DOCUMENT_LIST_TYPE_REFERENCE);
+    } catch (IOException ioe) {
+      throw new RuntimeException("Failed to convert json to documents.", ioe);
+    }
+  }
+
+  private static String toJson(Object object) {
+    try {
+      return OBJECT_MAPPER.writeValueAsString(object);
+    } catch (JsonProcessingException jpe) {
+      throw new RuntimeException("Failed to convert object to json", jpe);
+    }
+  }
+
+  private static List emptyIfNull(final List list) {
     return list == null ? Collections.emptyList() : list;
   }
 

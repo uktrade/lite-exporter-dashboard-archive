@@ -1,15 +1,16 @@
 @import models.view.ApplicationSummaryView
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, showDocuments: Boolean)
+@import models.view.OutcomeView
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, showDocuments: Boolean, outcomeViews: java.util.List[OutcomeView])
 
-@applicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount, null) {
-  @if(showDocuments) {
-    @outcomeDocuments()
-  } else {
-    Your application is still being processed.
-    <p>
-      Outcome documents will appear here when processing is complete.
-    </p>
+  @applicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount, null) {
+    @if(showDocuments) {
+      @outcomeDocuments(outcomeViews)
+    } else {
+      Your application is still being processed.
+      <p>
+        Outcome documents will appear here when processing is complete.
+      </p>
+    }
   }
-}

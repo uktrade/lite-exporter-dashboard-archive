@@ -2,9 +2,9 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.util.JsonUtil;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public class RfiReplyDaoImpl implements RfiReplyDao {
           rfiReply.getCreatedByUserId(),
           rfiReply.getCreatedTimestamp(),
           rfiReply.getMessage(),
-          JsonUtil.convertFilesToJson(rfiReply.getAttachments()));
+          JsonUtil.convertListToJson(rfiReply.getAttachments()));
     }
   }
 

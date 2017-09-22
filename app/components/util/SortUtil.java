@@ -1,13 +1,17 @@
 package components.util;
 
 import components.comparator.ApplicationDateComparator;
+import models.Document;
+import models.Outcome;
 import models.enums.ApplicationSortType;
+import models.enums.DocumentType;
 import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.ApplicationItemView;
 import models.view.OgelItemView;
 import models.view.SielItemView;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
@@ -19,6 +23,15 @@ public class SortUtil {
   private static final Map<ApplicationSortType, Map<SortDirection, Comparator<ApplicationItemView>>> APPLICATION_COMPARATORS;
   private static final Map<LicenceSortType, Map<SortDirection, Comparator<OgelItemView>>> OGEL_COMPARATORS;
   private static final Map<LicenceSortType, Map<SortDirection, Comparator<SielItemView>>> SIEL_COMPARATORS;
+  private static final Comparator<Outcome> OUTCOME_CREATED_REVERSE_COMPARATOR = Comparator.comparing(Outcome::getCreatedTimestamp).reversed();
+  private static final List<DocumentType> DOCUMENT_TYPES = Arrays.asList(DocumentType.ISSUE_LETTER,
+      DocumentType.AMEND_LETTER,
+      DocumentType.ISSUE_LICENCE,
+      DocumentType.AMEND_LICENCE,
+      DocumentType.ISSUE_NLR,
+      DocumentType.AMEND_NLR,
+      DocumentType.ISSUE_REFUSAL,
+      DocumentType.AMEND_REFUSAL);
 
   static {
     APPLICATION_COMPARATORS = new EnumMap<>(ApplicationSortType.class);
@@ -71,6 +84,14 @@ public class SortUtil {
 
   public static void sortSiels(List<SielItemView> sielItemViews, LicenceSortType licenceSortType, SortDirection sortDirection) {
     sielItemViews.sort(SIEL_COMPARATORS.get(licenceSortType).get(sortDirection));
+  }
+
+  public static void sortOutcomes(List<Outcome> outcomes) {
+    outcomes.sort(OUTCOME_CREATED_REVERSE_COMPARATOR);
+  }
+
+  public static void sortDocuments(List<Document> documents) {
+    documents.sort(Comparator.comparingInt(document -> DOCUMENT_TYPES.indexOf(document.getDocumentType())));
   }
 
 }
