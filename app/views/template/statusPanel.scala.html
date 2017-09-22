@@ -6,12 +6,6 @@
 <div class="table-filters">
   Show:
   <ul>
-    <li @if(applicationListView.getApplicationProgress == null) {
-      class="active" }>
-    <a href="@applicationListView.getRoute.setApplicationProgress(null).toString">
-      All (@applicationListView.getAllCount)
-    </a>
-    </li>
     <li @if(applicationListView.getApplicationProgress == ApplicationProgress.DRAFT) {
       class="active"}>
       <a href="@applicationListView.getRoute.setApplicationProgress(ApplicationProgress.DRAFT).toString">
@@ -29,6 +23,12 @@
         class="active"}>
       <a href="@applicationListView.getRoute.setApplicationProgress(ApplicationProgress.COMPLETED).toString">
         Completed (@applicationListView.getCompletedCount)
+      </a>
+    </li>
+    <li @if(applicationListView.getApplicationProgress == null) {
+      class="active" }>
+      <a href="@applicationListView.getRoute.setApplicationProgress(null).toString">
+      All (@applicationListView.getAllCount)
       </a>
     </li>
   </ul>
