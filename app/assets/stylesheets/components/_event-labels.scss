@@ -1,0 +1,62 @@
+.event-label {
+  background: $highlight-colour;
+  padding: 0.5em 1em 0.5em 2.5em;
+  display: inline-block;
+
+  &.with-top-margin {
+    margin-top: $gutter-half;
+  }
+
+  @include link-underline-on-hover;
+
+  a {
+    white-space: nowrap;
+  }
+
+  *[class$="-icon"] {
+    margin-left: -1.7em;
+  }
+}
+
+@mixin event-label-icon($index) {
+  width: 20px;
+  height: 20px;
+  display: block;
+  float: left;
+  vertical-align: middle;
+  margin-right: 0.3em;
+  position: relative;
+  background-image: url(../images/status-label-icons.svg);
+  background-position-x: -20px * $index;
+  background-size: cover;
+
+  @include media(mobile) {
+    width: 16px;
+    height: 16px;
+    background-position-x: -16px * $index;
+  }
+}
+
+.rfi-icon {
+  @include event-label-icon(0);
+}
+
+.stopped-icon {
+  @include event-label-icon(1);
+}
+
+.withdrawl-rejected-icon {
+  @include event-label-icon(2);
+}
+
+.inform-issued-icon {
+  @include event-label-icon(3);
+}
+
+.delayed-icon {
+  @include event-label-icon(4);
+}
+
+.decision-icon {
+  @include event-label-icon(5);
+}
