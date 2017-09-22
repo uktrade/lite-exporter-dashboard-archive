@@ -10,8 +10,7 @@ public class ApplicationItemView {
   private final String createdById;
   private final String createdByFirstName;
   private final String createdByLastName;
-  private final Long createdTimestamp;
-  private final Long submittedTimestamp;
+  private final Long dateTimestamp;
   private final String date;
   private final String caseReference;
   private final String applicantReference;
@@ -28,8 +27,7 @@ public class ApplicationItemView {
                              String createdById,
                              String createdByFirstName,
                              String createdByLastName,
-                             Long createdTimestamp,
-                             Long submittedTimestamp,
+                             Long dateTimestamp,
                              String date,
                              String caseReference,
                              String applicantReference,
@@ -45,8 +43,7 @@ public class ApplicationItemView {
     this.createdById = createdById;
     this.createdByFirstName = createdByFirstName;
     this.createdByLastName = createdByLastName;
-    this.createdTimestamp = createdTimestamp;
-    this.submittedTimestamp = submittedTimestamp;
+    this.dateTimestamp = dateTimestamp;
     this.date = date;
     this.caseReference = caseReference;
     this.applicantReference = applicantReference;
@@ -82,12 +79,8 @@ public class ApplicationItemView {
     return createdByLastName;
   }
 
-  public Long getCreatedTimestamp() {
-    return createdTimestamp;
-  }
-
-  public Long getSubmittedTimestamp() {
-    return submittedTimestamp;
+  public Long getDateTimestamp() {
+    return dateTimestamp;
   }
 
   public String getDate() {

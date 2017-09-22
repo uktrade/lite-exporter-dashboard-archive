@@ -1,6 +1,5 @@
 package components.util;
 
-import components.comparator.ApplicationDateComparator;
 import models.Document;
 import models.Outcome;
 import models.enums.ApplicationSortType;
@@ -36,8 +35,7 @@ public class SortUtil {
   static {
     APPLICATION_COMPARATORS = new EnumMap<>(ApplicationSortType.class);
     APPLICATION_COMPARATORS.put(ApplicationSortType.CREATED_BY, createStringComparators(view -> view.getCreatedByLastName() + view.getCreatedByFirstName()));
-    Comparator<ApplicationItemView> dateComparator = new ApplicationDateComparator();
-    APPLICATION_COMPARATORS.put(ApplicationSortType.DATE, createComparators(dateComparator));
+    APPLICATION_COMPARATORS.put(ApplicationSortType.DATE, createLongComparators(ApplicationItemView::getDateTimestamp));
     Comparator<ApplicationItemView> statusComparator = Comparator.comparing(ApplicationItemView::getApplicationStatusTimestamp);
     APPLICATION_COMPARATORS.put(ApplicationSortType.STATUS, createComparators(statusComparator));
   }

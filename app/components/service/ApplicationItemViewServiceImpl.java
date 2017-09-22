@@ -12,13 +12,13 @@ import components.util.ApplicationUtil;
 import components.util.TimeUtil;
 import models.Application;
 import models.Rfi;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import models.StatusUpdate;
 import models.User;
 import models.enums.ApplicationProgress;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -100,8 +100,9 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
       }
     }
 
-    String date = getDate(application);
-    String applicationStatusDate = String.format("Since: %s", TimeUtil.formatDateWithSlashes(statusTimestamp));
+    Long dateTimestamp = getDateTimestamp(application);
+    String date = TimeUtil.formatDate(dateTimestamp);
+    String applicationStatusDate = "Since " + TimeUtil.formatDate(statusTimestamp);
 
     String createdById = application.getCreatedBy();
     User user = userService.getUser(createdById);
@@ -115,8 +116,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         createdById,
         user.getFirstName(),
         user.getLastName(),
-        application.getCreatedTimestamp(),
-        application.getSubmittedTimestamp(),
+        dateTimestamp,
         date,
         application.getCaseReference(),
         application.getApplicantReference(),
@@ -139,14 +139,12 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     }
   }
 
-  private String getDate(Application application) {
-    long dateTimestamp;
+  private Long getDateTimestamp(Application application) {
     if (application.getSubmittedTimestamp() != null) {
-      dateTimestamp = application.getSubmittedTimestamp();
+      return application.getSubmittedTimestamp();
     } else {
-      dateTimestamp = application.getCreatedTimestamp();
+      return application.getCreatedTimestamp();
     }
-    return TimeUtil.formatDateWithSlashes(dateTimestamp);
   }
 
   private Map<String, String> getAppIdToOpenRfiIdMap(List<String> appIds) {

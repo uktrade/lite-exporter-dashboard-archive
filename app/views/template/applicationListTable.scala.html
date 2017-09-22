@@ -3,88 +3,89 @@
 @import template._
 @(applicationListView: ApplicationListView)
 
-@ariaSortAttr(applicationSortType: ApplicationSortType) = {
+  @ariaSortAttr(applicationSortType: ApplicationSortType) = {
   @if(applicationListView.getApplicationSortType == applicationSortType) {
     aria-sort="@applicationListView.getSortDirection.toAriaString"
   } else {
     aria-sort="none"
   }
-}
+  }
 
-@if(!applicationListView.getPage.getItems.isEmpty) {
-  <div class="scrollable-table">
-    <table class="table-font-xsmall table-align-top">
-      <thead>
-        <tr>
-          <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
-            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DATE).toString">
-            @if(applicationListView.getApplicationProgress == ApplicationProgress.DRAFT) {
-              Date created
-            } else {
-              Date submitted
-            }
-            </a>
-          </th>
-          <th role="columnheader">
-            References
-          </th>
-          <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
-            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.STATUS).toString">
-              Application status
-            </a>
-          </th>
-          <th role="columnheader">
-            Destination
-          </th>
-          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-            <th role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
-              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
-                Created by
+  @if(!applicationListView.getPage.getItems.isEmpty) {
+    <div class="scrollable-table">
+      <table class="table-font-xsmall table-align-top">
+        <thead>
+          <tr>
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DATE).toString">
+                Date
               </a>
             </th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-      @for(applicationItemView <- applicationListView.getPage.getItems) {
-        <tr>
-          <th scope="row">
-          @if(applicationListView.getApplicationProgress == ApplicationProgress.DRAFT || applicationItemView.getApplicationProgress != ApplicationProgress.DRAFT) {
+            <th role="columnheader">
+              References
+            </th>
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.STATUS).toString">
+                Application status
+              </a>
+            </th>
+            <th role="columnheader">
+              Destination
+            </th>
+            @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+              <th role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
+                <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
+                  Created by
+                </a>
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+        @for(applicationItemView <- applicationListView.getPage.getItems) {
+          <tr>
+            <td nowrap scope="row">
+              @if(applicationItemView.getApplicationProgress == ApplicationProgress.DRAFT) {
+                Created
+              } else {
+                Submitted
+              }
+            <div class="bold">
             @applicationItemView.getDate
-          }
-          </th>
-          <td>
-          @if(applicationItemView.getCaseReference != null) {
-            <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
-            @applicationItemView.getCaseReference
-            </a>
-            <br>
-            @applicationItemView.getApplicantReference
-          } else {
-            <a href="#" class="bold">
-            @applicationItemView.getApplicantReference
-            </a>
-          }
-          </td>
-          <td>
+            </div>
+            </td>
+            <td>
+            @if(applicationItemView.getCaseReference != null) {
+              <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
+              @applicationItemView.getCaseReference
+              </a>
+              <br>
+              @applicationItemView.getApplicantReference
+            } else {
+              <a href="#" class="bold">
+              @applicationItemView.getApplicantReference
+              </a>
+            }
+            </td>
+            <td>
               @applicationItemView.getApplicationStatus
             <br>
-            @applicationItemView.getApplicationStatusDate
-            @if(applicationItemView.getOpenRfiId != null) {
-              @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString, "", true)
-            }
-          </td>
-          <td>
-          @applicationItemView.getDestination
-          </td>
-          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-            <td>
-            @applicationItemView.getCreatedByFirstName @applicationItemView.getCreatedByLastName
+              @applicationItemView.getApplicationStatusDate
+              @if(applicationItemView.getOpenRfiId != null) {
+                @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString, "", true)
+              }
             </td>
-          }
-        </tr>
-      }
-      </tbody>
-    </table>
-  </div>
-}
+            <td>
+            @applicationItemView.getDestination
+            </td>
+            @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+              <td>
+                @applicationItemView.getCreatedByFirstName @applicationItemView.getCreatedByLastName
+              </td>
+            }
+          </tr>
+        }
+        </tbody>
+      </table>
+    </div>
+  }
