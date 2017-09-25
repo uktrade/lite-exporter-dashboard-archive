@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface OgelItemViewService {
 
+  boolean hasOgelItemViews(String userId);
+
   List<OgelItemView> getOgelItemViews(String userId);
 
 }

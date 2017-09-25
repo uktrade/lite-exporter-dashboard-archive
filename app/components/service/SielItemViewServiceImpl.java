@@ -41,6 +41,14 @@ public class SielItemViewServiceImpl implements SielItemViewService {
         .collect(Collectors.toList());
   }
 
+  @Override
+  public boolean hasSielItemViews(String userId) {
+    List<String> customerIds = customerServiceClient.getCustomers(userId).stream()
+        .map(CustomerView::getCustomerId)
+        .collect(Collectors.toList());
+    return !sielDao.getSiels(customerIds).isEmpty();
+  }
+
   private SielItemView createSielItemView(Siel siel, Map<String, String> customerIdToCompanyName) {
     String expiryDate = TimeUtil.formatDateWithSlashes(siel.getExpiryTimestamp());
     String licensee = customerIdToCompanyName.get(siel.getCompanyId());

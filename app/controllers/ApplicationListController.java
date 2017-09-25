@@ -54,14 +54,21 @@ public class ApplicationListController extends SamlController {
     SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
     ApplicationListTab applicationListTab = EnumUtil.parse(state.getTab(), ApplicationListTab.class, ApplicationListTab.USER);
 
+    List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(userId);
+
+    boolean hasUserApplications = hasUserApplications(userId, views);
+    boolean hasOtherUserApplications = hasOtherUserApplications(userId, views);
+
+    if (hasUserApplications && !hasOtherUserApplications && applicationListTab == ApplicationListTab.COMPANY) {
+      applicationListTab = ApplicationListTab.USER;
+    } else if (!hasUserApplications && hasOtherUserApplications && applicationListTab == ApplicationListTab.USER) {
+      applicationListTab = ApplicationListTab.COMPANY;
+    }
+
     if (applicationSortType == ApplicationSortType.CREATED_BY && applicationListTab == ApplicationListTab.USER) {
       applicationSortType = ApplicationSortType.DATE;
       sortDirection = SortDirection.DESC;
     }
-
-    List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(userId);
-
-    boolean showCompanyTab = isShowCompanyTab(userId, views);
 
     List<ApplicationItemView> userFilteredViews = filterByUser(userId, applicationListTab, views);
 
@@ -84,7 +91,8 @@ public class ApplicationListController extends SamlController {
     ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
         companyId,
         companyNames,
-        showCompanyTab,
+        hasUserApplications,
+        hasOtherUserApplications,
         applicationSortType,
         sortDirection,
         applicationProgress,
@@ -105,7 +113,13 @@ public class ApplicationListController extends SamlController {
         .collect(Collectors.toList());
   }
 
-  private boolean isShowCompanyTab(String currentUserId, List<ApplicationItemView> applicationItemViews) {
+  private boolean hasUserApplications(String currentUserId, List<ApplicationItemView> applicationItemViews) {
+    return applicationItemViews.stream()
+        .map(ApplicationItemView::getCreatedById)
+        .anyMatch(id -> currentUserId.equals(id));
+  }
+
+  private boolean hasOtherUserApplications(String currentUserId, List<ApplicationItemView> applicationItemViews) {
     return applicationItemViews.stream()
         .map(ApplicationItemView::getCreatedById)
         .anyMatch(id -> !currentUserId.equals(id));

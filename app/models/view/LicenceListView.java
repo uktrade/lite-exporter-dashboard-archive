@@ -8,6 +8,8 @@ import models.view.route.LicenceRoute;
 
 public class LicenceListView implements ListView {
 
+  private final boolean hasSiels;
+  private final boolean hasOgels;
   private final LicenceListTab licenceListTab;
   private final LicenceSortType licenceSortType;
   private final SortDirection sortDirection;
@@ -15,13 +17,34 @@ public class LicenceListView implements ListView {
   private final Page<SielItemView> sielPage;
   private final int currentPage;
 
-  public LicenceListView(LicenceListTab licenceListTab, LicenceSortType licenceSortType, SortDirection sortDirection, Page<OgelItemView> ogelPage, Page<SielItemView> sielPage, int currentPage) {
+  public LicenceListView(boolean hasSiels,
+                         boolean hasOgels,
+                         LicenceListTab licenceListTab,
+                         LicenceSortType licenceSortType,
+                         SortDirection sortDirection,
+                         Page<OgelItemView> ogelPage,
+                         Page<SielItemView> sielPage,
+                         int currentPage) {
+    this.hasSiels = hasSiels;
+    this.hasOgels = hasOgels;
     this.licenceListTab = licenceListTab;
     this.licenceSortType = licenceSortType;
     this.sortDirection = sortDirection;
     this.ogelPage = ogelPage;
     this.sielPage = sielPage;
     this.currentPage = currentPage;
+  }
+
+  public boolean isHasSiels() {
+    return hasSiels;
+  }
+
+  public boolean isHasOgels() {
+    return hasOgels;
+  }
+
+  public LicenceListTab getLicenceListTab() {
+    return licenceListTab;
   }
 
   public LicenceSortType getLicenceSortType() {
@@ -40,8 +63,8 @@ public class LicenceListView implements ListView {
     return sielPage;
   }
 
-  public LicenceListTab getLicenceListTab() {
-    return licenceListTab;
+  public int getCurrentPage() {
+    return currentPage;
   }
 
   public LicenceRoute getRoute() {

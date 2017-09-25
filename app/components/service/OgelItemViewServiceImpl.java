@@ -35,6 +35,11 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
   }
 
   @Override
+  public boolean hasOgelItemViews(String userId) {
+    return !permissionsServiceClient.getOgelRegistrations(userId).isEmpty();
+  }
+
+  @Override
   public List<OgelItemView> getOgelItemViews(String userId) {
     List<OgelRegistrationView> ogelRegistrationViews = permissionsServiceClient.getOgelRegistrations(userId);
     Map<String, SiteView> sites = getSites(ogelRegistrationViews);

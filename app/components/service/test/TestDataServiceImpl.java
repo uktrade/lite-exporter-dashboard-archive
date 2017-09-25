@@ -158,6 +158,11 @@ public class TestDataServiceImpl implements TestDataService {
     outcomeDao.deleteAllOutcomes();
   }
 
+  // Siel Ogel
+  // Admin: N N
+  // Applicant11: Y N
+  // Applicant2: Y Y
+  // Applicant3: N Y
   private void createSiels(String userId) {
     for (int i = 1; i < 22; i++) {
       String companyId = i % 2 == 0 ? wrapCustomerId(userId, COMPANY_ID_ONE) : wrapCustomerId(userId, COMPANY_ID_TWO);

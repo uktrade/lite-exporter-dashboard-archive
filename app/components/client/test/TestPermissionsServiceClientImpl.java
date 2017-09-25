@@ -10,6 +10,7 @@ import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TestPermissionsServiceClientImpl implements PermissionsServiceClient {
@@ -27,14 +28,23 @@ public class TestPermissionsServiceClientImpl implements PermissionsServiceClien
     this.userService = userService;
   }
 
+  // Siel Ogel
+  // Admin: N N
+  // Applicant11: Y N
+  // Applicant2: Y Y
+  // Applicant3: N Y
   @Override
   public List<OgelRegistrationView> getOgelRegistrations(String userId) {
-    List<OgelRegistrationView> ogelRegistrationViews = permissionsServiceClientImpl.getOgelRegistrations(TestDataServiceImpl.APPLICANT_ID);
-    ogelRegistrationViews.forEach(ogelRegistrationView -> {
-      String wrapCustomerId = TestDataServiceImpl.wrapCustomerId(userService.getCurrentUserId(), ogelRegistrationView.getCustomerId());
-      ogelRegistrationView.setCustomerId(wrapCustomerId);
-    });
-    return ogelRegistrationViews;
+    if ("1".equals(userId) || TestDataServiceImpl.APPLICANT_ID.equals(userId)) {
+      return new ArrayList<>();
+    } else {
+      List<OgelRegistrationView> ogelRegistrationViews = permissionsServiceClientImpl.getOgelRegistrations(TestDataServiceImpl.APPLICANT_ID);
+      ogelRegistrationViews.forEach(ogelRegistrationView -> {
+        String wrapCustomerId = TestDataServiceImpl.wrapCustomerId(userService.getCurrentUserId(), ogelRegistrationView.getCustomerId());
+        ogelRegistrationView.setCustomerId(wrapCustomerId);
+      });
+      return ogelRegistrationViews;
+    }
   }
 
 }

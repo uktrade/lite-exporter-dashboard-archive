@@ -8,4 +8,6 @@ public interface SielItemViewService {
 
   List<SielItemView> getSielItemViews(String userId);
 
+  boolean hasSielItemViews(String userId);
+
 }

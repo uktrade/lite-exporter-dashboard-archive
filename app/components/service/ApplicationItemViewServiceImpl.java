@@ -90,19 +90,23 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     if (maxStatusUpdate != null) {
       applicationStatus = ApplicationUtil.getStatusName(maxStatusUpdate.getStatusType());
       statusTimestamp = maxStatusUpdate.getStartTimestamp();
+    } else if (application.getSubmittedTimestamp() != null) {
+      applicationStatus = ApplicationUtil.SUBMITTED;
+      statusTimestamp = application.getSubmittedTimestamp();
     } else {
-      if (application.getSubmittedTimestamp() != null) {
-        applicationStatus = ApplicationUtil.SUBMITTED;
-        statusTimestamp = application.getSubmittedTimestamp();
-      } else {
-        applicationStatus = ApplicationUtil.DRAFT;
-        statusTimestamp = application.getCreatedTimestamp();
-      }
+      applicationStatus = ApplicationUtil.DRAFT;
+      statusTimestamp = application.getCreatedTimestamp();
     }
 
-    Long dateTimestamp = getDateTimestamp(application);
+    Long dateTimestamp = getDateTimestamp(maxStatusUpdate, application);
     String date = TimeUtil.formatDate(dateTimestamp);
-    String applicationStatusDate = "Since " + TimeUtil.formatDate(statusTimestamp);
+
+    String applicationStatusDate;
+    if (maxStatusUpdate != null && StatusType.COMPLETE == maxStatusUpdate.getStatusType()) {
+      applicationStatusDate = "On " + TimeUtil.formatDate(statusTimestamp);
+    } else {
+      applicationStatusDate = "Since " + TimeUtil.formatDate(statusTimestamp);
+    }
 
     String createdById = application.getCreatedBy();
     User user = userService.getUser(createdById);
@@ -110,7 +114,9 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
     ApplicationProgress applicationProgress = getApplicationProgress(maxStatusUpdate, application);
 
-    return new ApplicationItemView(application.getAppId(),
+    return new
+
+        ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
         companyName,
         createdById,
@@ -130,17 +136,19 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   private ApplicationProgress getApplicationProgress(StatusUpdate maxStatusUpdate, Application application) {
-    if (application.getSubmittedTimestamp() == null) {
-      return ApplicationProgress.DRAFT;
-    } else if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
+    if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
       return ApplicationProgress.COMPLETED;
-    } else {
+    } else if (application.getSubmittedTimestamp() != null) {
       return ApplicationProgress.CURRENT;
+    } else {
+      return ApplicationProgress.DRAFT;
     }
   }
 
-  private Long getDateTimestamp(Application application) {
-    if (application.getSubmittedTimestamp() != null) {
+  private Long getDateTimestamp(StatusUpdate maxStatusUpdate, Application application) {
+    if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
+      return maxStatusUpdate.getStartTimestamp();
+    } else if (application.getSubmittedTimestamp() != null) {
       return application.getSubmittedTimestamp();
     } else {
       return application.getCreatedTimestamp();

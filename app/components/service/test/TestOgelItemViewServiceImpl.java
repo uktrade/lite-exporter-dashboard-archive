@@ -27,7 +27,11 @@ public class TestOgelItemViewServiceImpl extends OgelItemViewServiceImpl {
   @Override
   public List<OgelItemView> getOgelItemViews(String userId) {
     List<OgelItemView> ogelItemViews = super.getOgelItemViews(userId);
-    return recycleOgelItemView(ogelItemViews.get(0));
+    if (ogelItemViews.size() == 1) {
+      return recycleOgelItemView(ogelItemViews.get(0));
+    } else {
+      return new ArrayList<>();
+    }
   }
 
   private List<OgelItemView> recycleOgelItemView(OgelItemView base) {

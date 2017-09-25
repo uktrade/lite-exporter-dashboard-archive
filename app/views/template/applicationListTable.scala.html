@@ -47,8 +47,12 @@
             <td nowrap scope="row">
               @if(applicationItemView.getApplicationProgress == ApplicationProgress.DRAFT) {
                 Created
-              } else {
+              }
+              @if(applicationItemView.getApplicationProgress == ApplicationProgress.CURRENT) {
                 Submitted
+              }
+              @if(applicationItemView.getApplicationProgress == ApplicationProgress.COMPLETED) {
+                Completed
               }
             <div class="bold">
             @applicationItemView.getDate

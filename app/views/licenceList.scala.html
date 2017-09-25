@@ -3,33 +3,43 @@
 @import models.view.LicenceListView
 @import template._
 @(applyLink: String, licenceListView: LicenceListView)
-  @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
+@standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-  } {
+} {
 
-    @dashboardTopNav(applyLink)
+  @dashboardTopNav(applyLink)
 
-    <div class="heading-medium dashboard-section-heading">Licences</div>
+  <div class="heading-medium dashboard-section-heading">Licences</div>
 
+  @if(licenceListView.isHasSiels && !licenceListView.isHasOgels) {
+    <p>
+  <h3 class="heading-small">Standard Individual Export Licences</h3>
+    </p>
+  }
+
+  @if(!licenceListView.isHasSiels && licenceListView.isHasOgels) {
+    <p>
+  <h3 class="heading-small">Open General Export Licences</h3>
+    </p>
+  }
+
+  @if(licenceListView.isHasSiels && licenceListView.isHasOgels) {
     @tabs("licences-tabs", size = "large", width = "wide") {
       @tab("SIELs", licenceListView.getRoute.setLicenceListTab(LicenceListTab.SIELS).toString, licenceListView.getLicenceListTab == LicenceListTab.SIELS)
       @tab("OGELs", licenceListView.getRoute.setLicenceListTab(LicenceListTab.OGELS).toString, licenceListView.getLicenceListTab == LicenceListTab.OGELS)
     }
-
-    @licenceListView.getLicenceListTab match {
-      case LicenceListTab.SIELS => {
-        @if(licenceListView.getSielPage.getItems.isEmpty) {
-          No SIELs available.
-        } else {
-          @sielList(licenceListView)
-        }
-      }
-      case LicenceListTab.OGELS => {
-        @if(licenceListView.getOgelPage.getItems.isEmpty) {
-          No OGELs available.
-        } else {
-          @ogelList(licenceListView)
-        }
-      }
-    }
   }
+
+  @if(!licenceListView.isHasSiels && !licenceListView.isHasOgels) {
+    You have no licences.
+  }
+
+  @if(licenceListView.getLicenceListTab == LicenceListTab.SIELS && licenceListView.isHasSiels) {
+    @sielList(licenceListView)
+  }
+
+  @if(licenceListView.getLicenceListTab == LicenceListTab.OGELS && licenceListView.isHasOgels) {
+    @ogelList(licenceListView)
+  }
+
+}
