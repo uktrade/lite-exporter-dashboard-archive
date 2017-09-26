@@ -24,13 +24,13 @@ $path: "../images/";
 @import "mixins";
 // Components
 @import "components/application-summary-panel";
+@import "components/event-labels";
 @import "components/file-upload";
 @import "components/flashes";
 @import "components/forms";
 @import "components/message-panels";
 @import "components/pagination";
 @import "components/part-navigation";
-@import "components/rfi-labels";
 @import "components/status-labels";
 @import "components/table-filters";
 @import "components/tables";

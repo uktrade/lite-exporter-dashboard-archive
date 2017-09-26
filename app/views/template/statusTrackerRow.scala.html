@@ -1,3 +1,4 @@
+@import models.enums.EventLabelType
 @import models.view.StatusItemView
 @import template._
 
@@ -9,7 +10,7 @@
       <p>@statusItemView.getStatusExplanation</p>
     }
     @for(statusItemRfiView <- statusItemView.getStatusItemRfiViews) {
-      @rfiLabel(routes.RfiTabController.showRfiTab(statusItemRfiView.getAppId).withFragment(statusItemRfiView.getRfiId).toString,
+      @eventLabel(EventLabelType.RFI, "Request for information", routes.RfiTabController.showRfiTab(statusItemRfiView.getAppId).withFragment(statusItemRfiView.getRfiId).toString,
         statusItemRfiView.getDescription)
     }
   </td>

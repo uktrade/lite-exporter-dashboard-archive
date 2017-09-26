@@ -1,0 +1,10 @@
+@import models.enums.EventLabelType
+
+@(eventLabelType: EventLabelType, linkText: String, href: String, extraText: String = "", withTopMargin: Boolean = false)
+<div class="event-label @if(withTopMargin) { with-top-margin }">
+  <span class="@eventLabelType.toString-icon"></span>
+  <a href="@href">
+    @linkText
+  </a>
+  @extraText
+</div>

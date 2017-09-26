@@ -1,4 +1,4 @@
-@import models.enums.{ApplicationListTab, ApplicationProgress, ApplicationSortType}
+@import models.enums.{ApplicationListTab, ApplicationProgress, ApplicationSortType, EventLabelType}
 @import models.view.ApplicationListView
 @import template._
 @(applicationListView: ApplicationListView)
@@ -73,10 +73,10 @@
             </td>
             <td>
               @applicationItemView.getApplicationStatus
-            <br>
+              <br>
               @applicationItemView.getApplicationStatusDate
               @if(applicationItemView.getOpenRfiId != null) {
-                @rfiLabel(routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString, "", true)
+                @eventLabel(EventLabelType.RFI, "Request for information", routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString, "", true)
               }
             </td>
             <td>
