@@ -5,12 +5,9 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
-import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
-import org.skife.jdbi.v2.unstable.BindIn;
 
 import java.util.List;
 
-@UseStringTemplate3StatementLocator
 public interface OutcomeJDBIDao {
 
   @Mapper(OutcomeRSMapper.class)
@@ -29,9 +26,7 @@ public interface OutcomeJDBIDao {
   @SqlUpdate("DELETE FROM OUTCOME")
   void truncateTable();
 
-  @SqlUpdate("DELETE FROM OUTCOME WHERE APP_ID in (<appIds>)")
-  void deleteOutcomesByAppIds(@BindIn("appIds") List<String> appIds);
+  @SqlUpdate("DELETE FROM OUTCOME WHERE APP_ID = :appId")
+  void deleteOutcomesByAppId(@Bind("appId") String appId);
 
 }
-
-

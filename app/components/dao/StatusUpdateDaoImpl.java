@@ -70,12 +70,10 @@ public class StatusUpdateDaoImpl implements StatusUpdateDao {
   }
 
   @Override
-  public void deleteStatusUpdatesByAppIds(List<String> appIds) {
-    if (!appIds.isEmpty()) {
-      try (final Handle handle = dbi.open()) {
-        StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);
-        statusUpdateJDBIDao.deleteStatusUpdatesByAppIds(appIds);
-      }
+  public void deleteStatusUpdatesByAppId(String appId) {
+    try (final Handle handle = dbi.open()) {
+      StatusUpdateJDBIDao statusUpdateJDBIDao = handle.attach(StatusUpdateJDBIDao.class);
+      statusUpdateJDBIDao.deleteStatusUpdatesByAppId(appId);
     }
   }
 

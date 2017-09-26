@@ -16,6 +16,6 @@ public interface RfiDao {
 
   void deleteAllRfiData();
 
-  void deleteRfiListByAppIds(List<String> appIds);
+  void deleteRfiListByAppId(String appId);
 
 }

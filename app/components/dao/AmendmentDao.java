@@ -12,6 +12,6 @@ public interface AmendmentDao {
 
   void deleteAllAmendments();
 
-  void deleteAmendmentsByAppIds(List<String> appIds);
+  void deleteAmendmentsByAppId(String appId);
 
 }

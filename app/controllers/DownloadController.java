@@ -1,17 +1,23 @@
 package controllers;
 
 import com.google.inject.Inject;
+import components.dao.AmendmentDao;
 import components.dao.DraftDao;
 import components.dao.RfiReplyDao;
+import components.dao.WithdrawalRequestDao;
 import models.enums.DraftType;
-import uk.gov.bis.lite.exporterdashboard.api.File;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
+import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Result;
+import uk.gov.bis.lite.exporterdashboard.api.Amendment;
+import uk.gov.bis.lite.exporterdashboard.api.File;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class DownloadController extends SamlController {
 
@@ -19,11 +25,18 @@ public class DownloadController extends SamlController {
 
   private final RfiReplyDao rfiReplyDao;
   private final DraftDao draftDao;
+  private final AmendmentDao amendmentDao;
+  private final WithdrawalRequestDao withdrawalRequestDao;
 
   @Inject
-  public DownloadController(RfiReplyDao rfiReplyDao, DraftDao draftDao) {
+  public DownloadController(RfiReplyDao rfiReplyDao,
+                            DraftDao draftDao,
+                            AmendmentDao amendmentDao,
+                            WithdrawalRequestDao withdrawalRequestDao) {
     this.rfiReplyDao = rfiReplyDao;
     this.draftDao = draftDao;
+    this.amendmentDao = amendmentDao;
+    this.withdrawalRequestDao = withdrawalRequestDao;
   }
 
   public Result getRfiFile(String rfiId, String fileId) {
@@ -37,12 +50,23 @@ public class DownloadController extends SamlController {
   }
 
   public Result getAmendmentFile(String appId, String fileId) {
-    List<File> files = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT);
+    List<Amendment> amendments = amendmentDao.getAmendments(appId);
+    List<File> attachments = amendments.stream()
+        .map(Amendment::getAttachments)
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+    List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT);
+    List<File> files = ListUtils.union(attachments, draftAttachments);
     return getFile(files, fileId);
   }
 
   public Result getWithdrawalFile(String appId, String fileId) {
-    List<File> files = draftDao.getDraftAttachments(appId, DraftType.WITHDRAWAL);
+    List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.WITHDRAWAL);
+    List<File> attachments = withdrawalRequestDao.getWithdrawalRequests(appId).stream()
+        .map(WithdrawalRequest::getAttachments)
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+    List<File> files = ListUtils.union(attachments, draftAttachments);
     return getFile(files, fileId);
   }
 

@@ -3,29 +3,32 @@
 @import views.html.common.page._
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, activeTab: String, rfiViewCount: Integer, form: play.data.Form[_])(content: Html)
-@standardPage(applicationSummaryView.getCaseReference + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
+  @standardPage(applicationSummaryView.getCaseReference + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-  @if(form != null) {
-    @errorSummary(form)
+    @if(form != null) {
+      @errorSummary(form)
+    }
+
+    @if(flash.containsKey("success")) {
+      @flashBanner("success") {
+        @flash.get("success")
+      }
+    }
+
+  } {
+
+    @dashboardTopNav(applyLink)
+
+    @applicationSummaryPanel(applicationSummaryView)
+
+    @tabs("application-tabs", size = "large", fitToPage = true) {
+      @tab("Status tracker", "/application/" + applicationSummaryView.getAppId + "/status-tracker", activeTab.equals("statusTracker"))
+      @tab(s"Requests for information ($rfiViewCount)", "/application/" + applicationSummaryView.getAppId + "/rfi", activeTab.equals("rfi"))
+      @tab("Messages", "/application/" + applicationSummaryView.getAppId + "/messages", activeTab.equals("messages"))
+      @tab("Amend / withdraw", "/application/" + applicationSummaryView.getAppId + "/amend-application", activeTab.equals("amend"))
+      @tab("Documents", "/application/" + applicationSummaryView.getAppId + "/outcome-documents", activeTab.equals("outcomeDocs"))
+    }
+
+    @content
+
   }
-
-  @if(flash.containsKey("success")) {
-    @flashBanner("success") { @flash.get("success") }
-  }
-
-} {
-
-  @dashboardTopNav(applyLink)
-
-  @applicationSummaryPanel(applicationSummaryView)
-
-  @tabs("application-tabs", size = "large", fitToPage = true) {
-    @tab("Status tracker", "/application/" + applicationSummaryView.getAppId + "/status-tracker", activeTab.equals("statusTracker"))
-    @tab(s"Requests for information ($rfiViewCount)", "/application/" + applicationSummaryView.getAppId + "/rfi", activeTab.equals("rfi"))
-    @tab("Amend application", "/application/" + applicationSummaryView.getAppId + "/amend-application", activeTab.equals("amend"))
-    @tab("Outcome documents", "/application/" + applicationSummaryView.getAppId + "/outcome-documents", activeTab.equals("outcomeDocs"))
-  }
-
-  @content
-
-}

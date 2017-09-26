@@ -1,0 +1,26 @@
+@import models.view.FileView
+
+@(fileViews: java.util.List[FileView])
+
+@if(!fileViews.isEmpty) {
+  <footer>
+    <h4 class="heading-small">Attached files</h4>
+    <table class="form-group">
+      <thead>
+        <tr>
+          <th>File name</th>
+          <th style="min-width: 202px">Size</th>
+        </tr>
+      </thead>
+      <tbody>
+      @for(file <- fileViews) {
+        <tr>
+          <td class="file-upload-filename"><a href="@file.getLink" target="_blank">@file.getName</a></td>
+          <td class="file-upload-status">@file.getSize</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </footer>
+}
+

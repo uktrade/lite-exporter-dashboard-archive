@@ -18,10 +18,10 @@ public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
   }
 
   @Override
-  public WithdrawalRequest getWithdrawalRequest(String appId) {
+  public List<WithdrawalRequest> getWithdrawalRequests(String appId) {
     try (final Handle handle = dbi.open()) {
       WithdrawalRequestJDBIDao withdrawalRequestJDBIDao = handle.attach(WithdrawalRequestJDBIDao.class);
-      return withdrawalRequestJDBIDao.getWithdrawalRequest(appId);
+      return withdrawalRequestJDBIDao.getWithdrawalRequests(appId);
     }
   }
 
@@ -47,12 +47,10 @@ public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
   }
 
   @Override
-  public void deleteWithdrawalRequestsByAppIds(List<String> appIds) {
-    if (!appIds.isEmpty()) {
-      try (final Handle handle = dbi.open()) {
-        WithdrawalRequestJDBIDao withdrawalRequestJDBIDao = handle.attach(WithdrawalRequestJDBIDao.class);
-        withdrawalRequestJDBIDao.deleteWithdrawalRequestsByAppIds(appIds);
-      }
+  public void deleteWithdrawalRequestsByAppId(String appId) {
+    try (final Handle handle = dbi.open()) {
+      WithdrawalRequestJDBIDao withdrawalRequestJDBIDao = handle.attach(WithdrawalRequestJDBIDao.class);
+      withdrawalRequestJDBIDao.deleteWithdrawalRequestsByAppId(appId);
     }
   }
 

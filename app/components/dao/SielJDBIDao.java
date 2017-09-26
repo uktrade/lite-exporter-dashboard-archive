@@ -37,7 +37,7 @@ public interface SielJDBIDao {
   @SqlUpdate("DELETE FROM SIEL")
   void truncateTable();
 
-  @SqlUpdate("DELETE FROM SIEL WHERE COMPANY_ID IN (<companyIds>)")
-  void deleteSielsByCompanyIds(List<String> companyIds);
+  @SqlUpdate("DELETE FROM SIEL WHERE COMPANY_ID = :customerId")
+  void deleteSielsByCustomerId(@Bind("customerId") String customerId);
 
 }

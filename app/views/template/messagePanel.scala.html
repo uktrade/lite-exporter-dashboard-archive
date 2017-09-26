@@ -1,0 +1,59 @@
+@import models.view.MessageView
+@import template.{fileList, messageReplyPanel}
+
+@(messageView: MessageView)
+
+<div class="message-panel">
+  <header>
+    <h3 class="heading-small">
+      <span class="@messageView.getEventLabelType.toString-icon"></span>
+      @messageView.getTitle
+    </h3>
+
+    <div class="grid-row">
+
+      <div class="column-two-thirds">
+        <span class="heading-small">
+        @if(messageView.getSentOn != null) {
+          Sent on:
+        } else {
+          Received on:
+        }
+        </span>
+        <span>
+        @if(messageView.getSentOn != null) {
+          @messageView.getSentOn
+        } else {
+          @messageView.getReceivedOn
+        }
+        </span>
+      </div>
+
+      <div class="column-one-third">
+        <span class="heading-small">
+          Sender:
+        </span>
+        <span>
+        @messageView.getSender
+        </span>
+      </div>
+
+    </div>
+
+  </header>
+
+  <article>
+    <h4 class="heading-small">Message</h4>
+    <div>
+    @Html(messageView.getMessage)
+    </div>
+
+  </article>
+
+  @fileList(messageView.getFileViews)
+
+</div>
+
+@if(messageView.getMessageReplyView != null) {
+  @messageReplyPanel(messageView.getMessageReplyView)
+}

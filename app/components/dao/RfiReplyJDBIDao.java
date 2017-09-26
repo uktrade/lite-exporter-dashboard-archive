@@ -1,12 +1,12 @@
 package components.dao;
 
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
 import org.skife.jdbi.v2.unstable.BindIn;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ public interface RfiReplyJDBIDao {
   @SqlUpdate("DELETE FROM RFI_REPLY")
   void truncateTable();
 
-  @SqlUpdate("DELETE FROM RFI_REPLY WHERE RFI_ID in (<rfiIds>)")
-  void deleteRfiRepliesByRfiIds(@BindIn("rfiIds") List<String> rfiIds);
+  @SqlUpdate("DELETE FROM RFI_REPLY WHERE RFI_ID = :rfiId")
+  void deleteRfiRepliesByRfiId(@Bind("rfiId") String rfiId);
 
 }

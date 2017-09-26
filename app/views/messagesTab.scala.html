@@ -1,0 +1,14 @@
+@import models.view.{ApplicationSummaryView, MessageView}
+@import template._
+
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, messageViews: java.util.List[MessageView])
+
+@applicationDetails(applyLink, applicationSummaryView, "messages", rfiViewCount, null) {
+  @if(messageViews.isEmpty) {
+    <p>You don't have any messages.</p>
+  } else {
+    @for(messageView <- messageViews) {
+      @messagePanel(messageView)
+    }
+  }
+}

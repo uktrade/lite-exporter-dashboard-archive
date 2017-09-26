@@ -14,6 +14,7 @@ GET         /application/*appId/rfi                                   controller
 GET         /application/*appId/rfi/*rfiId                            controllers.RfiTabController.showReplyForm(appId, rfiId)
 POST        /application/*appId/rfi                                   controllers.RfiTabController.submitReply(appId)
 POST        /application/*appId/rfi/file/*fileId                      controllers.RfiTabController.deleteFileById(appId, fileId)
+GET         /application/*appId/messages                              controllers.MessageTabController.showMessages(appId)
 GET         /application/*appId/amend-application                     controllers.AmendTabController.showAmendTab(appId, action ?= null)
 POST        /application/*appId/amend-application                     controllers.AmendTabController.submitAmendment(appId)
 POST        /application/*appId/amend-application/file/*fileId        controllers.AmendTabController.deleteFileById(appId, fileId)

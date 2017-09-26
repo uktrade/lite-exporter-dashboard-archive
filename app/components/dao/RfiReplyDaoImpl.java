@@ -61,12 +61,10 @@ public class RfiReplyDaoImpl implements RfiReplyDao {
   }
 
   @Override
-  public void deleteRfiRepliesByRfiIds(List<String> rfiIds) {
-    if (!rfiIds.isEmpty()) {
-      try (final Handle handle = dbi.open()) {
-        RfiReplyJDBIDao rfiReplyJDBIDao = handle.attach(RfiReplyJDBIDao.class);
-        rfiReplyJDBIDao.deleteRfiRepliesByRfiIds(rfiIds);
-      }
+  public void deleteRfiRepliesByRfiId(String rfiId) {
+    try (final Handle handle = dbi.open()) {
+      RfiReplyJDBIDao rfiReplyJDBIDao = handle.attach(RfiReplyJDBIDao.class);
+      rfiReplyJDBIDao.deleteRfiRepliesByRfiId(rfiId);
     }
   }
 

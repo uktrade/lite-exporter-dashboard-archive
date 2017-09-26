@@ -8,18 +8,23 @@ import components.client.CustomerServiceClient;
 import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
 import components.dao.DraftDao;
+import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
 import components.dao.RfiDao;
 import components.dao.RfiReplyDao;
 import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
+import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
 import models.Application;
 import models.Document;
+import models.Notification;
+import models.NotificationType;
 import models.Outcome;
 import models.Rfi;
 import models.Siel;
 import models.StatusUpdate;
+import models.WithdrawalRejection;
 import models.enums.DocumentType;
 import models.enums.DraftType;
 import models.enums.RfiStatus;
@@ -27,7 +32,9 @@ import models.enums.SielStatus;
 import models.enums.StatusType;
 import org.apache.commons.lang3.RandomUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
+import uk.gov.bis.lite.exporterdashboard.api.Amendment;
 import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +73,8 @@ public class TestDataServiceImpl implements TestDataService {
   private final SielDao sielDao;
   private final OutcomeDao outcomeDao;
   private final CustomerServiceClient customerServiceClient;
+  private final NotificationDao notificationDao;
+  private final WithdrawalRejectionDao withdrawalRejectionDao;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -77,7 +86,9 @@ public class TestDataServiceImpl implements TestDataService {
                              DraftDao draftDao,
                              SielDao sielDao,
                              OutcomeDao outcomeDao,
-                             CustomerServiceClient customerServiceClient) {
+                             CustomerServiceClient customerServiceClient,
+                             NotificationDao notificationDao,
+                             WithdrawalRejectionDao withdrawalRejectionDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiReplyDao = rfiReplyDao;
@@ -88,6 +99,8 @@ public class TestDataServiceImpl implements TestDataService {
     this.sielDao = sielDao;
     this.outcomeDao = outcomeDao;
     this.customerServiceClient = customerServiceClient;
+    this.notificationDao = notificationDao;
+    this.withdrawalRejectionDao = withdrawalRejectionDao;
   }
 
   @Override
@@ -106,6 +119,7 @@ public class TestDataServiceImpl implements TestDataService {
     createAdvancedApplication(userId);
     createEmptyQueueApplication(userId);
     createSiels(userId);
+    createStoppedApplication(userId);
   }
 
   @Override
@@ -129,20 +143,22 @@ public class TestDataServiceImpl implements TestDataService {
     List<String> appIds = applicationDao.getApplications(customerIds).stream()
         .map(Application::getAppId)
         .collect(Collectors.toList());
-    outcomeDao.deleteOutcomesByAppIds(appIds);
-    statusUpdateDao.deleteStatusUpdatesByAppIds(appIds);
-    withdrawalRequestDao.deleteWithdrawalRequestsByAppIds(appIds);
-    amendmentDao.deleteAmendmentsByAppIds(appIds);
+    appIds.forEach(outcomeDao::deleteOutcomesByAppId);
+    appIds.forEach(statusUpdateDao::deleteStatusUpdatesByAppId);
+    appIds.forEach(withdrawalRequestDao::deleteWithdrawalRequestsByAppId);
+    appIds.forEach(withdrawalRejectionDao::deleteWithdrawalRejectionsByAppId);
+    appIds.forEach(amendmentDao::deleteAmendmentsByAppId);
     List<String> rfiIds = rfiDao.getRfiList(appIds).stream()
         .map(Rfi::getRfiId)
         .collect(Collectors.toList());
-    rfiDao.deleteRfiListByAppIds(appIds);
-    rfiReplyDao.deleteRfiRepliesByRfiIds(rfiIds);
-    sielDao.deleteSielsByCompanyIds(customerIds);
+    appIds.forEach(rfiDao::deleteRfiListByAppId);
+    rfiIds.forEach(rfiReplyDao::deleteRfiRepliesByRfiId);
+    customerIds.forEach(sielDao::deleteSielsByCustomerId);
     appIds.forEach(applicationDao::deleteApplication);
     rfiIds.forEach(rfiId -> draftDao.deleteDraft(rfiId, DraftType.RFI_REPLY));
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.WITHDRAWAL));
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT));
+    appIds.forEach(notificationDao::deleteNotificationsByAppId);
   }
 
   @Override
@@ -156,6 +172,8 @@ public class TestDataServiceImpl implements TestDataService {
     draftDao.deleteAllDrafts();
     sielDao.deleteAllSiels();
     outcomeDao.deleteAllOutcomes();
+    notificationDao.deleteAllNotifications();
+    withdrawalRejectionDao.deleteAllWithdrawalRejections();
   }
 
   // Siel Ogel
@@ -268,6 +286,69 @@ public class TestDataServiceImpl implements TestDataService {
       cas = cas + "Flangable Widget Corner Piece for a Wobbly Magnetic Thingy";
     }
     return cas;
+  }
+
+  private void createStoppedApplication(String userId) {
+    String appId = random("APP");
+    Application application = new Application(appId,
+        wrapCustomerId(userId, COMPANY_ID_TWO),
+        userId,
+        time(2013, 11, 4, 13, 10),
+        time(2013, 11, 4, 14, 10),
+        Arrays.asList(GERMANY, ICELAND, FRANCE),
+        getApplicantReference(),
+        randomNumber("ECO"), OFFICER_ID);
+    applicationDao.insert(application);
+
+    Amendment amendment = new Amendment();
+    amendment.setId(random("AME"));
+    amendment.setAppId(appId);
+    amendment.setCreatedByUserId(userId);
+    amendment.setCreatedTimestamp(time(2014, 11, 5, 14, 17));
+    amendment.setAttachments(new ArrayList<>());
+    amendment.setMessage("This is an amendment.");
+    amendmentDao.insertAmendment(amendment);
+
+    for (int i = 0; i < 4; i++) {
+      WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
+      withdrawalRequest.setId(random("WIT"));
+      withdrawalRequest.setAppId(appId);
+      withdrawalRequest.setCreatedByUserId(userId);
+      withdrawalRequest.setCreatedTimestamp(time(2015, 1 + 2 * i, 5, 13, 10));
+      withdrawalRequest.setMessage("This is a withdrawal request.");
+      withdrawalRequest.setAttachments(new ArrayList<>());
+      withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
+      if (i != 3) {
+        Long createdTimestamp = time(2015, 1 + 2 * i + 1, 5, 13, 10);
+        WithdrawalRejection withdrawalRejection = new WithdrawalRejection(random("REJ"),
+            appId,
+            userId,
+            createdTimestamp,
+            "");
+        withdrawalRejectionDao.insertWithdrawalRejection(withdrawalRejection);
+      }
+    }
+
+    Notification delayNotification = new Notification(
+        random("NOT"),
+        appId,
+        NotificationType.DELAY,
+        TestDataServiceImpl.OFFICER_ID,
+        time(2016, 1, 1, 13, 20),
+        new ArrayList<>(),
+        "We're sorry to inform you that your application has been delayed.",
+        new ArrayList<>());
+    Notification stopNotification = new Notification(
+        random("NOT"),
+        appId,
+        NotificationType.STOP,
+        TestDataServiceImpl.OFFICER_ID,
+        time(2017, 1, 1, 14, 30),
+        new ArrayList<>(),
+        "We have had to stop your application.",
+        new ArrayList<>());
+    notificationDao.insertNotification(delayNotification);
+    notificationDao.insertNotification(stopNotification);
   }
 
   private void createAdvancedApplication(String userId) {

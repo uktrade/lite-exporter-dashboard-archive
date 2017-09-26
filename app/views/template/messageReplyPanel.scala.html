@@ -1,0 +1,43 @@
+@import models.view.MessageReplyView
+
+@(messageReplyView: MessageReplyView)
+
+<div class="message-panel message-reply-panel">
+  <header>
+    <h3 class="heading-small">
+      @messageReplyView.getTitle
+    </h3>
+
+    <div class="grid-row">
+
+      <div class="column-two-thirds">
+        <span class="heading-small">
+          Sent on:
+        </span>
+        <span>
+        @messageReplyView.getSentOn
+        </span>
+      </div>
+
+      <div class="column-one-third">
+        <span class="heading-small">
+          Sender:
+        </span>
+        <span>
+        @messageReplyView.getSender
+        </span>
+      </div>
+
+    </div>
+
+  </header>
+
+  <article>
+    <h4 class="heading-small">Message</h4>
+    <div>
+    @Html(messageReplyView.getMessage)
+    </div>
+
+  </article>
+
+</div>

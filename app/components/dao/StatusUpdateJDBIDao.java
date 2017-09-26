@@ -31,7 +31,7 @@ public interface StatusUpdateJDBIDao {
   @SqlUpdate("DELETE FROM STATUS_UPDATE")
   void truncateTable();
 
-  @SqlUpdate("DELETE FROM STATUS_UPDATE WHERE APP_ID in (<appIds>)")
-  void deleteStatusUpdatesByAppIds(@BindIn("appIds") List<String> appIds);
+  @SqlUpdate("DELETE FROM STATUS_UPDATE WHERE APP_ID = :appId")
+  void deleteStatusUpdatesByAppId(@Bind("appId") String appId);
 
 }

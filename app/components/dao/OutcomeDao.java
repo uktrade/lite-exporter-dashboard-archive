@@ -12,6 +12,6 @@ public interface OutcomeDao {
 
   void deleteAllOutcomes();
 
-  void deleteOutcomesByAppIds(List<String> appIds);
+  void deleteOutcomesByAppId(String appId);
 
 }

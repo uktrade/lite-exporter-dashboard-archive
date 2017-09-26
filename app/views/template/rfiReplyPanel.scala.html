@@ -1,10 +1,12 @@
+@import template.fileList
 @import models.view.RfiReplyView
 
 @(rfiReplyView: RfiReplyView)
 
 <div class="message-panel message-reply-panel" >
   <header>
-    <h3><span class="heading-small">Reply from:</span> @rfiReplyView.getSentBy on @rfiReplyView.getSentAt</h3>
+    <h3><span class="heading-small">Reply from:</span>
+      @rfiReplyView.getSentBy on @rfiReplyView.getSentAt</h3>
   </header>
 
   <article>
@@ -14,26 +16,6 @@
     </div>
   </article>
 
-  @if(!rfiReplyView.getFileViews.isEmpty) {
-    <footer>
-      <h4 class="heading-small">Attached files</h4>
-      <table class="form-group">
-        <thead>
-          <tr>
-            <th>File name</th>
-            <th style="min-width: 202px">Size</th>
-          </tr>
-        </thead>
-        <tbody>
-        @for(file <- rfiReplyView.getFileViews) {
-          <tr>
-            <td class="file-upload-filename"><a href="@file.getLink" target="_blank">@file.getName</a></td>
-            <td class="file-upload-status">@file.getSize</td>
-          </tr>
-        }
-        </tbody>
-      </table>
-    </footer>
-  }
+  @fileList(rfiReplyView.getFileViews)
 
 </div>

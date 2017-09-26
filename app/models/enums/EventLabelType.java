@@ -4,7 +4,9 @@ public enum EventLabelType {
 
   RFI("rfi"),
   STOPPED("stopped"),
-  WITHDRAWL_REJECTED("withdrawl-rejected"),
+  WITHDRAWAL_REQUESTED("withdrawal-rejected"),
+  WITHDRAWAL_REJECTED("withdrawal-rejected"),
+  AMENDMENT_REQUESTED("decision"),
   INFORM_ISSUED("inform-issued"),
   DELAYED("delayed"),
   DECISION("decision");

@@ -47,12 +47,10 @@ public class OutcomeDaoImpl implements OutcomeDao {
   }
 
   @Override
-  public void deleteOutcomesByAppIds(List<String> appIds) {
-    if (!appIds.isEmpty()) {
-      try (final Handle handle = dbi.open()) {
-        OutcomeJDBIDao outcomeJDBIDao = handle.attach(OutcomeJDBIDao.class);
-        outcomeJDBIDao.deleteOutcomesByAppIds(appIds);
-      }
+  public void deleteOutcomesByAppId(String appId) {
+    try (final Handle handle = dbi.open()) {
+      OutcomeJDBIDao outcomeJDBIDao = handle.attach(OutcomeJDBIDao.class);
+      outcomeJDBIDao.deleteOutcomesByAppId(appId);
     }
   }
 

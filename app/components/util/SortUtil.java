@@ -2,13 +2,16 @@ package components.util;
 
 import models.Document;
 import models.Outcome;
+import models.WithdrawalRejection;
 import models.enums.ApplicationSortType;
 import models.enums.DocumentType;
 import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.ApplicationItemView;
+import models.view.MessageView;
 import models.view.OgelItemView;
 import models.view.SielItemView;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -23,6 +26,9 @@ public class SortUtil {
   private static final Map<LicenceSortType, Map<SortDirection, Comparator<OgelItemView>>> OGEL_COMPARATORS;
   private static final Map<LicenceSortType, Map<SortDirection, Comparator<SielItemView>>> SIEL_COMPARATORS;
   private static final Comparator<Outcome> OUTCOME_CREATED_REVERSE_COMPARATOR = Comparator.comparing(Outcome::getCreatedTimestamp).reversed();
+  private static final Comparator<MessageView> MESSAGE_VIEW_CREATED_REVERSE_COMPARATOR = Comparator.comparing(MessageView::getCreatedTimestamp).reversed();
+  private static final Comparator<WithdrawalRequest> WITHDRAWAL_REQUEST_COMPARATOR = Comparator.comparing(WithdrawalRequest::getCreatedTimestamp);
+  private static final Comparator<WithdrawalRejection> WITHDRAWAL_REJECTION_COMPARATOR = Comparator.comparing(WithdrawalRejection::getCreatedTimestamp);
   private static final List<DocumentType> DOCUMENT_TYPES = Arrays.asList(DocumentType.ISSUE_LETTER,
       DocumentType.AMEND_LETTER,
       DocumentType.ISSUE_LICENCE,
@@ -90,6 +96,18 @@ public class SortUtil {
 
   public static void sortDocuments(List<Document> documents) {
     documents.sort(Comparator.comparingInt(document -> DOCUMENT_TYPES.indexOf(document.getDocumentType())));
+  }
+
+  public static void sortMessageViews(List<MessageView> messageViews) {
+    messageViews.sort(MESSAGE_VIEW_CREATED_REVERSE_COMPARATOR);
+  }
+
+  public static void sortWithdrawalRequests(List<WithdrawalRequest> withdrawalRequests) {
+    withdrawalRequests.sort(WITHDRAWAL_REQUEST_COMPARATOR);
+  }
+
+  public static void sortWithdrawalRejections(List<WithdrawalRejection> withdrawalRejections) {
+    withdrawalRejections.sort(WITHDRAWAL_REJECTION_COMPARATOR);
   }
 
 }

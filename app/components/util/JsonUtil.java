@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.Document;
+import org.apache.commons.collections4.ListUtils;
 import uk.gov.bis.lite.exporterdashboard.api.File;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 public class JsonUtil {
@@ -23,8 +23,8 @@ public class JsonUtil {
   private static final TypeReference<List<Document>> DOCUMENT_LIST_TYPE_REFERENCE = new TypeReference<List<Document>>() {
   };
 
-  public static String convertListToJson(List list) {
-    return toJson(emptyIfNull(list));
+  public static <E> String convertListToJson(List<? extends E> list) {
+    return toJson(ListUtils.emptyIfNull(list));
   }
 
   public static List<String> convertJsonToList(String json) {
@@ -57,10 +57,6 @@ public class JsonUtil {
     } catch (JsonProcessingException jpe) {
       throw new RuntimeException("Failed to convert object to json", jpe);
     }
-  }
-
-  private static List emptyIfNull(final List list) {
-    return list == null ? Collections.emptyList() : list;
   }
 
 }

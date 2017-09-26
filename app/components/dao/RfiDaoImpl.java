@@ -72,12 +72,10 @@ public class RfiDaoImpl implements RfiDao {
   }
 
   @Override
-  public void deleteRfiListByAppIds(List<String> appIds) {
-    if (!appIds.isEmpty()) {
-      try (final Handle handle = dbi.open()) {
-        RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);
-        rfiJDBIDao.deleteRfiListByAppIds(appIds);
-      }
+  public void deleteRfiListByAppId(String appId) {
+    try (final Handle handle = dbi.open()) {
+      RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);
+      rfiJDBIDao.deleteRfiListByAppId(appId);
     }
   }
 

@@ -47,12 +47,10 @@ public class AmendmentDaoImpl implements AmendmentDao {
   }
 
   @Override
-  public void deleteAmendmentsByAppIds(List<String> appIds) {
-    if (!appIds.isEmpty()) {
-      try (final Handle handle = dbi.open()) {
-        AmendmentJDBIDao amendmentJDBIDao = handle.attach(AmendmentJDBIDao.class);
-        amendmentJDBIDao.deleteAmendmentsByAppIds(appIds);
-      }
+  public void deleteAmendmentsByAppId(String appId) {
+    try (final Handle handle = dbi.open()) {
+      AmendmentJDBIDao amendmentJDBIDao = handle.attach(AmendmentJDBIDao.class);
+      amendmentJDBIDao.deleteAmendmentsByAppId(appId);
     }
   }
 
