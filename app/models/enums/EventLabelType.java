@@ -9,7 +9,8 @@ public enum EventLabelType {
   AMENDMENT_REQUESTED("decision"),
   INFORM_ISSUED("inform-issued"),
   DELAYED("delayed"),
-  DECISION("decision");
+  DECISION("decision"),
+  AMENDMENT_REQUEST("amendment-request");
 
   private final String text;
 

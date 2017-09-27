@@ -15,25 +15,42 @@
 
   *[class$="-icon"] {
     margin-left: -1.7em;
+    vertical-align: -0.3em;
+
+    @include media(mobile) {
+      vertical-align: -0.2em;
+    }
   }
 }
 
+$total-icon-count: 7;
+
 @mixin event-label-icon($index) {
-  width: 20px;
-  height: 20px;
-  display: block;
-  float: left;
+  width: 22px;
+  height: 22px;
+  display: inline-block;
   vertical-align: middle;
   margin-right: 0.3em;
   position: relative;
   background-image: url(../images/status-label-icons.svg);
-  background-position-x: -20px * $index;
+  background-position-x: (100% / ($total-icon-count - 1)) * $index;
   background-size: cover;
+  vertical-align: -0.2em;
 
   @include media(mobile) {
-    width: 16px;
-    height: 16px;
-    background-position-x: -16px * $index;
+    width: 18px;
+    height: 18px;
+  }
+
+  &.large-icon {
+    width: 27px;
+    height: 27px;
+    vertical-align: -0.3em;
+
+    @include media(mobile) {
+      width: 22px;
+      height: 22px;
+    }
   }
 }
 
@@ -59,4 +76,8 @@
 
 .decision-icon {
   @include event-label-icon(5);
+}
+
+.amendment-request-icon {
+  @include event-label-icon(6);
 }
