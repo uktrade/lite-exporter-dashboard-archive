@@ -44,7 +44,7 @@
         <tbody>
         @for(applicationItemView <- applicationListView.getPage.getItems) {
           <tr>
-            <td nowrap scope="row">
+            <td class="no-wrap">
               @if(applicationItemView.getApplicationProgress == ApplicationProgress.DRAFT) {
                 Created
               }
@@ -54,9 +54,9 @@
               @if(applicationItemView.getApplicationProgress == ApplicationProgress.COMPLETED) {
                 Completed
               }
-            <div class="bold">
-            @applicationItemView.getDate
-            </div>
+              <div class="bold">
+                @applicationItemView.getDate
+              </div>
             </td>
             <td>
             @if(applicationItemView.getCaseReference != null) {

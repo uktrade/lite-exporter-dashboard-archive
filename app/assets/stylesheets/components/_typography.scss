@@ -6,6 +6,10 @@ a:visited {
   color: $link-visited-colour;
 }
 
+.no-wrap {
+  white-space: nowrap;
+}
+
 .heading-medium.dashboard-section-heading {
   margin-top: em(13, 20);
 }
