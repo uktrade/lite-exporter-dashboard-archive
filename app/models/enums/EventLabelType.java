@@ -6,11 +6,10 @@ public enum EventLabelType {
   STOPPED("stopped"),
   WITHDRAWAL_REQUESTED("withdrawal-rejected"),
   WITHDRAWAL_REJECTED("withdrawal-rejected"),
-  AMENDMENT_REQUESTED("decision"),
   INFORM_ISSUED("inform-issued"),
   DELAYED("delayed"),
   DECISION("decision"),
-  AMENDMENT_REQUEST("amendment-request");
+  AMENDMENT_REQUESTED("amendment-requested");
 
   private final String text;
 

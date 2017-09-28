@@ -89,7 +89,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     StatusUpdate maxStatusUpdate = ApplicationUtil.getMaxStatusUpdate(statusUpdates);
     if (maxStatusUpdate != null) {
       applicationStatus = ApplicationUtil.getStatusName(maxStatusUpdate.getStatusType());
-      statusTimestamp = maxStatusUpdate.getStartTimestamp();
+      statusTimestamp = maxStatusUpdate.getCreatedTimestamp();
     } else if (application.getSubmittedTimestamp() != null) {
       applicationStatus = ApplicationUtil.SUBMITTED;
       statusTimestamp = application.getSubmittedTimestamp();
@@ -147,7 +147,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
   private Long getDateTimestamp(StatusUpdate maxStatusUpdate, Application application) {
     if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
-      return maxStatusUpdate.getStartTimestamp();
+      return maxStatusUpdate.getCreatedTimestamp();
     } else if (application.getSubmittedTimestamp() != null) {
       return application.getSubmittedTimestamp();
     } else {

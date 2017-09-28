@@ -8,14 +8,14 @@ public class StatusItemView {
   private final String statusExplanation;
   private final String processLabel;
   private final String processDescription;
-  private final List<StatusItemRfiView> statusItemRfiViews;
+  private final List<NotificationView> notificationViews;
 
-  public StatusItemView(String status, String statusExplanation, String processingLabel, String processingDescription, List<StatusItemRfiView> statusItemRfiViews) {
+  public StatusItemView(String status, String statusExplanation, String processLabel, String processDescription, List<NotificationView> notificationViews) {
     this.status = status;
     this.statusExplanation = statusExplanation;
-    this.processLabel = processingLabel;
-    this.processDescription = processingDescription;
-    this.statusItemRfiViews = statusItemRfiViews;
+    this.processLabel = processLabel;
+    this.processDescription = processDescription;
+    this.notificationViews = notificationViews;
   }
 
   public String getStatus() {
@@ -34,8 +34,8 @@ public class StatusItemView {
     return processDescription;
   }
 
-  public List<StatusItemRfiView> getStatusItemRfiViews() {
-    return statusItemRfiViews;
+  public List<NotificationView> getNotificationViews() {
+    return notificationViews;
   }
 
 }

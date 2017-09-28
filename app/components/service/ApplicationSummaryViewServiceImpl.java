@@ -56,7 +56,7 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
     if (application.getCaseOfficerId() != null) {
       return userService.getUsername(application.getCaseOfficerId());
     } else {
-      return "Not assigned yet";
+      return "Not yet assigned";
     }
   }
 

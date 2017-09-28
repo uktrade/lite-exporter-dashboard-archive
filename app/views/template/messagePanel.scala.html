@@ -3,7 +3,7 @@
 
 @(messageView: MessageView)
 
-<div class="message-panel">
+<div class="message-panel" id="@messageView.getAnchor">
   <header>
     <h3 class="heading-small">
       <span class="@messageView.getEventLabelType.toString-icon"></span>

@@ -31,14 +31,14 @@ public class ApplicationUtil {
     statuses.put(StatusType.INITIAL_CHECKS, "Initial Checks");
     statuses.put(StatusType.TECHNICAL_ASSESSMENT, "Technical assessment");
     statuses.put(StatusType.LU_PROCESSING, "Licensing unit processing");
-    statuses.put(StatusType.WITH_OGD, "With OGD");
+    statuses.put(StatusType.WITH_OGD, "With OGD advisors");
     statuses.put(StatusType.FINAL_ASSESSMENT, "Final assessment");
     statuses.put(StatusType.COMPLETE, "Decision reached");
     STATUS_NAME_MAP = Collections.unmodifiableMap(statuses);
 
     Map<StatusType, String> statusExplanations = new EnumMap<>(StatusType.class);
     statusExplanations.put(StatusType.INITIAL_CHECKS, "Checking your organisation details");
-    statusExplanations.put(StatusType.TECHNICAL_ASSESSMENT, "Technical assessment");
+    statusExplanations.put(StatusType.TECHNICAL_ASSESSMENT, "Classification code validation");
     statusExplanations.put(StatusType.LU_PROCESSING, "Checking application form details and other documentation");
     statusExplanations.put(StatusType.WITH_OGD, "Additional advice from other government departments");
     statusExplanations.put(StatusType.FINAL_ASSESSMENT, "Your application is undergoing final checks and you will receive an outcome soon");

@@ -14,9 +14,8 @@ public class StatusUpdateRSMapper implements ResultSetMapper<StatusUpdate> {
   public StatusUpdate map(int index, ResultSet r, StatementContext ctx) throws SQLException {
     String appId = r.getString("app_id");
     StatusType statusType = StatusType.valueOf(r.getString("status_type"));
-    Long startTimestamp = LongMapper.getLong(r, "start_timestamp");
-    Long endTimestamp = LongMapper.getLong(r, "end_timestamp");
-    return new StatusUpdate(appId, statusType, startTimestamp, endTimestamp);
+    Long createdTimestamp = LongMapper.getLong(r, "created_timestamp");
+    return new StatusUpdate(appId, statusType, createdTimestamp);
   }
 
 }

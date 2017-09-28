@@ -14,6 +14,7 @@ import components.dao.RfiDao;
 import components.dao.RfiReplyDao;
 import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
+import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
 import models.Application;
@@ -24,6 +25,7 @@ import models.Outcome;
 import models.Rfi;
 import models.Siel;
 import models.StatusUpdate;
+import models.WithdrawalApproval;
 import models.WithdrawalRejection;
 import models.enums.DocumentType;
 import models.enums.DraftType;
@@ -75,6 +77,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final CustomerServiceClient customerServiceClient;
   private final NotificationDao notificationDao;
   private final WithdrawalRejectionDao withdrawalRejectionDao;
+  private final WithdrawalApprovalDao withdrawalApprovalDao;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -88,7 +91,8 @@ public class TestDataServiceImpl implements TestDataService {
                              OutcomeDao outcomeDao,
                              CustomerServiceClient customerServiceClient,
                              NotificationDao notificationDao,
-                             WithdrawalRejectionDao withdrawalRejectionDao) {
+                             WithdrawalRejectionDao withdrawalRejectionDao,
+                             WithdrawalApprovalDao withdrawalApprovalDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiReplyDao = rfiReplyDao;
@@ -101,6 +105,7 @@ public class TestDataServiceImpl implements TestDataService {
     this.customerServiceClient = customerServiceClient;
     this.notificationDao = notificationDao;
     this.withdrawalRejectionDao = withdrawalRejectionDao;
+    this.withdrawalApprovalDao = withdrawalApprovalDao;
   }
 
   @Override
@@ -119,7 +124,8 @@ public class TestDataServiceImpl implements TestDataService {
     createAdvancedApplication(userId);
     createEmptyQueueApplication(userId);
     createSiels(userId);
-    createStoppedApplication(userId);
+    createWithdrawnOrStoppedApplication(userId, false);
+    createWithdrawnOrStoppedApplication(userId, true);
   }
 
   @Override
@@ -147,6 +153,7 @@ public class TestDataServiceImpl implements TestDataService {
     appIds.forEach(statusUpdateDao::deleteStatusUpdatesByAppId);
     appIds.forEach(withdrawalRequestDao::deleteWithdrawalRequestsByAppId);
     appIds.forEach(withdrawalRejectionDao::deleteWithdrawalRejectionsByAppId);
+    appIds.forEach(withdrawalApprovalDao::deleteWithdrawalApprovalsByAppId);
     appIds.forEach(amendmentDao::deleteAmendmentsByAppId);
     List<String> rfiIds = rfiDao.getRfiList(appIds).stream()
         .map(Rfi::getRfiId)
@@ -168,12 +175,13 @@ public class TestDataServiceImpl implements TestDataService {
     rfiDao.deleteAllRfiData();
     rfiReplyDao.deleteAllRfiReplies();
     withdrawalRequestDao.deleteAllWithdrawalRequests();
+    withdrawalRejectionDao.deleteAllWithdrawalRejections();
+    withdrawalApprovalDao.deleteAllWithdrawalApprovals();
     amendmentDao.deleteAllAmendments();
     draftDao.deleteAllDrafts();
     sielDao.deleteAllSiels();
     outcomeDao.deleteAllOutcomes();
     notificationDao.deleteAllNotifications();
-    withdrawalRejectionDao.deleteAllWithdrawalRejections();
   }
 
   // Siel Ogel
@@ -232,8 +240,7 @@ public class TestDataServiceImpl implements TestDataService {
       if (!isDraft) {
         StatusUpdate initialChecks = new StatusUpdate(app.getAppId(),
             StatusType.INITIAL_CHECKS,
-            time(2017, 4, 4 + i, i, i),
-            null);
+            time(2017, 4, 4 + i, i, i));
         statusUpdateDao.insertStatusUpdate(initialChecks);
         String rfiId = random("RFI");
         Rfi rfi = new Rfi(rfiId,
@@ -288,7 +295,7 @@ public class TestDataServiceImpl implements TestDataService {
     return cas;
   }
 
-  private void createStoppedApplication(String userId) {
+  private void createWithdrawnOrStoppedApplication(String userId, boolean stopped) {
     String appId = random("APP");
     Application application = new Application(appId,
         wrapCustomerId(userId, COMPANY_ID_TWO),
@@ -299,6 +306,15 @@ public class TestDataServiceImpl implements TestDataService {
         getApplicantReference(),
         randomNumber("ECO"), OFFICER_ID);
     applicationDao.insert(application);
+
+    StatusUpdate initialChecks = new StatusUpdate(appId,
+        StatusType.INITIAL_CHECKS,
+        time(2013, 12, 5, 3, 3));
+    statusUpdateDao.insertStatusUpdate(initialChecks);
+    StatusUpdate technicalAssessment = new StatusUpdate(appId,
+        StatusType.TECHNICAL_ASSESSMENT,
+        time(2015, 5, 6, 13, 10));
+    statusUpdateDao.insertStatusUpdate(technicalAssessment);
 
     Amendment amendment = new Amendment();
     amendment.setId(random("AME"));
@@ -338,17 +354,27 @@ public class TestDataServiceImpl implements TestDataService {
         new ArrayList<>(),
         "We're sorry to inform you that your application has been delayed.",
         new ArrayList<>());
-    Notification stopNotification = new Notification(
-        random("NOT"),
-        appId,
-        NotificationType.STOP,
-        TestDataServiceImpl.OFFICER_ID,
-        time(2017, 1, 1, 14, 30),
-        new ArrayList<>(),
-        "We have had to stop your application.",
-        new ArrayList<>());
     notificationDao.insertNotification(delayNotification);
-    notificationDao.insertNotification(stopNotification);
+
+    if (stopped) {
+      Notification stopNotification = new Notification(
+          random("NOT"),
+          appId,
+          NotificationType.STOP,
+          TestDataServiceImpl.OFFICER_ID,
+          time(2017, 1, 1, 14, 30),
+          new ArrayList<>(),
+          "We have had to stop your application.",
+          new ArrayList<>());
+      notificationDao.insertNotification(stopNotification);
+    } else {
+      WithdrawalApproval withdrawalApproval = new WithdrawalApproval(random("WAP"),
+          appId,
+          OFFICER_ID,
+          time(2017, 1, 5, 13, 10),
+          "");
+      withdrawalApprovalDao.insertWithdrawalApproval(withdrawalApproval);
+    }
   }
 
   private void createAdvancedApplication(String userId) {
@@ -365,10 +391,10 @@ public class TestDataServiceImpl implements TestDataService {
     applicationDao.insert(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(appId, rfiId).forEach(rfiDao::insertRfi);
-    createRfiReplyTestData(userId, rfiId).forEach(rfiReplyDao::insertRfiReply);
+    rfiReplyDao.insertRfiReply(createRfiReplyTestData(userId, rfiId));
   }
 
-  private List<RfiReply> createRfiReplyTestData(String userId, String rfiId) {
+  private RfiReply createRfiReplyTestData(String userId, String rfiId) {
     RfiReply rfiReply = new RfiReply();
     rfiReply.setId(random("REP"));
     rfiReply.setRfiId(rfiId);
@@ -379,31 +405,22 @@ public class TestDataServiceImpl implements TestDataService {
         + "<p>Kind regards,</p>"
         + "<p>Kathryn Smith</p>");
     rfiReply.setAttachments(new ArrayList<>());
-
-    RfiReply rfiReplyTwo = new RfiReply();
-    rfiReplyTwo.setId(random("REP"));
-    rfiReplyTwo.setRfiId(rfiId);
-    rfiReplyTwo.setCreatedByUserId(userId);
-    rfiReplyTwo.setCreatedTimestamp(time(2017, 5, 14, 17, 14));
-    rfiReplyTwo.setMessage("This is another test reply.");
-    rfiReplyTwo.setAttachments(new ArrayList<>());
-
-    return Arrays.asList(rfiReply, rfiReplyTwo);
+    return rfiReply;
   }
 
   private List<Rfi> createRfiTestData(String appId, String rfiId) {
     Rfi rfi = new Rfi(random("RFI"),
         appId,
         RfiStatus.ACTIVE,
+        time(2017, 1, 2, 13, 30),
         time(2017, 2, 2, 13, 30),
-        time(2017, 3, 2, 13, 30),
         OFFICER_ID,
         "Please reply to this rfi message.");
     Rfi rfiTwo = new Rfi(rfiId,
         appId,
         RfiStatus.ACTIVE,
-        time(2017, 4, 5, 10, 10),
-        time(2017, 5, 12, 16, 10),
+        time(2017, 2, 5, 10, 10),
+        time(2017, 3, 12, 16, 10),
         OFFICER_ID,
         "<p>We note from your application that you have rated all 8 line items as ML10a and that these items are used in production and maintenance of civil and/or military aircraft.</p>"
             + "<p>Would you please provide the make/model of aircraft for which each of the 8 line items on your application was originally designed.</p>"
@@ -411,30 +428,35 @@ public class TestDataServiceImpl implements TestDataService {
     Rfi rfiThree = new Rfi(random("RFI"),
         appId,
         RfiStatus.ACTIVE,
-        time(2017, 6, 5, 10, 10),
-        time(2018, 6, 5, 10, 10),
+        time(2017, 4, 5, 10, 10),
+        time(2017, 5, 12, 16, 10),
+        OFFICER_ID,
+        "This is some rfi message.");
+    Rfi rfiFour = new Rfi(random("RFI"),
+        appId,
+        RfiStatus.ACTIVE,
+        time(2017, 7, 5, 10, 10),
+        time(2018, 8, 5, 10, 10),
         OFFICER_ID,
         "This is another rfi message.");
     List<Rfi> rfiList = new ArrayList<>();
     rfiList.add(rfi);
     rfiList.add(rfiTwo);
     rfiList.add(rfiThree);
+    rfiList.add(rfiFour);
     return rfiList;
   }
 
   private List<StatusUpdate> createStatusUpdateTestData(String appId) {
     StatusUpdate initialChecks = new StatusUpdate(appId,
         StatusType.INITIAL_CHECKS,
-        time(2017, 2, 2, 13, 30),
-        time(2017, 2, 22, 14, 17));
+        time(2017, 1, 2, 13, 30));
     StatusUpdate technicalAssessment = new StatusUpdate(appId,
         StatusType.TECHNICAL_ASSESSMENT,
-        time(2017, 5, 5, 0, 0),
-        time(2017, 5, 6, 0, 0));
+        time(2017, 5, 5, 0, 0));
     StatusUpdate licenseUnitProcessing = new StatusUpdate(appId,
         StatusType.LU_PROCESSING,
-        time(2017, 7, 5, 0, 0),
-        null);
+        time(2017, 7, 5, 0, 0));
     List<StatusUpdate> statusUpdates = new ArrayList<>();
     statusUpdates.add(initialChecks);
     statusUpdates.add(technicalAssessment);
@@ -455,8 +477,7 @@ public class TestDataServiceImpl implements TestDataService {
     applicationDao.insert(application);
     StatusUpdate statusUpdate = new StatusUpdate(appId,
         StatusType.INITIAL_CHECKS,
-        time(2016, 12, 5, 3, 3),
-        null);
+        time(2016, 12, 5, 3, 3));
     statusUpdateDao.insertStatusUpdate(statusUpdate);
   }
 
@@ -479,14 +500,8 @@ public class TestDataServiceImpl implements TestDataService {
         StatusType.COMPLETE);
     for (int i = 0; i < statusTypes.size(); i++) {
       StatusType statusType = statusTypes.get(i);
-      Long start = time(2017, 5, 3 + i, 3 + i, 3 + i);
-      Long end;
-      if (statusType != StatusType.COMPLETE) {
-        end = time(2017, 6, 3 + i, 3 + i, 3 + i);
-      } else {
-        end = null;
-      }
-      StatusUpdate statusUpdate = new StatusUpdate(appId, statusType, start, end);
+      Long createdTimestamp = time(2017, 5, 3 + i, 3 + i, 3 + i);
+      StatusUpdate statusUpdate = new StatusUpdate(appId, statusType, createdTimestamp);
       statusUpdateDao.insertStatusUpdate(statusUpdate);
     }
     Rfi rfi = new Rfi(random("RFI"),

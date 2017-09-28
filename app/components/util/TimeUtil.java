@@ -17,8 +17,7 @@ public class TimeUtil {
       .appendPattern("yyyy-MM-dd")
       .parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter()
       .withZone(ZoneId.systemDefault());
-  private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy").withZone(ZoneId.systemDefault());
-  private static final DateTimeFormatter dateFormatterSlashes = DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(ZoneId.systemDefault());
+  private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneId.systemDefault());
   private static final DateTimeFormatter timeFormatter = new DateTimeFormatterBuilder()
       .appendPattern("h:mm")
       .appendText(ChronoField.AMPM_OF_DAY, ImmutableMap.of(0L, "am", 1L, "pm"))
@@ -38,10 +37,6 @@ public class TimeUtil {
 
   public static String formatDate(long millis) {
     return dateFormatter.format(Instant.ofEpochMilli(millis));
-  }
-
-  public static String formatDateWithSlashes(long millis) {
-    return dateFormatterSlashes.format(Instant.ofEpochMilli(millis));
   }
 
   public static long time(int year, int month, int dayOfMonth, int hour, int minute) {

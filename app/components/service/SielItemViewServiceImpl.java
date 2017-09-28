@@ -50,7 +50,7 @@ public class SielItemViewServiceImpl implements SielItemViewService {
   }
 
   private SielItemView createSielItemView(Siel siel, Map<String, String> customerIdToCompanyName) {
-    String expiryDate = TimeUtil.formatDateWithSlashes(siel.getExpiryTimestamp());
+    String expiryDate = TimeUtil.formatDate(siel.getExpiryTimestamp());
     String licensee = customerIdToCompanyName.get(siel.getCompanyId());
     String sielStatus = LicenceUtil.getSielStatusName(siel.getSielStatus());
     return new SielItemView(siel.getCaseReference(), siel.getApplicantReference(), licensee, expiryDate, siel.getExpiryTimestamp(), sielStatus);
