@@ -38,8 +38,7 @@ public class ConsumerPact {
     PactDslJsonBody body = new PactDslJsonBody();
     body.stringValue("appId", "app_id");
     body.stringValue("statusType", "INITIAL_CHECKS");
-    body.integerType("startTimestamp", 123456789L);
-    body.integerType("endTimestamp", 1234567890L);
+    body.integerType("createdTimestamp", 123456789L);
 
     return builder.given("initial checks have started")
         .expectsToReceive("a status update message with status type INITIAL_CHECKS")
@@ -74,7 +73,7 @@ public class ConsumerPact {
 
     messageConsumer.handleDelivery(null, envelope, null, mockProvider.getMessage());
 
-    StatusUpdate expected = new StatusUpdate("app_id", StatusType.INITIAL_CHECKS, 123456789L, 1234567890L);
+    StatusUpdate expected = new StatusUpdate("app_id", StatusType.INITIAL_CHECKS, 123456789L);
     verify(statusUpdateDao).insertStatusUpdate(refEq(expected));
     verify(channel).basicAck(0, false);
   }
