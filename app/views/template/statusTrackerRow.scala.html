@@ -1,4 +1,3 @@
-@import models.enums.EventLabelType
 @import models.view.StatusItemView
 @import template._
 
@@ -9,9 +8,16 @@
     @if(statusItemView.getStatusExplanation != "") {
       <p>@statusItemView.getStatusExplanation</p>
     }
-    @for(statusItemRfiView <- statusItemView.getStatusItemRfiViews) {
-      @eventLabel(EventLabelType.RFI, "Request for information", routes.RfiTabController.showRfiTab(statusItemRfiView.getAppId).withFragment(statusItemRfiView.getRfiId).toString,
-        statusItemRfiView.getDescription)
+    @for(notificationView <- statusItemView.getNotificationViews) {
+      @if(notificationView.getEventLabelType != null) {
+        @eventLabel(notificationView.getEventLabelType, notificationView.getLinkText, notificationView.getLink,
+          notificationView.getDescription)
+      } else {
+        <p></p>
+        <a href="@notificationView.getLink">
+        @notificationView.getLinkText
+        </a>
+      }
     }
   </td>
   <td class="status-table-status">
@@ -24,6 +30,12 @@
       }
       case "Not started" => {
         @statusLabel("Not started", "neutral")
+      }
+      case "Withdrawn" => {
+        @statusLabel("Withdrawn", "stopped")
+      }
+      case "Stopped" => {
+        @statusLabel("Stopped", "stopped")
       }
       case default => {
         @statusLabel(default, "neutral")

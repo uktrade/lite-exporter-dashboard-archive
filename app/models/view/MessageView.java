@@ -7,6 +7,7 @@ import java.util.List;
 public class MessageView {
 
   private final EventLabelType eventLabelType;
+  private final String anchor;
   private final String title;
   private final String receivedOn;
   private final String sentOn;
@@ -17,6 +18,7 @@ public class MessageView {
   private final MessageReplyView messageReplyView;
 
   public MessageView(EventLabelType eventLabelType,
+                     String anchor,
                      String title,
                      String receivedOn,
                      String sentOn,
@@ -26,6 +28,7 @@ public class MessageView {
                      List<FileView> fileViews,
                      MessageReplyView messageReplyView) {
     this.eventLabelType = eventLabelType;
+    this.anchor = anchor;
     this.title = title;
     this.receivedOn = receivedOn;
     this.sentOn = sentOn;
@@ -38,6 +41,10 @@ public class MessageView {
 
   public EventLabelType getEventLabelType() {
     return eventLabelType;
+  }
+
+  public String getAnchor() {
+    return anchor;
   }
 
   public String getTitle() {

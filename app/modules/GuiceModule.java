@@ -35,6 +35,8 @@ import components.dao.SielDao;
 import components.dao.SielDaoImpl;
 import components.dao.StatusUpdateDao;
 import components.dao.StatusUpdateDaoImpl;
+import components.dao.WithdrawalApprovalDao;
+import components.dao.WithdrawalApprovalDaoImpl;
 import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRejectionDaoImpl;
 import components.dao.WithdrawalRequestDao;
@@ -155,6 +157,7 @@ public class GuiceModule extends AbstractModule {
     bind(OutcomeDao.class).to(OutcomeDaoImpl.class);
     bind(NotificationDao.class).to(NotificationDaoImpl.class);
     bind(WithdrawalRejectionDao.class).to(WithdrawalRejectionDaoImpl.class);
+    bind(WithdrawalApprovalDao.class).to(WithdrawalApprovalDaoImpl.class);
     // Database test data
     // TODO Test
     bind(TestDataService.class).to(TestDataServiceImpl.class);

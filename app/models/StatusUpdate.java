@@ -13,17 +13,14 @@ public class StatusUpdate {
   @NotNull
   private final StatusType statusType;
   @NotNull
-  private final Long startTimestamp;
-  private final Long endTimestamp;
+  private final Long createdTimestamp;
 
   public StatusUpdate(@JsonProperty("appId") String appId,
                       @JsonProperty("statusType") StatusType statusType,
-                      @JsonProperty("startTimestamp") Long startTimestamp,
-                      @JsonProperty("endTimestamp") Long endTimestamp) {
+                      @JsonProperty("createdTimestamp") Long createdTimestamp) {
     this.appId = appId;
     this.statusType = statusType;
-    this.startTimestamp = startTimestamp;
-    this.endTimestamp = endTimestamp;
+    this.createdTimestamp = createdTimestamp;
   }
 
   public String getAppId() {
@@ -34,12 +31,8 @@ public class StatusUpdate {
     return statusType;
   }
 
-  public Long getStartTimestamp() {
-    return startTimestamp;
-  }
-
-  public Long getEndTimestamp() {
-    return endTimestamp;
+  public Long getCreatedTimestamp() {
+    return createdTimestamp;
   }
 
 }

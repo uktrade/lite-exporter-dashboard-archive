@@ -55,7 +55,7 @@ public class OutcomeTabController extends SamlController {
     List<OutcomeView> outcomeViews = new ArrayList<>();
     List<Outcome> outcomes = outcomeDao.getOutcomes(appId);
     outcomes.forEach(outcome -> SortUtil.sortDocuments(outcome.getDocuments()));
-    SortUtil.sortOutcomes(outcomes);
+    SortUtil.reverseSortOutcomes(outcomes);
     for (int i = 0; i < outcomes.size(); i++) {
       Outcome outcome = outcomes.get(i);
       List<String> documents = outcome.getDocuments().stream()

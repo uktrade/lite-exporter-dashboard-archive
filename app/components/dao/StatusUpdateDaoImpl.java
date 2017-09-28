@@ -56,7 +56,7 @@ public class StatusUpdateDaoImpl implements StatusUpdateDao {
               statusUpdate.getAppId(), statusUpdate.getStatusType());
           throw new DatabaseException(message);
         }
-        statusUpdateJDBIDao.insert(statusUpdate.getAppId(), statusUpdate.getStatusType().toString(), statusUpdate.getStartTimestamp(), statusUpdate.getEndTimestamp());
+        statusUpdateJDBIDao.insert(statusUpdate.getAppId(), statusUpdate.getStatusType().toString(), statusUpdate.getCreatedTimestamp());
       });
     }
   }

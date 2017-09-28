@@ -9,6 +9,7 @@ import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.ApplicationItemView;
 import models.view.MessageView;
+import models.view.NotificationView;
 import models.view.OgelItemView;
 import models.view.SielItemView;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
@@ -29,6 +30,8 @@ public class SortUtil {
   private static final Comparator<MessageView> MESSAGE_VIEW_CREATED_REVERSE_COMPARATOR = Comparator.comparing(MessageView::getCreatedTimestamp).reversed();
   private static final Comparator<WithdrawalRequest> WITHDRAWAL_REQUEST_COMPARATOR = Comparator.comparing(WithdrawalRequest::getCreatedTimestamp);
   private static final Comparator<WithdrawalRejection> WITHDRAWAL_REJECTION_COMPARATOR = Comparator.comparing(WithdrawalRejection::getCreatedTimestamp);
+  private static final Comparator<NotificationView> NOTIFICATION_VIEW_COMPARATOR = Comparator.comparing(NotificationView::getCreatedTimestamp);
+  private static final Comparator<NotificationView> NOTIFICATION_VIEW_REVERSE_COMPARATOR = Comparator.comparing(NotificationView::getCreatedTimestamp).reversed();
   private static final List<DocumentType> DOCUMENT_TYPES = Arrays.asList(DocumentType.ISSUE_LETTER,
       DocumentType.AMEND_LETTER,
       DocumentType.ISSUE_LICENCE,
@@ -90,7 +93,7 @@ public class SortUtil {
     sielItemViews.sort(SIEL_COMPARATORS.get(licenceSortType).get(sortDirection));
   }
 
-  public static void sortOutcomes(List<Outcome> outcomes) {
+  public static void reverseSortOutcomes(List<Outcome> outcomes) {
     outcomes.sort(OUTCOME_CREATED_REVERSE_COMPARATOR);
   }
 
@@ -98,7 +101,7 @@ public class SortUtil {
     documents.sort(Comparator.comparingInt(document -> DOCUMENT_TYPES.indexOf(document.getDocumentType())));
   }
 
-  public static void sortMessageViews(List<MessageView> messageViews) {
+  public static void reverseSortMessageViews(List<MessageView> messageViews) {
     messageViews.sort(MESSAGE_VIEW_CREATED_REVERSE_COMPARATOR);
   }
 
@@ -108,6 +111,14 @@ public class SortUtil {
 
   public static void sortWithdrawalRejections(List<WithdrawalRejection> withdrawalRejections) {
     withdrawalRejections.sort(WITHDRAWAL_REJECTION_COMPARATOR);
+  }
+
+  public static void sortNotificationViews(List<NotificationView> notificationViews) {
+    notificationViews.sort(NOTIFICATION_VIEW_COMPARATOR);
+  }
+
+  public static void reverseSortNotificationViews(List<NotificationView> notificationViews) {
+    notificationViews.sort(NOTIFICATION_VIEW_REVERSE_COMPARATOR);
   }
 
 }

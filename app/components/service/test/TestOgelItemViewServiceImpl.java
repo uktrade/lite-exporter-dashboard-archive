@@ -39,7 +39,7 @@ public class TestOgelItemViewServiceImpl extends OgelItemViewServiceImpl {
     for (int i = 1; i < 22; i++) {
       String add = i % 2 == 0 ? "_A" : "_B";
       long registrationTimestamp = time(2017, 2, 2 + i, 16, 20 + i);
-      String registrationDate = TimeUtil.formatDateWithSlashes(registrationTimestamp);
+      String registrationDate = TimeUtil.formatDate(registrationTimestamp);
       OgelStatus ogelStatus = OgelStatus.values()[i % (OgelStatus.values().length - 1)];
       String ogelStatusName = LicenceUtil.getOgelStatusName(ogelStatus);
       OgelItemView ogelItemView = new OgelItemView(base.getRegistrationReference(),

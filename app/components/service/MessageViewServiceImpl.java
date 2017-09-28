@@ -13,6 +13,7 @@ import models.Notification;
 import models.NotificationType;
 import models.WithdrawalRejection;
 import models.enums.EventLabelType;
+import models.enums.MessageType;
 import models.view.FileView;
 import models.view.MessageReplyView;
 import models.view.MessageView;
@@ -51,7 +52,7 @@ public class MessageViewServiceImpl implements MessageViewService {
     messageViews.addAll(getNotificationMessageViews(appId));
     messageViews.addAll(getAmendmentMessageViews(appId));
     messageViews.addAll(getWithdrawalRequestMessageViews(appId));
-    SortUtil.sortMessageViews(messageViews);
+    SortUtil.reverseSortMessageViews(messageViews);
     return messageViews;
   }
 
@@ -74,12 +75,14 @@ public class MessageViewServiceImpl implements MessageViewService {
   }
 
   private MessageView getWithdrawalRequestMessageView(WithdrawalRequest withdrawalRequest, WithdrawalRejection withdrawalRejection) {
+    String anchor = MessageType.WITHDRAWAL_REQUESTED.toString() + "-" + withdrawalRequest.getId();
     String sentOn = TimeUtil.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
     String sender = userService.getUsername(withdrawalRequest.getCreatedByUserId());
     List<FileView> fileViews = withdrawalRequest.getAttachments().stream()
         .map(file -> getWithdrawalRequestFileView(withdrawalRequest, file)).collect(Collectors.toList());
     MessageReplyView messageReplyView = getMessageReplyView(withdrawalRejection);
     return new MessageView(EventLabelType.WITHDRAWAL_REQUESTED,
+        anchor,
         "Withdrawal request",
         null,
         sentOn,
@@ -98,9 +101,10 @@ public class MessageViewServiceImpl implements MessageViewService {
 
   private MessageReplyView getMessageReplyView(WithdrawalRejection withdrawalRejection) {
     if (withdrawalRejection != null) {
+      String anchor = MessageType.WITHDRAWAL_REJECTED + "-" + withdrawalRejection.getId();
       String sender = userService.getUsername(withdrawalRejection.getCreatedByUserId());
       String withdrawnOn = TimeUtil.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
-      return new MessageReplyView("Withdrawal rejected", sender, withdrawnOn, "Your request to withdraw your application has been rejected.");
+      return new MessageReplyView(anchor, "Withdrawal rejected", sender, withdrawnOn, "Your request to withdraw your application has been rejected.");
     } else {
       return null;
     }
@@ -113,12 +117,14 @@ public class MessageViewServiceImpl implements MessageViewService {
   }
 
   private MessageView getAmendmentMessageView(Amendment amendment) {
+    String anchor = MessageType.AMENDMENT.toString() + "-" + amendment.getId();
     String sentOn = TimeUtil.formatDateAndTime(amendment.getCreatedTimestamp());
     String sender = userService.getUsername(amendment.getCreatedByUserId());
     List<FileView> fileViews = amendment.getAttachments().stream()
         .map(file -> getAmendmentFileView(amendment, file))
         .collect(Collectors.toList());
     return new MessageView(EventLabelType.AMENDMENT_REQUESTED,
+        anchor,
         "Amendment request",
         null,
         sentOn,
@@ -144,13 +150,16 @@ public class MessageViewServiceImpl implements MessageViewService {
   }
 
   private MessageView getNotificationMessageView(Notification notification) {
+    String anchor;
     String title;
     EventLabelType eventLabelType;
     if (notification.getNotificationType() == NotificationType.STOP) {
+      anchor = MessageType.STOPPED.toString() + "-" + notification.getId();
       title = "Application stopped";
       eventLabelType = EventLabelType.STOPPED;
     } else if (notification.getNotificationType() == NotificationType.DELAY) {
-      title = "Application delayed";
+      anchor = MessageType.DELAYED.toString() + "-" + notification.getId();
+      title = "Apology for delay";
       eventLabelType = EventLabelType.DELAYED;
     } else {
       throw new UnexpectedStateException("Unexpected notification type" + notification.getNotificationType());
@@ -158,7 +167,7 @@ public class MessageViewServiceImpl implements MessageViewService {
     String receivedOn = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String sender = userService.getUsername(notification.getCreatedByUserId());
     return new MessageView(eventLabelType,
-        title,
+        anchor, title,
         receivedOn,
         null,
         sender,
