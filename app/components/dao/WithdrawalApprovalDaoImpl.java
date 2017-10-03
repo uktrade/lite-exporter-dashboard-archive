@@ -5,6 +5,9 @@ import models.WithdrawalApproval;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class WithdrawalApprovalDaoImpl implements WithdrawalApprovalDao {
 
   private final DBI dbi;
@@ -19,6 +22,18 @@ public class WithdrawalApprovalDaoImpl implements WithdrawalApprovalDao {
     try (Handle handle = dbi.open()) {
       WithdrawalApprovalJDBIDao withdrawalApprovalJDBIDao = handle.attach(WithdrawalApprovalJDBIDao.class);
       return withdrawalApprovalJDBIDao.getWithdrawalApproval(appId);
+    }
+  }
+
+  @Override
+  public List<WithdrawalApproval> getWithdrawalApprovals(List<String> appIds) {
+    if (appIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (Handle handle = dbi.open()) {
+        WithdrawalApprovalJDBIDao withdrawalApprovalJDBIDao = handle.attach(WithdrawalApprovalJDBIDao.class);
+        return withdrawalApprovalJDBIDao.getWithdrawalApprovals(appIds);
+      }
     }
   }
 

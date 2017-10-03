@@ -3,12 +3,12 @@ package models.view;
 
 public class FileView {
 
-  private String id;
-  private String relatedId;
-  private String name;
-  private String link;
-  private String deleteLink;
-  private String size;
+  private final String id;
+  private final String relatedId;
+  private final String name;
+  private final String link;
+  private final String deleteLink;
+  private final String size;
 
   public FileView(String id, String relatedId, String name, String link, String deleteLink, String size) {
     this.id = id;
@@ -42,4 +42,5 @@ public class FileView {
   public String getSize() {
     return size;
   }
+
 }

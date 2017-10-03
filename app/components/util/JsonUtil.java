@@ -23,6 +23,18 @@ public class JsonUtil {
   private static final TypeReference<List<Document>> DOCUMENT_LIST_TYPE_REFERENCE = new TypeReference<List<Document>>() {
   };
 
+  public static String convertFileToJson(File file) {
+    return toJson(file);
+  }
+
+  public static File convertJsonToFile(String json) {
+    try {
+      return OBJECT_MAPPER.readValue(json, File.class);
+    } catch (IOException ioe) {
+      throw new RuntimeException("Failed to convert json to file.", ioe);
+    }
+  }
+
   public static <E> String convertListToJson(List<? extends E> list) {
     return toJson(ListUtils.emptyIfNull(list));
   }

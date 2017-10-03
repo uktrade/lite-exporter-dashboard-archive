@@ -6,6 +6,7 @@ import components.dao.NotificationDao;
 import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
 import components.exceptions.UnexpectedStateException;
+import components.util.ApplicationUtil;
 import components.util.FileUtil;
 import components.util.SortUtil;
 import components.util.TimeUtil;
@@ -57,8 +58,8 @@ public class MessageViewServiceImpl implements MessageViewService {
   }
 
   private List<MessageView> getWithdrawalRequestMessageViews(String appId) {
-    List<WithdrawalRequest> withdrawalRequests = withdrawalRequestDao.getWithdrawalRequests(appId);
-    List<WithdrawalRejection> withdrawalRejections = withdrawalRejectionDao.getWithdrawalRejections(appId);
+    List<WithdrawalRequest> withdrawalRequests = withdrawalRequestDao.getWithdrawalRequestsByAppId(appId);
+    List<WithdrawalRejection> withdrawalRejections = withdrawalRejectionDao.getWithdrawalRejectionsByAppId(appId);
     SortUtil.sortWithdrawalRequests(withdrawalRequests);
     SortUtil.sortWithdrawalRejections(withdrawalRejections);
     List<MessageView> withdrawalRequestMessageViews = new ArrayList<>();
@@ -101,7 +102,7 @@ public class MessageViewServiceImpl implements MessageViewService {
 
   private MessageReplyView getMessageReplyView(WithdrawalRejection withdrawalRejection) {
     if (withdrawalRejection != null) {
-      String anchor = MessageType.WITHDRAWAL_REJECTED + "-" + withdrawalRejection.getId();
+      String anchor = ApplicationUtil.getWithdrawalRejectionMessageAnchor(withdrawalRejection);
       String sender = userService.getUsername(withdrawalRejection.getCreatedByUserId());
       String withdrawnOn = TimeUtil.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
       return new MessageReplyView(anchor, "Withdrawal rejected", sender, withdrawnOn, "Your request to withdraw your application has been rejected.");
@@ -154,11 +155,11 @@ public class MessageViewServiceImpl implements MessageViewService {
     String title;
     EventLabelType eventLabelType;
     if (notification.getNotificationType() == NotificationType.STOP) {
-      anchor = MessageType.STOPPED.toString() + "-" + notification.getId();
+      anchor = ApplicationUtil.getStoppedMessageAnchor(notification);
       title = "Application stopped";
       eventLabelType = EventLabelType.STOPPED;
     } else if (notification.getNotificationType() == NotificationType.DELAY) {
-      anchor = MessageType.DELAYED.toString() + "-" + notification.getId();
+      anchor = ApplicationUtil.getDelayedMessageAnchor(notification);
       title = "Apology for delay";
       eventLabelType = EventLabelType.DELAYED;
     } else {
@@ -167,7 +168,8 @@ public class MessageViewServiceImpl implements MessageViewService {
     String receivedOn = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String sender = userService.getUsername(notification.getCreatedByUserId());
     return new MessageView(eventLabelType,
-        anchor, title,
+        anchor,
+        title,
         receivedOn,
         null,
         sender,

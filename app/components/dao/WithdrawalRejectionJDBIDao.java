@@ -5,14 +5,21 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
+import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
+import org.skife.jdbi.v2.unstable.BindIn;
 
 import java.util.List;
 
+@UseStringTemplate3StatementLocator
 public interface WithdrawalRejectionJDBIDao {
 
   @Mapper(WithdrawalRejectionRSMapper.class)
   @SqlQuery("SELECT * FROM WITHDRAWAL_REJECTION WHERE APP_ID = :appId")
-  List<WithdrawalRejection> getWithdrawalRejections(@Bind("appId") String appId);
+  List<WithdrawalRejection> getWithdrawalRejectionsByAppId(@Bind("appId") String appId);
+
+  @Mapper(WithdrawalRejectionRSMapper.class)
+  @SqlQuery("SELECT * FROM WITHDRAWAL_REJECTION WHERE APP_ID in (<appIds>)")
+  List<WithdrawalRejection> getWithdrawalRejectionsByAppIds(@BindIn("appIds") List<String> appIds);
 
   @SqlUpdate("INSERT INTO WITHDRAWAL_REJECTION (id,  app_id, created_by_user_id, created_timestamp, message) VALUES " +
       "                                       (:id, :appId, :createdByUserId,   :createdTimestamp, :message)")

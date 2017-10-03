@@ -4,7 +4,7 @@
   max-width: 700px;
   margin-bottom: $gutter;
 
-  &>header {
+  & > header {
     padding: $gutter-two-thirds $gutter;
     border-bottom: 1px solid $border-colour;
 
@@ -13,7 +13,7 @@
     }
   }
 
-  &>article {
+  & > article {
     padding: $gutter;
 
     @include media(mobile) {
@@ -25,7 +25,7 @@
     }
   }
 
-  &>footer {
+  & > footer {
     padding: $gutter-two-thirds $gutter;
     border-top: 1px solid $border-colour;
   }
@@ -99,4 +99,9 @@
 .icon-reply {
   @include icon(icon-reply, 32, 25, "../images");
   display: inline-block;
+}
+
+.gray-out {
+  opacity: 0.5; /* Real browsers */
+  filter: alpha(opacity=50); /* MSIE */
 }

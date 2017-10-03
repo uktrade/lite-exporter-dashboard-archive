@@ -8,12 +8,12 @@ public class OutcomeView {
 
   private String voidedOn;
 
-  private List<String> documents;
+  private List<OutcomeDocumentView> outcomeDocumentViews;
 
-  public OutcomeView(String issuedOn, String voidedOn, List<String> documents) {
+  public OutcomeView(String issuedOn, String voidedOn, List<OutcomeDocumentView> outcomeDocumentViews) {
     this.issuedOn = issuedOn;
     this.voidedOn = voidedOn;
-    this.documents = documents;
+    this.outcomeDocumentViews = outcomeDocumentViews;
   }
 
   public String getIssuedOn() {
@@ -24,8 +24,8 @@ public class OutcomeView {
     return voidedOn;
   }
 
-  public List<String> getDocuments() {
-    return documents;
+  public List<OutcomeDocumentView> getOutcomeDocumentViews() {
+    return outcomeDocumentViews;
   }
 
 }

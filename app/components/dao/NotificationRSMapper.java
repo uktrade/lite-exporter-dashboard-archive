@@ -23,9 +23,9 @@ public class NotificationRSMapper implements ResultSetMapper<Notification> {
     String recipientUserIdsJson = r.getString("recipient_user_ids");
     List<String> recipientUserIds = JsonUtil.convertJsonToList(recipientUserIdsJson);
     String message = r.getString("message");
-    String attachmentsJson = r.getString("attachments");
-    List<File> attachments = JsonUtil.convertJsonToFiles(attachmentsJson);
-    return new Notification(id, appId, notificationType, createdByUserId, createdTimestamp, recipientUserIds, message, attachments);
+    String documentJson = r.getString("document");
+    File document = JsonUtil.convertJsonToFile(documentJson);
+    return new Notification(id, appId, notificationType, createdByUserId, createdTimestamp, recipientUserIds, message, document);
   }
 
 }

@@ -5,20 +5,25 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.dao.ApplicationDao;
-import components.dao.RfiDao;
-import components.dao.RfiReplyDao;
+import components.dao.NotificationDao;
 import components.dao.StatusUpdateDao;
 import components.util.ApplicationUtil;
+import components.util.SortUtil;
 import components.util.TimeUtil;
 import models.Application;
+import models.Notification;
+import models.NotificationType;
 import models.Rfi;
 import models.StatusUpdate;
 import models.User;
+import models.WithdrawalApproval;
+import models.WithdrawalInformation;
 import models.enums.ApplicationProgress;
+import models.enums.EventLabelType;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
+import models.view.NotificationView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,31 +31,33 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
 
   private final ApplicationDao applicationDao;
   private final StatusUpdateDao statusUpdateDao;
-  private final RfiDao rfiDao;
-  private final RfiReplyDao rfiReplyDao;
   private final CustomerServiceClient customerServiceClient;
   private final UserService userService;
+  private final NotificationDao notificationDao;
+  private final RfiService rfiService;
+  private final WithdrawalService withdrawalService;
 
   @Inject
   public ApplicationItemViewServiceImpl(ApplicationDao applicationDao,
                                         StatusUpdateDao statusUpdateDao,
-                                        RfiDao rfiDao,
-                                        RfiReplyDao rfiReplyDao,
                                         CustomerServiceClient customerServiceClient,
-                                        UserService userService) {
+                                        UserService userService,
+                                        NotificationDao notificationDao,
+                                        RfiService rfiService,
+                                        WithdrawalService withdrawalService) {
     this.applicationDao = applicationDao;
     this.statusUpdateDao = statusUpdateDao;
-    this.rfiDao = rfiDao;
-    this.rfiReplyDao = rfiReplyDao;
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
+    this.notificationDao = notificationDao;
+    this.rfiService = rfiService;
+    this.withdrawalService = withdrawalService;
   }
 
   @Override
@@ -65,8 +72,22 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     List<Application> applications = applicationDao.getApplications(customerIds);
     List<String> appIds = applications.stream().map(Application::getAppId).collect(Collectors.toList());
 
-    Multimap<String, StatusUpdate> appIdToStatusUpdateMap = HashMultimap.create();
-    statusUpdateDao.getStatusUpdates(appIds).forEach(statusUpdate -> appIdToStatusUpdateMap.put(statusUpdate.getAppId(), statusUpdate));
+    List<Notification> notifications = notificationDao.getNotifications(appIds);
+
+    HashMap<String, Notification> appIdToStopNotification = new HashMap<>();
+    notifications.stream()
+        .filter(notification -> notification.getNotificationType() == NotificationType.STOP)
+        .forEach(notification -> appIdToStopNotification.put(notification.getAppId(), notification));
+
+    HashMultimap<String, Notification> appIdToInformNotificationMultimap = HashMultimap.create();
+    notifications.stream()
+        .filter(notification -> notification.getNotificationType() == NotificationType.INFORM)
+        .forEach(notification -> appIdToInformNotificationMultimap.put(notification.getAppId(), notification));
+
+    Map<String, WithdrawalInformation> appIdToWithdrawalInformationMap = withdrawalService.getAppIdToWithdrawalInformationMap(appIds);
+
+    Multimap<String, StatusUpdate> appIdToStatusUpdateMultimap = HashMultimap.create();
+    statusUpdateDao.getStatusUpdates(appIds).forEach(statusUpdate -> appIdToStatusUpdateMultimap.put(statusUpdate.getAppId(), statusUpdate));
 
     Map<String, String> appIdToOpenRfiIdMap = getAppIdToOpenRfiIdMap(appIds);
 
@@ -74,49 +95,43 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         .map(application -> {
           String companyName = customerIdToCompanyName.get(application.getCompanyId());
           String appId = application.getAppId();
-          Collection<StatusUpdate> statusUpdates = appIdToStatusUpdateMap.get(appId);
+          Collection<StatusUpdate> statusUpdates = appIdToStatusUpdateMultimap.get(appId);
           String openRfiId = appIdToOpenRfiIdMap.get(appId);
-          return getApplicationItemView(application, companyName, statusUpdates, openRfiId);
+          Notification stopNotification = appIdToStopNotification.get(appId);
+          Collection<Notification> informNotifications = appIdToInformNotificationMultimap.get(appId);
+          WithdrawalInformation withdrawalInformation = appIdToWithdrawalInformationMap.get(appId);
+          return getApplicationItemView(application, companyName, statusUpdates, openRfiId, stopNotification, informNotifications, withdrawalInformation);
         })
         .collect(Collectors.toList());
   }
 
-  private ApplicationItemView getApplicationItemView(Application application, String companyName, Collection<StatusUpdate> statusUpdates, String openRfiId) {
-
-    String applicationStatus;
-    long statusTimestamp;
-
+  private ApplicationItemView getApplicationItemView(Application application, String companyName, Collection<StatusUpdate> statusUpdates, String openRfiId, Notification stopNotification, Collection<Notification> informNotifications, WithdrawalInformation withdrawalInformation) {
     StatusUpdate maxStatusUpdate = ApplicationUtil.getMaxStatusUpdate(statusUpdates);
-    if (maxStatusUpdate != null) {
-      applicationStatus = ApplicationUtil.getStatusName(maxStatusUpdate.getStatusType());
-      statusTimestamp = maxStatusUpdate.getCreatedTimestamp();
-    } else if (application.getSubmittedTimestamp() != null) {
-      applicationStatus = ApplicationUtil.SUBMITTED;
-      statusTimestamp = application.getSubmittedTimestamp();
-    } else {
-      applicationStatus = ApplicationUtil.DRAFT;
-      statusTimestamp = application.getCreatedTimestamp();
-    }
+
+    WithdrawalApproval withdrawalApproval = withdrawalInformation.getWithdrawalApproval();
+
+    String applicationStatus = ApplicationUtil.getApplicationStatus(application, maxStatusUpdate, stopNotification, withdrawalApproval);
+    long applicationStatusTimestamp = getApplicationStatusTimestamp(application, maxStatusUpdate, stopNotification, withdrawalApproval);
 
     Long dateTimestamp = getDateTimestamp(maxStatusUpdate, application);
     String date = TimeUtil.formatDate(dateTimestamp);
 
     String applicationStatusDate;
-    if (maxStatusUpdate != null && StatusType.COMPLETE == maxStatusUpdate.getStatusType()) {
-      applicationStatusDate = "On " + TimeUtil.formatDate(statusTimestamp);
+    if (withdrawalApproval != null || stopNotification != null || (maxStatusUpdate != null && StatusType.COMPLETE == maxStatusUpdate.getStatusType())) {
+      applicationStatusDate = "On " + TimeUtil.formatDate(applicationStatusTimestamp);
     } else {
-      applicationStatusDate = "Since " + TimeUtil.formatDate(statusTimestamp);
+      applicationStatusDate = "Since " + TimeUtil.formatDate(applicationStatusTimestamp);
     }
 
     String createdById = application.getCreatedBy();
     User user = userService.getUser(createdById);
     String destination = ApplicationUtil.getDestinations(application.getDestinationList());
 
-    ApplicationProgress applicationProgress = getApplicationProgress(maxStatusUpdate, application);
+    ApplicationProgress applicationProgress = getApplicationProgress(withdrawalApproval, stopNotification, maxStatusUpdate, application);
 
-    return new
+    List<NotificationView> notificationViews = getNotificationViews(application.getAppId(), openRfiId, withdrawalInformation, informNotifications, applicationProgress);
 
-        ApplicationItemView(application.getAppId(),
+    return new ApplicationItemView(application.getAppId(),
         application.getCompanyId(),
         companyName,
         createdById,
@@ -129,14 +144,63 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         applicationProgress,
         applicationStatus,
         applicationStatusDate,
-        statusTimestamp,
+        applicationStatusTimestamp,
         destination,
-        openRfiId
+        notificationViews
     );
   }
 
-  private ApplicationProgress getApplicationProgress(StatusUpdate maxStatusUpdate, Application application) {
-    if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
+  private Long getApplicationStatusTimestamp(Application application, StatusUpdate maxStatusUpdate, Notification stopNotification, WithdrawalApproval withdrawalApproval) {
+    if (withdrawalApproval != null) {
+      return withdrawalApproval.getCreatedTimestamp();
+    } else if (stopNotification != null) {
+      return stopNotification.getCreatedTimestamp();
+    } else if (maxStatusUpdate != null) {
+      return maxStatusUpdate.getCreatedTimestamp();
+    } else if (application.getSubmittedTimestamp() != null) {
+      return application.getSubmittedTimestamp();
+    } else {
+      return application.getCreatedTimestamp();
+    }
+  }
+
+  private List<NotificationView> getNotificationViews(String appId, String openRfiId, WithdrawalInformation withdrawalInformation, Collection<Notification> informNotifications, ApplicationProgress applicationProgress) {
+    List<NotificationView> notificationViews = new ArrayList<>();
+    if (openRfiId != null) {
+      String link = controllers.routes.RfiTabController.showRfiTab(appId).withFragment(openRfiId).toString();
+      NotificationView notificationView = new NotificationView(EventLabelType.RFI, "Request for information", link, null, null);
+      notificationViews.add(notificationView);
+    }
+    withdrawalInformation.getOpenWithdrawalRequests().stream()
+        .findFirst()
+        .ifPresent(withdrawalRequest -> {
+          String link = ApplicationUtil.getWithdrawalRequestMessageLink(withdrawalRequest);
+          NotificationView notificationView = new NotificationView(EventLabelType.WITHDRAWAL_REQUESTED, "Withdrawal requested", link, null, null);
+          notificationViews.add(notificationView);
+        });
+    withdrawalInformation.getWithdrawalRejections().stream()
+        .findFirst()
+        .ifPresent(withdrawalRejection -> {
+          String link = ApplicationUtil.getWithdrawalRejectionMessageLink(withdrawalRejection);
+          NotificationView notificationView = new NotificationView(EventLabelType.WITHDRAWAL_REJECTED, "Withdrawal rejected", link, null, null);
+          notificationViews.add(notificationView);
+        });
+    if (applicationProgress != ApplicationProgress.COMPLETED) {
+      informNotifications.stream()
+          .sorted(Comparator.comparing(Notification::getCreatedTimestamp))
+          .findFirst()
+          .ifPresent(notification -> {
+            String link = ApplicationUtil.getInformLetterLink(notification);
+            NotificationView notificationView = new NotificationView(EventLabelType.INFORM_ISSUED, "Inform letter issued", link, null, null);
+            notificationViews.add(notificationView);
+          });
+    }
+    SortUtil.sortNotificationViewsByLinkText(notificationViews);
+    return notificationViews;
+  }
+
+  private ApplicationProgress getApplicationProgress(WithdrawalApproval withdrawalApproval, Notification stopNotification, StatusUpdate maxStatusUpdate, Application application) {
+    if (withdrawalApproval != null || stopNotification != null || (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE)) {
       return ApplicationProgress.COMPLETED;
     } else if (application.getSubmittedTimestamp() != null) {
       return ApplicationProgress.CURRENT;
@@ -156,29 +220,20 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   private Map<String, String> getAppIdToOpenRfiIdMap(List<String> appIds) {
-    List<Rfi> rfiList = rfiDao.getRfiList(appIds);
+    List<Rfi> openRfiList = rfiService.getOpenRfiList(appIds);
     Multimap<String, Rfi> appIdToRfi = HashMultimap.create();
-    rfiList.forEach(rfi -> appIdToRfi.put(rfi.getAppId(), rfi));
-
-    List<String> rfiIds = rfiList.stream()
-        .map(Rfi::getRfiId)
-        .collect(Collectors.toList());
-    Set<String> answeredRfiIds = rfiReplyDao.getRfiReplies(rfiIds).stream()
-        .map(RfiReply::getId)
-        .collect(Collectors.toSet());
-
+    openRfiList.forEach(rfi -> appIdToRfi.put(rfi.getAppId(), rfi));
     Map<String, String> appIdToOpenRfiIdMap = new HashMap<>();
     appIdToRfi.asMap().forEach((appId, rfiCollection) -> {
-      String openRfiId = getOpenRfiId(rfiCollection, answeredRfiIds);
+      String openRfiId = getOpenRfiId(rfiCollection);
       appIdToOpenRfiIdMap.put(appId, openRfiId);
     });
     return appIdToOpenRfiIdMap;
   }
 
-  private String getOpenRfiId(Collection<Rfi> rfiList, Set<String> answeredRfiIds) {
-    return rfiList.stream()
-        .filter(rfi -> !answeredRfiIds.contains(rfi.getRfiId()))
-        .sorted(Comparator.comparing(Rfi::getReceivedTimestamp).reversed())
+  private String getOpenRfiId(Collection<Rfi> openRfiList) {
+    return openRfiList.stream()
+        .sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
         .map(Rfi::getRfiId)
         .findFirst()
         .orElse(null);

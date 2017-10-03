@@ -31,6 +31,8 @@ import components.dao.RfiDao;
 import components.dao.RfiDaoImpl;
 import components.dao.RfiReplyDao;
 import components.dao.RfiReplyDaoImpl;
+import components.dao.RfiWithdrawalDao;
+import components.dao.RfiWithdrawalDaoImpl;
 import components.dao.SielDao;
 import components.dao.SielDaoImpl;
 import components.dao.StatusUpdateDao;
@@ -68,6 +70,8 @@ import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelItemViewService;
 import components.service.RfiReplyService;
 import components.service.RfiReplyServiceImpl;
+import components.service.RfiService;
+import components.service.RfiServiceImpl;
 import components.service.RfiViewService;
 import components.service.RfiViewServiceImpl;
 import components.service.SielDetailsViewService;
@@ -81,6 +85,8 @@ import components.service.StatusItemViewServiceImpl;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
+import components.service.WithdrawalService;
+import components.service.WithdrawalServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
 import components.service.test.TestOgelItemViewServiceImpl;
@@ -145,6 +151,8 @@ public class GuiceModule extends AbstractModule {
     bind(RfiReplyService.class).to(RfiReplyServiceImpl.class);
     bind(SielItemViewService.class).to(SielItemViewServiceImpl.class);
     bind(MessageViewService.class).to(MessageViewServiceImpl.class);
+    bind(RfiService.class).to(RfiServiceImpl.class);
+    bind(WithdrawalService.class).to(WithdrawalServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -158,6 +166,7 @@ public class GuiceModule extends AbstractModule {
     bind(NotificationDao.class).to(NotificationDaoImpl.class);
     bind(WithdrawalRejectionDao.class).to(WithdrawalRejectionDaoImpl.class);
     bind(WithdrawalApprovalDao.class).to(WithdrawalApprovalDaoImpl.class);
+    bind(RfiWithdrawalDao.class).to(RfiWithdrawalDaoImpl.class);
     // Database test data
     // TODO Test
     bind(TestDataService.class).to(TestDataServiceImpl.class);
