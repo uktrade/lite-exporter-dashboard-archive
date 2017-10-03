@@ -2,6 +2,8 @@ package models.view;
 
 import models.enums.ApplicationProgress;
 
+import java.util.List;
+
 public class ApplicationItemView {
 
   private final String appId;
@@ -19,7 +21,7 @@ public class ApplicationItemView {
   private final String applicationStatusDate;
   private final long applicationStatusTimestamp;
   private final String destination;
-  private final String openRfiId;
+  private final List<NotificationView> notificationViews;
 
   public ApplicationItemView(String appId,
                              String companyId,
@@ -36,7 +38,7 @@ public class ApplicationItemView {
                              String applicationStatusDate,
                              long applicationStatusTimestamp,
                              String destination,
-                             String openRfiId) {
+                             List<NotificationView> notificationViews) {
     this.appId = appId;
     this.companyId = companyId;
     this.companyName = companyName;
@@ -52,7 +54,7 @@ public class ApplicationItemView {
     this.applicationStatusDate = applicationStatusDate;
     this.applicationStatusTimestamp = applicationStatusTimestamp;
     this.destination = destination;
-    this.openRfiId = openRfiId;
+    this.notificationViews = notificationViews;
   }
 
   public String getAppId() {
@@ -115,8 +117,8 @@ public class ApplicationItemView {
     return destination;
   }
 
-  public String getOpenRfiId() {
-    return openRfiId;
+  public List<NotificationView> getNotificationViews() {
+    return notificationViews;
   }
 
 }

@@ -32,6 +32,7 @@ public class SortUtil {
   private static final Comparator<WithdrawalRejection> WITHDRAWAL_REJECTION_COMPARATOR = Comparator.comparing(WithdrawalRejection::getCreatedTimestamp);
   private static final Comparator<NotificationView> NOTIFICATION_VIEW_COMPARATOR = Comparator.comparing(NotificationView::getCreatedTimestamp);
   private static final Comparator<NotificationView> NOTIFICATION_VIEW_REVERSE_COMPARATOR = Comparator.comparing(NotificationView::getCreatedTimestamp).reversed();
+  private static final Comparator<NotificationView> NOTIFICATION_VIEW_LINK_TEXT_COMPARATOR = Comparator.comparing(NotificationView::getLinkText);
   private static final List<DocumentType> DOCUMENT_TYPES = Arrays.asList(DocumentType.ISSUE_LETTER,
       DocumentType.AMEND_LETTER,
       DocumentType.ISSUE_LICENCE,
@@ -113,8 +114,12 @@ public class SortUtil {
     withdrawalRejections.sort(WITHDRAWAL_REJECTION_COMPARATOR);
   }
 
-  public static void sortNotificationViews(List<NotificationView> notificationViews) {
+  public static void sortNotificationViewsByCreatedTimestamp(List<NotificationView> notificationViews) {
     notificationViews.sort(NOTIFICATION_VIEW_COMPARATOR);
+  }
+
+  public static void sortNotificationViewsByLinkText(List<NotificationView> notificationViews) {
+    notificationViews.sort(NOTIFICATION_VIEW_LINK_TEXT_COMPARATOR);
   }
 
   public static void reverseSortNotificationViews(List<NotificationView> notificationViews) {

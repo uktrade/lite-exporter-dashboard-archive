@@ -6,13 +6,7 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import components.dao.ApplicationDao;
 import components.dao.NotificationDao;
-import components.dao.RfiDao;
-import components.dao.RfiReplyDao;
 import components.dao.StatusUpdateDao;
-import components.dao.WithdrawalApprovalDao;
-import components.dao.WithdrawalRejectionDao;
-import components.dao.WithdrawalRequestDao;
-import components.exceptions.UnexpectedStateException;
 import components.util.ApplicationUtil;
 import components.util.SortUtil;
 import components.util.TimeUtil;
@@ -22,53 +16,43 @@ import models.NotificationType;
 import models.Rfi;
 import models.StatusUpdate;
 import models.WithdrawalApproval;
+import models.WithdrawalInformation;
 import models.WithdrawalRejection;
 import models.enums.EventLabelType;
-import models.enums.MessageType;
 import models.enums.StatusType;
 import models.view.NotificationView;
 import models.view.StatusItemView;
 import org.apache.commons.collections4.ListUtils;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class StatusItemViewServiceImpl implements StatusItemViewService {
 
   private final StatusUpdateDao statusUpdateDao;
-  private final RfiDao rfiDao;
   private final ApplicationDao applicationDao;
-  private final RfiReplyDao rfiReplyDao;
-  private final WithdrawalRequestDao withdrawalRequestDao;
-  private final WithdrawalRejectionDao withdrawalRejectionDao;
-  private final WithdrawalApprovalDao withdrawalApprovalDao;
+  private final WithdrawalService withdrawalService;
   private final NotificationDao notificationDao;
+  private final RfiService rfiService;
 
   @Inject
   public StatusItemViewServiceImpl(StatusUpdateDao statusUpdateDao,
-                                   RfiDao rfiDao,
                                    ApplicationDao applicationDao,
-                                   RfiReplyDao rfiReplyDao,
-                                   WithdrawalRequestDao withdrawalRequestDao,
-                                   WithdrawalRejectionDao withdrawalRejectionDao,
-                                   WithdrawalApprovalDao withdrawalApprovalDao,
-                                   NotificationDao notificationDao) {
+                                   WithdrawalService withdrawalService,
+                                   NotificationDao notificationDao,
+                                   RfiService rfiService) {
     this.statusUpdateDao = statusUpdateDao;
-    this.rfiDao = rfiDao;
     this.applicationDao = applicationDao;
-    this.rfiReplyDao = rfiReplyDao;
-    this.withdrawalRequestDao = withdrawalRequestDao;
-    this.withdrawalRejectionDao = withdrawalRejectionDao;
-    this.withdrawalApprovalDao = withdrawalApprovalDao;
+    this.withdrawalService = withdrawalService;
     this.notificationDao = notificationDao;
+    this.rfiService = rfiService;
   }
 
   @Override
@@ -109,7 +93,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   }
 
   private List<StatusItemView> createUpdateStatusItemViews(String appId) {
-    WithdrawalApproval withdrawalApproval = withdrawalApprovalDao.getWithdrawalApproval(appId);
+    WithdrawalInformation withdrawalInformation = withdrawalService.getWithdrawalInformation(appId);
 
     List<Notification> notifications = notificationDao.getNotifications(appId);
     Notification stopNotification = notifications.stream()
@@ -119,7 +103,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
 
     List<NotificationView> notificationViews = new ArrayList<>();
     notificationViews.addAll(getRfiNotificationViews(appId));
-    notificationViews.addAll(getWithdrawalNotificationViews(appId, withdrawalApproval));
+    notificationViews.addAll(getWithdrawalNotificationViews(withdrawalInformation));
     notificationViews.addAll(getDelayAndInformNotificationViews(notifications));
     if (stopNotification != null) {
       notificationViews.add(getStopNotificationView(stopNotification));
@@ -145,6 +129,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
         .map(statusUpdate -> getStatusItemView(statusUpdate, new ArrayList<>(notificationViewMultimap.get(statusUpdate)), finishedTimestamps.get(statusUpdate)))
         .collect(Collectors.toList());
 
+    WithdrawalApproval withdrawalApproval = withdrawalInformation.getWithdrawalApproval();
     if (withdrawalApproval != null || stopNotification != null) {
       int j = 0;
       for (int i = statusUpdates.size() - 1; i >= 0; i--) {
@@ -194,37 +179,21 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
         inProgressStatusItemView.getNotificationViews());
   }
 
-  private List<NotificationView> getWithdrawalNotificationViews(String appId, WithdrawalApproval withdrawalApproval) {
-    List<WithdrawalRequest> withdrawalRequests = withdrawalRequestDao.getWithdrawalRequests(appId);
-    List<WithdrawalRejection> withdrawalRejections = withdrawalRejectionDao.getWithdrawalRejections(appId);
-
-    if ((withdrawalApproval == null && withdrawalRejections.size() > withdrawalRequests.size()) ||
-        (withdrawalApproval != null && withdrawalRejections.size() + 1 > withdrawalRequests.size())) {
-      throw new UnexpectedStateException("There are more withdrawal responses than requests for appId " + appId);
-    }
-
-    SortUtil.sortWithdrawalRequests(withdrawalRequests);
-    SortUtil.sortWithdrawalRejections(withdrawalRejections);
-
-    withdrawalRejections.forEach(withdrawalRejection -> withdrawalRequests.remove(0));
-
+  private List<NotificationView> getWithdrawalNotificationViews(WithdrawalInformation withdrawalInformation) {
     List<NotificationView> notificationViews = new ArrayList<>();
 
-    // This block of code must be called prior to creating the withdrawalRequestNotificationViews since
-    // in case there is a withdrawal approval, we remove the most recent withdrawal request from the withdrawalRequests.
-    if (withdrawalApproval != null) {
-      WithdrawalRequest approvedWithdrawalRequest = withdrawalRequests.remove(withdrawalRequests.size() - 1);
-      String link = controllers.routes.MessageTabController.showMessages(appId).withFragment(MessageType.WITHDRAWAL_REQUESTED + "-" + approvedWithdrawalRequest.getId()).toString();
-      NotificationView withdrawalApprovalNotificationView = new NotificationView(null, "View withdrawal request", link, null, withdrawalApproval.getCreatedTimestamp());
+    if (withdrawalInformation.getWithdrawalApproval() != null) {
+      String link = ApplicationUtil.getWithdrawalRequestMessageLink(withdrawalInformation.getApprovedWithdrawalRequest());
+      NotificationView withdrawalApprovalNotificationView = new NotificationView(null, "View withdrawal request", link, null, withdrawalInformation.getWithdrawalApproval().getCreatedTimestamp());
       notificationViews.add(withdrawalApprovalNotificationView);
     }
 
-    List<NotificationView> withdrawalRequestNotificationViews = withdrawalRequests.stream()
+    List<NotificationView> withdrawalRequestNotificationViews = withdrawalInformation.getOpenWithdrawalRequests().stream()
         .map(this::getWithdrawalRequestNotificationView)
         .collect(Collectors.toList());
     notificationViews.addAll(withdrawalRequestNotificationViews);
 
-    List<NotificationView> withdrawalRejectionNotificationViews = withdrawalRejections.stream()
+    List<NotificationView> withdrawalRejectionNotificationViews = withdrawalInformation.getWithdrawalRejections().stream()
         .map(this::getWithdrawalRejectionNotificationView)
         .collect(Collectors.toList());
     notificationViews.addAll(withdrawalRejectionNotificationViews);
@@ -258,40 +227,40 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   }
 
   private NotificationView getStopNotificationView(Notification notification) {
-    String link = controllers.routes.MessageTabController.showMessages(notification.getAppId()).withFragment(MessageType.STOPPED + "-" + notification.getId()).toString();
+    String link = ApplicationUtil.getStoppedMessageLink(notification);
     return new NotificationView(null, "View reason for stop", link, null, notification.getCreatedTimestamp());
   }
 
   private NotificationView getDelayNotificationView(Notification notification) {
     String time = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String description = "on " + time;
-    String link = controllers.routes.MessageTabController.showMessages(notification.getAppId()).withFragment(MessageType.DELAYED + "-" + notification.getId()).toString();
+    String link = ApplicationUtil.getDelayedMessageLink(notification);
     return new NotificationView(EventLabelType.DELAYED, "Apology for delay received", link, description, notification.getCreatedTimestamp());
   }
 
   private NotificationView getInformNotificationView(Notification notification) {
     String time = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String description = "on " + time;
-    String link = "#";
+    String link = ApplicationUtil.getInformLetterLink(notification);
     return new NotificationView(EventLabelType.INFORM_ISSUED, "Inform letter issued", link, description, notification.getCreatedTimestamp());
   }
 
   private NotificationView getWithdrawalRejectionNotificationView(WithdrawalRejection withdrawalRejection) {
     String time = TimeUtil.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
     String description = "on " + time;
-    String link = controllers.routes.MessageTabController.showMessages(withdrawalRejection.getAppId()).withFragment(MessageType.WITHDRAWAL_REJECTED + "-" + withdrawalRejection.getId()).toString();
+    String link = ApplicationUtil.getWithdrawalRejectionMessageLink(withdrawalRejection);
     return new NotificationView(EventLabelType.WITHDRAWAL_REJECTED, "Withdrawal rejected", link, description, withdrawalRejection.getCreatedTimestamp());
   }
 
   private NotificationView getWithdrawalRequestNotificationView(WithdrawalRequest withdrawalRequest) {
     String time = TimeUtil.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
     String description = "sent on " + time;
-    String link = controllers.routes.MessageTabController.showMessages(withdrawalRequest.getAppId()).withFragment(MessageType.WITHDRAWAL_REQUESTED + "-" + withdrawalRequest.getId()).toString();
+    String link = ApplicationUtil.getWithdrawalRequestMessageLink(withdrawalRequest);
     return new NotificationView(EventLabelType.WITHDRAWAL_REQUESTED, "Withdrawal request", link, description, withdrawalRequest.getCreatedTimestamp());
   }
 
   private List<NotificationView> getRfiNotificationViews(String appId) {
-    List<Rfi> rfiList = createRfiList(appId);
+    List<Rfi> rfiList = rfiService.getOpenRfiList(Collections.singletonList(appId));
     return rfiList.stream()
         .map(this::getRfiNotificationView)
         .collect(Collectors.toList());
@@ -304,29 +273,12 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     return new NotificationView(EventLabelType.RFI, "Request for information", link, description, rfi.getReceivedTimestamp());
   }
 
-  private List<Rfi> createRfiList(String appId) {
-    List<Rfi> rfiList = rfiDao.getRfiList(appId);
-    Set<String> repliedToRfiIds = getRepliedToRfiIds(rfiList);
-    return rfiList.stream()
-        .filter(rfi -> !repliedToRfiIds.contains(rfi.getRfiId()))
-        .collect(Collectors.toList());
-  }
-
-  private Set<String> getRepliedToRfiIds(List<Rfi> rfiList) {
-    List<String> rfiIds = rfiList.stream()
-        .map(Rfi::getRfiId)
-        .collect(Collectors.toList());
-    return rfiReplyDao.getRfiReplies(rfiIds).stream()
-        .map(RfiReply::getRfiId)
-        .collect(Collectors.toSet());
-  }
-
   private StatusItemView getStatusItemView(StatusUpdate statusUpdate, List<NotificationView> notificationViews, Long finishedTimestamp) {
     String status = ApplicationUtil.getStatusName(statusUpdate.getStatusType());
     String statusExplanation = ApplicationUtil.getStatusExplanation(statusUpdate.getStatusType());
     String processingLabel = getProcessingLabel(statusUpdate, finishedTimestamp);
     String processingDescription = getProcessingDescription(statusUpdate, finishedTimestamp);
-    SortUtil.sortNotificationViews(notificationViews);
+    SortUtil.sortNotificationViewsByCreatedTimestamp(notificationViews);
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, notificationViews);
   }
 

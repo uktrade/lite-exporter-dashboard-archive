@@ -5,6 +5,7 @@ import models.WithdrawalRejection;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WithdrawalRejectionDaoImpl implements WithdrawalRejectionDao {
@@ -17,10 +18,22 @@ public class WithdrawalRejectionDaoImpl implements WithdrawalRejectionDao {
   }
 
   @Override
-  public List<WithdrawalRejection> getWithdrawalRejections(String appId) {
+  public List<WithdrawalRejection> getWithdrawalRejectionsByAppId(String appId) {
     try (Handle handle = dbi.open()) {
       WithdrawalRejectionJDBIDao withdrawalRejectionJDBIDao = handle.attach(WithdrawalRejectionJDBIDao.class);
-      return withdrawalRejectionJDBIDao.getWithdrawalRejections(appId);
+      return withdrawalRejectionJDBIDao.getWithdrawalRejectionsByAppId(appId);
+    }
+  }
+
+  @Override
+  public List<WithdrawalRejection> getWithdrawalRejectionsByAppIds(List<String> appIds) {
+    if (appIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (Handle handle = dbi.open()) {
+        WithdrawalRejectionJDBIDao withdrawalRejectionJDBIDao = handle.attach(WithdrawalRejectionJDBIDao.class);
+        return withdrawalRejectionJDBIDao.getWithdrawalRejectionsByAppIds(appIds);
+      }
     }
   }
 

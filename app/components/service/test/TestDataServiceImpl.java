@@ -12,6 +12,7 @@ import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
 import components.dao.RfiDao;
 import components.dao.RfiReplyDao;
+import components.dao.RfiWithdrawalDao;
 import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
@@ -23,6 +24,7 @@ import models.Notification;
 import models.NotificationType;
 import models.Outcome;
 import models.Rfi;
+import models.RfiWithdrawal;
 import models.Siel;
 import models.StatusUpdate;
 import models.WithdrawalApproval;
@@ -35,6 +37,7 @@ import models.enums.StatusType;
 import org.apache.commons.lang3.RandomUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.exporterdashboard.api.Amendment;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
@@ -78,6 +81,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final NotificationDao notificationDao;
   private final WithdrawalRejectionDao withdrawalRejectionDao;
   private final WithdrawalApprovalDao withdrawalApprovalDao;
+  private final RfiWithdrawalDao rfiWithdrawalDao;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -92,7 +96,8 @@ public class TestDataServiceImpl implements TestDataService {
                              CustomerServiceClient customerServiceClient,
                              NotificationDao notificationDao,
                              WithdrawalRejectionDao withdrawalRejectionDao,
-                             WithdrawalApprovalDao withdrawalApprovalDao) {
+                             WithdrawalApprovalDao withdrawalApprovalDao,
+                             RfiWithdrawalDao rfiWithdrawalDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiReplyDao = rfiReplyDao;
@@ -106,6 +111,7 @@ public class TestDataServiceImpl implements TestDataService {
     this.notificationDao = notificationDao;
     this.withdrawalRejectionDao = withdrawalRejectionDao;
     this.withdrawalApprovalDao = withdrawalApprovalDao;
+    this.rfiWithdrawalDao = rfiWithdrawalDao;
   }
 
   @Override
@@ -160,6 +166,7 @@ public class TestDataServiceImpl implements TestDataService {
         .collect(Collectors.toList());
     appIds.forEach(rfiDao::deleteRfiListByAppId);
     rfiIds.forEach(rfiReplyDao::deleteRfiRepliesByRfiId);
+    rfiIds.forEach(rfiWithdrawalDao::deleteRfiWithdrawalByRfiId);
     customerIds.forEach(sielDao::deleteSielsByCustomerId);
     appIds.forEach(applicationDao::deleteApplication);
     rfiIds.forEach(rfiId -> draftDao.deleteDraft(rfiId, DraftType.RFI_REPLY));
@@ -182,6 +189,7 @@ public class TestDataServiceImpl implements TestDataService {
     sielDao.deleteAllSiels();
     outcomeDao.deleteAllOutcomes();
     notificationDao.deleteAllNotifications();
+    rfiWithdrawalDao.deleteAllRfiWithdrawals();
   }
 
   // Siel Ogel
@@ -251,6 +259,15 @@ public class TestDataServiceImpl implements TestDataService {
             OFFICER_ID,
             "Please answer this rfi.");
         rfiDao.insertRfi(rfi);
+        String rfiTwoId = random("RFI");
+        Rfi rfiTwo = new Rfi(rfiTwoId,
+            appId,
+            RfiStatus.ACTIVE,
+            time(2017, 6, 5 + i, i, i),
+            time(2017, 7, 5 + i, i, i),
+            OFFICER_ID,
+            "Please also answer this rfi.");
+        rfiDao.insertRfi(rfiTwo);
         if (i % 2 != 0) {
           RfiReply rfiReply = new RfiReply();
           rfiReply.setId(random("REP"));
@@ -260,6 +277,26 @@ public class TestDataServiceImpl implements TestDataService {
           rfiReply.setMessage("This is a reply.");
           rfiReply.setAttachments(new ArrayList<>());
           rfiReplyDao.insertRfiReply(rfiReply);
+          RfiWithdrawal rfiWithdrawal = new RfiWithdrawal(random("RFW"),
+              rfiTwoId,
+              OFFICER_ID,
+              time(2017, 8, 5 + i, i, i),
+              new ArrayList<>(),
+              "This rfi has been withdrawn.");
+          rfiWithdrawalDao.insertRfiWithdrawal(rfiWithdrawal);
+          File document = new File();
+          document.setId("FIL");
+          document.setUrl("#");
+          document.setFilename("Inform letter");
+          Notification notification = new Notification(random("INF"),
+              appId,
+              NotificationType.INFORM,
+              OFFICER_ID,
+              time(2017, 5, 1, 2, 3),
+              new ArrayList<>(),
+              "",
+              document);
+          notificationDao.insertNotification(notification);
         }
       }
     }
@@ -346,26 +383,26 @@ public class TestDataServiceImpl implements TestDataService {
     }
 
     Notification delayNotification = new Notification(
-        random("NOT"),
+        random("DEL"),
         appId,
         NotificationType.DELAY,
         TestDataServiceImpl.OFFICER_ID,
         time(2016, 1, 1, 13, 20),
         new ArrayList<>(),
         "We're sorry to inform you that your application has been delayed.",
-        new ArrayList<>());
+        null);
     notificationDao.insertNotification(delayNotification);
 
     if (stopped) {
       Notification stopNotification = new Notification(
-          random("NOT"),
+          random("STO"),
           appId,
           NotificationType.STOP,
           TestDataServiceImpl.OFFICER_ID,
           time(2017, 1, 1, 14, 30),
           new ArrayList<>(),
           "We have had to stop your application.",
-          new ArrayList<>());
+          null);
       notificationDao.insertNotification(stopNotification);
     } else {
       WithdrawalApproval withdrawalApproval = new WithdrawalApproval(random("WAP"),
@@ -504,14 +541,6 @@ public class TestDataServiceImpl implements TestDataService {
       StatusUpdate statusUpdate = new StatusUpdate(appId, statusType, createdTimestamp);
       statusUpdateDao.insertStatusUpdate(statusUpdate);
     }
-    Rfi rfi = new Rfi(random("RFI"),
-        appId,
-        RfiStatus.ACTIVE,
-        time(2017, 5, 5, 5, 5),
-        time(2017, 6, 6, 6, 6),
-        OFFICER_ID,
-        "This is a rfi.");
-    rfiDao.insertRfi(rfi);
 
     String letter = "Cover letter";
     String licence = "Licence SIE2017/000001 granted for some or all of your items";
@@ -540,11 +569,21 @@ public class TestDataServiceImpl implements TestDataService {
         document.setDocumentType(documentType);
         document.setFilename(UUID.randomUUID().toString() + ".pdf");
         document.setLicenceRef(licenceRefs.get(j));
-        document.setUrl("http://nourl.com");
+        document.setUrl("#");
         documents.add(document);
       }
       outcome.setDocuments(documents);
       outcomeDao.insertOutcome(outcome);
+    }
+
+    for (int i = 0; i < 3; i++) {
+      long createdTimestamp = time(2017, 5 + i, 3 + i, 3 + i, 3 + i);
+      File document = new File();
+      document.setId(random("FIL"));
+      document.setFilename("Licence required inform letter number " + (i + 1));
+      document.setUrl("#");
+      Notification notification = new Notification(random("INF"), appId, NotificationType.INFORM, OFFICER_ID, createdTimestamp, new ArrayList<>(), "", document);
+      notificationDao.insertNotification(notification);
     }
   }
 

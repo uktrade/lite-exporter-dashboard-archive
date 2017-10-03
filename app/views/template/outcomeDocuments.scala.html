@@ -1,6 +1,6 @@
-@import models.view.OutcomeView
+@import models.view.{InformLetterView, OutcomeView}
 @import views.html.common.page.{detailPanel, twoThirdsColumn}
-@(outcomeViews: java.util.List[OutcomeView])
+@(outcomeViews: java.util.List[OutcomeView], informLetterViews: java.util.List[InformLetterView])
 
 @twoThirdsColumn {
   <p class="bold">A decision on your application has been made.</p>
@@ -11,11 +11,13 @@
     <br>
     <h3 class="heading-small">Outcome documents</h3>
     <ul class="outcome-documents-list">
-    @for(document <- outcomeViews.get(0).getDocuments) {
-      <li><a href="#"> @document <span class="visually-hidden">(opens in a new tab)</span></a></li>
+    @for(outcomeDocumentView <- outcomeViews.get(0).getOutcomeDocumentViews) {
+      <li><a href="@outcomeDocumentView.getLink">@outcomeDocumentView.getName <span class="visually-hidden">(opens in a new tab)</span></a></li>
     }
     </ul>
   }
+
+  @informLetters(informLetterViews)
 
   @if(outcomeViews.size() > 1) {
     <br>
@@ -31,8 +33,8 @@
         <br>
         <h3 class="heading-small">Issued on @outcomeViews.get(i).getIssuedOn, voided on @outcomeViews.get(i).getVoidedOn</h3>
         <ul class="outcome-documents-list">
-        @for(document <- outcomeViews.get(i).getDocuments) {
-          <li><a href="#"> @document <span class="visually-hidden">(opens in a new tab)</span></a>
+        @for(outcomeDocumentView <- outcomeViews.get(i).getOutcomeDocumentViews) {
+          <li><a href="@outcomeDocumentView.getLink">@outcomeDocumentView.getName <span class="visually-hidden">(opens in a new tab)</span></a>
           </li>
         }
         </ul>

@@ -62,7 +62,7 @@ public class DownloadController extends SamlController {
 
   public Result getWithdrawalFile(String appId, String fileId) {
     List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.WITHDRAWAL);
-    List<File> attachments = withdrawalRequestDao.getWithdrawalRequests(appId).stream()
+    List<File> attachments = withdrawalRequestDao.getWithdrawalRequestsByAppId(appId).stream()
         .map(WithdrawalRequest::getAttachments)
         .flatMap(List::stream)
         .collect(Collectors.toList());

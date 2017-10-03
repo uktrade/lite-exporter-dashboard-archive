@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface NotificationDao {
 
+  List<Notification> getNotifications(List<String> appIds);
+
   List<Notification> getNotifications(String appId);
 
   void insertNotification(Notification notification);

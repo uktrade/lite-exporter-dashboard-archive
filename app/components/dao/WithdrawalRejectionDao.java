@@ -6,7 +6,9 @@ import java.util.List;
 
 public interface WithdrawalRejectionDao {
 
-  List<WithdrawalRejection> getWithdrawalRejections(String appId);
+  List<WithdrawalRejection> getWithdrawalRejectionsByAppId(String appId);
+
+  List<WithdrawalRejection> getWithdrawalRejectionsByAppIds(List<String> appIds);
 
   void insertWithdrawalRejection(WithdrawalRejection withdrawalRejection);
 

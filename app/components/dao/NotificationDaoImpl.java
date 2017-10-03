@@ -6,6 +6,7 @@ import models.Notification;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NotificationDaoImpl implements NotificationDao {
@@ -15,6 +16,18 @@ public class NotificationDaoImpl implements NotificationDao {
   @Inject
   public NotificationDaoImpl(DBI dbi) {
     this.dbi = dbi;
+  }
+
+  @Override
+  public List<Notification> getNotifications(List<String> appIds) {
+    if (appIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (Handle handle = dbi.open()) {
+        NotificationJDBIDao notificationJDBIDao = handle.attach(NotificationJDBIDao.class);
+        return notificationJDBIDao.getNotifications(appIds);
+      }
+    }
   }
 
   @Override
@@ -36,7 +49,7 @@ public class NotificationDaoImpl implements NotificationDao {
           notification.getCreatedTimestamp(),
           JsonUtil.convertListToJson(notification.getRecipientUserIds()),
           notification.getMessage(),
-          JsonUtil.convertListToJson(notification.getFiles()));
+          JsonUtil.convertFileToJson(notification.getDocument()));
     }
   }
 

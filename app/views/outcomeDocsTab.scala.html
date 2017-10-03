@@ -1,16 +1,23 @@
-@import models.view.ApplicationSummaryView
+@import models.view.{ApplicationSummaryView, InformLetterView, OutcomeView}
 @import template._
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, isInProgress: Boolean, isStopped: Boolean, isWithdrawn: Boolean, outcomeViews: java.util.List[OutcomeView], informLetterViews: java.util.List[InformLetterView])
 
-@import models.view.OutcomeView
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, showDocuments: Boolean, outcomeViews: java.util.List[OutcomeView])
-
-  @applicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount, null) {
-    @if(showDocuments) {
-      @outcomeDocuments(outcomeViews)
-    } else {
-      Your application is still being processed.
-      <p>
-        Outcome documents will appear here when processing is complete.
-      </p>
-    }
+@applicationDetails(applyLink, applicationSummaryView, "outcomeDocs", rfiViewCount, null) {
+  @if(isInProgress) {
+    Your application is still being processed.
+    <p>
+      Outcome documents will appear here when processing is complete.
+    </p>
   }
+  @if(isStopped) {
+    Your application has been stopped.
+  }
+  @if(isWithdrawn) {
+    You have withdrawn your application.
+  }
+  @if(isInProgress || isStopped || isWithdrawn) {
+    @informLetters(informLetterViews)
+  } else {
+    @outcomeDocuments(outcomeViews, informLetterViews)
+  }
+}

@@ -1,42 +1,31 @@
 package models;
 
-
-import uk.gov.bis.lite.exporterdashboard.api.File;
-
 import java.util.List;
 
-public class Notification {
+public class RfiWithdrawal {
 
   private final String id;
-  private final String appId;
-  private final NotificationType notificationType;
+  private final String rfiId;
   private final String createdByUserId;
   private final Long createdTimestamp;
   private final List<String> recipientUserIds;
   private final String message;
-  private final File document;
 
-  public Notification(String id, String appId, NotificationType notificationType, String createdByUserId, Long createdTimestamp, List<String> recipientUserIds, String message, File document) {
+  public RfiWithdrawal(String id, String rfiId, String createdByUserId, Long createdTimestamp, List<String> recipientUserIds, String message) {
     this.id = id;
-    this.appId = appId;
-    this.notificationType = notificationType;
+    this.rfiId = rfiId;
     this.createdByUserId = createdByUserId;
     this.createdTimestamp = createdTimestamp;
     this.recipientUserIds = recipientUserIds;
     this.message = message;
-    this.document = document;
   }
 
   public String getId() {
     return id;
   }
 
-  public String getAppId() {
-    return appId;
-  }
-
-  public NotificationType getNotificationType() {
-    return notificationType;
+  public String getRfiId() {
+    return rfiId;
   }
 
   public String getCreatedByUserId() {
@@ -53,10 +42,6 @@ public class Notification {
 
   public String getMessage() {
     return message;
-  }
-
-  public File getDocument() {
-    return document;
   }
 
 }

@@ -6,6 +6,7 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
@@ -18,10 +19,22 @@ public class WithdrawalRequestDaoImpl implements WithdrawalRequestDao {
   }
 
   @Override
-  public List<WithdrawalRequest> getWithdrawalRequests(String appId) {
+  public List<WithdrawalRequest> getWithdrawalRequestsByAppId(String appId) {
     try (final Handle handle = dbi.open()) {
       WithdrawalRequestJDBIDao withdrawalRequestJDBIDao = handle.attach(WithdrawalRequestJDBIDao.class);
-      return withdrawalRequestJDBIDao.getWithdrawalRequests(appId);
+      return withdrawalRequestJDBIDao.getWithdrawalRequestsByAppId(appId);
+    }
+  }
+
+  @Override
+  public List<WithdrawalRequest> getWithdrawalRequestsByAppIds(List<String> appIds) {
+    if (appIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (final Handle handle = dbi.open()) {
+        WithdrawalRequestJDBIDao withdrawalRequestJDBIDao = handle.attach(WithdrawalRequestJDBIDao.class);
+        return withdrawalRequestJDBIDao.getWithdrawalRequestsByAppIds(appIds);
+      }
     }
   }
 

@@ -1,95 +1,101 @@
-@import models.enums.{ApplicationListTab, ApplicationProgress, ApplicationSortType, EventLabelType}
+@import models.enums.{ApplicationListTab, ApplicationProgress, ApplicationSortType}
 @import models.view.ApplicationListView
 @import template._
 @(applicationListView: ApplicationListView)
 
-  @ariaSortAttr(applicationSortType: ApplicationSortType) = {
-  @if(applicationListView.getApplicationSortType == applicationSortType) {
-    aria-sort="@applicationListView.getSortDirection.toAriaString"
-  } else {
-    aria-sort="none"
-  }
-  }
+@ariaSortAttr(applicationSortType: ApplicationSortType) = {
+@if(applicationListView.getApplicationSortType == applicationSortType) {
+  aria-sort="@applicationListView.getSortDirection.toAriaString"
+} else {
+  aria-sort="none"
+}
+}
 
-  @if(!applicationListView.getPage.getItems.isEmpty) {
-    <div class="scrollable-table">
-      <table class="table-font-xsmall table-align-top">
-        <thead>
-          <tr>
-            <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
-              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DATE).toString">
-                Date
+@if(!applicationListView.getPage.getItems.isEmpty) {
+  <div class="scrollable-table">
+    <table class="table-font-xsmall table-align-top">
+      <thead>
+        <tr>
+          <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
+            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DATE).toString">
+              Date
+            </a>
+          </th>
+          <th role="columnheader">
+            References
+          </th>
+          <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
+            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.STATUS).toString">
+              Application status
+            </a>
+          </th>
+          <th role="columnheader">
+            Destination
+          </th>
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
+                Created by
               </a>
             </th>
-            <th role="columnheader">
-              References
-            </th>
-            <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
-              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.STATUS).toString">
-                Application status
-              </a>
-            </th>
-            <th role="columnheader">
-              Destination
-            </th>
-            @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-              <th role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
-                <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
-                  Created by
-                </a>
-              </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+      @for(applicationItemView <- applicationListView.getPage.getItems) {
+        <tr>
+          <td class="no-wrap">
+            @if(applicationItemView.getApplicationProgress == ApplicationProgress.DRAFT) {
+              Created
             }
-          </tr>
-        </thead>
-        <tbody>
-        @for(applicationItemView <- applicationListView.getPage.getItems) {
-          <tr>
-            <td class="no-wrap">
-              @if(applicationItemView.getApplicationProgress == ApplicationProgress.DRAFT) {
-                Created
-              }
-              @if(applicationItemView.getApplicationProgress == ApplicationProgress.CURRENT) {
-                Submitted
-              }
-              @if(applicationItemView.getApplicationProgress == ApplicationProgress.COMPLETED) {
-                Completed
-              }
-              <div class="bold">
-                @applicationItemView.getDate
-              </div>
-            </td>
-            <td>
-            @if(applicationItemView.getCaseReference != null) {
-              <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
-              @applicationItemView.getCaseReference
-              </a>
+            @if(applicationItemView.getApplicationProgress == ApplicationProgress.CURRENT) {
+              Submitted
+            }
+            @if(applicationItemView.getApplicationProgress == ApplicationProgress.COMPLETED) {
+              Completed
+            }
+          <div class="bold">
+          @applicationItemView.getDate
+          </div>
+          </td>
+          <td>
+          @if(applicationItemView.getCaseReference != null) {
+            <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
+            @applicationItemView.getCaseReference
+            </a>
+            <br>
+            @applicationItemView.getApplicantReference
+          } else {
+            <a href="#" class="bold">
+            @applicationItemView.getApplicantReference
+            </a>
+          }
+          </td>
+          <td>
+            @applicationItemView.getApplicationStatus
+          <br>
+            @applicationItemView.getApplicationStatusDate
+            @for(index <- 0 until applicationItemView.getNotificationViews.size) {
               <br>
-              @applicationItemView.getApplicantReference
-            } else {
-              <a href="#" class="bold">
-              @applicationItemView.getApplicantReference
-              </a>
-            }
-            </td>
-            <td>
-              @applicationItemView.getApplicationStatus
-              <br>
-              @applicationItemView.getApplicationStatusDate
-              @if(applicationItemView.getOpenRfiId != null) {
-                @eventLabel(EventLabelType.RFI, "Request for information", routes.RfiTabController.showRfiTab(applicationItemView.getAppId).withFragment(applicationItemView.getOpenRfiId).toString, "", true)
+                @eventLabel(applicationItemView.getNotificationViews.get(index).getEventLabelType,
+                  applicationItemView.getNotificationViews.get(index).getLinkText,
+                  applicationItemView.getNotificationViews.get(index).getLink,
+                  "",
+                  index == 0
+                )
               }
-            </td>
+          </td>
+          <td>
+          @applicationItemView.getDestination
+          </td>
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
             <td>
-            @applicationItemView.getDestination
+              @applicationItemView.getCreatedByFirstName @applicationItemView.getCreatedByLastName
             </td>
-            @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-              <td>
-                @applicationItemView.getCreatedByFirstName @applicationItemView.getCreatedByLastName
-              </td>
-            }
-          </tr>
-        }
-        </tbody>
-      </table>
-    </div>
-  }
+          }
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+}
