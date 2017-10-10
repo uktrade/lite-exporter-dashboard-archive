@@ -7,9 +7,12 @@ import com.google.inject.name.Named;
 import components.cache.SessionCache;
 import components.service.ApplicationItemViewService;
 import components.service.UserService;
+import components.util.Comparators;
 import components.util.EnumUtil;
 import components.util.PageUtil;
 import components.util.SortUtil;
+import java.util.List;
+import java.util.stream.Collectors;
 import models.ApplicationListState;
 import models.Page;
 import models.enums.ApplicationListTab;
@@ -21,10 +24,6 @@ import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
 import play.mvc.Result;
 import views.html.applicationList;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ApplicationListController extends SamlController {
 
@@ -109,14 +108,14 @@ public class ApplicationListController extends SamlController {
     return applicationItemViews.stream()
         .filter(distinctByKey(ApplicationItemView::getCompanyId))
         .map(view -> new CompanySelectItemView(view.getCompanyId(), view.getCompanyName()))
-        .sorted(Comparator.comparing(CompanySelectItemView::getCompanyName))
+        .sorted(Comparators.COMPANY_NAME)
         .collect(Collectors.toList());
   }
 
   private boolean hasUserApplications(String currentUserId, List<ApplicationItemView> applicationItemViews) {
     return applicationItemViews.stream()
         .map(ApplicationItemView::getCreatedById)
-        .anyMatch(id -> currentUserId.equals(id));
+        .anyMatch(currentUserId::equals);
   }
 
   private boolean hasOtherUserApplications(String currentUserId, List<ApplicationItemView> applicationItemViews) {

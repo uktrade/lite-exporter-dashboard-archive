@@ -1,8 +1,7 @@
 package models.view;
 
-import models.enums.EventLabelType;
-
 import java.util.List;
+import models.enums.EventLabelType;
 
 public class MessageView {
 
@@ -16,6 +15,7 @@ public class MessageView {
   private final Long createdTimestamp;
   private final List<FileView> fileViews;
   private final MessageReplyView messageReplyView;
+  private final boolean showNewIndicator;
 
   public MessageView(EventLabelType eventLabelType,
                      String anchor,
@@ -26,7 +26,8 @@ public class MessageView {
                      String message,
                      Long createdTimestamp,
                      List<FileView> fileViews,
-                     MessageReplyView messageReplyView) {
+                     MessageReplyView messageReplyView,
+                     boolean showNewIndicator) {
     this.eventLabelType = eventLabelType;
     this.anchor = anchor;
     this.title = title;
@@ -37,6 +38,7 @@ public class MessageView {
     this.createdTimestamp = createdTimestamp;
     this.fileViews = fileViews;
     this.messageReplyView = messageReplyView;
+    this.showNewIndicator = showNewIndicator;
   }
 
   public EventLabelType getEventLabelType() {
@@ -77,6 +79,10 @@ public class MessageView {
 
   public MessageReplyView getMessageReplyView() {
     return messageReplyView;
+  }
+
+  public boolean isShowNewIndicator() {
+    return showNewIndicator;
   }
 
 }

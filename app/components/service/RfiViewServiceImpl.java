@@ -2,11 +2,15 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.dao.DraftDao;
-import components.dao.RfiDao;
-import components.dao.RfiReplyDao;
-import components.dao.RfiWithdrawalDao;
+import components.util.Comparators;
 import components.util.FileUtil;
 import components.util.TimeUtil;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import models.AppData;
 import models.Rfi;
 import models.RfiWithdrawal;
 import models.enums.DraftType;
@@ -17,57 +21,32 @@ import models.view.RfiView;
 import uk.gov.bis.lite.exporterdashboard.api.File;
 import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 public class RfiViewServiceImpl implements RfiViewService {
 
-  private final RfiDao rfiDao;
-  private final RfiReplyDao rfiReplyDao;
   private final UserService userService;
   private final DraftDao draftDao;
-  private final RfiWithdrawalDao rfiWithdrawalDao;
 
   @Inject
-  public RfiViewServiceImpl(RfiDao rfiDao,
-                            RfiReplyDao rfiReplyDao,
-                            UserService userService,
-                            DraftDao draftDao,
-                            RfiWithdrawalDao rfiWithdrawalDao) {
-    this.rfiDao = rfiDao;
-    this.rfiReplyDao = rfiReplyDao;
+  public RfiViewServiceImpl(UserService userService,
+                            DraftDao draftDao) {
     this.userService = userService;
     this.draftDao = draftDao;
-    this.rfiWithdrawalDao = rfiWithdrawalDao;
   }
 
   @Override
-  public List<RfiView> getRfiViews(String appId) {
-    List<Rfi> rfiList = rfiDao.getRfiList(appId);
+  public List<RfiView> getRfiViews(AppData appData) {
+    List<Rfi> rfiList = appData.getRfiList();
 
-    List<String> rfiIds = rfiList.stream()
-        .map(Rfi::getRfiId)
-        .collect(Collectors.toList());
-
-    Map<String, RfiWithdrawal> rfiIdToRfiWithdrawal = rfiWithdrawalDao.getRfiWithdrawals(rfiIds).stream()
+    Map<String, RfiWithdrawal> rfiIdToRfiWithdrawal = appData.getRfiWithdrawals().stream()
         .collect(Collectors.toMap(RfiWithdrawal::getRfiId, Function.identity()));
 
-    Map<String, RfiReply> rfiIdToRfiReply = rfiReplyDao.getRfiReplies(rfiIds).stream()
+    Map<String, RfiReply> rfiIdToRfiReply = appData.getRfiReplies().stream()
         .collect(Collectors.toMap(RfiReply::getRfiId, Function.identity()));
 
     return rfiList.stream()
-        .sorted(Comparator.comparing(Rfi::getReceivedTimestamp))
-        .map(rfi -> getRfiView(rfi, rfiIdToRfiReply.get(rfi.getRfiId()), rfiIdToRfiWithdrawal.get(rfi.getRfiId())))
+        .sorted(Comparators.RFI_RECEIVED_REVERSED)
+        .map(rfi -> getRfiView(rfi, rfiIdToRfiReply.get(rfi.getId()), rfiIdToRfiWithdrawal.get(rfi.getId())))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  public int getRfiViewCount(String appId) {
-    return rfiDao.getRfiCount(appId);
   }
 
   @Override
@@ -90,6 +69,7 @@ public class RfiViewServiceImpl implements RfiViewService {
   }
 
   private RfiView getRfiView(Rfi rfi, RfiReply rfiReply, RfiWithdrawal rfiWithdrawal) {
+    boolean showNewIndicator = rfiWithdrawal == null && rfiReply == null;
     String withdrawnDate;
     if (rfiWithdrawal != null) {
       withdrawnDate = TimeUtil.formatDate(rfiWithdrawal.getCreatedTimestamp());
@@ -99,8 +79,8 @@ public class RfiViewServiceImpl implements RfiViewService {
     String receivedDate = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
     String replyBy = getReplyBy(rfi);
     String sender = userService.getUsername(rfi.getSentBy());
-    RfiReplyView rfiReplyView = getRfiReplyView(rfi.getAppId(), rfi.getRfiId(), rfiReply);
-    return new RfiView(rfi.getAppId(), rfi.getRfiId(), receivedDate, replyBy, sender, rfi.getMessage(), withdrawnDate, rfiReplyView);
+    RfiReplyView rfiReplyView = getRfiReplyView(rfi.getAppId(), rfi.getId(), rfiReply);
+    return new RfiView(rfi.getAppId(), rfi.getId(), receivedDate, replyBy, sender, rfi.getMessage(), withdrawnDate, showNewIndicator, rfiReplyView);
   }
 
   private RfiReplyView getRfiReplyView(String appId, String rfiId, RfiReply rfiReply) {

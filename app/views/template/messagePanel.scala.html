@@ -8,6 +8,9 @@
     <h3 class="heading-small">
       <span class="@messageView.getEventLabelType.toString-icon"></span>
       @messageView.getTitle
+      @if(messageView.isShowNewIndicator) {
+      (new)
+      }
     </h3>
 
     <div class="grid-row">
@@ -45,7 +48,7 @@
   <article>
     <h4 class="heading-small">Message</h4>
     <div>
-    @Html(messageView.getMessage)
+      @Html(messageView.getMessage)
     </div>
 
   </article>
@@ -55,5 +58,5 @@
 </div>
 
 @if(messageView.getMessageReplyView != null) {
-  @messageReplyPanel(messageView.getMessageReplyView)
+@messageReplyPanel(messageView.getMessageReplyView)
 }

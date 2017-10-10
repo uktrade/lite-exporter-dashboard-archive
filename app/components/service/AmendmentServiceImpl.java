@@ -1,19 +1,19 @@
 package components.service;
 
+import static components.util.RandomIdUtil.amendmentId;
+
 import com.google.inject.Inject;
 import components.dao.AmendmentDao;
 import components.dao.DraftDao;
 import components.message.MessagePublisher;
 import components.upload.UploadFile;
 import components.util.FileUtil;
-import components.util.RandomUtil;
+import java.time.Instant;
+import java.util.List;
 import models.enums.DraftType;
 import models.enums.RoutingKey;
 import uk.gov.bis.lite.exporterdashboard.api.Amendment;
 import uk.gov.bis.lite.exporterdashboard.api.File;
-
-import java.time.Instant;
-import java.util.List;
 
 public class AmendmentServiceImpl implements AmendmentService {
 
@@ -33,7 +33,7 @@ public class AmendmentServiceImpl implements AmendmentService {
     List<File> attachments = getAttachments(appId, files);
 
     Amendment amendment = new Amendment();
-    amendment.setId(RandomUtil.random("AME"));
+    amendment.setId(amendmentId());
     amendment.setAppId(appId);
     amendment.setCreatedByUserId(createdByUserId);
     amendment.setCreatedTimestamp(Instant.now().toEpochMilli());

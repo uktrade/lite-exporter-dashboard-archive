@@ -1,11 +1,15 @@
-@import models.view.InformLetterView
-@(informLetterViews: java.util.List[InformLetterView])
+@import models.view.InformLetterSectionView
+@(informLetterSectionView: InformLetterSectionView)
 
-@if(!informLetterViews.isEmpty) {
+@if(!informLetterSectionView.getInformLetterViews.isEmpty) {
   <br>
-  <h3 class="heading-small">Inform letters</h3>
+  <h3 class="heading-small">Inform letters
+  @if(informLetterSectionView.isShowNewIndicator) {
+    (new)
+  }
+  </h3>
   <ul class="outcome-documents-list">
-  @for(informLetterView <- informLetterViews) {
+  @for(informLetterView <- informLetterSectionView.getInformLetterViews) {
     <li id="@informLetterView.getAnchor"><a href="@informLetterView.getLink">@informLetterView.getName <span class="visually-hidden">(opens in a new tab)</span></a></li>
   }
   </ul>

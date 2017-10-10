@@ -1,6 +1,20 @@
 package components.service.test;
 
-import static components.util.RandomUtil.random;
+import static components.util.RandomIdUtil.amendmentId;
+import static components.util.RandomIdUtil.appId;
+import static components.util.RandomIdUtil.delayNotificationId;
+import static components.util.RandomIdUtil.fileId;
+import static components.util.RandomIdUtil.informNotificationId;
+import static components.util.RandomIdUtil.outcomeId;
+import static components.util.RandomIdUtil.rfiId;
+import static components.util.RandomIdUtil.rfiReplyId;
+import static components.util.RandomIdUtil.rfiWithdrawalId;
+import static components.util.RandomIdUtil.sielId;
+import static components.util.RandomIdUtil.statusUpdateId;
+import static components.util.RandomIdUtil.stopNotificationId;
+import static components.util.RandomIdUtil.withdrawalApprovalId;
+import static components.util.RandomIdUtil.withdrawalRejectionId;
+import static components.util.RandomIdUtil.withdrawalRequestId;
 import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
@@ -10,6 +24,7 @@ import components.dao.ApplicationDao;
 import components.dao.DraftDao;
 import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
+import components.dao.ReadDao;
 import components.dao.RfiDao;
 import components.dao.RfiReplyDao;
 import components.dao.RfiWithdrawalDao;
@@ -18,6 +33,12 @@ import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import models.Application;
 import models.Document;
 import models.Notification;
@@ -41,18 +62,12 @@ import uk.gov.bis.lite.exporterdashboard.api.File;
 import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 public class TestDataServiceImpl implements TestDataService {
 
   public static final String APPLICANT_ID = "24492";
   public static final String APPLICANT_TWO_ID = "24493";
   public static final String APPLICANT_THREE_ID = "24494";
+  public static final List<String> RECIPIENTS = Arrays.asList(APPLICANT_ID, APPLICANT_TWO_ID, APPLICANT_THREE_ID);
   public static final String ADMIN_ID = "1";
 
   public static final String OTHER_APPLICANT_ID = "2";
@@ -82,6 +97,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final WithdrawalRejectionDao withdrawalRejectionDao;
   private final WithdrawalApprovalDao withdrawalApprovalDao;
   private final RfiWithdrawalDao rfiWithdrawalDao;
+  private final ReadDao readDao;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -97,7 +113,8 @@ public class TestDataServiceImpl implements TestDataService {
                              NotificationDao notificationDao,
                              WithdrawalRejectionDao withdrawalRejectionDao,
                              WithdrawalApprovalDao withdrawalApprovalDao,
-                             RfiWithdrawalDao rfiWithdrawalDao) {
+                             RfiWithdrawalDao rfiWithdrawalDao,
+                             ReadDao readDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiReplyDao = rfiReplyDao;
@@ -112,6 +129,7 @@ public class TestDataServiceImpl implements TestDataService {
     this.withdrawalRejectionDao = withdrawalRejectionDao;
     this.withdrawalApprovalDao = withdrawalApprovalDao;
     this.rfiWithdrawalDao = rfiWithdrawalDao;
+    this.readDao = readDao;
   }
 
   @Override
@@ -153,7 +171,7 @@ public class TestDataServiceImpl implements TestDataService {
         .map(CustomerView::getCustomerId)
         .collect(Collectors.toList());
     List<String> appIds = applicationDao.getApplications(customerIds).stream()
-        .map(Application::getAppId)
+        .map(Application::getId)
         .collect(Collectors.toList());
     appIds.forEach(outcomeDao::deleteOutcomesByAppId);
     appIds.forEach(statusUpdateDao::deleteStatusUpdatesByAppId);
@@ -162,7 +180,7 @@ public class TestDataServiceImpl implements TestDataService {
     appIds.forEach(withdrawalApprovalDao::deleteWithdrawalApprovalsByAppId);
     appIds.forEach(amendmentDao::deleteAmendmentsByAppId);
     List<String> rfiIds = rfiDao.getRfiList(appIds).stream()
-        .map(Rfi::getRfiId)
+        .map(Rfi::getId)
         .collect(Collectors.toList());
     appIds.forEach(rfiDao::deleteRfiListByAppId);
     rfiIds.forEach(rfiReplyDao::deleteRfiRepliesByRfiId);
@@ -173,6 +191,7 @@ public class TestDataServiceImpl implements TestDataService {
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.WITHDRAWAL));
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT));
     appIds.forEach(notificationDao::deleteNotificationsByAppId);
+    readDao.deleteAllReadDataByUserId(userId);
   }
 
   @Override
@@ -190,6 +209,7 @@ public class TestDataServiceImpl implements TestDataService {
     outcomeDao.deleteAllOutcomes();
     notificationDao.deleteAllNotifications();
     rfiWithdrawalDao.deleteAllRfiWithdrawals();
+    readDao.deleteAllReadData();
   }
 
   // Siel Ogel
@@ -203,7 +223,7 @@ public class TestDataServiceImpl implements TestDataService {
       SielStatus sielStatus = SielStatus.values()[i % SielStatus.values().length];
       List<String> destinationList = i % 2 == 0 ? Collections.singletonList(GERMANY) : Arrays.asList(ICELAND, FRANCE);
       Long expiryTimestamp = sielStatus == SielStatus.ACTIVE ? time(2017, 3, i, 15, 10) : time(2016, 3, i, 15, 10);
-      Siel siel = new Siel(random("SIE"),
+      Siel siel = new Siel(sielId(),
           companyId,
           getApplicantReference(),
           "GBSIE2017/417" + String.format("%02d", i),
@@ -231,7 +251,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   private void createApplications(String userId) {
     for (int i = 0; i < 20; i++) {
-      String appId = random("APP");
+      String appId = appId();
       boolean isDraft = i % 4 == 0;
       Long submittedTimestamp = isDraft ? null : time(2017, 4, 3 + i, i, i);
       String caseReference = isDraft ? null : randomNumber("ECO");
@@ -246,11 +266,12 @@ public class TestDataServiceImpl implements TestDataService {
           OFFICER_ID);
       applicationDao.insert(app);
       if (!isDraft) {
-        StatusUpdate initialChecks = new StatusUpdate(app.getAppId(),
+        StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
+            app.getId(),
             StatusType.INITIAL_CHECKS,
             time(2017, 4, 4 + i, i, i));
         statusUpdateDao.insertStatusUpdate(initialChecks);
-        String rfiId = random("RFI");
+        String rfiId = rfiId();
         Rfi rfi = new Rfi(rfiId,
             appId,
             RfiStatus.ACTIVE,
@@ -259,7 +280,7 @@ public class TestDataServiceImpl implements TestDataService {
             OFFICER_ID,
             "Please answer this rfi.");
         rfiDao.insertRfi(rfi);
-        String rfiTwoId = random("RFI");
+        String rfiTwoId = rfiId();
         Rfi rfiTwo = new Rfi(rfiTwoId,
             appId,
             RfiStatus.ACTIVE,
@@ -268,32 +289,35 @@ public class TestDataServiceImpl implements TestDataService {
             OFFICER_ID,
             "Please also answer this rfi.");
         rfiDao.insertRfi(rfiTwo);
-        if (i % 2 != 0) {
+        if (i % 3 != 0) {
           RfiReply rfiReply = new RfiReply();
-          rfiReply.setId(random("REP"));
+          rfiReply.setId(rfiReplyId());
           rfiReply.setRfiId(rfiId);
           rfiReply.setCreatedByUserId(userId);
           rfiReply.setCreatedTimestamp(time(2017, 4, 5 + i, i, i));
           rfiReply.setMessage("This is a reply.");
           rfiReply.setAttachments(new ArrayList<>());
           rfiReplyDao.insertRfiReply(rfiReply);
-          RfiWithdrawal rfiWithdrawal = new RfiWithdrawal(random("RFW"),
+          RfiWithdrawal rfiWithdrawal = new RfiWithdrawal(rfiWithdrawalId(),
               rfiTwoId,
               OFFICER_ID,
               time(2017, 8, 5 + i, i, i),
-              new ArrayList<>(),
+              RECIPIENTS,
               "This rfi has been withdrawn.");
           rfiWithdrawalDao.insertRfiWithdrawal(rfiWithdrawal);
+
+        }
+        if (i % 3 == 0) {
           File document = new File();
           document.setId("FIL");
           document.setUrl("#");
           document.setFilename("Inform letter");
-          Notification notification = new Notification(random("INF"),
+          Notification notification = new Notification(informNotificationId(),
               appId,
               NotificationType.INFORM,
               OFFICER_ID,
               time(2017, 5, 1, 2, 3),
-              new ArrayList<>(),
+              RECIPIENTS,
               "",
               document);
           notificationDao.insertNotification(notification);
@@ -306,7 +330,7 @@ public class TestDataServiceImpl implements TestDataService {
   private void createSecondUserApplications(String userId) {
     // create applications by other applicant
     for (int i = 0; i < 4; i++) {
-      String appId = random("APP");
+      String appId = appId();
       Application app = new Application(appId,
           wrapCustomerId(userId, COMPANY_ID_ONE),
           OTHER_APPLICANT_ID,
@@ -333,7 +357,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private void createWithdrawnOrStoppedApplication(String userId, boolean stopped) {
-    String appId = random("APP");
+    String appId = appId();
     Application application = new Application(appId,
         wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
@@ -344,17 +368,19 @@ public class TestDataServiceImpl implements TestDataService {
         randomNumber("ECO"), OFFICER_ID);
     applicationDao.insert(application);
 
-    StatusUpdate initialChecks = new StatusUpdate(appId,
+    StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
+        appId,
         StatusType.INITIAL_CHECKS,
         time(2013, 12, 5, 3, 3));
     statusUpdateDao.insertStatusUpdate(initialChecks);
-    StatusUpdate technicalAssessment = new StatusUpdate(appId,
+    StatusUpdate technicalAssessment = new StatusUpdate(statusUpdateId(),
+        appId,
         StatusType.TECHNICAL_ASSESSMENT,
         time(2015, 5, 6, 13, 10));
     statusUpdateDao.insertStatusUpdate(technicalAssessment);
 
     Amendment amendment = new Amendment();
-    amendment.setId(random("AME"));
+    amendment.setId(amendmentId());
     amendment.setAppId(appId);
     amendment.setCreatedByUserId(userId);
     amendment.setCreatedTimestamp(time(2014, 11, 5, 14, 17));
@@ -364,7 +390,7 @@ public class TestDataServiceImpl implements TestDataService {
 
     for (int i = 0; i < 4; i++) {
       WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
-      withdrawalRequest.setId(random("WIT"));
+      withdrawalRequest.setId(withdrawalRequestId());
       withdrawalRequest.setAppId(appId);
       withdrawalRequest.setCreatedByUserId(userId);
       withdrawalRequest.setCreatedTimestamp(time(2015, 1 + 2 * i, 5, 13, 10));
@@ -373,39 +399,40 @@ public class TestDataServiceImpl implements TestDataService {
       withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
       if (i != 3) {
         Long createdTimestamp = time(2015, 1 + 2 * i + 1, 5, 13, 10);
-        WithdrawalRejection withdrawalRejection = new WithdrawalRejection(random("REJ"),
+        WithdrawalRejection withdrawalRejection = new WithdrawalRejection(withdrawalRejectionId(),
             appId,
             userId,
             createdTimestamp,
+            RECIPIENTS,
             "");
         withdrawalRejectionDao.insertWithdrawalRejection(withdrawalRejection);
       }
     }
 
     Notification delayNotification = new Notification(
-        random("DEL"),
+        delayNotificationId(),
         appId,
         NotificationType.DELAY,
         TestDataServiceImpl.OFFICER_ID,
         time(2016, 1, 1, 13, 20),
-        new ArrayList<>(),
+        RECIPIENTS,
         "We're sorry to inform you that your application has been delayed.",
         null);
     notificationDao.insertNotification(delayNotification);
 
     if (stopped) {
       Notification stopNotification = new Notification(
-          random("STO"),
+          stopNotificationId(),
           appId,
           NotificationType.STOP,
           TestDataServiceImpl.OFFICER_ID,
           time(2017, 1, 1, 14, 30),
-          new ArrayList<>(),
+          RECIPIENTS,
           "We have had to stop your application.",
           null);
       notificationDao.insertNotification(stopNotification);
     } else {
-      WithdrawalApproval withdrawalApproval = new WithdrawalApproval(random("WAP"),
+      WithdrawalApproval withdrawalApproval = new WithdrawalApproval(withdrawalApprovalId(),
           appId,
           OFFICER_ID,
           time(2017, 1, 5, 13, 10),
@@ -415,8 +442,8 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private void createAdvancedApplication(String userId) {
-    String appId = random("APP");
-    String rfiId = random("RFI");
+    String appId = appId();
+    String rfiId = rfiId();
     Application application = new Application(appId,
         wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
@@ -433,7 +460,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   private RfiReply createRfiReplyTestData(String userId, String rfiId) {
     RfiReply rfiReply = new RfiReply();
-    rfiReply.setId(random("REP"));
+    rfiReply.setId(rfiReplyId());
     rfiReply.setRfiId(rfiId);
     rfiReply.setCreatedByUserId(userId);
     rfiReply.setCreatedTimestamp(time(2017, 5, 13, 16, 10));
@@ -446,7 +473,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private List<Rfi> createRfiTestData(String appId, String rfiId) {
-    Rfi rfi = new Rfi(random("RFI"),
+    Rfi rfi = new Rfi(rfiId(),
         appId,
         RfiStatus.ACTIVE,
         time(2017, 1, 2, 13, 30),
@@ -462,14 +489,14 @@ public class TestDataServiceImpl implements TestDataService {
         "<p>We note from your application that you have rated all 8 line items as ML10a and that these items are used in production and maintenance of civil and/or military aircraft.</p>"
             + "<p>Would you please provide the make/model of aircraft for which each of the 8 line items on your application was originally designed.</p>"
             + "<p>Than you for your help in this matter.</p>");
-    Rfi rfiThree = new Rfi(random("RFI"),
+    Rfi rfiThree = new Rfi(rfiId(),
         appId,
         RfiStatus.ACTIVE,
         time(2017, 4, 5, 10, 10),
         time(2017, 5, 12, 16, 10),
         OFFICER_ID,
         "This is some rfi message.");
-    Rfi rfiFour = new Rfi(random("RFI"),
+    Rfi rfiFour = new Rfi(rfiId(),
         appId,
         RfiStatus.ACTIVE,
         time(2017, 7, 5, 10, 10),
@@ -485,13 +512,16 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private List<StatusUpdate> createStatusUpdateTestData(String appId) {
-    StatusUpdate initialChecks = new StatusUpdate(appId,
+    StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
+        appId,
         StatusType.INITIAL_CHECKS,
         time(2017, 1, 2, 13, 30));
-    StatusUpdate technicalAssessment = new StatusUpdate(appId,
+    StatusUpdate technicalAssessment = new StatusUpdate(statusUpdateId(),
+        appId,
         StatusType.TECHNICAL_ASSESSMENT,
         time(2017, 5, 5, 0, 0));
-    StatusUpdate licenseUnitProcessing = new StatusUpdate(appId,
+    StatusUpdate licenseUnitProcessing = new StatusUpdate(statusUpdateId(),
+        appId,
         StatusType.LU_PROCESSING,
         time(2017, 7, 5, 0, 0));
     List<StatusUpdate> statusUpdates = new ArrayList<>();
@@ -502,7 +532,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private void createNoCaseOfficerApplication(String userId) {
-    String appId = random("APP");
+    String appId = appId();
     Application application = new Application(appId,
         wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
@@ -512,14 +542,15 @@ public class TestDataServiceImpl implements TestDataService {
         randomNumber("ECO"),
         null);
     applicationDao.insert(application);
-    StatusUpdate statusUpdate = new StatusUpdate(appId,
+    StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(),
+        appId,
         StatusType.INITIAL_CHECKS,
         time(2016, 12, 5, 3, 3));
     statusUpdateDao.insertStatusUpdate(statusUpdate);
   }
 
   private void createCompleteApplication(String userId, boolean hasAmendments) {
-    String appId = random("APP");
+    String appId = appId();
     Application application = new Application(appId,
         wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
@@ -538,7 +569,7 @@ public class TestDataServiceImpl implements TestDataService {
     for (int i = 0; i < statusTypes.size(); i++) {
       StatusType statusType = statusTypes.get(i);
       Long createdTimestamp = time(2017, 5, 3 + i, 3 + i, 3 + i);
-      StatusUpdate statusUpdate = new StatusUpdate(appId, statusType, createdTimestamp);
+      StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(), appId, statusType, createdTimestamp);
       statusUpdateDao.insertStatusUpdate(statusUpdate);
     }
 
@@ -555,13 +586,13 @@ public class TestDataServiceImpl implements TestDataService {
 
     for (int i = 0; i < max; i++) {
       long createdTimestamp = time(2010 + i, 2 + i, 10 + i, 13, 17);
-      String outcomeId = random("OUT");
+      String outcomeId = outcomeId();
       Outcome outcome = new Outcome();
       outcome.setId(outcomeId);
       outcome.setAppId(appId);
       outcome.setCreatedTimestamp(createdTimestamp);
       outcome.setCreatedByUserId(userId);
-      outcome.setRecipientUserIds(new ArrayList<>());
+      outcome.setRecipientUserIds(RECIPIENTS);
       List<Document> documents = new ArrayList<>();
       for (int j = 0; j < 4; j++) {
         DocumentType documentType = i == 0 ? issueDocumentTypes.get(j) : amendDocumentTypes.get(j);
@@ -579,10 +610,10 @@ public class TestDataServiceImpl implements TestDataService {
     for (int i = 0; i < 3; i++) {
       long createdTimestamp = time(2017, 5 + i, 3 + i, 3 + i, 3 + i);
       File document = new File();
-      document.setId(random("FIL"));
+      document.setId(fileId());
       document.setFilename("Licence required inform letter number " + (i + 1));
       document.setUrl("#");
-      Notification notification = new Notification(random("INF"), appId, NotificationType.INFORM, OFFICER_ID, createdTimestamp, new ArrayList<>(), "", document);
+      Notification notification = new Notification(informNotificationId(), appId, NotificationType.INFORM, OFFICER_ID, createdTimestamp, RECIPIENTS, "", document);
       notificationDao.insertNotification(notification);
     }
   }

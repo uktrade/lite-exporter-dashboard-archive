@@ -1,66 +1,47 @@
 package components.service;
 
+import static components.util.RandomIdUtil.statusUpdateId;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
-import components.dao.ApplicationDao;
-import components.dao.NotificationDao;
-import components.dao.StatusUpdateDao;
 import components.util.ApplicationUtil;
-import components.util.SortUtil;
+import components.util.Comparators;
+import components.util.LinkUtil;
 import components.util.TimeUtil;
-import models.Application;
-import models.Notification;
-import models.NotificationType;
-import models.Rfi;
-import models.StatusUpdate;
-import models.WithdrawalApproval;
-import models.WithdrawalInformation;
-import models.WithdrawalRejection;
-import models.enums.EventLabelType;
-import models.enums.StatusType;
-import models.view.NotificationView;
-import models.view.StatusItemView;
-import org.apache.commons.collections4.ListUtils;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
-
+import controllers.routes;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import models.AppData;
+import models.Application;
+import models.Notification;
+import models.Rfi;
+import models.StatusUpdate;
+import models.WithdrawalApproval;
+import models.WithdrawalRejection;
+import models.enums.EventLabelType;
+import models.enums.StatusType;
+import models.view.NotificationView;
+import models.view.StatusItemView;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 public class StatusItemViewServiceImpl implements StatusItemViewService {
 
-  private final StatusUpdateDao statusUpdateDao;
-  private final ApplicationDao applicationDao;
-  private final WithdrawalService withdrawalService;
-  private final NotificationDao notificationDao;
-  private final RfiService rfiService;
-
   @Inject
-  public StatusItemViewServiceImpl(StatusUpdateDao statusUpdateDao,
-                                   ApplicationDao applicationDao,
-                                   WithdrawalService withdrawalService,
-                                   NotificationDao notificationDao,
-                                   RfiService rfiService) {
-    this.statusUpdateDao = statusUpdateDao;
-    this.applicationDao = applicationDao;
-    this.withdrawalService = withdrawalService;
-    this.notificationDao = notificationDao;
-    this.rfiService = rfiService;
+  public StatusItemViewServiceImpl() {
   }
 
   @Override
-  public List<StatusItemView> getStatusItemViews(String appId) {
-    Application application = applicationDao.getApplication(appId);
-    StatusItemView draftStatusItemView = createDraftStatusItemView(application);
-    StatusItemView submittedStatusItemView = createSubmittedStatusItemView(application);
-    List<StatusItemView> updateStatusItemViews = createUpdateStatusItemViews(appId);
+  public List<StatusItemView> getStatusItemViews(AppData appData) {
+    StatusItemView draftStatusItemView = createDraftStatusItemView(appData.getApplication());
+    StatusItemView submittedStatusItemView = createSubmittedStatusItemView(appData.getApplication());
+    List<StatusItemView> updateStatusItemViews = createUpdateStatusItemViews(appData);
 
     List<StatusItemView> statusItemViews = new ArrayList<>();
     statusItemViews.add(draftStatusItemView);
@@ -72,7 +53,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   private StatusItemView createDraftStatusItemView(Application application) {
     String status = ApplicationUtil.DRAFT;
     String statusExplanation = "";
-    String processingLabel = "Finished";
+    String processingLabel = ApplicationUtil.FINISHED;
     String processingDescription = "Created on " + TimeUtil.formatDate(application.getCreatedTimestamp());
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
@@ -83,35 +64,21 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     String processingLabel;
     String processingDescription;
     if (application.getSubmittedTimestamp() == null) {
-      processingLabel = "Not started";
+      processingLabel = ApplicationUtil.NOT_STARTED;
       processingDescription = "";
     } else {
-      processingLabel = "Finished";
+      processingLabel = ApplicationUtil.FINISHED;
       processingDescription = "Submitted on " + TimeUtil.formatDate(application.getSubmittedTimestamp());
     }
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
 
-  private List<StatusItemView> createUpdateStatusItemViews(String appId) {
-    WithdrawalInformation withdrawalInformation = withdrawalService.getWithdrawalInformation(appId);
+  private List<StatusItemView> createUpdateStatusItemViews(AppData appData) {
 
-    List<Notification> notifications = notificationDao.getNotifications(appId);
-    Notification stopNotification = notifications.stream()
-        .filter(notification -> notification.getNotificationType() == NotificationType.STOP)
-        .findAny()
-        .orElse(null);
+    List<NotificationView> notificationViews = getNotificationViews(appData);
+    notificationViews.sort(Comparators.NOTIFICATION_VIEW_CREATED_REVERSED);
 
-    List<NotificationView> notificationViews = new ArrayList<>();
-    notificationViews.addAll(getRfiNotificationViews(appId));
-    notificationViews.addAll(getWithdrawalNotificationViews(withdrawalInformation));
-    notificationViews.addAll(getDelayAndInformNotificationViews(notifications));
-    if (stopNotification != null) {
-      notificationViews.add(getStopNotificationView(stopNotification));
-    }
-
-    SortUtil.reverseSortNotificationViews(notificationViews);
-
-    List<StatusUpdate> statusUpdates = getStatusUpdates(appId);
+    List<StatusUpdate> statusUpdates = getStatusUpdates(appData.getApplication().getId(), appData.getStatusUpdates());
 
     Multimap<StatusUpdate, NotificationView> notificationViewMultimap = HashMultimap.create();
     for (NotificationView notificationView : notificationViews) {
@@ -129,8 +96,8 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
         .map(statusUpdate -> getStatusItemView(statusUpdate, new ArrayList<>(notificationViewMultimap.get(statusUpdate)), finishedTimestamps.get(statusUpdate)))
         .collect(Collectors.toList());
 
-    WithdrawalApproval withdrawalApproval = withdrawalInformation.getWithdrawalApproval();
-    if (withdrawalApproval != null || stopNotification != null) {
+    WithdrawalApproval withdrawalApproval = appData.getWithdrawalApproval();
+    if (withdrawalApproval != null || appData.getStopNotification() != null) {
       int j = 0;
       for (int i = statusUpdates.size() - 1; i >= 0; i--) {
         StatusUpdate statusUpdate = statusUpdates.get(i);
@@ -144,12 +111,38 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
         StatusItemView withdrawalApprovalStatusItemView = getWithdrawalApprovalStatusItemView(withdrawalApproval, inProgressStatusItemView);
         statusItemViews.set(j, withdrawalApprovalStatusItemView);
       } else {
-        StatusItemView stopStatusItemView = geStopStatusItemView(stopNotification, inProgressStatusItemView);
+        StatusItemView stopStatusItemView = geStopStatusItemView(appData.getStopNotification(), inProgressStatusItemView);
         statusItemViews.set(j, stopStatusItemView);
       }
     }
 
     return statusItemViews;
+  }
+
+  private List<NotificationView> getNotificationViews(AppData appData) {
+    List<NotificationView> notificationViews = new ArrayList<>();
+
+    notificationViews.addAll(getRfiNotificationViews(appData));
+
+    notificationViews.addAll(getWithdrawalNotificationViews(appData));
+
+    if (appData.getDelayNotification() != null) {
+      notificationViews.add(getDelayNotificationView(appData.getDelayNotification()));
+    }
+
+    List<NotificationView> informNotificationViews = appData.getInformNotifications().stream()
+        .map(this::getInformNotificationView)
+        .collect(Collectors.toList());
+    notificationViews.addAll(informNotificationViews);
+
+    if (appData.getStopNotification() != null) {
+      notificationViews.add(getStopNotificationView(appData.getStopNotification()));
+    }
+
+    if (!appData.getOutcomes().isEmpty()) {
+      notificationViews.add(getOutcomeNotificationView(appData.getApplication().getId()));
+    }
+    return notificationViews;
   }
 
   private Map<StatusUpdate, Long> getFinishedTimestamps(List<StatusUpdate> statusUpdates) {
@@ -165,7 +158,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     String processingDescription = "On " + TimeUtil.formatDate(notification.getCreatedTimestamp());
     return new StatusItemView(inProgressStatusItemView.getStatus(),
         inProgressStatusItemView.getStatusExplanation(),
-        "Stopped",
+        ApplicationUtil.STOPPED,
         processingDescription,
         inProgressStatusItemView.getNotificationViews());
   }
@@ -174,26 +167,30 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     String processingDescription = "On " + TimeUtil.formatDate(withdrawalApproval.getCreatedTimestamp());
     return new StatusItemView(inProgressStatusItemView.getStatus(),
         inProgressStatusItemView.getStatusExplanation(),
-        "Withdrawn",
+        ApplicationUtil.WITHDRAWN,
         processingDescription,
         inProgressStatusItemView.getNotificationViews());
   }
 
-  private List<NotificationView> getWithdrawalNotificationViews(WithdrawalInformation withdrawalInformation) {
+  private List<NotificationView> getWithdrawalNotificationViews(AppData appData) {
     List<NotificationView> notificationViews = new ArrayList<>();
 
-    if (withdrawalInformation.getWithdrawalApproval() != null) {
-      String link = ApplicationUtil.getWithdrawalRequestMessageLink(withdrawalInformation.getApprovedWithdrawalRequest());
-      NotificationView withdrawalApprovalNotificationView = new NotificationView(null, "View withdrawal request", link, null, withdrawalInformation.getWithdrawalApproval().getCreatedTimestamp());
+    if (appData.getWithdrawalApproval() != null) {
+      WithdrawalRequest approvedWithdrawalRequest = appData.getWithdrawalRequests().stream()
+          .sorted(Comparators.WITHDRAWAL_REQUEST_CREATED_REVERSED)
+          .findFirst()
+          .get();
+      String link = LinkUtil.getWithdrawalRequestMessageLink(approvedWithdrawalRequest);
+      NotificationView withdrawalApprovalNotificationView = new NotificationView(null, "View withdrawal request", link, null, appData.getWithdrawalApproval().getCreatedTimestamp());
       notificationViews.add(withdrawalApprovalNotificationView);
     }
 
-    List<NotificationView> withdrawalRequestNotificationViews = withdrawalInformation.getOpenWithdrawalRequests().stream()
+    List<NotificationView> withdrawalRequestNotificationViews = ApplicationUtil.getOpenWithdrawalRequests(appData).stream()
         .map(this::getWithdrawalRequestNotificationView)
         .collect(Collectors.toList());
     notificationViews.addAll(withdrawalRequestNotificationViews);
 
-    List<NotificationView> withdrawalRejectionNotificationViews = withdrawalInformation.getWithdrawalRejections().stream()
+    List<NotificationView> withdrawalRejectionNotificationViews = appData.getWithdrawalRejections().stream()
         .map(this::getWithdrawalRejectionNotificationView)
         .collect(Collectors.toList());
     notificationViews.addAll(withdrawalRejectionNotificationViews);
@@ -201,67 +198,59 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     return notificationViews;
   }
 
-  private List<NotificationView> getDelayAndInformNotificationViews(List<Notification> notifications) {
-    List<NotificationView> informNotificationViews = notifications.stream()
-        .filter(notification -> notification.getNotificationType() == NotificationType.INFORM)
-        .map(this::getInformNotificationView)
-        .collect(Collectors.toList());
-    List<NotificationView> delayedNotificationViews = notifications.stream()
-        .filter(notification -> notification.getNotificationType() == NotificationType.DELAY)
-        .map(this::getDelayNotificationView)
-        .collect(Collectors.toList());
-    return ListUtils.union(informNotificationViews, delayedNotificationViews);
-  }
-
-  private List<StatusUpdate> getStatusUpdates(String appId) {
+  private List<StatusUpdate> getStatusUpdates(String appId, List<StatusUpdate> statusUpdates) {
     Map<StatusType, StatusUpdate> statusUpdateMap = new EnumMap<>(StatusType.class);
-    statusUpdateDao.getStatusUpdates(appId).forEach(su -> statusUpdateMap.put(su.getStatusType(), su));
+    statusUpdates.forEach(su -> statusUpdateMap.put(su.getStatusType(), su));
     return ApplicationUtil.getAscendingStatusTypeList().stream().map(statusType -> {
       StatusUpdate statusUpdate = statusUpdateMap.get(statusType);
       if (statusUpdate != null) {
         return statusUpdate;
       } else {
-        return new StatusUpdate(appId, statusType, null);
+        return new StatusUpdate(statusUpdateId(), appId, statusType, null);
       }
     }).collect(Collectors.toList());
   }
 
   private NotificationView getStopNotificationView(Notification notification) {
-    String link = ApplicationUtil.getStoppedMessageLink(notification);
+    String link = LinkUtil.getStoppedMessageLink(notification);
     return new NotificationView(null, "View reason for stop", link, null, notification.getCreatedTimestamp());
   }
 
   private NotificationView getDelayNotificationView(Notification notification) {
     String time = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String description = "on " + time;
-    String link = ApplicationUtil.getDelayedMessageLink(notification);
+    String link = LinkUtil.getDelayedMessageLink(notification);
     return new NotificationView(EventLabelType.DELAYED, "Apology for delay received", link, description, notification.getCreatedTimestamp());
   }
 
   private NotificationView getInformNotificationView(Notification notification) {
     String time = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String description = "on " + time;
-    String link = ApplicationUtil.getInformLetterLink(notification);
+    String link = LinkUtil.getInformLetterLink(notification);
     return new NotificationView(EventLabelType.INFORM_ISSUED, "Inform letter issued", link, description, notification.getCreatedTimestamp());
   }
 
   private NotificationView getWithdrawalRejectionNotificationView(WithdrawalRejection withdrawalRejection) {
     String time = TimeUtil.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
     String description = "on " + time;
-    String link = ApplicationUtil.getWithdrawalRejectionMessageLink(withdrawalRejection);
+    String link = LinkUtil.getWithdrawalRejectionMessageLink(withdrawalRejection);
     return new NotificationView(EventLabelType.WITHDRAWAL_REJECTED, "Withdrawal rejected", link, description, withdrawalRejection.getCreatedTimestamp());
+  }
+
+  private NotificationView getOutcomeNotificationView(String appId) {
+    String link = routes.OutcomeTabController.showOutcomeTab(appId).withFragment("outcome-documents").toString();
+    return new NotificationView(null, "View outcome documents", link, null, System.currentTimeMillis());
   }
 
   private NotificationView getWithdrawalRequestNotificationView(WithdrawalRequest withdrawalRequest) {
     String time = TimeUtil.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
     String description = "sent on " + time;
-    String link = ApplicationUtil.getWithdrawalRequestMessageLink(withdrawalRequest);
+    String link = LinkUtil.getWithdrawalRequestMessageLink(withdrawalRequest);
     return new NotificationView(EventLabelType.WITHDRAWAL_REQUESTED, "Withdrawal request", link, description, withdrawalRequest.getCreatedTimestamp());
   }
 
-  private List<NotificationView> getRfiNotificationViews(String appId) {
-    List<Rfi> rfiList = rfiService.getOpenRfiList(Collections.singletonList(appId));
-    return rfiList.stream()
+  private List<NotificationView> getRfiNotificationViews(AppData appData) {
+    return ApplicationUtil.getOpenRfiList(appData).stream()
         .map(this::getRfiNotificationView)
         .collect(Collectors.toList());
   }
@@ -269,7 +258,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   private NotificationView getRfiNotificationView(Rfi rfi) {
     String time = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
     String description = "Received on " + time;
-    String link = controllers.routes.RfiTabController.showRfiTab(rfi.getAppId()).withFragment(rfi.getRfiId()).toString();
+    String link = controllers.routes.RfiTabController.showRfiTab(rfi.getAppId()).withFragment(rfi.getId()).toString();
     return new NotificationView(EventLabelType.RFI, "Request for information", link, description, rfi.getReceivedTimestamp());
   }
 
@@ -278,17 +267,17 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     String statusExplanation = ApplicationUtil.getStatusExplanation(statusUpdate.getStatusType());
     String processingLabel = getProcessingLabel(statusUpdate, finishedTimestamp);
     String processingDescription = getProcessingDescription(statusUpdate, finishedTimestamp);
-    SortUtil.sortNotificationViewsByCreatedTimestamp(notificationViews);
+    notificationViews.sort(Comparators.NOTIFICATION_VIEW_CREATED);
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, notificationViews);
   }
 
   private String getProcessingLabel(StatusUpdate statusUpdate, Long finishedTimestamp) {
     if (finishedTimestamp != null) {
-      return "Finished";
+      return ApplicationUtil.FINISHED;
     } else if (statusUpdate.getCreatedTimestamp() == null) {
-      return "Not started";
+      return ApplicationUtil.NOT_STARTED;
     } else {
-      return "In progress";
+      return ApplicationUtil.IN_PROGRESS;
     }
   }
 

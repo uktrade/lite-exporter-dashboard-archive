@@ -5,14 +5,13 @@ import components.client.CustomerServiceClient;
 import components.dao.SielDao;
 import components.util.LicenceUtil;
 import components.util.TimeUtil;
-import models.Siel;
-import models.view.SielItemView;
-import uk.gov.bis.lite.customer.api.view.CustomerView;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import models.Siel;
+import models.view.SielItemView;
+import uk.gov.bis.lite.customer.api.view.CustomerView;
 
 public class SielItemViewServiceImpl implements SielItemViewService {
 
@@ -51,7 +50,7 @@ public class SielItemViewServiceImpl implements SielItemViewService {
 
   private SielItemView createSielItemView(Siel siel, Map<String, String> customerIdToCompanyName) {
     String expiryDate = TimeUtil.formatDate(siel.getExpiryTimestamp());
-    String licensee = customerIdToCompanyName.get(siel.getCompanyId());
+    String licensee = customerIdToCompanyName.get(siel.getCustomerId());
     String sielStatus = LicenceUtil.getSielStatusName(siel.getSielStatus());
     return new SielItemView(siel.getCaseReference(), siel.getApplicantReference(), licensee, expiryDate, siel.getExpiryTimestamp(), sielStatus);
   }

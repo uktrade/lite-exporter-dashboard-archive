@@ -2,12 +2,11 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.util.JsonUtil;
+import java.util.ArrayList;
+import java.util.List;
 import models.Siel;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SielDaoImpl implements SielDao {
 
@@ -42,8 +41,8 @@ public class SielDaoImpl implements SielDao {
   public void insert(Siel siel) {
     try (final Handle handle = dbi.open()) {
       SielJDBIDao sielJDBIDao = handle.attach(SielJDBIDao.class);
-      sielJDBIDao.insertSiel(siel.getSielId(),
-          siel.getCompanyId(),
+      sielJDBIDao.insertSiel(siel.getId(),
+          siel.getCustomerId(),
           siel.getApplicantReference(),
           siel.getCaseReference(),
           siel.getIssueTimestamp(),

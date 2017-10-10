@@ -6,6 +6,9 @@
   <header>
     <h3 class="heading-small">
       @messageReplyView.getTitle
+      @if(messageReplyView.isShowNewIndicator) {
+      (new)
+      }
     </h3>
 
     <div class="grid-row">
@@ -35,7 +38,7 @@
   <article>
     <h4 class="heading-small">Message</h4>
     <div>
-    @Html(messageReplyView.getMessage)
+      @Html(messageReplyView.getMessage)
     </div>
 
   </article>

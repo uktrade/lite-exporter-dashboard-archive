@@ -1,5 +1,6 @@
 package components.dao;
 
+import java.util.List;
 import models.Rfi;
 import models.enums.RfiStatus;
 import org.skife.jdbi.v2.sqlobject.Bind;
@@ -8,8 +9,6 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
 import org.skife.jdbi.v2.unstable.BindIn;
-
-import java.util.List;
 
 @UseStringTemplate3StatementLocator
 public interface RfiJDBIDao {
@@ -25,9 +24,9 @@ public interface RfiJDBIDao {
   @SqlQuery("SELECT COUNT(*) FROM RFI WHERE APP_ID = :appId")
   int getRfiCount(@Bind("appId") String appId);
 
-  @SqlUpdate("INSERT INTO RFI ( RFI_ID, APP_ID, STATUS,  RECEIVED_TIMESTAMP, DUE_TIMESTAMP, SENT_BY, MESSAGE) VALUES " +
-      "                       (:rfiId, :appId, :status, :receivedTimestamp, :dueTimestamp, :sentBy, :message)")
-  void insert(@Bind("rfiId") String rfiId,
+  @SqlUpdate("INSERT INTO RFI ( ID,  APP_ID, STATUS,  RECEIVED_TIMESTAMP, DUE_TIMESTAMP, SENT_BY, MESSAGE) VALUES " +
+      "                       (:id, :appId, :status, :receivedTimestamp, :dueTimestamp, :sentBy, :message)")
+  void insert(@Bind("id") String id,
               @Bind("appId") String appId,
               @Bind("status") RfiStatus rfiStatus,
               @Bind("receivedTimestamp") Long receivedTimestamp,

@@ -1,8 +1,8 @@
-@import models.view.{ApplicationSummaryView, StatusItemView}
+@import models.view.{ApplicationSummaryView, StatusItemView, ApplicationTabsView}
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, statusItemViews: java.util.List[StatusItemView])
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, statusItemViews: java.util.List[StatusItemView])
 
-  @applicationDetails(applyLink, applicationSummaryView, "statusTracker", rfiViewCount, null) {
+  @applicationDetails(applyLink, applicationSummaryView, "statusTracker", applicationTabsView, null) {
     @statusTracker(statusItemViews)
   }

@@ -2,13 +2,12 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.exceptions.DatabaseException;
+import java.util.ArrayList;
+import java.util.List;
 import models.Application;
 import models.StatusUpdate;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class StatusUpdateDaoImpl implements StatusUpdateDao {
 
@@ -56,7 +55,7 @@ public class StatusUpdateDaoImpl implements StatusUpdateDao {
               statusUpdate.getAppId(), statusUpdate.getStatusType());
           throw new DatabaseException(message);
         }
-        statusUpdateJDBIDao.insert(statusUpdate.getAppId(), statusUpdate.getStatusType().toString(), statusUpdate.getCreatedTimestamp());
+        statusUpdateJDBIDao.insert(statusUpdate.getId(), statusUpdate.getAppId(), statusUpdate.getStatusType().toString(), statusUpdate.getCreatedTimestamp());
       });
     }
   }

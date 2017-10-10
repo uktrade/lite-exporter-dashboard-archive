@@ -11,6 +11,8 @@ import components.service.UserService;
 import components.util.EnumUtil;
 import components.util.PageUtil;
 import components.util.SortUtil;
+import java.util.EnumSet;
+import java.util.List;
 import models.LicenceListState;
 import models.Page;
 import models.enums.LicenceListTab;
@@ -25,9 +27,6 @@ import play.mvc.Result;
 import views.html.licenceList;
 import views.html.ogelDetails;
 import views.html.sielDetails;
-
-import java.util.EnumSet;
-import java.util.List;
 
 public class LicenceListController extends SamlController {
 
@@ -82,7 +81,7 @@ public class LicenceListController extends SamlController {
 
     Page<OgelItemView> ogelPage = null;
     Page<SielItemView> sielPage = null;
-    int currentPage = 1;
+    int currentPage;
     if (licenceListTab == LicenceListTab.OGELS) {
       List<OgelItemView> ogelItemViews = ogelItemViewService.getOgelItemViews(userId);
       SortUtil.sortOgels(ogelItemViews, licenceSortType, sortDirection);

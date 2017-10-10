@@ -1,8 +1,7 @@
 package components.dao;
 
-import models.Application;
-
 import java.util.List;
+import models.Application;
 
 public interface ApplicationDao {
 
@@ -10,12 +9,12 @@ public interface ApplicationDao {
 
   List<Application> getApplications(List<String> customerIds);
 
-  Application getApplication(String appId);
+  Application getApplication(String id);
 
   void insert(Application application);
 
   void deleteAllApplications();
 
-  void deleteApplication(String appId);
+  void deleteApplication(String id);
 
 }

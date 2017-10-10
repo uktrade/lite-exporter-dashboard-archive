@@ -9,9 +9,10 @@ public class RfiView {
   private final String sender;
   private final String message;
   private final String withdrawnDate;
+  private final boolean showNewIndicator;
   private final RfiReplyView rfiReplyView;
 
-  public RfiView(String appId, String rfiId, String receivedDate, String replyBy, String sender, String message, String withdrawnDate, RfiReplyView rfiReplyView) {
+  public RfiView(String appId, String rfiId, String receivedDate, String replyBy, String sender, String message, String withdrawnDate, boolean showNewIndicator, RfiReplyView rfiReplyView) {
     this.appId = appId;
     this.rfiId = rfiId;
     this.receivedDate = receivedDate;
@@ -19,6 +20,7 @@ public class RfiView {
     this.sender = sender;
     this.message = message;
     this.withdrawnDate = withdrawnDate;
+    this.showNewIndicator = showNewIndicator;
     this.rfiReplyView = rfiReplyView;
   }
 
@@ -48,6 +50,10 @@ public class RfiView {
 
   public String getWithdrawnDate() {
     return withdrawnDate;
+  }
+
+  public boolean isShowNewIndicator() {
+    return showNewIndicator;
   }
 
   public RfiReplyView getRfiReplyView() {

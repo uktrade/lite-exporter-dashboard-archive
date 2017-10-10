@@ -1,14 +1,14 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.NotNull;
 import models.enums.RfiStatus;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.validation.constraints.NotNull;
-
 public class Rfi {
+
   @NotBlank
-  private final String rfiId;
+  private final String id;
   @NotBlank
   private final String appId;
   @NotNull
@@ -22,14 +22,14 @@ public class Rfi {
   @NotBlank
   private final String message;
 
-  public Rfi(@JsonProperty("rfiId") String rfiId,
+  public Rfi(@JsonProperty("id") String id,
              @JsonProperty("appId") String appId,
              @JsonProperty("rfiStatus") RfiStatus rfiStatus,
              @JsonProperty("receivedTimestamp") Long receivedTimestamp,
              @JsonProperty("dueTimestamp") Long dueTimestamp,
              @JsonProperty("sentBy") String sentBy,
              @JsonProperty("message") String message) {
-    this.rfiId = rfiId;
+    this.id = id;
     this.appId = appId;
     this.rfiStatus = rfiStatus;
     this.receivedTimestamp = receivedTimestamp;
@@ -38,8 +38,8 @@ public class Rfi {
     this.message = message;
   }
 
-  public String getRfiId() {
-    return rfiId;
+  public String getId() {
+    return id;
   }
 
   public String getAppId() {

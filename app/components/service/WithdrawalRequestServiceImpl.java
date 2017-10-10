@@ -1,19 +1,19 @@
 package components.service;
 
+import static components.util.RandomIdUtil.withdrawalRequestId;
+
 import com.google.inject.Inject;
 import components.dao.DraftDao;
 import components.dao.WithdrawalRequestDao;
 import components.message.MessagePublisher;
 import components.upload.UploadFile;
 import components.util.FileUtil;
-import components.util.RandomUtil;
+import java.time.Instant;
+import java.util.List;
 import models.enums.DraftType;
 import models.enums.RoutingKey;
 import uk.gov.bis.lite.exporterdashboard.api.File;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
-
-import java.time.Instant;
-import java.util.List;
 
 public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
@@ -33,7 +33,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     List<File> attachments = getAttachments(appId, files);
 
     WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
-    withdrawalRequest.setId(RandomUtil.random("WIT"));
+    withdrawalRequest.setId(withdrawalRequestId());
     withdrawalRequest.setAppId(appId);
     withdrawalRequest.setCreatedByUserId(createdByUserId);
     withdrawalRequest.setCreatedTimestamp(Instant.now().toEpochMilli());

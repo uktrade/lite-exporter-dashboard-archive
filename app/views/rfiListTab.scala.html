@@ -1,10 +1,10 @@
-@import models.view.{AddRfiReplyView, ApplicationSummaryView, RfiView}
+@import models.view.{AddRfiReplyView, ApplicationSummaryView, RfiView, ApplicationTabsView}
 @import play.data.Form
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViews: java.util.List[RfiView], allowReplies: Boolean, rfiReplyForm: Form[_], addRfiReplyView: AddRfiReplyView)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, rfiViews: java.util.List[RfiView], allowReplies: Boolean, rfiReplyForm: Form[_], addRfiReplyView: AddRfiReplyView)
 
-  @applicationDetails(applyLink, applicationSummaryView, "rfi", rfiViews.size, rfiReplyForm) {
+  @applicationDetails(applyLink, applicationSummaryView, "rfi", applicationTabsView, rfiReplyForm) {
     @if(rfiViews.isEmpty) {
       <p>You haven't received any requests for information yet.</p>
     } else {
