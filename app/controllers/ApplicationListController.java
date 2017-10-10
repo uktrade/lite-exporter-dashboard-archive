@@ -11,7 +11,10 @@ import components.util.Comparators;
 import components.util.EnumUtil;
 import components.util.PageUtil;
 import components.util.SortUtil;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import models.ApplicationListState;
 import models.Page;
@@ -26,6 +29,10 @@ import play.mvc.Result;
 import views.html.applicationList;
 
 public class ApplicationListController extends SamlController {
+
+  private static final Set<ApplicationSortType> USER_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS);
+  private static final Set<ApplicationSortType> COMPANY_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS, ApplicationSortType.CREATED_BY);
+  private static final Set<ApplicationSortType> ATTENTION_SORT_TYPES = EnumSet.of(ApplicationSortType.REFERENCE, ApplicationSortType.CREATED_BY, ApplicationSortType.EVENT_TYPE, ApplicationSortType.EVENT_DATE);
 
   private final String licenceApplicationAddress;
   private final ApplicationItemViewService applicationItemViewService;
@@ -52,46 +59,57 @@ public class ApplicationListController extends SamlController {
     ApplicationSortType applicationSortType = EnumUtil.parse(state.getSort(), ApplicationSortType.class, ApplicationSortType.DATE);
     SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
     ApplicationListTab applicationListTab = EnumUtil.parse(state.getTab(), ApplicationListTab.class, ApplicationListTab.USER);
+    String companyId = state.getCompany();
 
     List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(userId);
 
     boolean hasUserApplications = hasUserApplications(userId, views);
     boolean hasOtherUserApplications = hasOtherUserApplications(userId, views);
+    boolean hasForYourAttentionApplications = hasForYourAttentionApplications(views);
 
-    if (hasUserApplications && !hasOtherUserApplications && applicationListTab == ApplicationListTab.COMPANY) {
-      applicationListTab = ApplicationListTab.USER;
-    } else if (!hasUserApplications && hasOtherUserApplications && applicationListTab == ApplicationListTab.USER) {
-      applicationListTab = ApplicationListTab.COMPANY;
-    }
+    applicationListTab = defaultTab(applicationListTab, hasUserApplications, hasOtherUserApplications, hasForYourAttentionApplications);
 
-    if (applicationSortType == ApplicationSortType.CREATED_BY && applicationListTab == ApplicationListTab.USER) {
+    if ((applicationListTab == ApplicationListTab.USER && !USER_SORT_TYPES.contains(applicationSortType)) ||
+        applicationListTab == ApplicationListTab.COMPANY && !COMPANY_SORT_TYPES.contains(applicationSortType)) {
       applicationSortType = ApplicationSortType.DATE;
+      sortDirection = SortDirection.DESC;
+    } else if (applicationListTab == ApplicationListTab.ATTENTION && !ATTENTION_SORT_TYPES.contains(applicationSortType)) {
+      applicationSortType = ApplicationSortType.EVENT_DATE;
       sortDirection = SortDirection.DESC;
     }
 
-    List<ApplicationItemView> userFilteredViews = filterByUser(userId, applicationListTab, views);
+    if (applicationListTab == ApplicationListTab.ATTENTION && applicationSortType == ApplicationSortType.CREATED_BY && hasUserApplications && !hasOtherUserApplications) {
+      applicationSortType = ApplicationSortType.EVENT_DATE;
+      sortDirection = SortDirection.DESC;
+    }
 
-    List<CompanySelectItemView> companyNames = collectCompanyNames(userFilteredViews);
+    if (applicationListTab == ApplicationListTab.ATTENTION) {
+      companyId = "all";
+      applicationProgress = null;
+    }
 
-    String companyId = state.getCompany();
-    List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, userFilteredViews);
+    List<CompanySelectItemView> companyNames = collectCompanyNames(views);
 
-    long allCount = companyFilteredViews.size();
-    long draftCount = countByApplicationProgress(companyFilteredViews, ApplicationProgress.DRAFT);
-    long completedCount = countByApplicationProgress(companyFilteredViews, ApplicationProgress.COMPLETED);
+    List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, views);
+    List<ApplicationItemView> userFilteredViews = filterByUser(userId, applicationListTab, companyFilteredViews);
+    List<ApplicationItemView> applicationProgressFilteredViews = filterByApplicationProgress(applicationProgress, userFilteredViews);
+    List<ApplicationItemView> attentionFilteredViews = filterByAttention(applicationListTab, applicationProgressFilteredViews);
+
+    SortUtil.sort(attentionFilteredViews, applicationSortType, sortDirection);
+
+    Page<ApplicationItemView> pageData = PageUtil.getPage(state.getPage(), attentionFilteredViews);
+
+    long allCount = userFilteredViews.size();
+    long draftCount = countByApplicationProgress(userFilteredViews, ApplicationProgress.DRAFT);
+    long completedCount = countByApplicationProgress(userFilteredViews, ApplicationProgress.COMPLETED);
     long currentCount = allCount - draftCount - completedCount;
-
-    List<ApplicationItemView> applicationProgressFilteredViews = filterByApplicationProgress(applicationProgress, companyFilteredViews);
-
-    SortUtil.sort(applicationProgressFilteredViews, applicationSortType, sortDirection);
-
-    Page<ApplicationItemView> pageData = PageUtil.getPage(state.getPage(), applicationProgressFilteredViews);
 
     ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
         companyId,
         companyNames,
         hasUserApplications,
         hasOtherUserApplications,
+        hasForYourAttentionApplications,
         applicationSortType,
         sortDirection,
         applicationProgress,
@@ -101,7 +119,22 @@ public class ApplicationListController extends SamlController {
         completedCount,
         pageData);
 
-    return ok(applicationList.render(licenceApplicationAddress, applicationListView));
+    return ok(applicationList.render(licenceApplicationAddress, applicationListView)).withHeader("Cache-Control", "no-store");
+  }
+
+  private ApplicationListTab defaultTab(ApplicationListTab applicationListTab, boolean hasUserApplications, boolean hasOtherUserApplications, boolean hasForYourAttentionApplications) {
+    if (applicationListTab == ApplicationListTab.COMPANY && hasUserApplications && !hasOtherUserApplications) {
+      return ApplicationListTab.USER;
+    } else if (applicationListTab == ApplicationListTab.USER && !hasUserApplications && hasOtherUserApplications) {
+      return ApplicationListTab.COMPANY;
+    } else if (applicationListTab == ApplicationListTab.ATTENTION && !hasForYourAttentionApplications) {
+      if (hasUserApplications) {
+        return ApplicationListTab.USER;
+      } else if (hasOtherUserApplications) {
+        return ApplicationListTab.COMPANY;
+      }
+    }
+    return applicationListTab;
   }
 
   private List<CompanySelectItemView> collectCompanyNames(List<ApplicationItemView> applicationItemViews) {
@@ -122,6 +155,12 @@ public class ApplicationListController extends SamlController {
     return applicationItemViews.stream()
         .map(ApplicationItemView::getCreatedById)
         .anyMatch(id -> !currentUserId.equals(id));
+  }
+
+  private boolean hasForYourAttentionApplications(List<ApplicationItemView> applicationItemViews) {
+    return applicationItemViews.stream()
+        .map(ApplicationItemView::getForYourAttentionNotificationView)
+        .anyMatch(Objects::nonNull);
   }
 
   private long countByApplicationProgress(List<ApplicationItemView> applicationItemViews, ApplicationProgress applicationProgress) {
@@ -154,6 +193,16 @@ public class ApplicationListController extends SamlController {
     if (applicationProgress != null) {
       return applicationItemViews.stream()
           .filter(view -> view.getApplicationProgress() == applicationProgress)
+          .collect(Collectors.toList());
+    } else {
+      return applicationItemViews;
+    }
+  }
+
+  private List<ApplicationItemView> filterByAttention(ApplicationListTab applicationListTab, List<ApplicationItemView> applicationItemViews) {
+    if (applicationListTab == ApplicationListTab.ATTENTION) {
+      return applicationItemViews.stream()
+          .filter(view -> view.getForYourAttentionNotificationView() != null)
           .collect(Collectors.toList());
     } else {
       return applicationItemViews;

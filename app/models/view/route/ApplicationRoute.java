@@ -1,11 +1,15 @@
 package models.view.route;
 
+import java.util.EnumSet;
+import java.util.Set;
 import models.enums.ApplicationListTab;
 import models.enums.ApplicationProgress;
 import models.enums.ApplicationSortType;
 import models.enums.SortDirection;
 
 public class ApplicationRoute implements Route {
+
+  private static final Set<ApplicationSortType> TEXT_SORT_TYPES = EnumSet.of(ApplicationSortType.CREATED_BY, ApplicationSortType.STATUS, ApplicationSortType.EVENT_TYPE, ApplicationSortType.REFERENCE);
 
   private ApplicationListTab applicationListTab;
   private String companyId;
@@ -33,7 +37,7 @@ public class ApplicationRoute implements Route {
       nextSortDirection();
     } else {
       applicationSortType = sortType;
-      if (applicationSortType == ApplicationSortType.CREATED_BY || applicationSortType == ApplicationSortType.STATUS) {
+      if (TEXT_SORT_TYPES.contains(applicationSortType)) {
         sortDirection = SortDirection.ASC;
       } else {
         sortDirection = SortDirection.DESC;

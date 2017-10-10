@@ -1,13 +1,12 @@
 package models.view;
 
+import java.util.List;
 import models.Page;
 import models.enums.ApplicationListTab;
 import models.enums.ApplicationProgress;
 import models.enums.ApplicationSortType;
 import models.enums.SortDirection;
 import models.view.route.ApplicationRoute;
-
-import java.util.List;
 
 public class ApplicationListView implements ListView {
 
@@ -16,6 +15,7 @@ public class ApplicationListView implements ListView {
   private final List<CompanySelectItemView> companySelectItemViews;
   private final boolean hasUserApplications;
   private final boolean hasOtherUserApplications;
+  private final boolean hasForYourAttentionApplications;
   private final ApplicationSortType applicationSortType;
   private final SortDirection sortDirection;
   private final ApplicationProgress applicationProgress;
@@ -25,12 +25,26 @@ public class ApplicationListView implements ListView {
   private final long completedCount;
   private final Page<ApplicationItemView> page;
 
-  public ApplicationListView(ApplicationListTab applicationListTab, String companyId, List<CompanySelectItemView> companySelectItemViews, boolean hasUserApplications, boolean hasOtherUserApplications, ApplicationSortType applicationSortType, SortDirection sortDirection, ApplicationProgress applicationProgress, long allCount, long draftCount, long currentCount, long completedCount, Page<ApplicationItemView> page) {
+  public ApplicationListView(ApplicationListTab applicationListTab,
+                             String companyId,
+                             List<CompanySelectItemView> companySelectItemViews,
+                             boolean hasUserApplications,
+                             boolean hasOtherUserApplications,
+                             boolean hasForYourAttentionApplications,
+                             ApplicationSortType applicationSortType,
+                             SortDirection sortDirection,
+                             ApplicationProgress applicationProgress,
+                             long allCount,
+                             long draftCount,
+                             long currentCount,
+                             long completedCount,
+                             Page<ApplicationItemView> page) {
     this.applicationListTab = applicationListTab;
     this.companyId = companyId;
     this.companySelectItemViews = companySelectItemViews;
     this.hasUserApplications = hasUserApplications;
     this.hasOtherUserApplications = hasOtherUserApplications;
+    this.hasForYourAttentionApplications = hasForYourAttentionApplications;
     this.applicationSortType = applicationSortType;
     this.sortDirection = sortDirection;
     this.applicationProgress = applicationProgress;
@@ -59,6 +73,10 @@ public class ApplicationListView implements ListView {
 
   public boolean isHasOtherUserApplications() {
     return hasOtherUserApplications;
+  }
+
+  public boolean isHasForYourAttentionApplications() {
+    return hasForYourAttentionApplications;
   }
 
   public ApplicationSortType getApplicationSortType() {

@@ -1,11 +1,16 @@
 package components.util;
 
+import controllers.routes;
 import models.Notification;
 import models.WithdrawalRejection;
 import models.enums.MessageType;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 public class LinkUtil {
+
+  public static String getOutcomeDocumentsLink(String appId) {
+    return routes.OutcomeTabController.showOutcomeTab(appId).withFragment("outcome-documents").toString();
+  }
 
   public static String getStoppedMessageAnchor(Notification notification) {
     return MessageType.STOPPED.toString() + "-" + notification.getId();

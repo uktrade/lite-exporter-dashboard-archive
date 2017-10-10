@@ -4,11 +4,11 @@
 @(applicationListView: ApplicationListView)
 
 @ariaSortAttr(applicationSortType: ApplicationSortType) = {
-@if(applicationListView.getApplicationSortType == applicationSortType) {
-  aria-sort="@applicationListView.getSortDirection.toAriaString"
-} else {
-  aria-sort="none"
-}
+  @if(applicationListView.getApplicationSortType == applicationSortType) {
+    aria-sort="@applicationListView.getSortDirection.toAriaString"
+  } else {
+    aria-sort="none"
+  }
 }
 
 @if(!applicationListView.getPage.getItems.isEmpty) {
@@ -16,26 +16,49 @@
     <table class="table-font-xsmall table-align-top">
       <thead>
         <tr>
-          <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
-            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DATE).toString">
-              Date
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.DATE)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DATE).toString">
+                Date
+              </a>
+            </th>
+          }
+          <th role="columnheader" @ariaSortAttr(ApplicationSortType.REFERENCE)>
+            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.REFERENCE).toString">
+              References
             </a>
           </th>
-          <th role="columnheader">
-            References
-          </th>
-          <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
-            <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.STATUS).toString">
-              Application status
-            </a>
-          </th>
-          <th role="columnheader">
-            Destination
-          </th>
-          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.STATUS)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.STATUS).toString">
+                Application status
+              </a>
+            </th>
+          }
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <th role="columnheader">
+              Destination
+            </th>
+          }
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY ||
+            (applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION && applicationListView.isHasOtherUserApplications)) {
             <th role="columnheader" @ariaSortAttr(ApplicationSortType.CREATED_BY)>
               <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.CREATED_BY).toString">
-                Created by
+                Application created by
+              </a>
+            </th>
+          }
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION) {
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.EVENT_TYPE)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.EVENT_TYPE).toString">
+                Event type
+              </a>
+            </th>
+          }
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION) {
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.EVENT_DATE)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.EVENT_DATE).toString">
+                Latest event date
               </a>
             </th>
           }
@@ -44,20 +67,22 @@
       <tbody>
       @for(applicationItemView <- applicationListView.getPage.getItems) {
         <tr>
-          <td class="no-wrap">
-            @if(applicationItemView.getApplicationProgress == ApplicationProgress.DRAFT) {
-              Created
-            }
-            @if(applicationItemView.getApplicationProgress == ApplicationProgress.CURRENT) {
-              Submitted
-            }
-            @if(applicationItemView.getApplicationProgress == ApplicationProgress.COMPLETED) {
-              Completed
-            }
-          <div class="bold">
-          @applicationItemView.getDate
-          </div>
-          </td>
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <td class="no-wrap">
+              @if(applicationItemView.getApplicationProgress == ApplicationProgress.DRAFT) {
+                Created
+              }
+              @if(applicationItemView.getApplicationProgress == ApplicationProgress.CURRENT) {
+                Submitted
+              }
+              @if(applicationItemView.getApplicationProgress == ApplicationProgress.COMPLETED) {
+                Completed
+              }
+              <div class="bold">
+                @applicationItemView.getDate
+              </div>
+            </td>
+          }
           <td>
           @if(applicationItemView.getCaseReference != null) {
             <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
@@ -71,26 +96,46 @@
             </a>
           }
           </td>
-          <td>
-            @applicationItemView.getApplicationStatus
-          <br>
-            @applicationItemView.getApplicationStatusDate
-            @for(index <- 0 until applicationItemView.getNotificationViews.size) {
-              <br>
-                @eventLabel(applicationItemView.getNotificationViews.get(index).getEventLabelType,
-                  applicationItemView.getNotificationViews.get(index).getLinkText,
-                  applicationItemView.getNotificationViews.get(index).getLink,
-                  "",
-                  index == 0
-                )
-              }
-          </td>
-          <td>
-          @applicationItemView.getDestination
-          </td>
-          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <td>
+              @applicationItemView.getApplicationStatus
+            <br>
+              @applicationItemView.getApplicationStatusDate
+              @for(index <- 0 until applicationItemView.getNotificationViews.size) {
+                <br>
+                  @eventLabel(applicationItemView.getNotificationViews.get(index).getEventLabelType,
+                    applicationItemView.getNotificationViews.get(index).getLinkText,
+                    applicationItemView.getNotificationViews.get(index).getLink,
+                    "",
+                    index == 0
+                  )
+                }
+            </td>
+          }
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+            <td>
+              @applicationItemView.getDestination
+            </td>
+          }
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY ||
+          (applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION && applicationListView.isHasOtherUserApplications)) {
             <td>
               @applicationItemView.getCreatedByFirstName @applicationItemView.getCreatedByLastName
+            </td>
+          }
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION) {
+            <td>
+              @eventLabel(applicationItemView.getForYourAttentionNotificationView.getEventLabelType,
+                applicationItemView.getForYourAttentionNotificationView.getLinkText,
+                applicationItemView.getForYourAttentionNotificationView.getLink,
+                "",
+                false
+              )
+            </td>
+          }
+          @if(applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION) {
+            <td>
+              @applicationItemView.getLatestEventDate
             </td>
           }
         </tr>

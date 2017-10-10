@@ -2,6 +2,7 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.exceptions.DatabaseException;
+import components.util.JsonUtil;
 import java.util.ArrayList;
 import java.util.List;
 import models.Application;
@@ -57,7 +58,14 @@ public class RfiDaoImpl implements RfiDao {
           String message = "Unable to insert rfi since no application exists with appId " + rfi.getAppId();
           throw new DatabaseException(message);
         }
-        rfiJDBIDao.insert(rfi.getId(), rfi.getAppId(), rfi.getRfiStatus(), rfi.getReceivedTimestamp(), rfi.getDueTimestamp(), rfi.getSentBy(), rfi.getMessage());
+        rfiJDBIDao.insert(rfi.getId(),
+            rfi.getAppId(),
+            rfi.getRfiStatus(),
+            rfi.getCreatedTimestamp(),
+            rfi.getDueTimestamp(),
+            rfi.getSentBy(),
+            JsonUtil.convertListToJson(rfi.getRecipientUserIds()),
+            rfi.getMessage());
       });
     }
   }

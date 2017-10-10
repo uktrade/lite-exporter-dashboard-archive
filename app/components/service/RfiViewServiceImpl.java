@@ -44,7 +44,7 @@ public class RfiViewServiceImpl implements RfiViewService {
         .collect(Collectors.toMap(RfiReply::getRfiId, Function.identity()));
 
     return rfiList.stream()
-        .sorted(Comparators.RFI_RECEIVED_REVERSED)
+        .sorted(Comparators.RFI_CREATED_REVERSED)
         .map(rfi -> getRfiView(rfi, rfiIdToRfiReply.get(rfi.getId()), rfiIdToRfiWithdrawal.get(rfi.getId())))
         .collect(Collectors.toList());
   }
@@ -76,7 +76,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     } else {
       withdrawnDate = null;
     }
-    String receivedDate = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
+    String receivedDate = TimeUtil.formatDateAndTime(rfi.getCreatedTimestamp());
     String replyBy = getReplyBy(rfi);
     String sender = userService.getUsername(rfi.getSentBy());
     RfiReplyView rfiReplyView = getRfiReplyView(rfi.getAppId(), rfi.getId(), rfiReply);
