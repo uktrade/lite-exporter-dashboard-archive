@@ -1,7 +1,9 @@
 package components.dao;
 
+import components.util.JsonUtil;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import models.Rfi;
 import models.enums.RfiStatus;
 import org.skife.jdbi.v2.StatementContext;
@@ -14,11 +16,13 @@ public class RfiRSMapper implements ResultSetMapper<Rfi> {
     String id = r.getString("id");
     String appId = r.getString("app_id");
     RfiStatus rfiStatus = RfiStatus.valueOf(r.getString("status"));
-    Long receivedTimestamp = LongMapper.getLong(r, "received_timestamp");
+    Long createdTimestamp = LongMapper.getLong(r, "created_timestamp");
     Long dueTimestamp = LongMapper.getLong(r, "due_timestamp");
     String sentBy = r.getString("sent_by");
+    String recipientUserIdsJson = r.getString("recipient_user_ids");
+    List<String> recipientUserIds = JsonUtil.convertJsonToList(recipientUserIdsJson);
     String message = r.getString("message");
-    return new Rfi(id, appId, rfiStatus, receivedTimestamp, dueTimestamp, sentBy, message);
+    return new Rfi(id, appId, rfiStatus, createdTimestamp, dueTimestamp, sentBy, recipientUserIds, message);
   }
 
 }

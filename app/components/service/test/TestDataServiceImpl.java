@@ -278,6 +278,7 @@ public class TestDataServiceImpl implements TestDataService {
             time(2017, 4, 5 + i, i, i),
             time(2017, 5, 5 + i, i, i),
             OFFICER_ID,
+            RECIPIENTS,
             "Please answer this rfi.");
         rfiDao.insertRfi(rfi);
         String rfiTwoId = rfiId();
@@ -287,6 +288,7 @@ public class TestDataServiceImpl implements TestDataService {
             time(2017, 6, 5 + i, i, i),
             time(2017, 7, 5 + i, i, i),
             OFFICER_ID,
+            RECIPIENTS,
             "Please also answer this rfi.");
         rfiDao.insertRfi(rfiTwo);
         if (i % 3 != 0) {
@@ -316,7 +318,7 @@ public class TestDataServiceImpl implements TestDataService {
               appId,
               NotificationType.INFORM,
               OFFICER_ID,
-              time(2017, 5, 1, 2, 3),
+              time(2017, 5, 1 + i, 2, 3),
               RECIPIENTS,
               "",
               document);
@@ -324,7 +326,6 @@ public class TestDataServiceImpl implements TestDataService {
         }
       }
     }
-
   }
 
   private void createSecondUserApplications(String userId) {
@@ -342,6 +343,36 @@ public class TestDataServiceImpl implements TestDataService {
           OFFICER_ID);
       applicationDao.insert(app);
     }
+    // Create application with inform notice
+    String appId = appId();
+    Application app = new Application(appId,
+        wrapCustomerId(userId, COMPANY_ID_ONE),
+        OTHER_APPLICANT_ID,
+        time(2017, 1, 7, 1, 1),
+        time(2017, 1, 8, 1, 1),
+        Collections.singletonList(FRANCE),
+        getApplicantReference(),
+        randomNumber("ECO"),
+        OFFICER_ID);
+    applicationDao.insert(app);
+    StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
+        app.getId(),
+        StatusType.INITIAL_CHECKS,
+        time(2017, 8, 3, 0, 0));
+    statusUpdateDao.insertStatusUpdate(initialChecks);
+    File document = new File();
+    document.setId("FIL");
+    document.setUrl("#");
+    document.setFilename("Inform letter");
+    Notification notification = new Notification(informNotificationId(),
+        appId,
+        NotificationType.INFORM,
+        OFFICER_ID,
+        time(2017, 9, 1, 2, 3),
+        RECIPIENTS,
+        "",
+        document);
+    notificationDao.insertNotification(notification);
   }
 
   private String getApplicantReference() {
@@ -365,7 +396,8 @@ public class TestDataServiceImpl implements TestDataService {
         time(2013, 11, 4, 14, 10),
         Arrays.asList(GERMANY, ICELAND, FRANCE),
         getApplicantReference(),
-        randomNumber("ECO"), OFFICER_ID);
+        randomNumber("ECO"),
+        OFFICER_ID);
     applicationDao.insert(application);
 
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
@@ -451,7 +483,8 @@ public class TestDataServiceImpl implements TestDataService {
         time(2016, 11, 4, 14, 10),
         Arrays.asList(GERMANY, ICELAND, FRANCE),
         getApplicantReference(),
-        randomNumber("ECO"), OFFICER_ID);
+        randomNumber("ECO"),
+        OFFICER_ID);
     applicationDao.insert(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(appId, rfiId).forEach(rfiDao::insertRfi);
@@ -479,6 +512,7 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 1, 2, 13, 30),
         time(2017, 2, 2, 13, 30),
         OFFICER_ID,
+        RECIPIENTS,
         "Please reply to this rfi message.");
     Rfi rfiTwo = new Rfi(rfiId,
         appId,
@@ -486,6 +520,7 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 2, 5, 10, 10),
         time(2017, 3, 12, 16, 10),
         OFFICER_ID,
+        RECIPIENTS,
         "<p>We note from your application that you have rated all 8 line items as ML10a and that these items are used in production and maintenance of civil and/or military aircraft.</p>"
             + "<p>Would you please provide the make/model of aircraft for which each of the 8 line items on your application was originally designed.</p>"
             + "<p>Than you for your help in this matter.</p>");
@@ -495,6 +530,7 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 4, 5, 10, 10),
         time(2017, 5, 12, 16, 10),
         OFFICER_ID,
+        RECIPIENTS,
         "This is some rfi message.");
     Rfi rfiFour = new Rfi(rfiId(),
         appId,
@@ -502,6 +538,7 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 7, 5, 10, 10),
         time(2018, 8, 5, 10, 10),
         OFFICER_ID,
+        RECIPIENTS,
         "This is another rfi message.");
     List<Rfi> rfiList = new ArrayList<>();
     rfiList.add(rfi);

@@ -2,7 +2,7 @@ package models.enums;
 
 public enum ApplicationListTab {
 
-  USER("user"), COMPANY("company");
+  USER("user"), COMPANY("company"), ATTENTION("attention");
 
   private final String text;
 

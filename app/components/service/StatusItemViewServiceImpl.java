@@ -10,7 +10,6 @@ import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
 import components.util.TimeUtil;
-import controllers.routes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -238,7 +237,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   }
 
   private NotificationView getOutcomeNotificationView(String appId) {
-    String link = routes.OutcomeTabController.showOutcomeTab(appId).withFragment("outcome-documents").toString();
+    String link = LinkUtil.getOutcomeDocumentsLink(appId);
     return new NotificationView(null, "View outcome documents", link, null, System.currentTimeMillis());
   }
 
@@ -256,10 +255,10 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   }
 
   private NotificationView getRfiNotificationView(Rfi rfi) {
-    String time = TimeUtil.formatDateAndTime(rfi.getReceivedTimestamp());
+    String time = TimeUtil.formatDateAndTime(rfi.getCreatedTimestamp());
     String description = "Received on " + time;
     String link = controllers.routes.RfiTabController.showRfiTab(rfi.getAppId()).withFragment(rfi.getId()).toString();
-    return new NotificationView(EventLabelType.RFI, "Request for information", link, description, rfi.getReceivedTimestamp());
+    return new NotificationView(EventLabelType.RFI, "Request for information", link, description, rfi.getCreatedTimestamp());
   }
 
   private StatusItemView getStatusItemView(StatusUpdate statusUpdate, List<NotificationView> notificationViews, Long finishedTimestamp) {

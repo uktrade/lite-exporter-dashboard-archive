@@ -1,8 +1,7 @@
 package components.util;
 
-import models.Page;
-
 import java.util.List;
+import models.Page;
 
 public class PageUtil {
 

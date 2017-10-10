@@ -10,26 +10,36 @@
 
   <div class="heading-medium dashboard-section-heading">Applications</div>
 
-  @if(applicationListView.isHasUserApplications && !applicationListView.isHasOtherUserApplications) {
+  @if(applicationListView.isHasUserApplications && !applicationListView.isHasOtherUserApplications && !applicationListView.isHasForYourAttentionApplications) {
     <p>
   <h3 class="heading-small">Created by you</h3>
     </p>
   }
 
-  @if(!applicationListView.isHasUserApplications && applicationListView.isHasOtherUserApplications) {
+  @if(!applicationListView.isHasUserApplications && applicationListView.isHasOtherUserApplications && !applicationListView.isHasForYourAttentionApplications) {
     <p>
   <h3 class="heading-small">Created by your company</h3>
     </p>
   }
 
-  @if(applicationListView.isHasUserApplications && applicationListView.isHasOtherUserApplications) {
+  @if((applicationListView.isHasUserApplications && applicationListView.isHasOtherUserApplications) ||
+      ((applicationListView.isHasUserApplications || applicationListView.isHasOtherUserApplications) && applicationListView.isHasForYourAttentionApplications)) {
     @tabs("application-list-tabs", size = "large", width = "wide") {
-      @tab("Created by you",
-        applicationListView.getRoute.setApplicationListTab(ApplicationListTab.USER).toString,
-        applicationListView.getApplicationListTab == ApplicationListTab.USER)
-      @tab("Created by your company",
-        applicationListView.getRoute.setApplicationListTab(ApplicationListTab.COMPANY).toString,
-        applicationListView.getApplicationListTab == ApplicationListTab.COMPANY)
+      @if(applicationListView.isHasUserApplications) {
+        @tab("Created by you",
+          applicationListView.getRoute.setApplicationListTab(ApplicationListTab.USER).toString,
+          applicationListView.getApplicationListTab == ApplicationListTab.USER)
+      }
+      @if(applicationListView.isHasOtherUserApplications) {
+        @tab("Created by your company",
+          applicationListView.getRoute.setApplicationListTab(ApplicationListTab.COMPANY).toString,
+          applicationListView.getApplicationListTab == ApplicationListTab.COMPANY)
+      }
+      @if(applicationListView.isHasForYourAttentionApplications) {
+        @tab("For your attention",
+          applicationListView.getRoute.setApplicationListTab(ApplicationListTab.ATTENTION).toString,
+          applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION)
+      }
     }
   }
 
@@ -40,11 +50,12 @@
 
   } else {
 
-    @if(applicationListView.getCompanySelectItemViews.size() > 1) {
-      @companySelect(applicationListView)
+    @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
+      @if(applicationListView.getCompanySelectItemViews.size() > 1) {
+        @companySelect(applicationListView)
+      }
+      @statusPanel(applicationListView)
     }
-
-    @statusPanel(applicationListView)
 
     @if(!applicationListView.getPage.getItems.isEmpty) {
       @applicationListTable(applicationListView)

@@ -24,14 +24,15 @@ public interface RfiJDBIDao {
   @SqlQuery("SELECT COUNT(*) FROM RFI WHERE APP_ID = :appId")
   int getRfiCount(@Bind("appId") String appId);
 
-  @SqlUpdate("INSERT INTO RFI ( ID,  APP_ID, STATUS,  RECEIVED_TIMESTAMP, DUE_TIMESTAMP, SENT_BY, MESSAGE) VALUES " +
-      "                       (:id, :appId, :status, :receivedTimestamp, :dueTimestamp, :sentBy, :message)")
+  @SqlUpdate("INSERT INTO RFI ( ID,  APP_ID, STATUS,  CREATED_TIMESTAMP, DUE_TIMESTAMP, SENT_BY, RECIPIENT_USER_IDS, MESSAGE) VALUES " +
+      "                       (:id, :appId, :status, :createdTimestamp, :dueTimestamp, :sentBy, :recipientUserIds,  :message)")
   void insert(@Bind("id") String id,
               @Bind("appId") String appId,
               @Bind("status") RfiStatus rfiStatus,
-              @Bind("receivedTimestamp") Long receivedTimestamp,
+              @Bind("createdTimestamp") Long createdTimestamp,
               @Bind("dueTimestamp") Long dueTimestamp,
               @Bind("sentBy") String sentBy,
+              @Bind("recipientUserIds") String recipientUserIds,
               @Bind("message") String message);
 
   @SqlUpdate("DELETE FROM RFI")

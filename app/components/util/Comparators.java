@@ -12,9 +12,9 @@ import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 public class Comparators {
 
-  public static final Comparator<Rfi> RFI_RECEIVED = Comparator.comparing(Rfi::getReceivedTimestamp);
-  public static final Comparator<Rfi> RFI_RECEIVED_REVERSED = Comparator.comparing(Rfi::getReceivedTimestamp).reversed();
-
+  public static final Comparator<Rfi> RFI_CREATED = Comparator.comparing(Rfi::getCreatedTimestamp);
+  public static final Comparator<Rfi> RFI_CREATED_REVERSED = Comparator.comparing(Rfi::getCreatedTimestamp).reversed();
+  public static final Comparator<Outcome> OUTCOME_CREATED = Comparator.comparing(Outcome::getCreatedTimestamp);
   public static final Comparator<Outcome> OUTCOME_CREATED_REVERSED = Comparator.comparing(Outcome::getCreatedTimestamp).reversed();
   public static final Comparator<MessageView> MESSAGE_VIEW_CREATED_REVERSED = Comparator.comparing(MessageView::getCreatedTimestamp).reversed();
   public static final Comparator<WithdrawalRequest> WITHDRAWAL_REQUEST_CREATED = Comparator.comparing(WithdrawalRequest::getCreatedTimestamp);
