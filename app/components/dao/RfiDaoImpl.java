@@ -2,13 +2,12 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.exceptions.DatabaseException;
+import java.util.ArrayList;
+import java.util.List;
 import models.Application;
 import models.Rfi;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class RfiDaoImpl implements RfiDao {
 
@@ -58,7 +57,7 @@ public class RfiDaoImpl implements RfiDao {
           String message = "Unable to insert rfi since no application exists with appId " + rfi.getAppId();
           throw new DatabaseException(message);
         }
-        rfiJDBIDao.insert(rfi.getRfiId(), rfi.getAppId(), rfi.getRfiStatus(), rfi.getReceivedTimestamp(), rfi.getDueTimestamp(), rfi.getSentBy(), rfi.getMessage());
+        rfiJDBIDao.insert(rfi.getId(), rfi.getAppId(), rfi.getRfiStatus(), rfi.getReceivedTimestamp(), rfi.getDueTimestamp(), rfi.getSentBy(), rfi.getMessage());
       });
     }
   }

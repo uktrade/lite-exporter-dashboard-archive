@@ -4,9 +4,9 @@ import java.util.List;
 
 public class Application {
 
-  private final String appId;
-  private final String companyId;
-  private final String createdBy;
+  private final String id;
+  private final String customerId;
+  private final String createdByUserId;
   private final Long createdTimestamp;
   private final Long submittedTimestamp;
   private final List<String> destinationList;
@@ -14,10 +14,10 @@ public class Application {
   private final String caseReference;
   private final String caseOfficerId;
 
-  public Application(String appId, String companyId, String createdBy, Long createdTimestamp, Long submittedTimestamp, List<String> destinationList, String applicantReference, String caseReference, String caseOfficerId) {
-    this.appId = appId;
-    this.companyId = companyId;
-    this.createdBy = createdBy;
+  public Application(String id, String customerId, String createdByUserId, Long createdTimestamp, Long submittedTimestamp, List<String> destinationList, String applicantReference, String caseReference, String caseOfficerId) {
+    this.id = id;
+    this.customerId = customerId;
+    this.createdByUserId = createdByUserId;
     this.createdTimestamp = createdTimestamp;
     this.submittedTimestamp = submittedTimestamp;
     this.destinationList = destinationList;
@@ -26,16 +26,16 @@ public class Application {
     this.caseOfficerId = caseOfficerId;
   }
 
-  public String getAppId() {
-    return appId;
+  public String getId() {
+    return id;
   }
 
-  public String getCompanyId() {
-    return companyId;
+  public String getCustomerId() {
+    return customerId;
   }
 
-  public String getCreatedBy() {
-    return createdBy;
+  public String getCreatedByUserId() {
+    return createdByUserId;
   }
 
   public Long getCreatedTimestamp() {

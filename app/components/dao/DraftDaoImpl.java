@@ -1,17 +1,18 @@
 package components.dao;
 
+import static components.util.RandomIdUtil.draftId;
+
 import com.google.inject.Inject;
 import components.exceptions.DatabaseException;
 import components.util.JsonUtil;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import models.Draft;
 import models.enums.DraftType;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import uk.gov.bis.lite.exporterdashboard.api.File;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class DraftDaoImpl implements DraftDao {
 
@@ -56,7 +57,7 @@ public class DraftDaoImpl implements DraftDao {
         attachments.add(file);
         String attachmentsJson = JsonUtil.convertListToJson(attachments);
         draftJDBIDao.deleteDraft(relatedId, draftType);
-        draftJDBIDao.insertDraft(relatedId, draftType, attachmentsJson);
+        draftJDBIDao.insertDraft(draftId(), relatedId, draftType, attachmentsJson);
       });
     }
   }
@@ -79,7 +80,7 @@ public class DraftDaoImpl implements DraftDao {
             throw new DatabaseException(errorMessage);
           } else {
             draftJDBIDao.deleteDraft(relatedId, draftType);
-            draftJDBIDao.insertDraft(relatedId, draftType, JsonUtil.convertListToJson(files));
+            draftJDBIDao.insertDraft(draftId(), relatedId, draftType, JsonUtil.convertListToJson(files));
           }
         }
       });

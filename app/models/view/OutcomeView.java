@@ -4,16 +4,16 @@ import java.util.List;
 
 public class OutcomeView {
 
-  private String issuedOn;
+  private final String issuedOn;
+  private final String voidedOn;
+  private final List<OutcomeDocumentView> outcomeDocumentViews;
+  private final boolean showNewIndicator;
 
-  private String voidedOn;
-
-  private List<OutcomeDocumentView> outcomeDocumentViews;
-
-  public OutcomeView(String issuedOn, String voidedOn, List<OutcomeDocumentView> outcomeDocumentViews) {
+  public OutcomeView(String issuedOn, String voidedOn, List<OutcomeDocumentView> outcomeDocumentViews, boolean showNewIndicator) {
     this.issuedOn = issuedOn;
     this.voidedOn = voidedOn;
     this.outcomeDocumentViews = outcomeDocumentViews;
+    this.showNewIndicator = showNewIndicator;
   }
 
   public String getIssuedOn() {
@@ -26,6 +26,10 @@ public class OutcomeView {
 
   public List<OutcomeDocumentView> getOutcomeDocumentViews() {
     return outcomeDocumentViews;
+  }
+
+  public boolean isShowNewIndicator() {
+    return showNewIndicator;
   }
 
 }

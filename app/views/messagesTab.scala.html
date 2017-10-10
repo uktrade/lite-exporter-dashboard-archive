@@ -1,9 +1,9 @@
-@import models.view.{ApplicationSummaryView, MessageView}
+@import models.view.{ApplicationSummaryView, MessageView, ApplicationTabsView}
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, rfiViewCount: Integer, messageViews: java.util.List[MessageView])
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, messageViews: java.util.List[MessageView])
 
-@applicationDetails(applyLink, applicationSummaryView, "messages", rfiViewCount, null) {
+@applicationDetails(applyLink, applicationSummaryView, "messages", applicationTabsView, null) {
   @if(messageViews.isEmpty) {
     <p>You don't have any messages.</p>
   } else {

@@ -2,16 +2,16 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.dao.AmendmentDao;
-import components.dao.NotificationDao;
-import components.dao.WithdrawalRejectionDao;
-import components.dao.WithdrawalRequestDao;
-import components.exceptions.UnexpectedStateException;
-import components.util.ApplicationUtil;
+import components.util.Comparators;
 import components.util.FileUtil;
-import components.util.SortUtil;
+import components.util.LinkUtil;
 import components.util.TimeUtil;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import models.AppData;
 import models.Notification;
-import models.NotificationType;
+import models.ReadData;
 import models.WithdrawalRejection;
 import models.enums.EventLabelType;
 import models.enums.MessageType;
@@ -22,46 +22,41 @@ import uk.gov.bis.lite.exporterdashboard.api.Amendment;
 import uk.gov.bis.lite.exporterdashboard.api.File;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class MessageViewServiceImpl implements MessageViewService {
 
-  private final NotificationDao notificationDao;
   private final UserService userService;
   private final AmendmentDao amendmentDao;
-  private final WithdrawalRequestDao withdrawalRequestDao;
-  private final WithdrawalRejectionDao withdrawalRejectionDao;
 
   @Inject
-  public MessageViewServiceImpl(NotificationDao notificationDao,
-                                UserService userService,
-                                AmendmentDao amendmentDao,
-                                WithdrawalRequestDao withdrawalRequestDao,
-                                WithdrawalRejectionDao withdrawalRejectionDao) {
-    this.notificationDao = notificationDao;
+  public MessageViewServiceImpl(UserService userService,
+                                AmendmentDao amendmentDao) {
     this.userService = userService;
     this.amendmentDao = amendmentDao;
-    this.withdrawalRequestDao = withdrawalRequestDao;
-    this.withdrawalRejectionDao = withdrawalRejectionDao;
   }
 
   @Override
-  public List<MessageView> getMessageViews(String appId) {
+  public List<MessageView> getMessageViews(AppData appData, ReadData readData) {
+    String appId = appData.getApplication().getId();
     List<MessageView> messageViews = new ArrayList<>();
-    messageViews.addAll(getNotificationMessageViews(appId));
+    if (appData.getStopNotification() != null) {
+      MessageView stopMessageView = getStopMessageView(appData.getStopNotification(), readData);
+      messageViews.add(stopMessageView);
+    }
+    if (appData.getDelayNotification() != null) {
+      MessageView delayMessageView = getDelayMessageView(appData.getDelayNotification(), readData);
+      messageViews.add(delayMessageView);
+    }
     messageViews.addAll(getAmendmentMessageViews(appId));
-    messageViews.addAll(getWithdrawalRequestMessageViews(appId));
-    SortUtil.reverseSortMessageViews(messageViews);
+    messageViews.addAll(getWithdrawalRequestMessageViews(appData, readData));
+    messageViews.sort(Comparators.MESSAGE_VIEW_CREATED_REVERSED);
     return messageViews;
   }
 
-  private List<MessageView> getWithdrawalRequestMessageViews(String appId) {
-    List<WithdrawalRequest> withdrawalRequests = withdrawalRequestDao.getWithdrawalRequestsByAppId(appId);
-    List<WithdrawalRejection> withdrawalRejections = withdrawalRejectionDao.getWithdrawalRejectionsByAppId(appId);
-    SortUtil.sortWithdrawalRequests(withdrawalRequests);
-    SortUtil.sortWithdrawalRejections(withdrawalRejections);
+  private List<MessageView> getWithdrawalRequestMessageViews(AppData appData, ReadData readData) {
+    List<WithdrawalRequest> withdrawalRequests = new ArrayList<>(appData.getWithdrawalRequests());
+    List<WithdrawalRejection> withdrawalRejections = new ArrayList<>(appData.getWithdrawalRejections());
+    withdrawalRequests.sort(Comparators.WITHDRAWAL_REQUEST_CREATED);
+    withdrawalRejections.sort(Comparators.WITHDRAWAL_REJECTION_CREATED);
     List<MessageView> withdrawalRequestMessageViews = new ArrayList<>();
     for (int i = 0; i < withdrawalRequests.size(); i++) {
       WithdrawalRejection withdrawalRejection;
@@ -70,18 +65,19 @@ public class MessageViewServiceImpl implements MessageViewService {
       } else {
         withdrawalRejection = null;
       }
-      withdrawalRequestMessageViews.add(getWithdrawalRequestMessageView(withdrawalRequests.get(i), withdrawalRejection));
+      MessageView messageView = getWithdrawalRequestMessageView(withdrawalRequests.get(i), withdrawalRejection, readData);
+      withdrawalRequestMessageViews.add(messageView);
     }
     return withdrawalRequestMessageViews;
   }
 
-  private MessageView getWithdrawalRequestMessageView(WithdrawalRequest withdrawalRequest, WithdrawalRejection withdrawalRejection) {
+  private MessageView getWithdrawalRequestMessageView(WithdrawalRequest withdrawalRequest, WithdrawalRejection withdrawalRejection, ReadData readData) {
     String anchor = MessageType.WITHDRAWAL_REQUESTED.toString() + "-" + withdrawalRequest.getId();
     String sentOn = TimeUtil.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
     String sender = userService.getUsername(withdrawalRequest.getCreatedByUserId());
     List<FileView> fileViews = withdrawalRequest.getAttachments().stream()
         .map(file -> getWithdrawalRequestFileView(withdrawalRequest, file)).collect(Collectors.toList());
-    MessageReplyView messageReplyView = getMessageReplyView(withdrawalRejection);
+    MessageReplyView messageReplyView = getMessageReplyView(withdrawalRejection, readData);
     return new MessageView(EventLabelType.WITHDRAWAL_REQUESTED,
         anchor,
         "Withdrawal request",
@@ -91,7 +87,8 @@ public class MessageViewServiceImpl implements MessageViewService {
         withdrawalRequest.getMessage(),
         withdrawalRequest.getCreatedTimestamp(),
         fileViews,
-        messageReplyView);
+        messageReplyView,
+        false);
   }
 
   private FileView getWithdrawalRequestFileView(WithdrawalRequest withdrawalRequest, File file) {
@@ -100,12 +97,13 @@ public class MessageViewServiceImpl implements MessageViewService {
     return new FileView(file.getId(), withdrawalRequest.getId(), file.getFilename(), link, null, size);
   }
 
-  private MessageReplyView getMessageReplyView(WithdrawalRejection withdrawalRejection) {
+  private MessageReplyView getMessageReplyView(WithdrawalRejection withdrawalRejection, ReadData readData) {
     if (withdrawalRejection != null) {
-      String anchor = ApplicationUtil.getWithdrawalRejectionMessageAnchor(withdrawalRejection);
+      boolean showNewIndicator = !readData.getUnreadWithdrawalRejectionIds().isEmpty();
+      String anchor = LinkUtil.getWithdrawalRejectionMessageAnchor(withdrawalRejection);
       String sender = userService.getUsername(withdrawalRejection.getCreatedByUserId());
       String withdrawnOn = TimeUtil.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
-      return new MessageReplyView(anchor, "Withdrawal rejected", sender, withdrawnOn, "Your request to withdraw your application has been rejected.");
+      return new MessageReplyView(anchor, "Withdrawal rejected", sender, withdrawnOn, "Your request to withdraw your application has been rejected.", showNewIndicator);
     } else {
       return null;
     }
@@ -133,7 +131,8 @@ public class MessageViewServiceImpl implements MessageViewService {
         amendment.getMessage(),
         amendment.getCreatedTimestamp(),
         fileViews,
-        null);
+        null,
+        false);
   }
 
   private FileView getAmendmentFileView(Amendment amendment, File file) {
@@ -142,41 +141,40 @@ public class MessageViewServiceImpl implements MessageViewService {
     return new FileView(file.getId(), amendment.getId(), file.getFilename(), link, null, size);
   }
 
-  private List<MessageView> getNotificationMessageViews(String appId) {
-    List<Notification> notifications = notificationDao.getNotifications(appId);
-    return notifications.stream()
-        .filter(notification -> notification.getNotificationType() == NotificationType.STOP || notification.getNotificationType() == NotificationType.DELAY)
-        .map(this::getNotificationMessageView)
-        .collect(Collectors.toList());
-  }
-
-  private MessageView getNotificationMessageView(Notification notification) {
-    String anchor;
-    String title;
-    EventLabelType eventLabelType;
-    if (notification.getNotificationType() == NotificationType.STOP) {
-      anchor = ApplicationUtil.getStoppedMessageAnchor(notification);
-      title = "Application stopped";
-      eventLabelType = EventLabelType.STOPPED;
-    } else if (notification.getNotificationType() == NotificationType.DELAY) {
-      anchor = ApplicationUtil.getDelayedMessageAnchor(notification);
-      title = "Apology for delay";
-      eventLabelType = EventLabelType.DELAYED;
-    } else {
-      throw new UnexpectedStateException("Unexpected notification type" + notification.getNotificationType());
-    }
+  private MessageView getStopMessageView(Notification notification, ReadData readData) {
+    boolean showNewIndicator = readData.getUnreadStopNotificationId() != null;
+    String anchor = LinkUtil.getStoppedMessageAnchor(notification);
     String receivedOn = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String sender = userService.getUsername(notification.getCreatedByUserId());
-    return new MessageView(eventLabelType,
+    return new MessageView(EventLabelType.STOPPED,
         anchor,
-        title,
+        "Application stopped",
         receivedOn,
         null,
         sender,
         notification.getMessage(),
         notification.getCreatedTimestamp(),
         new ArrayList<>(),
-        null);
+        null,
+        showNewIndicator);
+  }
+
+  private MessageView getDelayMessageView(Notification notification, ReadData readData) {
+    boolean showNewIndicator = readData.getUnreadDelayNotificationId() != null;
+    String anchor = LinkUtil.getDelayedMessageAnchor(notification);
+    String receivedOn = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
+    String sender = userService.getUsername(notification.getCreatedByUserId());
+    return new MessageView(EventLabelType.DELAYED,
+        anchor,
+        "Apology for delay",
+        receivedOn,
+        null,
+        sender,
+        notification.getMessage(),
+        notification.getCreatedTimestamp(),
+        new ArrayList<>(),
+        null,
+        showNewIndicator);
   }
 
 }

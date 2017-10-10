@@ -1,8 +1,9 @@
 @import models.view.ApplicationSummaryView
+@import models.view.ApplicationTabsView
 @import template._
 @import views.html.common.page._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, activeTab: String, rfiViewCount: Integer, form: play.data.Form[_])(content: Html)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, activeTab: String, applicationTabsView: ApplicationTabsView, form: play.data.Form[_])(content: Html)
   @standardPage(applicationSummaryView.getCaseReference + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
     @if(form != null) {
@@ -22,11 +23,11 @@
     @applicationSummaryPanel(applicationSummaryView)
 
     @tabs("application-tabs", size = "large", fitToPage = true) {
-      @tab("Status tracker", "/application/" + applicationSummaryView.getAppId + "/status-tracker", activeTab.equals("statusTracker"))
-      @tab(s"Requests for information ($rfiViewCount)", "/application/" + applicationSummaryView.getAppId + "/rfi", activeTab.equals("rfi"))
-      @tab("Messages", "/application/" + applicationSummaryView.getAppId + "/messages", activeTab.equals("messages"))
-      @tab("Amend / withdraw", "/application/" + applicationSummaryView.getAppId + "/amend-application", activeTab.equals("amend"))
-      @tab("Documents", "/application/" + applicationSummaryView.getAppId + "/outcome-documents", activeTab.equals("outcomeDocs"))
+      @tab("Status tracker", "/application/" + applicationSummaryView.getAppId + "/status-tracker", activeTab.equals("statusTracker"), false)
+      @tab("Requests for information", "/application/" + applicationSummaryView.getAppId + "/rfi", activeTab.equals("rfi"), applicationTabsView.isNewRfi)
+      @tab("Messages", "/application/" + applicationSummaryView.getAppId + "/messages", activeTab.equals("messages"), applicationTabsView.isNewMessage)
+      @tab("Amend / withdraw", "/application/" + applicationSummaryView.getAppId + "/amend-application", activeTab.equals("amend"), false)
+      @tab("Documents", "/application/" + applicationSummaryView.getAppId + "/outcome-documents", activeTab.equals("outcomeDocs"), applicationTabsView.isNewDocument)
     }
 
     @content

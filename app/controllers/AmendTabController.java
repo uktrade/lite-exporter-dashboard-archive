@@ -6,21 +6,27 @@ import components.dao.DraftDao;
 import components.exceptions.DatabaseException;
 import components.exceptions.UnexpectedStateException;
 import components.service.AmendmentService;
-import components.service.ApplicationService;
+import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
+import components.service.ApplicationTabsViewService;
 import components.service.OfficerViewService;
-import components.service.RfiViewService;
+import components.service.ReadDataService;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
+import components.util.ApplicationUtil;
 import components.util.EnumUtil;
 import components.util.FileUtil;
+import java.util.List;
+import java.util.stream.Collectors;
+import models.AppData;
+import models.ReadData;
 import models.enums.Action;
 import models.enums.DraftType;
-import uk.gov.bis.lite.exporterdashboard.api.File;
 import models.view.AddAmendmentView;
 import models.view.ApplicationSummaryView;
+import models.view.ApplicationTabsView;
 import models.view.FileView;
 import models.view.OfficerView;
 import models.view.form.AmendApplicationForm;
@@ -30,10 +36,8 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.BodyParser;
 import play.mvc.Result;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 import views.html.amendApplicationTab;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class AmendTabController extends SamlController {
 
@@ -43,34 +47,37 @@ public class AmendTabController extends SamlController {
   private final FormFactory formFactory;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final OfficerViewService officerViewService;
-  private final RfiViewService rfiViewService;
-  private final ApplicationService applicationService;
   private final AmendmentService amendmentService;
   private final WithdrawalRequestService withdrawalRequestService;
   private final DraftDao draftDao;
   private final UserService userService;
+  private final AppDataService appDataService;
+  private final ApplicationTabsViewService applicationTabsViewService;
+  private final ReadDataService readDataService;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
                             FormFactory formFactory,
                             ApplicationSummaryViewService applicationSummaryViewService,
                             OfficerViewService officerViewService,
-                            RfiViewService rfiViewService,
-                            ApplicationService applicationService,
                             AmendmentService amendmentService,
                             WithdrawalRequestService withdrawalRequestService,
                             DraftDao draftDao,
-                            UserService userService) {
+                            UserService userService,
+                            AppDataService appDataService,
+                            ApplicationTabsViewService applicationTabsViewService,
+                            ReadDataService readDataService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.officerViewService = officerViewService;
-    this.rfiViewService = rfiViewService;
-    this.applicationService = applicationService;
     this.amendmentService = amendmentService;
     this.withdrawalRequestService = withdrawalRequestService;
     this.draftDao = draftDao;
     this.userService = userService;
+    this.appDataService = appDataService;
+    this.applicationTabsViewService = applicationTabsViewService;
+    this.readDataService = readDataService;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
@@ -94,14 +101,13 @@ public class AmendTabController extends SamlController {
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
     String actionParam = amendApplicationForm.data().get("action");
     Action action = EnumUtil.parse(actionParam, Action.class);
-
+    AppData appData = appDataService.getAppData(appId);
     List<UploadFile> uploadFiles = FileUtil.getUploadFiles(request());
     FileUtil.processErrors(amendApplicationForm, uploadFiles);
-
     if (action == null) {
       LOGGER.error("Amending application with action {} not possible", actionParam);
       return showAmendTab(appId, null, null);
-    } else if (!allowAmendment(appId)) {
+    } else if (!allowAmendment(appData)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since application is complete.", appId, action);
       return showAmendTab(appId, null, null);
     } else if (amendApplicationForm.hasErrors()) {
@@ -119,10 +125,11 @@ public class AmendTabController extends SamlController {
   }
 
   public Result showAmendTab(String appId, String actionParam) {
+    AppData appData = appDataService.getAppData(appId);
     Action action = EnumUtil.parse(actionParam, Action.class);
     if (action == null) {
       return showAmendTab(appId, null, null);
-    } else if (!allowAmendment(appId)) {
+    } else if (!allowAmendment(appData)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since application is complete.", appId, actionParam);
       return showAmendTab(appId, null, null);
     } else {
@@ -134,9 +141,12 @@ public class AmendTabController extends SamlController {
   }
 
   private Result showAmendTab(String appId, Action action, Form<AmendApplicationForm> form) {
-    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appId);
+    String userId = userService.getCurrentUserId();
+    AppData appData = appDataService.getAppData(appId);
+    ReadData readData = readDataService.getReadData(userId, appData);
+    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appData);
+    ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
     OfficerView officerView = officerViewService.getOfficerView(appId);
-    int rfiViewCount = rfiViewService.getRfiViewCount(appId);
     AddAmendmentView addAmendmentView;
     if (action != null) {
       DraftType draftType = toDraftType(action);
@@ -147,16 +157,16 @@ public class AmendTabController extends SamlController {
     }
     return ok(amendApplicationTab.render(licenceApplicationAddress,
         applicationSummaryView,
-        rfiViewCount,
-        allowAmendment(appId),
+        applicationTabsView,
+        allowAmendment(appData),
         action,
         form,
         officerView,
         addAmendmentView));
   }
 
-  private boolean allowAmendment(String appId) {
-    return applicationService.isApplicationInProgress(appId);
+  private boolean allowAmendment(AppData appData) {
+    return ApplicationUtil.isApplicationInProgress(appData);
   }
 
   private List<FileView> createFileViews(String appId, DraftType draftType) {
@@ -174,12 +184,12 @@ public class AmendTabController extends SamlController {
 
   private String getLink(String appId, String fileId, DraftType draftType) {
     switch (draftType) {
-      case AMENDMENT:
-        return routes.DownloadController.getAmendmentFile(appId, fileId).toString();
-      case WITHDRAWAL:
-        return routes.DownloadController.getWithdrawalFile(appId, fileId).toString();
-      default:
-        throw new UnexpectedStateException("Unexpected draft type " + draftType);
+    case AMENDMENT:
+      return routes.DownloadController.getAmendmentFile(appId, fileId).toString();
+    case WITHDRAWAL:
+      return routes.DownloadController.getWithdrawalFile(appId, fileId).toString();
+    default:
+      throw new UnexpectedStateException("Unexpected draft type " + draftType);
     }
   }
 

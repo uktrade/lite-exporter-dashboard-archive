@@ -63,10 +63,6 @@ public class LicenceListView implements ListView {
     return sielPage;
   }
 
-  public int getCurrentPage() {
-    return currentPage;
-  }
-
   public LicenceRoute getRoute() {
     return new LicenceRoute(licenceListTab, licenceSortType, sortDirection, currentPage);
   }

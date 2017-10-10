@@ -1,22 +1,23 @@
 package components.util;
 
 import com.google.common.collect.Lists;
-import models.Application;
-import models.Notification;
-import models.StatusUpdate;
-import models.WithdrawalApproval;
-import models.WithdrawalRejection;
-import models.enums.MessageType;
-import models.enums.StatusType;
-import org.apache.commons.collections.CollectionUtils;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import models.AppData;
+import models.Rfi;
+import models.RfiWithdrawal;
+import models.StatusUpdate;
+import models.enums.StatusType;
+import org.apache.commons.collections.CollectionUtils;
+import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 public class ApplicationUtil {
 
@@ -27,6 +28,12 @@ public class ApplicationUtil {
   public static final String SUBMITTED = "Submitted";
 
   public static final String DRAFT = "Draft";
+
+  public static final String FINISHED = "Finished";
+
+  public static final String NOT_STARTED = "Not started";
+
+  public static final String IN_PROGRESS = "In progress";
 
   private static final Map<StatusType, String> STATUS_NAME_MAP;
 
@@ -41,7 +48,7 @@ public class ApplicationUtil {
     statuses.put(StatusType.INITIAL_CHECKS, "Initial Checks");
     statuses.put(StatusType.TECHNICAL_ASSESSMENT, "Technical assessment");
     statuses.put(StatusType.LU_PROCESSING, "Licensing unit processing");
-    statuses.put(StatusType.WITH_OGD, "With OGD advisors");
+    statuses.put(StatusType.WITH_OGD, "With OGD advisers");
     statuses.put(StatusType.FINAL_ASSESSMENT, "Final assessment");
     statuses.put(StatusType.COMPLETE, "Decision reached");
     STATUS_NAME_MAP = Collections.unmodifiableMap(statuses);
@@ -102,64 +109,49 @@ public class ApplicationUtil {
     }
   }
 
-  public static String getStoppedMessageAnchor(Notification notification) {
-    return MessageType.STOPPED.toString() + "-" + notification.getId();
+  public static boolean isApplicationInProgress(AppData appData) {
+    StatusUpdate maxStatusUpdate = getMaxStatusUpdate(appData.getStatusUpdates());
+    boolean isStopped = appData.getStopNotification() != null;
+    boolean isWithdrawn = appData.getWithdrawalApproval() != null;
+    boolean isComplete = maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE;
+    return !isStopped && !isWithdrawn && !isComplete;
   }
 
-  public static String getStoppedMessageLink(Notification notification) {
-    return controllers.routes.MessageTabController.showMessages(notification.getAppId())
-        .withFragment(getStoppedMessageAnchor(notification))
-        .toString();
-  }
-
-  public static String getDelayedMessageAnchor(Notification notification) {
-    return MessageType.DELAYED.toString() + "-" + notification.getId();
-  }
-
-  public static String getDelayedMessageLink(Notification notification) {
-    return controllers.routes.MessageTabController.showMessages(notification.getAppId())
-        .withFragment(getDelayedMessageAnchor(notification))
-        .toString();
-  }
-
-  public static String getWithdrawalRequestMessageLink(WithdrawalRequest withdrawalRequest) {
-    return controllers.routes.MessageTabController.showMessages(withdrawalRequest.getAppId())
-        .withFragment(MessageType.WITHDRAWAL_REQUESTED + "-" + withdrawalRequest.getId())
-        .toString();
-  }
-
-  public static String getWithdrawalRejectionMessageAnchor(WithdrawalRejection withdrawalRejection) {
-    return MessageType.WITHDRAWAL_REJECTED + "-" + withdrawalRejection.getId();
-  }
-
-  public static String getWithdrawalRejectionMessageLink(WithdrawalRejection withdrawalRejection) {
-    return controllers.routes.MessageTabController.showMessages(withdrawalRejection.getAppId())
-        .withFragment(getWithdrawalRejectionMessageAnchor(withdrawalRejection))
-        .toString();
-  }
-
-  public static String getInformLetterAnchor(Notification notification) {
-    return "inform-letter-" + notification.getId();
-  }
-
-  public static String getInformLetterLink(Notification notification) {
-    return controllers.routes.OutcomeTabController.showOutcomeTab(notification.getAppId())
-        .withFragment(getInformLetterAnchor(notification))
-        .toString();
-  }
-
-  public static String getApplicationStatus(Application application, StatusUpdate maxStatusUpdate, Notification stopNotification, WithdrawalApproval withdrawalApproval) {
-    if (withdrawalApproval != null) {
+  public static String getApplicationStatus(AppData appData) {
+    StatusUpdate maxStatusUpdate = getMaxStatusUpdate(appData.getStatusUpdates());
+    if (appData.getWithdrawalApproval() != null) {
       return ApplicationUtil.WITHDRAWN;
-    } else if (stopNotification != null) {
+    } else if (appData.getStopNotification() != null) {
       return ApplicationUtil.STOPPED;
     } else if (maxStatusUpdate != null) {
       return ApplicationUtil.getStatusName(maxStatusUpdate.getStatusType());
-    } else if (application.getSubmittedTimestamp() != null) {
+    } else if (appData.getApplication().getSubmittedTimestamp() != null) {
       return ApplicationUtil.SUBMITTED;
     } else {
       return ApplicationUtil.DRAFT;
     }
+  }
+
+  public static List<Rfi> getOpenRfiList(AppData appData) {
+    Set<String> repliedToRfiIds = appData.getRfiReplies().stream()
+        .map(RfiReply::getRfiId)
+        .collect(Collectors.toSet());
+    Set<String> withdrawnRfiIds = appData.getRfiWithdrawals().stream()
+        .map(RfiWithdrawal::getRfiId)
+        .collect(Collectors.toSet());
+    return appData.getRfiList().stream()
+        .filter(rfi -> !repliedToRfiIds.contains(rfi.getId()) && !withdrawnRfiIds.contains(rfi.getId()))
+        .collect(Collectors.toList());
+  }
+
+  public static List<WithdrawalRequest> getOpenWithdrawalRequests(AppData appData) {
+    List<WithdrawalRequest> withdrawalRequests = new ArrayList<>(appData.getWithdrawalRequests());
+    withdrawalRequests.sort(Comparators.WITHDRAWAL_REQUEST_CREATED);
+    appData.getWithdrawalRejections().forEach(withdrawalRejection -> withdrawalRequests.remove(0));
+    if (appData.getWithdrawalApproval() != null) {
+      withdrawalRequests.remove(withdrawalRequests.size() - 1);
+    }
+    return withdrawalRequests;
   }
 
 }

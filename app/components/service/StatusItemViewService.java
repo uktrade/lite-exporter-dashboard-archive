@@ -1,11 +1,11 @@
 package components.service;
 
-import models.view.StatusItemView;
-
 import java.util.List;
+import models.AppData;
+import models.view.StatusItemView;
 
 public interface StatusItemViewService {
 
-  List<StatusItemView> getStatusItemViews(String appId);
+  List<StatusItemView> getStatusItemViews(AppData appData);
 
 }

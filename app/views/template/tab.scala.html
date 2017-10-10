@@ -1,5 +1,5 @@
-@(text: String, href: String, current: Boolean = false)
+@(text: String, href: String, current: Boolean = false, newInformation: Boolean = false)
 
-<li @if(current){class="active"}>
-  <a href="@href" role="tab" aria-selected="@current">@text</a>
+<li @if(current){class="active" }>
+  <a href="@href" role="tab" aria-selected="@current">@text @if(newInformation){(new)}</a>
 </li>

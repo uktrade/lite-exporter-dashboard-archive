@@ -2,11 +2,11 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.util.JsonUtil;
+import java.util.ArrayList;
+import java.util.List;
 import models.Outcome;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-
-import java.util.List;
 
 public class OutcomeDaoImpl implements OutcomeDao {
 
@@ -15,6 +15,18 @@ public class OutcomeDaoImpl implements OutcomeDao {
   @Inject
   public OutcomeDaoImpl(DBI dbi) {
     this.dbi = dbi;
+  }
+
+  @Override
+  public List<Outcome> getOutcomes(List<String> appIds) {
+    if (appIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (final Handle handle = dbi.open()) {
+        OutcomeJDBIDao outcomeJDBIDao = handle.attach(OutcomeJDBIDao.class);
+        return outcomeJDBIDao.getOutcomes(appIds);
+      }
+    }
   }
 
   @Override

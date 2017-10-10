@@ -13,8 +13,11 @@ public interface DraftJDBIDao {
   @SqlQuery("SELECT * FROM DRAFT WHERE RELATED_ID = :relatedId AND DRAFT_TYPE = :draftType")
   Draft getDraft(@Bind("relatedId") String relatedId, @Bind("draftType") DraftType draftType);
 
-  @SqlUpdate("INSERT INTO DRAFT (RELATED_ID, DRAFT_TYPE, ATTACHMENTS) VALUES (:relatedId, :draftType, :attachments)")
-  void insertDraft(@Bind("relatedId") String relatedId, @Bind("draftType") DraftType draftType, @Bind("attachments") String attachments);
+  @SqlUpdate("INSERT INTO DRAFT (ID, RELATED_ID, DRAFT_TYPE, ATTACHMENTS) VALUES (:id, :relatedId, :draftType, :attachments)")
+  void insertDraft(@Bind("id") String id,
+                   @Bind("relatedId") String relatedId,
+                   @Bind("draftType") DraftType draftType,
+                   @Bind("attachments") String attachments);
 
   @SqlUpdate("DELETE FROM DRAFT WHERE RELATED_ID = :relatedId AND DRAFT_TYPE = :draftType")
   void deleteDraft(@Bind("relatedId") String relatedId, @Bind("draftType") DraftType draftType);

@@ -1,13 +1,12 @@
 package models;
 
-import models.enums.SielStatus;
-
 import java.util.List;
+import models.enums.SielStatus;
 
 public class Siel {
 
-  private final String sielId;
-  private final String companyId;
+  private final String id;
+  private final String customerId;
   private final String applicantReference;
   private final String caseReference;
   private final Long issueTimestamp;
@@ -16,17 +15,9 @@ public class Siel {
   private final String siteId;
   private final List<String> destinationList;
 
-  public Siel(String sielId,
-              String companyId,
-              String applicantReference,
-              String caseReference,
-              Long issueTimestamp,
-              Long expiryTimestamp,
-              SielStatus sielStatus,
-              String siteId,
-              List<String> destinationList) {
-    this.sielId = sielId;
-    this.companyId = companyId;
+  public Siel(String id, String customerId, String applicantReference, String caseReference, Long issueTimestamp, Long expiryTimestamp, SielStatus sielStatus, String siteId, List<String> destinationList) {
+    this.id = id;
+    this.customerId = customerId;
     this.applicantReference = applicantReference;
     this.caseReference = caseReference;
     this.issueTimestamp = issueTimestamp;
@@ -36,12 +27,12 @@ public class Siel {
     this.destinationList = destinationList;
   }
 
-  public String getSielId() {
-    return sielId;
+  public String getId() {
+    return id;
   }
 
-  public String getCompanyId() {
-    return companyId;
+  public String getCustomerId() {
+    return customerId;
   }
 
   public String getApplicantReference() {

@@ -1,15 +1,13 @@
 package components.service;
 
+import java.util.List;
+import models.AppData;
 import models.view.AddRfiReplyView;
 import models.view.RfiView;
 
-import java.util.List;
-
 public interface RfiViewService {
 
-  List<RfiView> getRfiViews(String appId);
-
-  int getRfiViewCount(String appId);
+  List<RfiView> getRfiViews(AppData appData);
 
   AddRfiReplyView getAddRfiReplyView(String appId, String rfiId);
 

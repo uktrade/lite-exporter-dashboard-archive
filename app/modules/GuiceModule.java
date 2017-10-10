@@ -27,6 +27,8 @@ import components.dao.NotificationDao;
 import components.dao.NotificationDaoImpl;
 import components.dao.OutcomeDao;
 import components.dao.OutcomeDaoImpl;
+import components.dao.ReadDao;
+import components.dao.ReadDaoImpl;
 import components.dao.RfiDao;
 import components.dao.RfiDaoImpl;
 import components.dao.RfiReplyDao;
@@ -55,12 +57,14 @@ import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
 import components.service.AmendmentService;
 import components.service.AmendmentServiceImpl;
+import components.service.AppDataService;
+import components.service.AppDataServiceImpl;
 import components.service.ApplicationItemViewService;
 import components.service.ApplicationItemViewServiceImpl;
-import components.service.ApplicationService;
-import components.service.ApplicationServiceImpl;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationSummaryViewServiceImpl;
+import components.service.ApplicationTabsViewService;
+import components.service.ApplicationTabsViewViewServiceImpl;
 import components.service.MessageViewService;
 import components.service.MessageViewServiceImpl;
 import components.service.OfficerViewService;
@@ -68,10 +72,10 @@ import components.service.OfficerViewServiceImpl;
 import components.service.OgelDetailsViewService;
 import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelItemViewService;
+import components.service.ReadDataService;
+import components.service.ReadDataServiceImpl;
 import components.service.RfiReplyService;
 import components.service.RfiReplyServiceImpl;
-import components.service.RfiService;
-import components.service.RfiServiceImpl;
 import components.service.RfiViewService;
 import components.service.RfiViewServiceImpl;
 import components.service.SielDetailsViewService;
@@ -85,19 +89,16 @@ import components.service.StatusItemViewServiceImpl;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
-import components.service.WithdrawalService;
-import components.service.WithdrawalServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
 import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserServiceImpl;
+import java.util.Collection;
+import java.util.Collections;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
 import play.db.Database;
-
-import java.util.Collection;
-import java.util.Collections;
 
 public class GuiceModule extends AbstractModule {
 
@@ -134,7 +135,6 @@ public class GuiceModule extends AbstractModule {
     bindConstant("licenceApplicationAddress", "licenceApplication.address");
     // Service
     bind(JourneySerialiser.class).to(JourneySerialiserMock.class);
-    bind(ApplicationService.class).to(ApplicationServiceImpl.class);
     bind(StatusItemViewService.class).to(StatusItemViewServiceImpl.class);
     bind(RfiViewService.class).to(RfiViewServiceImpl.class);
     // TODO Test
@@ -151,8 +151,9 @@ public class GuiceModule extends AbstractModule {
     bind(RfiReplyService.class).to(RfiReplyServiceImpl.class);
     bind(SielItemViewService.class).to(SielItemViewServiceImpl.class);
     bind(MessageViewService.class).to(MessageViewServiceImpl.class);
-    bind(RfiService.class).to(RfiServiceImpl.class);
-    bind(WithdrawalService.class).to(WithdrawalServiceImpl.class);
+    bind(AppDataService.class).to(AppDataServiceImpl.class);
+    bind(ReadDataService.class).to(ReadDataServiceImpl.class);
+    bind(ApplicationTabsViewService.class).to(ApplicationTabsViewViewServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -167,6 +168,7 @@ public class GuiceModule extends AbstractModule {
     bind(WithdrawalRejectionDao.class).to(WithdrawalRejectionDaoImpl.class);
     bind(WithdrawalApprovalDao.class).to(WithdrawalApprovalDaoImpl.class);
     bind(RfiWithdrawalDao.class).to(RfiWithdrawalDaoImpl.class);
+    bind(ReadDao.class).to(ReadDaoImpl.class);
     // Database test data
     // TODO Test
     bind(TestDataService.class).to(TestDataServiceImpl.class);

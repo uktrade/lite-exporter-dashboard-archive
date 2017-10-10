@@ -1,5 +1,6 @@
 package controllers;
 
+import static components.util.RandomIdUtil.fileId;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
@@ -9,21 +10,19 @@ import components.exceptions.UnexpectedStateException;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.FileUtil;
-import components.util.RandomUtil;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 import models.FileUploadResponse;
 import models.FileUploadResponseItem;
 import models.enums.DraftType;
-import uk.gov.bis.lite.exporterdashboard.api.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 
 public class UploadController extends SamlController {
 
@@ -78,21 +77,21 @@ public class UploadController extends SamlController {
 
   private String getLink(String relatedId, String fileId, DraftType draftType) {
     switch (draftType) {
-      case RFI_REPLY:
-        return routes.DownloadController.getRfiFile(relatedId, fileId).toString();
-      case WITHDRAWAL:
-        return routes.DownloadController.getWithdrawalFile(relatedId, fileId).toString();
-      case AMENDMENT:
-        return routes.DownloadController.getAmendmentFile(relatedId, fileId).toString();
-      default:
-        String errorMessage = "Unknown draftType " + draftType;
-        throw new UnexpectedStateException(errorMessage);
+    case RFI_REPLY:
+      return routes.DownloadController.getRfiFile(relatedId, fileId).toString();
+    case WITHDRAWAL:
+      return routes.DownloadController.getWithdrawalFile(relatedId, fileId).toString();
+    case AMENDMENT:
+      return routes.DownloadController.getAmendmentFile(relatedId, fileId).toString();
+    default:
+      String errorMessage = "Unknown draftType " + draftType;
+      throw new UnexpectedStateException(errorMessage);
     }
   }
 
   private String createNewFile(String relatedId, UploadFile uploadFile, DraftType draftType) {
     File file = new File();
-    file.setId(RandomUtil.random("FIL"));
+    file.setId(fileId());
     file.setFilename(uploadFile.getOriginalFilename());
     file.setUrl(uploadFile.getDestinationPath());
     draftDao.addFile(relatedId, file, draftType);

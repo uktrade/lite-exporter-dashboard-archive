@@ -1,5 +1,6 @@
 package components.dao;
 
+import java.util.List;
 import models.WithdrawalRejection;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -7,8 +8,6 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
 import org.skife.jdbi.v2.unstable.BindIn;
-
-import java.util.List;
 
 @UseStringTemplate3StatementLocator
 public interface WithdrawalRejectionJDBIDao {
@@ -21,12 +20,13 @@ public interface WithdrawalRejectionJDBIDao {
   @SqlQuery("SELECT * FROM WITHDRAWAL_REJECTION WHERE APP_ID in (<appIds>)")
   List<WithdrawalRejection> getWithdrawalRejectionsByAppIds(@BindIn("appIds") List<String> appIds);
 
-  @SqlUpdate("INSERT INTO WITHDRAWAL_REJECTION (id,  app_id, created_by_user_id, created_timestamp, message) VALUES " +
-      "                                       (:id, :appId, :createdByUserId,   :createdTimestamp, :message)")
+  @SqlUpdate("INSERT INTO WITHDRAWAL_REJECTION (ID,  APP_ID, CREATED_BY_USER_ID, CREATED_TIMESTAMP, RECIPIENT_USER_IDS,  MESSAGE) VALUES " +
+      "                                       (:id, :appId, :createdByUserId,   :createdTimestamp, :recipientUserIds,   :message)")
   void insertWithdrawalRejection(@Bind("id") String id,
                                  @Bind("appId") String appId,
                                  @Bind("createdByUserId") String createdByUserId,
                                  @Bind("createdTimestamp") Long createdTimestamp,
+                                 @Bind("recipientUserIds") String recipientUserIds,
                                  @Bind("message") String message);
 
   @SqlUpdate("DELETE FROM WITHDRAWAL_REJECTION WHERE APP_ID = :appId")

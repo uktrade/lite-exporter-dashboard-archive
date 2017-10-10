@@ -1,14 +1,15 @@
 package components.util;
 
-import components.upload.UploadFile;
-import uk.gov.bis.lite.exporterdashboard.api.File;
-import play.data.Form;
-import play.mvc.Http;
+import static components.util.RandomIdUtil.fileId;
 
+import components.upload.UploadFile;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import play.data.Form;
+import play.mvc.Http;
+import uk.gov.bis.lite.exporterdashboard.api.File;
 
 public class FileUtil {
 
@@ -37,7 +38,7 @@ public class FileUtil {
     return uploadFiles.stream()
         .map(uploadFile -> {
           File file = new File();
-          file.setId(RandomUtil.random("FIL"));
+          file.setId(fileId());
           file.setFilename(uploadFile.getOriginalFilename());
           file.setUrl(uploadFile.getDestinationPath());
           return file;

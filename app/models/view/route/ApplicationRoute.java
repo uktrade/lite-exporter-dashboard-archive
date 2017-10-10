@@ -33,7 +33,7 @@ public class ApplicationRoute implements Route {
       nextSortDirection();
     } else {
       applicationSortType = sortType;
-      if (applicationSortType == ApplicationSortType.CREATED_BY) {
+      if (applicationSortType == ApplicationSortType.CREATED_BY || applicationSortType == ApplicationSortType.STATUS) {
         sortDirection = SortDirection.ASC;
       } else {
         sortDirection = SortDirection.DESC;
