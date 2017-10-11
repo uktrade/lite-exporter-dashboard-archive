@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import play.data.Form;
 import play.mvc.Http;
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import models.File;
 
 public class FileUtil {
 

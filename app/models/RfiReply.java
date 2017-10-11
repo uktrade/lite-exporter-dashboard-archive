@@ -1,18 +1,16 @@
-package uk.gov.bis.lite.exporterdashboard.api;
-
-import org.hibernate.validator.constraints.NotBlank;
+package models;
 
 import java.util.List;
-
 import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
 
-public class Amendment implements ExporterDashboardMessage {
+public class RfiReply {
 
   @NotBlank
   private String id;
 
   @NotBlank
-  private String appId;
+  private String rfiId;
 
   @NotBlank
   private String createdByUserId;
@@ -34,12 +32,12 @@ public class Amendment implements ExporterDashboardMessage {
     this.id = id;
   }
 
-  public String getAppId() {
-    return appId;
+  public String getRfiId() {
+    return rfiId;
   }
 
-  public void setAppId(String appId) {
-    this.appId = appId;
+  public void setRfiId(String rfiId) {
+    this.rfiId = rfiId;
   }
 
   public String getCreatedByUserId() {

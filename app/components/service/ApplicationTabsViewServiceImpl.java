@@ -5,7 +5,7 @@ import models.AppData;
 import models.ReadData;
 import models.view.ApplicationTabsView;
 
-public class ApplicationTabsViewViewServiceImpl implements ApplicationTabsViewService {
+public class ApplicationTabsViewServiceImpl implements ApplicationTabsViewService {
 
   @Override
   public ApplicationTabsView getApplicationTabsView(AppData appData, ReadData readData) {

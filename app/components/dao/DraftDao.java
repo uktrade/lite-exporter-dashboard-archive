@@ -1,6 +1,6 @@
 package components.dao;
 
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import models.File;
 import models.enums.DraftType;
 
 import java.util.List;

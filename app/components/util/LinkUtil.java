@@ -4,7 +4,7 @@ import controllers.routes;
 import models.Notification;
 import models.WithdrawalRejection;
 import models.enums.MessageType;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.WithdrawalRequest;
 
 public class LinkUtil {
 

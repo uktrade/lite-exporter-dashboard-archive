@@ -17,5 +17,4 @@ public class EventTypeComparator implements Comparator<ApplicationItemView> {
     }
   }
 
-
 }

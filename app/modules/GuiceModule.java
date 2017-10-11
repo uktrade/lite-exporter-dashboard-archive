@@ -64,7 +64,7 @@ import components.service.ApplicationItemViewServiceImpl;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationSummaryViewServiceImpl;
 import components.service.ApplicationTabsViewService;
-import components.service.ApplicationTabsViewViewServiceImpl;
+import components.service.ApplicationTabsViewServiceImpl;
 import components.service.MessageViewService;
 import components.service.MessageViewServiceImpl;
 import components.service.OfficerViewService;
@@ -153,7 +153,7 @@ public class GuiceModule extends AbstractModule {
     bind(MessageViewService.class).to(MessageViewServiceImpl.class);
     bind(AppDataService.class).to(AppDataServiceImpl.class);
     bind(ReadDataService.class).to(ReadDataServiceImpl.class);
-    bind(ApplicationTabsViewService.class).to(ApplicationTabsViewViewServiceImpl.class);
+    bind(ApplicationTabsViewService.class).to(ApplicationTabsViewServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);

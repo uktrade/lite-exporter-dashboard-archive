@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import models.File;
 
 public class UploadController extends SamlController {
 

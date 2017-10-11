@@ -1,6 +1,6 @@
 package components.dao;
 
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.WithdrawalRequest;
 
 import java.util.List;
 

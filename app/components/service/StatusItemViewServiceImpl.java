@@ -28,7 +28,7 @@ import models.enums.EventLabelType;
 import models.enums.StatusType;
 import models.view.NotificationView;
 import models.view.StatusItemView;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.WithdrawalRequest;
 
 public class StatusItemViewServiceImpl implements StatusItemViewService {
 

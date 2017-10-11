@@ -51,7 +51,7 @@ public class MessageTabController extends SamlController {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appData);
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
     List<MessageView> messageViews = messageViewService.getMessageViews(appData, readData);
-    readDataService.updateMessageTabReadData(userId, readData);
+    readDataService.updateMessageTabReadData(userId, appData, readData);
     return ok(messagesTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, messageViews));
   }
 

@@ -8,12 +8,14 @@ import components.dao.DraftDao;
 import components.message.MessagePublisher;
 import components.upload.UploadFile;
 import components.util.FileUtil;
+import components.util.MessageUtil;
 import java.time.Instant;
 import java.util.List;
+import models.Amendment;
+import models.File;
 import models.enums.DraftType;
-import models.enums.RoutingKey;
-import uk.gov.bis.lite.exporterdashboard.api.Amendment;
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import uk.gov.bis.lite.exporterdashboard.api.AmendmentMessage;
+import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
 
 public class AmendmentServiceImpl implements AmendmentService {
 
@@ -42,7 +44,7 @@ public class AmendmentServiceImpl implements AmendmentService {
 
     amendmentDao.insertAmendment(amendment);
     draftDao.deleteDraft(appId, DraftType.AMENDMENT);
-    messagePublisher.sendMessage(RoutingKey.AMEND_CREATE, amendment);
+    messagePublisher.sendMessage(RoutingKey.AMENDMENT_CREATE, getAmendmentMessage(amendment));
   }
 
   private List<File> getAttachments(String appId, List<UploadFile> uploadFiles) {
@@ -50,6 +52,17 @@ public class AmendmentServiceImpl implements AmendmentService {
     List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT);
     files.addAll(draftAttachments);
     return files;
+  }
+
+  private AmendmentMessage getAmendmentMessage(Amendment amendment) {
+    AmendmentMessage amendmentMessage = new AmendmentMessage();
+    amendmentMessage.setId(amendment.getId());
+    amendmentMessage.setAppId(amendment.getAppId());
+    amendmentMessage.setCreatedByUserId(amendment.getCreatedByUserId());
+    amendmentMessage.setCreatedTimestamp(amendment.getCreatedTimestamp());
+    amendmentMessage.setMessage(amendment.getMessage());
+    amendmentMessage.setAttachments(MessageUtil.getFiles(amendment.getAttachments()));
+    return amendmentMessage;
   }
 
 }

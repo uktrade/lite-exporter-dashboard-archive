@@ -5,7 +5,7 @@ import models.Notification;
 import models.NotificationType;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import models.File;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.Document;
 import org.apache.commons.collections4.ListUtils;
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import models.File;
 
 import java.io.IOException;
 import java.util.List;

@@ -1,8 +1,8 @@
 package components.dao;
 
 import components.util.JsonUtil;
-import uk.gov.bis.lite.exporterdashboard.api.File;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.File;
+import models.WithdrawalRequest;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 

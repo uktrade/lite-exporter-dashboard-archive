@@ -18,8 +18,8 @@ import models.view.AddRfiReplyView;
 import models.view.FileView;
 import models.view.RfiReplyView;
 import models.view.RfiView;
-import uk.gov.bis.lite.exporterdashboard.api.File;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
+import models.File;
+import models.RfiReply;
 
 public class RfiViewServiceImpl implements RfiViewService {
 

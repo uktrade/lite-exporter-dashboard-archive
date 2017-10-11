@@ -8,12 +8,14 @@ import components.dao.WithdrawalRequestDao;
 import components.message.MessagePublisher;
 import components.upload.UploadFile;
 import components.util.FileUtil;
+import components.util.MessageUtil;
 import java.time.Instant;
 import java.util.List;
+import models.File;
+import models.WithdrawalRequest;
 import models.enums.DraftType;
-import models.enums.RoutingKey;
-import uk.gov.bis.lite.exporterdashboard.api.File;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestMessage;
 
 public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
@@ -42,7 +44,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
     withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
     draftDao.deleteDraft(appId, DraftType.WITHDRAWAL);
-    messagePublisher.sendMessage(RoutingKey.WITHDRAW_REQUEST_CREATE, withdrawalRequest);
+    messagePublisher.sendMessage(RoutingKey.WITHDRAWAL_REQUEST_CREATE, getWithdrawalRequestMessage(withdrawalRequest));
   }
 
   private List<File> getAttachments(String appId, List<UploadFile> uploadFiles) {
@@ -50,6 +52,17 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.WITHDRAWAL);
     files.addAll(draftAttachments);
     return files;
+  }
+
+  private WithdrawalRequestMessage getWithdrawalRequestMessage(WithdrawalRequest withdrawalRequest) {
+    WithdrawalRequestMessage withdrawalRequestMessage = new WithdrawalRequestMessage();
+    withdrawalRequestMessage.setId(withdrawalRequest.getId());
+    withdrawalRequestMessage.setAppId(withdrawalRequest.getAppId());
+    withdrawalRequestMessage.setCreatedByUserId(withdrawalRequest.getCreatedByUserId());
+    withdrawalRequestMessage.setCreatedTimestamp(withdrawalRequest.getCreatedTimestamp());
+    withdrawalRequestMessage.setMessage(withdrawalRequest.getMessage());
+    withdrawalRequestMessage.setAttachments(MessageUtil.getFiles(withdrawalRequest.getAttachments()));
+    return withdrawalRequestMessage;
   }
 
 }

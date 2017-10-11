@@ -1,12 +1,10 @@
 package uk.gov.bis.lite.exporterdashboard.api;
 
+import java.util.List;
+import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
-public class WithdrawalRequest implements ExporterDashboardMessage {
+public class AmendmentMessage implements ExporterDashboardMessage {
 
   @NotBlank
   private String id;
