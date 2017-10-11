@@ -18,9 +18,9 @@ import models.enums.MessageType;
 import models.view.FileView;
 import models.view.MessageReplyView;
 import models.view.MessageView;
-import uk.gov.bis.lite.exporterdashboard.api.Amendment;
-import uk.gov.bis.lite.exporterdashboard.api.File;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.Amendment;
+import models.File;
+import models.WithdrawalRequest;
 
 public class MessageViewServiceImpl implements MessageViewService {
 

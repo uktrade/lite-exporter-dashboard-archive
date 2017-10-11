@@ -1,6 +1,6 @@
 package components.dao;
 
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
+import models.RfiReply;
 
 import java.util.List;
 

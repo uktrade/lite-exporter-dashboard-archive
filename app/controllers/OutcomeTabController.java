@@ -74,7 +74,7 @@ public class OutcomeTabController extends SamlController {
     boolean isWithdrawn = withdrawalApprovalDao.getWithdrawalApproval(appId) != null;
     List<OutcomeView> outcomeViews = getOutcomeViews(appData, readData);
     InformLetterSectionView informLetterSectionView = getInformLetterSectionView(appData, readData);
-    readDataService.updateDocumentTabReadData(userId, readData);
+    readDataService.updateDocumentTabReadData(userId, appData, readData);
     return ok(outcomeDocsTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, isInProgress, isStopped, isWithdrawn, outcomeViews, informLetterSectionView));
   }
 

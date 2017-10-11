@@ -8,7 +8,7 @@ import models.WithdrawalRejection;
 import models.view.CompanySelectItemView;
 import models.view.MessageView;
 import models.view.NotificationView;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.WithdrawalRequest;
 
 public class Comparators {
 

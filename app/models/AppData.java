@@ -1,8 +1,6 @@
 package models;
 
 import java.util.List;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
 
 public class AppData {
 

@@ -12,7 +12,7 @@ import models.Draft;
 import models.enums.DraftType;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import models.File;
 
 public class DraftDaoImpl implements DraftDao {
 

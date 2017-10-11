@@ -53,7 +53,7 @@ publishing {
   publications {
     build(MavenPublication) {
       artifactId 'lite-exporter-dashboard-api'
-      version '1.0-SNAPSHOT'
+      version '1.1-SNAPSHOT'
       artifact apiJar
       artifact apiJarWithSources {
         classifier "sources"

@@ -36,7 +36,7 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.BodyParser;
 import play.mvc.Result;
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import models.File;
 import views.html.amendApplicationTab;
 
 public class AmendTabController extends SamlController {

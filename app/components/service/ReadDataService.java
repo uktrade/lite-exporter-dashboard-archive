@@ -11,8 +11,10 @@ public interface ReadDataService {
 
   ReadData getReadData(String userId, AppData appData);
 
-  void updateMessageTabReadData(String userId, ReadData readData);
+  void updateRfiTabReadData(String userId, AppData appData, ReadData readData);
 
-  void updateDocumentTabReadData(String userId, ReadData readData);
+  void updateMessageTabReadData(String userId, AppData appData, ReadData readData);
+
+  void updateDocumentTabReadData(String userId, AppData appData, ReadData readData);
 
 }

@@ -1,8 +1,6 @@
 package models;
 
 
-import uk.gov.bis.lite.exporterdashboard.api.File;
-
 import java.util.List;
 
 public class Notification {

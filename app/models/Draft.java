@@ -2,7 +2,6 @@ package models;
 
 import java.util.List;
 import models.enums.DraftType;
-import uk.gov.bis.lite.exporterdashboard.api.File;
 
 public class Draft {
 

@@ -57,10 +57,10 @@ import models.enums.SielStatus;
 import models.enums.StatusType;
 import org.apache.commons.lang3.RandomUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
-import uk.gov.bis.lite.exporterdashboard.api.Amendment;
-import uk.gov.bis.lite.exporterdashboard.api.File;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.Amendment;
+import models.File;
+import models.RfiReply;
+import models.WithdrawalRequest;
 
 public class TestDataServiceImpl implements TestDataService {
 

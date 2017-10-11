@@ -6,7 +6,7 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
 import org.skife.jdbi.v2.unstable.BindIn;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.WithdrawalRequest;
 
 import java.util.List;
 

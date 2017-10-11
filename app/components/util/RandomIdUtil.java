@@ -41,7 +41,7 @@ public class RandomIdUtil {
   }
 
   public static String rfiWithdrawalId() {
-    return random("WIT");
+    return random("RWI");
   }
 
   public static String statusUpdateId() {

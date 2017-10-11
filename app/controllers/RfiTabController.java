@@ -104,7 +104,7 @@ public class RfiTabController extends SamlController {
     } else {
       String userId = userService.getCurrentUserId();
       String message = rfiReplyForm.get().replyMessage;
-      rfiReplyService.insertRfiReply(userId, rfiId, message, uploadFiles);
+      rfiReplyService.insertRfiReply(userId, appId, rfiId, message, uploadFiles);
       flash("success", "Your message has been sent.");
       return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
     }
@@ -135,6 +135,7 @@ public class RfiTabController extends SamlController {
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appData);
     AddRfiReplyView addRfiReplyView = rfiViewService.getAddRfiReplyView(appId, rfiId);
+    readDataService.updateRfiTabReadData(userId, appData, readData);
     return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, allowReplies(appData), rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store");
   }
 
@@ -145,6 +146,7 @@ public class RfiTabController extends SamlController {
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appData);
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(appData);
+    readDataService.updateRfiTabReadData(userId, appData, readData);
     return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, allowReplies(appData), null, null)).withHeader("Cache-Control", "no-store");
   }
 

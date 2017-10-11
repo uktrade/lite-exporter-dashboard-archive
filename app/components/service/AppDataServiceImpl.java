@@ -29,8 +29,8 @@ import models.RfiWithdrawal;
 import models.StatusUpdate;
 import models.WithdrawalApproval;
 import models.WithdrawalRejection;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.RfiReply;
+import models.WithdrawalRequest;
 
 public class AppDataServiceImpl implements AppDataService {
 

@@ -11,18 +11,15 @@ import components.dao.StatusUpdateDao;
 import components.exceptions.DatabaseException;
 import components.exceptions.ValidationException;
 import components.util.EnumUtil;
-import models.Rfi;
-import models.StatusUpdate;
-import models.enums.RoutingKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.validation.Validation;
 import javax.validation.Validator;
+import models.Rfi;
+import models.StatusUpdate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MessageConsumerImpl extends DefaultConsumer implements MessageConsumer {
 
@@ -44,24 +41,24 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
       throws IOException {
     String message = new String(body, "UTF-8");
-    RoutingKey routingKey = EnumUtil.parse(envelope.getRoutingKey(), RoutingKey.class);
-    if (routingKey == null) {
+    ConsumerRoutingKey consumerRoutingKey = EnumUtil.parse(envelope.getRoutingKey(), ConsumerRoutingKey.class);
+    if (consumerRoutingKey == null) {
       LOGGER.error("Routing key cannot be null.");
       reject(envelope);
       return;
     }
     boolean success;
-    switch (routingKey) {
-      case RFI_CREATE:
-        success = insertRfi(message);
-        break;
-      case STATUS_UPDATE:
-        success = insertStatusUpdate(message);
-        break;
-      default:
-        LOGGER.error("Unknown routing key {}", routingKey);
-        success = false;
-        break;
+    switch (consumerRoutingKey) {
+    case RFI_CREATE:
+      success = insertRfi(message);
+      break;
+    case STATUS_UPDATE:
+      success = insertStatusUpdate(message);
+      break;
+    default:
+      LOGGER.error("Unknown routing key {}", consumerRoutingKey);
+      success = false;
+      break;
     }
     if (success) {
       acknowledge(envelope);

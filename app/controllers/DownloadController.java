@@ -10,10 +10,10 @@ import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Result;
-import uk.gov.bis.lite.exporterdashboard.api.Amendment;
-import uk.gov.bis.lite.exporterdashboard.api.File;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReply;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequest;
+import models.Amendment;
+import models.File;
+import models.RfiReply;
+import models.WithdrawalRequest;
 
 import java.util.List;
 import java.util.Optional;
