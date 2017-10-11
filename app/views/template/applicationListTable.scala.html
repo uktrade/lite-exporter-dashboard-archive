@@ -36,8 +36,10 @@
             </th>
           }
           @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-            <th role="columnheader">
-              Destination
+            <th role="columnheader" @ariaSortAttr(ApplicationSortType.DESTINATION)>
+              <a href="@applicationListView.getRoute.nextSort(ApplicationSortType.DESTINATION).toString">
+                Destination
+              </a>
             </th>
           }
           @if(applicationListView.getApplicationListTab == ApplicationListTab.COMPANY ||

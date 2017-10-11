@@ -9,7 +9,11 @@ import models.enums.SortDirection;
 
 public class ApplicationRoute implements Route {
 
-  private static final Set<ApplicationSortType> TEXT_SORT_TYPES = EnumSet.of(ApplicationSortType.CREATED_BY, ApplicationSortType.STATUS, ApplicationSortType.EVENT_TYPE, ApplicationSortType.REFERENCE);
+  private static final Set<ApplicationSortType> TEXT_SORT_TYPES = EnumSet.of(ApplicationSortType.CREATED_BY,
+      ApplicationSortType.STATUS,
+      ApplicationSortType.EVENT_TYPE,
+      ApplicationSortType.REFERENCE,
+      ApplicationSortType.DESTINATION);
 
   private ApplicationListTab applicationListTab;
   private String companyId;

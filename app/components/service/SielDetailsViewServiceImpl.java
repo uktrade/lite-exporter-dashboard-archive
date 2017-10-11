@@ -26,7 +26,7 @@ public class SielDetailsViewServiceImpl implements SielDetailsViewService {
     String sielStatusName = LicenceUtil.getSielStatusName(siel.getSielStatus());
     String issueDate = TimeUtil.formatDate(siel.getIssueTimestamp());
     String expiryDate = TimeUtil.formatDate(siel.getExpiryTimestamp());
-    String exportDestinations = ApplicationUtil.getDestinations(siel.getDestinationList());
+    String exportDestinations = ApplicationUtil.getSielDestinations(siel);
     String site = customerServiceClient.getSite(siel.getSiteId()).getSiteName();
     String licensee = customerServiceClient.getCustomer(siel.getCustomerId()).getCompanyName();
     return new SielDetailsView(siel.getCaseReference(),

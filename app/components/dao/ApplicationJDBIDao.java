@@ -23,14 +23,15 @@ public interface ApplicationJDBIDao {
   @SqlQuery("SELECT COUNT(*) FROM APPLICATION")
   long getApplicationCount();
 
-  @SqlUpdate("INSERT INTO APPLICATION ( ID,  CUSTOMER_ID, CREATED_BY_USER_ID, CREATED_TIMESTAMP, SUBMITTED_TIMESTAMP, DESTINATION_LIST, APPLICANT_REFERENCE, CASE_REFERENCE, CASE_OFFICER_ID) " +
-      "                        VALUES (:id, :customerId, :createdByUserId,   :createdTimestamp, :submittedTimestamp, :destinationList, :applicantReference, :caseReference, :caseOfficerId) ")
+  @SqlUpdate("INSERT INTO APPLICATION ( ID,  CUSTOMER_ID, CREATED_BY_USER_ID, CREATED_TIMESTAMP, SUBMITTED_TIMESTAMP, CONSIGNEE_COUNTRIES, END_USER_COUNTRIES, APPLICANT_REFERENCE, CASE_REFERENCE, CASE_OFFICER_ID) " +
+      "                        VALUES (:id, :customerId, :createdByUserId,   :createdTimestamp, :submittedTimestamp, :consigneeCountries, :endUserCountries, :applicantReference, :caseReference, :caseOfficerId) ")
   void insert(@Bind("id") String id,
               @Bind("customerId") String customerId,
               @Bind("createdByUserId") String createdByUserId,
               @Bind("createdTimestamp") Long createdTimestamp,
               @Bind("submittedTimestamp") Long submittedTimestamp,
-              @Bind("destinationList") String destinationList,
+              @Bind("consigneeCountries") String consigneeCountries,
+              @Bind("endUserCountries") String endUserCountries,
               @Bind("applicantReference") String applicantReference,
               @Bind("caseReference") String caseReference,
               @Bind("caseOfficerId") String caseOfficerId);

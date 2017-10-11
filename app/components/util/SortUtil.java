@@ -2,6 +2,7 @@ package components.util;
 
 import components.comparator.ApplicationReferenceComparator;
 import components.comparator.ApplicationStatusComparator;
+import components.comparator.DestinationComparator;
 import components.comparator.EventTypeComparator;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -41,6 +42,7 @@ public class SortUtil {
     APPLICATION_COMPARATORS.put(ApplicationSortType.EVENT_TYPE, createComparators(new EventTypeComparator()));
     APPLICATION_COMPARATORS.put(ApplicationSortType.EVENT_DATE, createLongComparators(view -> view.getForYourAttentionNotificationView().getCreatedTimestamp()));
     APPLICATION_COMPARATORS.put(ApplicationSortType.REFERENCE, createComparators(new ApplicationReferenceComparator()));
+    APPLICATION_COMPARATORS.put(ApplicationSortType.DESTINATION, createComparators(new DestinationComparator()));
   }
 
   static {

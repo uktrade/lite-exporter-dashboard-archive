@@ -6,18 +6,21 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import models.AppData;
+import models.Application;
 import models.Rfi;
+import models.RfiReply;
 import models.RfiWithdrawal;
+import models.Siel;
 import models.StatusUpdate;
+import models.WithdrawalRequest;
 import models.enums.StatusType;
 import org.apache.commons.collections.CollectionUtils;
-import models.RfiReply;
-import models.WithdrawalRequest;
 
 public class ApplicationUtil {
 
@@ -98,14 +101,37 @@ public class ApplicationUtil {
     return null;
   }
 
-  public static String getDestinations(List<String> destinationList) {
-    int destinationCount = destinationList.size();
+  public static String getSielDestinations(Siel siel) {
+    int destinationCount = siel.getDestinationList().size();
     if (destinationCount == 1) {
-      return destinationList.get(0);
+      return siel.getDestinationList().get(0);
     } else if (destinationCount > 1) {
       return String.format("%d destinations", destinationCount);
     } else {
       return "";
+    }
+  }
+
+  public static String getDestinations(Application application) {
+    if (application.getConsigneeCountries().size() != 1) {
+      return "";
+    } else {
+      String consigneeCountry = application.getConsigneeCountries().get(0);
+      Set<String> endUserCountries = new HashSet<>(application.getEndUserCountries());
+      Set<String> uniqueEndUserCountries = new HashSet<>(endUserCountries);
+      uniqueEndUserCountries.remove(consigneeCountry);
+      if (uniqueEndUserCountries.isEmpty()) {
+        return consigneeCountry;
+      } else if (uniqueEndUserCountries.size() == 1) {
+        String endUserCountry = uniqueEndUserCountries.iterator().next();
+        if (consigneeCountry.compareToIgnoreCase(endUserCountry) < 0) {
+          return consigneeCountry + "; " + endUserCountry;
+        } else {
+          return endUserCountry + "; " + consigneeCountry;
+        }
+      } else {
+        return consigneeCountry + " + " + endUserCountries.size() + " end user destinations";
+      }
     }
   }
 

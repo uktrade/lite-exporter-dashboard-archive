@@ -30,8 +30,8 @@ import views.html.applicationList;
 
 public class ApplicationListController extends SamlController {
 
-  private static final Set<ApplicationSortType> USER_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS);
-  private static final Set<ApplicationSortType> COMPANY_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS, ApplicationSortType.CREATED_BY);
+  private static final Set<ApplicationSortType> USER_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS, ApplicationSortType.DESTINATION);
+  private static final Set<ApplicationSortType> COMPANY_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS, ApplicationSortType.DESTINATION, ApplicationSortType.CREATED_BY);
   private static final Set<ApplicationSortType> ATTENTION_SORT_TYPES = EnumSet.of(ApplicationSortType.REFERENCE, ApplicationSortType.CREATED_BY, ApplicationSortType.EVENT_TYPE, ApplicationSortType.EVENT_DATE);
 
   private final String licenceApplicationAddress;

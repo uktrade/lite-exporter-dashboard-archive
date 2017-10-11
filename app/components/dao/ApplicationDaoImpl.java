@@ -54,7 +54,8 @@ public class ApplicationDaoImpl implements ApplicationDao {
           application.getCreatedByUserId(),
           application.getCreatedTimestamp(),
           application.getSubmittedTimestamp(),
-          JsonUtil.convertListToJson(application.getDestinationList()),
+          JsonUtil.convertListToJson(application.getConsigneeCountries()),
+          JsonUtil.convertListToJson(application.getEndUserCountries()),
           application.getApplicantReference(),
           application.getCaseReference(),
           application.getCaseOfficerId());

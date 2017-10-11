@@ -18,11 +18,13 @@ public class ApplicationRSMapper implements ResultSetMapper<Application> {
     Long createdTimestamp = LongMapper.getLong(r, "created_timestamp");
     Long submittedTimestamp = LongMapper.getLong(r, "submitted_timestamp");
     String applicantReference = r.getString("applicant_reference");
-    String destinationListJson = r.getString("destination_list");
-    List<String> destinationList = JsonUtil.convertJsonToList(destinationListJson);
+    String consigneeCountriesJson = r.getString("consignee_countries");
+    List<String> consigneeCountries = JsonUtil.convertJsonToList(consigneeCountriesJson);
+    String endUserCountriesJson = r.getString("end_user_countries");
+    List<String> endUserCountries = JsonUtil.convertJsonToList(endUserCountriesJson);
     String caseReference = r.getString("case_reference");
     String caseOfficerId = r.getString("case_officer_id");
-    return new Application(id, companyId, createdBy, createdTimestamp, submittedTimestamp, destinationList, applicantReference, caseReference, caseOfficerId);
+    return new Application(id, companyId, createdBy, createdTimestamp, submittedTimestamp, consigneeCountries, endUserCountries, applicantReference, caseReference, caseOfficerId);
   }
 
 }

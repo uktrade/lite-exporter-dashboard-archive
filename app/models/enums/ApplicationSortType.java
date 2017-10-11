@@ -2,7 +2,7 @@ package models.enums;
 
 public enum ApplicationSortType {
 
-  DATE("date"), REFERENCE("reference"), STATUS("status"), CREATED_BY("createdBy"), EVENT_TYPE("event-type"), EVENT_DATE("event-date");
+  DATE("date"), REFERENCE("reference"), STATUS("status"), CREATED_BY("createdBy"), EVENT_TYPE("event-type"), EVENT_DATE("event-date"), DESTINATION("destination");
 
   private final String text;
 

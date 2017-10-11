@@ -39,17 +39,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import models.Amendment;
 import models.Application;
 import models.Document;
+import models.File;
 import models.Notification;
 import models.NotificationType;
 import models.Outcome;
 import models.Rfi;
+import models.RfiReply;
 import models.RfiWithdrawal;
 import models.Siel;
 import models.StatusUpdate;
 import models.WithdrawalApproval;
 import models.WithdrawalRejection;
+import models.WithdrawalRequest;
 import models.enums.DocumentType;
 import models.enums.DraftType;
 import models.enums.RfiStatus;
@@ -57,10 +61,6 @@ import models.enums.SielStatus;
 import models.enums.StatusType;
 import org.apache.commons.lang3.RandomUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
-import models.Amendment;
-import models.File;
-import models.RfiReply;
-import models.WithdrawalRequest;
 
 public class TestDataServiceImpl implements TestDataService {
 
@@ -75,9 +75,23 @@ public class TestDataServiceImpl implements TestDataService {
 
   private static final String APP_QUEUE_ID = "app_queue";
 
+  private static final String SOUTH_GEORGIA = "South Georgia and South Sandwich Islands";
+  private static final String FEDERATION = "St Christopher and Nevis, Federation of";
   private static final String GERMANY = "Germany";
   private static final String ICELAND = "Iceland";
   private static final String FRANCE = "France";
+
+  private static final List<String> CONSIGNEE_COUNTRIES = Collections.singletonList(FRANCE);
+  private static final List<String> END_USER_COUNTRIES = new ArrayList<>();
+  private static final List<String> CONSIGNEE_COUNTRIES_TWO = Collections.singletonList(GERMANY);
+  private static final List<String> END_USER_COUNTRIES_TWO = Arrays.asList(GERMANY, FRANCE, ICELAND);
+  private static final List<String> CONSIGNEE_COUNTRIES_THREE = Collections.singletonList(SOUTH_GEORGIA);
+  private static final List<String> END_USER_COUNTRIES_THREE = Collections.singletonList(FEDERATION);
+  private static final List<String> CONSIGNEE_COUNTRIES_FOUR = Collections.singletonList(ICELAND);
+  private static final List<String> END_USER_COUNTRIES_FOUR = Collections.singletonList(FRANCE);
+  private static final List<String> CONSIGNEE_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
+  private static final List<String> END_USER_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
+
 
   private static final String COMPANY_ID_ONE = "SAR1";
   private static final String COMPANY_ID_TWO = "SAR2";
@@ -242,7 +256,8 @@ public class TestDataServiceImpl implements TestDataService {
         userId,
         time(2015, 1, 1, 1, 1),
         time(2015, 2, 1, 1, 1),
-        Collections.singletonList(GERMANY),
+        CONSIGNEE_COUNTRIES,
+        END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
         OFFICER_ID);
@@ -260,7 +275,8 @@ public class TestDataServiceImpl implements TestDataService {
           userId,
           time(2017, 3, 3 + i, i, i),
           submittedTimestamp,
-          Collections.singletonList(GERMANY),
+          CONSIGNEE_COUNTRIES,
+          END_USER_COUNTRIES,
           getApplicantReference(),
           caseReference,
           OFFICER_ID);
@@ -337,7 +353,8 @@ public class TestDataServiceImpl implements TestDataService {
           OTHER_APPLICANT_ID,
           time(2017, 1, 3 + i, i, i),
           null,
-          Collections.singletonList(FRANCE),
+          CONSIGNEE_COUNTRIES,
+          END_USER_COUNTRIES,
           getApplicantReference(),
           null,
           OFFICER_ID);
@@ -350,7 +367,8 @@ public class TestDataServiceImpl implements TestDataService {
         OTHER_APPLICANT_ID,
         time(2017, 1, 7, 1, 1),
         time(2017, 1, 8, 1, 1),
-        Collections.singletonList(FRANCE),
+        CONSIGNEE_COUNTRIES,
+        END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
         OFFICER_ID);
@@ -389,12 +407,22 @@ public class TestDataServiceImpl implements TestDataService {
 
   private void createWithdrawnOrStoppedApplication(String userId, boolean stopped) {
     String appId = appId();
+    List<String> consigneeCountries;
+    List<String> endUserCountries;
+    if (stopped) {
+      consigneeCountries = CONSIGNEE_COUNTRIES_TWO;
+      endUserCountries = END_USER_COUNTRIES_TWO;
+    } else {
+      consigneeCountries = CONSIGNEE_COUNTRIES_THREE;
+      endUserCountries = END_USER_COUNTRIES_THREE;
+    }
     Application application = new Application(appId,
         wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2013, 11, 4, 13, 10),
         time(2013, 11, 4, 14, 10),
-        Arrays.asList(GERMANY, ICELAND, FRANCE),
+        consigneeCountries,
+        endUserCountries,
         getApplicantReference(),
         randomNumber("ECO"),
         OFFICER_ID);
@@ -481,7 +509,8 @@ public class TestDataServiceImpl implements TestDataService {
         userId,
         time(2016, 11, 4, 13, 10),
         time(2016, 11, 4, 14, 10),
-        Arrays.asList(GERMANY, ICELAND, FRANCE),
+        CONSIGNEE_COUNTRIES,
+        END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
         OFFICER_ID);
@@ -575,7 +604,9 @@ public class TestDataServiceImpl implements TestDataService {
         userId,
         time(2016, 11, 3, 3, 3),
         time(2016, 12, 4, 3, 3),
-        Collections.singletonList(FRANCE), getApplicantReference(),
+        CONSIGNEE_COUNTRIES,
+        END_USER_COUNTRIES,
+        getApplicantReference(),
         randomNumber("ECO"),
         null);
     applicationDao.insert(application);
@@ -588,12 +619,23 @@ public class TestDataServiceImpl implements TestDataService {
 
   private void createCompleteApplication(String userId, boolean hasAmendments) {
     String appId = appId();
+    List<String> consigneeCountries;
+    List<String> endUserCountries;
+    if (hasAmendments) {
+      consigneeCountries = CONSIGNEE_COUNTRIES_FOUR;
+      endUserCountries = END_USER_COUNTRIES_FOUR;
+    } else {
+      consigneeCountries = CONSIGNEE_COUNTRIES_FIVE;
+      endUserCountries = END_USER_COUNTRIES_FIVE;
+    }
     Application application = new Application(appId,
         wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2015, 3, 3, 3, 3),
         time(2015, 4, 3, 3, 3),
-        Collections.singletonList(FRANCE), getApplicantReference(),
+        consigneeCountries,
+        endUserCountries,
+        getApplicantReference(),
         randomNumber("ECO"),
         OFFICER_ID);
     applicationDao.insert(application);
