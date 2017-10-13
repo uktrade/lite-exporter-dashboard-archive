@@ -43,13 +43,13 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     withdrawalRequest.setAttachments(attachments);
 
     withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
-    draftDao.deleteDraft(appId, DraftType.WITHDRAWAL);
+    draftDao.deleteDraft(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     messagePublisher.sendMessage(RoutingKey.WITHDRAWAL_REQUEST_CREATE, getWithdrawalRequestMessage(withdrawalRequest));
   }
 
   private List<File> getAttachments(String appId, List<UploadFile> uploadFiles) {
     List<File> files = FileUtil.toFiles(uploadFiles);
-    List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.WITHDRAWAL);
+    List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     files.addAll(draftAttachments);
     return files;
   }

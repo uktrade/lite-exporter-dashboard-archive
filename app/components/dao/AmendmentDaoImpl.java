@@ -2,11 +2,12 @@ package components.dao;
 
 import com.google.inject.Inject;
 import components.util.JsonUtil;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import models.Amendment;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-import models.Amendment;
-
-import java.util.List;
 
 public class AmendmentDaoImpl implements AmendmentDao {
 
@@ -19,9 +20,18 @@ public class AmendmentDaoImpl implements AmendmentDao {
 
   @Override
   public List<Amendment> getAmendments(String appId) {
-    try (final Handle handle = dbi.open()) {
-      AmendmentJDBIDao amendmentJDBIDao = handle.attach(AmendmentJDBIDao.class);
-      return amendmentJDBIDao.getAmendments(appId);
+    return getAmendments(Collections.singletonList(appId));
+  }
+
+  @Override
+  public List<Amendment> getAmendments(List<String> appIds) {
+    if (appIds.isEmpty()) {
+      return new ArrayList<>();
+    } else {
+      try (final Handle handle = dbi.open()) {
+        AmendmentJDBIDao amendmentJDBIDao = handle.attach(AmendmentJDBIDao.class);
+        return amendmentJDBIDao.getAmendments(appIds);
+      }
     }
   }
 

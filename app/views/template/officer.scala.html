@@ -3,9 +3,11 @@
 
 @(appId: String, officerView: OfficerView)
 
-<p>For general enquiries related to this application, please contact your case officer</p>
-
 @if(officerView != null) {
+  <hr>
+
+  <p>For general enquiries related to this application, please contact your case officer.</p>
+
   <div class="grid-row">
 
     <div class="column-one-quarter">
@@ -36,6 +38,4 @@
     </div>
 
   </div>
-} else {
-  No officer assigned yet.
 }

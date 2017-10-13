@@ -1,15 +1,27 @@
 package components.util;
 
 import controllers.routes;
+import models.Amendment;
 import models.Notification;
 import models.WithdrawalRejection;
-import models.enums.MessageType;
 import models.WithdrawalRequest;
+import models.enums.MessageType;
 
 public class LinkUtil {
 
   public static String getOutcomeDocumentsLink(String appId) {
     return routes.OutcomeTabController.showOutcomeTab(appId).withFragment("outcome-documents").toString();
+  }
+
+  public static String getAmendmentMessageAnchor(Amendment amendment) {
+    return MessageType.AMENDMENT.toString() + "-" + amendment.getId();
+  }
+
+  public static String getAmendmentMessageLink(Amendment amendment) {
+    return routes.MessageTabController.showMessages(amendment.getAppId())
+        .withFragment(getAmendmentMessageAnchor(amendment))
+        .toString();
+
   }
 
   public static String getStoppedMessageAnchor(Notification notification) {

@@ -175,10 +175,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
     List<NotificationView> notificationViews = new ArrayList<>();
 
     if (appData.getWithdrawalApproval() != null) {
-      WithdrawalRequest approvedWithdrawalRequest = appData.getWithdrawalRequests().stream()
-          .sorted(Comparators.WITHDRAWAL_REQUEST_CREATED_REVERSED)
-          .findFirst()
-          .get();
+      WithdrawalRequest approvedWithdrawalRequest = ApplicationUtil.getApprovedWithdrawalRequest(appData);
       String link = LinkUtil.getWithdrawalRequestMessageLink(approvedWithdrawalRequest);
       NotificationView withdrawalApprovalNotificationView = new NotificationView(null, "View withdrawal request", link, null, appData.getWithdrawalApproval().getCreatedTimestamp());
       notificationViews.add(withdrawalApprovalNotificationView);

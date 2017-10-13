@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import models.RfiReply;
 import models.RfiWithdrawal;
 import models.Siel;
 import models.StatusUpdate;
+import models.WithdrawalRejection;
 import models.WithdrawalRequest;
 import models.enums.StatusType;
 import org.apache.commons.collections.CollectionUtils;
@@ -178,6 +180,29 @@ public class ApplicationUtil {
       withdrawalRequests.remove(withdrawalRequests.size() - 1);
     }
     return withdrawalRequests;
+  }
+
+  public static Map<String, WithdrawalRejection> getWithdrawalRejectionMap(AppData appData) {
+    Map<String, WithdrawalRejection> withdrawalRejectionMap = new HashMap<>();
+    List<WithdrawalRequest> withdrawalRequests = new ArrayList<>(appData.getWithdrawalRequests());
+    List<WithdrawalRejection> withdrawalRejections = new ArrayList<>(appData.getWithdrawalRejections());
+    withdrawalRequests.sort(Comparators.WITHDRAWAL_REQUEST_CREATED);
+    withdrawalRejections.sort(Comparators.WITHDRAWAL_REJECTION_CREATED);
+    for (int i = 0; i < Math.min(withdrawalRequests.size(), withdrawalRejections.size()); i++) {
+      withdrawalRejectionMap.put(withdrawalRequests.get(i).getId(), withdrawalRejections.get(i));
+    }
+    return withdrawalRejectionMap;
+  }
+
+  public static WithdrawalRequest getApprovedWithdrawalRequest(AppData appData) {
+    if (appData.getWithdrawalApproval() != null) {
+      return appData.getWithdrawalRequests().stream()
+          .sorted(Comparators.WITHDRAWAL_REQUEST_CREATED_REVERSED)
+          .findFirst()
+          .orElse(null);
+    } else {
+      return null;
+    }
   }
 
 }

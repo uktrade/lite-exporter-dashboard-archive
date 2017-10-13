@@ -11,15 +11,15 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import models.AppData;
+import models.File;
 import models.Rfi;
+import models.RfiReply;
 import models.RfiWithdrawal;
 import models.enums.DraftType;
 import models.view.AddRfiReplyView;
 import models.view.FileView;
 import models.view.RfiReplyView;
 import models.view.RfiView;
-import models.File;
-import models.RfiReply;
 
 public class RfiViewServiceImpl implements RfiViewService {
 
@@ -63,8 +63,8 @@ public class RfiViewServiceImpl implements RfiViewService {
   }
 
   private FileView createFileView(String appId, String rfiId, File file) {
-    String link = controllers.routes.DownloadController.getRfiFile(rfiId, file.getId()).toString();
-    String deleteLink = controllers.routes.RfiTabController.deleteFileById(appId, file.getId()).toString();
+    String link = controllers.routes.DownloadController.getRfiReplyFile(rfiId, file.getId()).toString();
+    String deleteLink = controllers.routes.RfiTabController.deleteFileById(rfiId, file.getId()).toString();
     return new FileView(file.getId(), rfiId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
   }
 

@@ -3,6 +3,7 @@ package components.service;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
+import components.dao.AmendmentDao;
 import components.dao.ApplicationDao;
 import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
@@ -20,16 +21,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import models.Amendment;
 import models.AppData;
 import models.Application;
 import models.Notification;
 import models.Outcome;
 import models.Rfi;
+import models.RfiReply;
 import models.RfiWithdrawal;
 import models.StatusUpdate;
 import models.WithdrawalApproval;
 import models.WithdrawalRejection;
-import models.RfiReply;
 import models.WithdrawalRequest;
 
 public class AppDataServiceImpl implements AppDataService {
@@ -44,6 +46,7 @@ public class AppDataServiceImpl implements AppDataService {
   private final RfiReplyDao rfiReplyDao;
   private final RfiWithdrawalDao rfiWithdrawalDao;
   private final OutcomeDao outcomeDao;
+  private final AmendmentDao amendmentDao;
 
   @Inject
   public AppDataServiceImpl(StatusUpdateDao statusUpdateDao,
@@ -55,7 +58,8 @@ public class AppDataServiceImpl implements AppDataService {
                             RfiDao rfiDao,
                             RfiReplyDao rfiReplyDao,
                             RfiWithdrawalDao rfiWithdrawalDao,
-                            OutcomeDao outcomeDao) {
+                            OutcomeDao outcomeDao,
+                            AmendmentDao amendmentDao) {
     this.statusUpdateDao = statusUpdateDao;
     this.applicationDao = applicationDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
@@ -66,6 +70,7 @@ public class AppDataServiceImpl implements AppDataService {
     this.rfiReplyDao = rfiReplyDao;
     this.rfiWithdrawalDao = rfiWithdrawalDao;
     this.outcomeDao = outcomeDao;
+    this.amendmentDao = amendmentDao;
   }
 
   @Override
@@ -137,8 +142,11 @@ public class AppDataServiceImpl implements AppDataService {
       }
     });
 
-    Multimap<String, Outcome> outcomeMultiMap = HashMultimap.create();
-    outcomeDao.getOutcomes(appIds).forEach(outcome -> outcomeMultiMap.put(outcome.getAppId(), outcome));
+    Multimap<String, Outcome> outcomeMultimap = HashMultimap.create();
+    outcomeDao.getOutcomes(appIds).forEach(outcome -> outcomeMultimap.put(outcome.getAppId(), outcome));
+
+    Multimap<String, Amendment> amendmentMultimap = HashMultimap.create();
+    amendmentDao.getAmendments(appIds).forEach(amendment -> amendmentMultimap.put(amendment.getAppId(), amendment));
 
     return applications.stream().map(application -> {
       String appId = application.getId();
@@ -152,7 +160,8 @@ public class AppDataServiceImpl implements AppDataService {
           delayNotifications.get(appId),
           stopNotifications.get(appId),
           new ArrayList<>(informNotifications.get(appId)),
-          new ArrayList<>(outcomeMultiMap.get(appId)));
+          new ArrayList<>(outcomeMultimap.get(appId)),
+          new ArrayList<>(amendmentMultimap.get(appId)));
     }).collect(Collectors.toList());
   }
 

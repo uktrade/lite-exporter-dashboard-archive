@@ -1,37 +1,35 @@
 package components.service;
 
 import com.google.inject.Inject;
-import components.dao.AmendmentDao;
+import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.FileUtil;
 import components.util.LinkUtil;
 import components.util.TimeUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import models.Amendment;
 import models.AppData;
+import models.File;
 import models.Notification;
 import models.ReadData;
 import models.WithdrawalRejection;
+import models.WithdrawalRequest;
 import models.enums.EventLabelType;
 import models.enums.MessageType;
 import models.view.FileView;
 import models.view.MessageReplyView;
 import models.view.MessageView;
-import models.Amendment;
-import models.File;
-import models.WithdrawalRequest;
 
 public class MessageViewServiceImpl implements MessageViewService {
 
   private final UserService userService;
-  private final AmendmentDao amendmentDao;
 
   @Inject
-  public MessageViewServiceImpl(UserService userService,
-                                AmendmentDao amendmentDao) {
+  public MessageViewServiceImpl(UserService userService) {
     this.userService = userService;
-    this.amendmentDao = amendmentDao;
   }
 
   @Override
@@ -46,29 +44,17 @@ public class MessageViewServiceImpl implements MessageViewService {
       MessageView delayMessageView = getDelayMessageView(appData.getDelayNotification(), readData);
       messageViews.add(delayMessageView);
     }
-    messageViews.addAll(getAmendmentMessageViews(appId));
+    messageViews.addAll(getAmendmentMessageViews(appData));
     messageViews.addAll(getWithdrawalRequestMessageViews(appData, readData));
     messageViews.sort(Comparators.MESSAGE_VIEW_CREATED_REVERSED);
     return messageViews;
   }
 
   private List<MessageView> getWithdrawalRequestMessageViews(AppData appData, ReadData readData) {
-    List<WithdrawalRequest> withdrawalRequests = new ArrayList<>(appData.getWithdrawalRequests());
-    List<WithdrawalRejection> withdrawalRejections = new ArrayList<>(appData.getWithdrawalRejections());
-    withdrawalRequests.sort(Comparators.WITHDRAWAL_REQUEST_CREATED);
-    withdrawalRejections.sort(Comparators.WITHDRAWAL_REJECTION_CREATED);
-    List<MessageView> withdrawalRequestMessageViews = new ArrayList<>();
-    for (int i = 0; i < withdrawalRequests.size(); i++) {
-      WithdrawalRejection withdrawalRejection;
-      if (withdrawalRejections.size() > i) {
-        withdrawalRejection = withdrawalRejections.get(i);
-      } else {
-        withdrawalRejection = null;
-      }
-      MessageView messageView = getWithdrawalRequestMessageView(withdrawalRequests.get(i), withdrawalRejection, readData);
-      withdrawalRequestMessageViews.add(messageView);
-    }
-    return withdrawalRequestMessageViews;
+    Map<String, WithdrawalRejection> withdrawalRejectionMap = ApplicationUtil.getWithdrawalRejectionMap(appData);
+    return appData.getWithdrawalRequests().stream().map(withdrawalRequest ->
+        getWithdrawalRequestMessageView(withdrawalRequest, withdrawalRejectionMap.get(withdrawalRequest.getId()), readData))
+        .collect(Collectors.toList());
   }
 
   private MessageView getWithdrawalRequestMessageView(WithdrawalRequest withdrawalRequest, WithdrawalRejection withdrawalRejection, ReadData readData) {
@@ -93,7 +79,7 @@ public class MessageViewServiceImpl implements MessageViewService {
 
   private FileView getWithdrawalRequestFileView(WithdrawalRequest withdrawalRequest, File file) {
     String size = FileUtil.getReadableFileSize(file.getUrl());
-    String link = controllers.routes.DownloadController.getWithdrawalFile(withdrawalRequest.getAppId(), file.getId()).toString();
+    String link = controllers.routes.DownloadController.getFile(withdrawalRequest.getAppId(), file.getId()).toString();
     return new FileView(file.getId(), withdrawalRequest.getId(), file.getFilename(), link, null, size);
   }
 
@@ -109,14 +95,14 @@ public class MessageViewServiceImpl implements MessageViewService {
     }
   }
 
-  private List<MessageView> getAmendmentMessageViews(String appId) {
-    return amendmentDao.getAmendments(appId).stream()
+  private List<MessageView> getAmendmentMessageViews(AppData appData) {
+    return appData.getAmendments().stream()
         .map(this::getAmendmentMessageView)
         .collect(Collectors.toList());
   }
 
   private MessageView getAmendmentMessageView(Amendment amendment) {
-    String anchor = MessageType.AMENDMENT.toString() + "-" + amendment.getId();
+    String anchor = LinkUtil.getAmendmentMessageAnchor(amendment);
     String sentOn = TimeUtil.formatDateAndTime(amendment.getCreatedTimestamp());
     String sender = userService.getUsername(amendment.getCreatedByUserId());
     List<FileView> fileViews = amendment.getAttachments().stream()
@@ -137,7 +123,7 @@ public class MessageViewServiceImpl implements MessageViewService {
 
   private FileView getAmendmentFileView(Amendment amendment, File file) {
     String size = FileUtil.getReadableFileSize(file.getUrl());
-    String link = controllers.routes.DownloadController.getAmendmentFile(amendment.getAppId(), file.getId()).toString();
+    String link = controllers.routes.DownloadController.getFile(amendment.getAppId(), file.getId()).toString();
     return new FileView(file.getId(), amendment.getId(), file.getFilename(), link, null, size);
   }
 

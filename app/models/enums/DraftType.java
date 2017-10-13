@@ -2,6 +2,6 @@ package models.enums;
 
 public enum DraftType {
 
-  RFI_REPLY, WITHDRAWAL, AMENDMENT
+  RFI_REPLY, AMENDMENT_OR_WITHDRAWAL
 
 }

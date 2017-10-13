@@ -202,8 +202,7 @@ public class TestDataServiceImpl implements TestDataService {
     customerIds.forEach(sielDao::deleteSielsByCustomerId);
     appIds.forEach(applicationDao::deleteApplication);
     rfiIds.forEach(rfiId -> draftDao.deleteDraft(rfiId, DraftType.RFI_REPLY));
-    appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.WITHDRAWAL));
-    appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT));
+    appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT_OR_WITHDRAWAL));
     appIds.forEach(notificationDao::deleteNotificationsByAppId);
     readDao.deleteAllReadDataByUserId(userId);
   }

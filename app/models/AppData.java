@@ -16,8 +16,9 @@ public class AppData {
   private final Notification stopNotification;
   private final List<Notification> informNotifications;
   private final List<Outcome> outcomes;
+  private final List<Amendment> amendments;
 
-  public AppData(Application application, List<StatusUpdate> statusUpdates, List<WithdrawalRequest> withdrawalRequests, List<WithdrawalRejection> withdrawalRejections, WithdrawalApproval withdrawalApproval, List<Rfi> rfiList, List<RfiReply> rfiReplies, List<RfiWithdrawal> rfiWithdrawals, Notification delayNotification, Notification stopNotification, List<Notification> informNotifications, List<Outcome> outcomes) {
+  public AppData(Application application, List<StatusUpdate> statusUpdates, List<WithdrawalRequest> withdrawalRequests, List<WithdrawalRejection> withdrawalRejections, WithdrawalApproval withdrawalApproval, List<Rfi> rfiList, List<RfiReply> rfiReplies, List<RfiWithdrawal> rfiWithdrawals, Notification delayNotification, Notification stopNotification, List<Notification> informNotifications, List<Outcome> outcomes, List<Amendment> amendments) {
     this.application = application;
     this.statusUpdates = statusUpdates;
     this.withdrawalRequests = withdrawalRequests;
@@ -30,6 +31,7 @@ public class AppData {
     this.stopNotification = stopNotification;
     this.informNotifications = informNotifications;
     this.outcomes = outcomes;
+    this.amendments = amendments;
   }
 
   public Application getApplication() {
@@ -78,6 +80,10 @@ public class AppData {
 
   public List<Outcome> getOutcomes() {
     return outcomes;
+  }
+
+  public List<Amendment> getAmendments() {
+    return amendments;
   }
 
 }

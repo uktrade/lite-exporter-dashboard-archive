@@ -43,13 +43,13 @@ public class AmendmentServiceImpl implements AmendmentService {
     amendment.setAttachments(attachments);
 
     amendmentDao.insertAmendment(amendment);
-    draftDao.deleteDraft(appId, DraftType.AMENDMENT);
+    draftDao.deleteDraft(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     messagePublisher.sendMessage(RoutingKey.AMENDMENT_CREATE, getAmendmentMessage(amendment));
   }
 
   private List<File> getAttachments(String appId, List<UploadFile> uploadFiles) {
     List<File> files = FileUtil.toFiles(uploadFiles);
-    List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT);
+    List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     files.addAll(draftAttachments);
     return files;
   }

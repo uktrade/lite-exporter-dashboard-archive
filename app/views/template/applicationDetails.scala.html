@@ -12,7 +12,7 @@
 
     @if(flash.containsKey("success")) {
       @flashBanner("success") {
-        @flash.get("success")
+        @Html(flash.get("success"))
       }
     }
 

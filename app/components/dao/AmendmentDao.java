@@ -8,6 +8,8 @@ public interface AmendmentDao {
 
   List<Amendment> getAmendments(String appId);
 
+  List<Amendment> getAmendments(List<String> appIds);
+
   void insertAmendment(Amendment amendment);
 
   void deleteAllAmendments();

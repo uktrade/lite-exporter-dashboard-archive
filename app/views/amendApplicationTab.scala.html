@@ -1,13 +1,66 @@
 @import models.enums.Action
-@import models.view.AddAmendmentView
-@import models.view.{ApplicationSummaryView, OfficerView, ApplicationTabsView}
+@import models.view.{ApplicationSummaryView, AmendmentView, ApplicationTabsView, PreviousRequestItemView}
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, allowAmendment: Boolean, action: Action, form: play.data.Form[_], officerView: OfficerView, addAmendmentView: AddAmendmentView)
+@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, amendmentView: AmendmentView, form: play.data.Form[_])
 
 @applicationDetails(applyLink, applicationSummaryView, "amend", applicationTabsView, form) {
-  @if(allowAmendment) {
-    @amendApplication(applicationSummaryView.getAppId, action, form, addAmendmentView)
+  @if(!amendmentView.getPreviousRequestItemViews.isEmpty) {
+    <div class="heading-medium">
+      Previous requests
+    </div>
+    <div class="scrollable-table">
+      <table class="table-align-top">
+        <thead>
+          <tr>
+            <th role="columnheader">
+              Date
+            </th>
+            <th role="columnheader">
+              Type
+            </th>
+            <th role="columnheader">
+              Details
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+        @for(previousRequestItemView <- amendmentView.getPreviousRequestItemViews) {
+          <tr>
+            <td class="no-wrap">
+              @previousRequestItemView.getDate
+            </td>
+            <td>
+              @previousRequestItemView.getType
+              @if(previousRequestItemView.getIndicator!=null) {
+                (@previousRequestItemView.getIndicator)
+              }
+            </td>
+            <td>
+              <a href="@previousRequestItemView.getLink">View</a>
+            </td>
+          </tr>
+        }
+        </tbody>
+      </table>
+    </div>
+    <p></p>
+    <div class="heading-medium">
+      Make another request
+    </div>
   }
-  @officer(applicationSummaryView.getAppId, officerView)
+  @if(amendmentView.isApplicationInProgress) {
+    @if(amendmentView.isHasPendingWithdrawalRequest) {
+      You cannot make any further requests while your previous withdrawal request is pending.
+    } else {
+      @amendApplication(applicationSummaryView.getAppId, form, amendmentView)
+    }
+  } else {
+    @if(amendmentView.getPreviousRequestItemViews.isEmpty) {
+      No requests to amend or withdraw the application can be made as the application processing is complete.
+    } else {
+      No further requests to amend or withdraw the application can be made as the application processing is complete.
+    }
+  }
+  @officer(applicationSummaryView.getAppId, amendmentView.getOfficerView)
 }

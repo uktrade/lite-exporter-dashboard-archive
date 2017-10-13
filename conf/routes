@@ -15,7 +15,7 @@ GET         /application/*appId/rfi/*rfiId                            controller
 POST        /application/*appId/rfi                                   controllers.RfiTabController.submitReply(appId)
 POST        /application/*appId/rfi/file/*fileId                      controllers.RfiTabController.deleteFileById(appId, fileId)
 GET         /application/*appId/messages                              controllers.MessageTabController.showMessages(appId)
-GET         /application/*appId/amend-application                     controllers.AmendTabController.showAmendTab(appId, action ?= null)
+GET         /application/*appId/amend-application                     controllers.AmendTabController.showAmendTab(appId)
 POST        /application/*appId/amend-application                     controllers.AmendTabController.submitAmendment(appId)
 POST        /application/*appId/amend-application/file/*fileId        controllers.AmendTabController.deleteFileById(appId, fileId)
 GET         /application/*appId/outcome-documents                     controllers.OutcomeTabController.showOutcomeTab(appId)
@@ -36,9 +36,8 @@ GET         /test/*testType                                           controller
 POST        /upload/accept/*draftType/*relatedId                      controllers.UploadController.submitFiles(draftType, relatedId)
 POST        /upload/delete                                            controllers.UploadController.deleteFile()
 
-GET         /files/rfi/*rfiId/*fileId                                 controllers.DownloadController.getRfiFile(rfiId,fileId)
-GET         /files/amend/*appId/*fileId                               controllers.DownloadController.getAmendmentFile(appId,fileId)
-GET         /files/withdraw/*appId/*fileId                            controllers.DownloadController.getWithdrawalFile(appId,fileId)
+GET         /files/rfi/*rfiId/*fileId                                 controllers.DownloadController.getRfiReplyFile(rfiId,fileId)
+GET         /files/*appId/*fileId                                     controllers.DownloadController.getFile(appId,fileId)
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                                             controllers.Assets.versioned(path="/public", file: Asset)

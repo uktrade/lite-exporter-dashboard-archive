@@ -6,7 +6,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import com.google.inject.Inject;
 import components.dao.DraftDao;
 import components.exceptions.DatabaseException;
-import components.exceptions.UnexpectedStateException;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.FileUtil;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
+import models.File;
 import models.FileUploadResponse;
 import models.FileUploadResponseItem;
 import models.enums.DraftType;
@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
-import models.File;
 
 public class UploadController extends SamlController {
 
@@ -76,16 +75,10 @@ public class UploadController extends SamlController {
   }
 
   private String getLink(String relatedId, String fileId, DraftType draftType) {
-    switch (draftType) {
-    case RFI_REPLY:
-      return routes.DownloadController.getRfiFile(relatedId, fileId).toString();
-    case WITHDRAWAL:
-      return routes.DownloadController.getWithdrawalFile(relatedId, fileId).toString();
-    case AMENDMENT:
-      return routes.DownloadController.getAmendmentFile(relatedId, fileId).toString();
-    default:
-      String errorMessage = "Unknown draftType " + draftType;
-      throw new UnexpectedStateException(errorMessage);
+    if (draftType == DraftType.RFI_REPLY) {
+      return routes.DownloadController.getRfiReplyFile(relatedId, fileId).toString();
+    } else {
+      return routes.DownloadController.getFile(relatedId, fileId).toString();
     }
   }
 

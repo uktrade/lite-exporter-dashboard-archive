@@ -1,36 +1,33 @@
 @import models.enums.Action
-@import models.view.AddAmendmentView
-@import template.amendApplicationPanel
+@import models.enums.DraftType
+@import models.view.AmendmentView
 @import play.data.Form
+@import utils.common.SelectOption
+@import views.html.common.form._
 
-@(appId: String, action: models.enums.Action, form: play.data.Form[_], addAmendmentView: AddAmendmentView)
+@(appId: String, form: play.data.Form[_], amendmentView: AmendmentView)
 
-<p>Use this form to make an amendment or withdraw your application.</p>
+<article>
 
-<div class="form-group">
-  <div class="heading-small" id="action-select">Amendment I would like to make</div>
-  <form action="" method="GET">
-    <select class="form-control" id="action" name="action" onChange="this.form.submit()">
-      @if(action == null) {
-        <option value="select" selected>Select</option>
+  <div>
+
+    <form action="@routes.AmendTabController.showAmendTab(appId)" method="POST" enctype="multipart/form-data">
+
+      @views.html.helper.CSRF.formField
+
+      @formRadioGroup(form("action"), amendmentView.getSelectOptions) {
+        What sort of change do you want to request?
       }
-    <option value="amend" @if(action == Action.AMEND) {
-      selected="" }>Make an amendment to the application</option>
-    <option value="withdraw" @if(action == Action.WITHDRAW) {
-      selected=""}>Withdraw the application</option>
-    </select>
-    <button class="js-hidden button">Submit</button>
-  </form>
-</div>
 
-@action match {
-  case Action.AMEND => {
-    @amendApplicationPanel(appId, "Please provide details of the amendment you would like to make to the application", form, addAmendmentView, action)
-  }
-  case Action.WITHDRAW => {
-    @amendApplicationPanel(appId, "Please provide your reason for withdrawing the application", form, addAmendmentView, action)
-  }
-  case default => {
-    <hr/>
-  }
-}
+      <h4 class="heading-small">Please provide details of your request</h4>
+      @formTextarea(form("message"), rows = "4", cssClass = "form-control-wide") {
+
+      }
+
+      <h4 class="heading-small">Optionally attach files to support your request</h4>
+      @fileUpload(appId, DraftType.AMENDMENT_OR_WITHDRAWAL, amendmentView.getFileViews)
+      <button class="button">Send</button>
+    </form>
+
+  </div>
+</article>
