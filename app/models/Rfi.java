@@ -1,9 +1,7 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import javax.validation.constraints.NotNull;
-import models.enums.RfiStatus;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -14,32 +12,22 @@ public class Rfi {
   @NotBlank
   private final String appId;
   @NotNull
-  private final RfiStatus rfiStatus;
-  @NotNull
   private final Long createdTimestamp;
   @NotNull
   private final Long dueTimestamp;
   @NotBlank
-  private final String sentBy;
+  private final String createdByUserId;
   @NotEmpty
   private final List<String> recipientUserIds;
   @NotBlank
   private final String message;
 
-  public Rfi(@JsonProperty("id") String id,
-             @JsonProperty("appId") String appId,
-             @JsonProperty("rfiStatus") RfiStatus rfiStatus,
-             @JsonProperty("createdTimestamp") Long createdTimestamp,
-             @JsonProperty("dueTimestamp") Long dueTimestamp,
-             @JsonProperty("sentBy") String sentBy,
-             @JsonProperty("recipientUserIds") List<String> recipientUserIds,
-             @JsonProperty("message") String message) {
+  public Rfi(String id, String appId, Long createdTimestamp, Long dueTimestamp, String createdByUserId, List<String> recipientUserIds, String message) {
     this.id = id;
     this.appId = appId;
-    this.rfiStatus = rfiStatus;
     this.createdTimestamp = createdTimestamp;
     this.dueTimestamp = dueTimestamp;
-    this.sentBy = sentBy;
+    this.createdByUserId = createdByUserId;
     this.recipientUserIds = recipientUserIds;
     this.message = message;
   }
@@ -52,10 +40,6 @@ public class Rfi {
     return appId;
   }
 
-  public RfiStatus getRfiStatus() {
-    return rfiStatus;
-  }
-
   public Long getCreatedTimestamp() {
     return createdTimestamp;
   }
@@ -64,8 +48,8 @@ public class Rfi {
     return dueTimestamp;
   }
 
-  public String getSentBy() {
-    return sentBy;
+  public String getCreatedByUserId() {
+    return createdByUserId;
   }
 
   public List<String> getRecipientUserIds() {

@@ -13,7 +13,6 @@ import components.util.PageUtil;
 import components.util.SortUtil;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import models.ApplicationListState;
@@ -147,20 +146,17 @@ public class ApplicationListController extends SamlController {
 
   private boolean hasUserApplications(String currentUserId, List<ApplicationItemView> applicationItemViews) {
     return applicationItemViews.stream()
-        .map(ApplicationItemView::getCreatedById)
-        .anyMatch(currentUserId::equals);
+        .anyMatch(applicationItemView -> currentUserId.equals(applicationItemView.getCreatedById()));
   }
 
   private boolean hasOtherUserApplications(String currentUserId, List<ApplicationItemView> applicationItemViews) {
     return applicationItemViews.stream()
-        .map(ApplicationItemView::getCreatedById)
-        .anyMatch(id -> !currentUserId.equals(id));
+        .anyMatch(applicationItemView -> !currentUserId.equals(applicationItemView.getCreatedById()));
   }
 
   private boolean hasForYourAttentionApplications(List<ApplicationItemView> applicationItemViews) {
     return applicationItemViews.stream()
-        .map(ApplicationItemView::getForYourAttentionNotificationView)
-        .anyMatch(Objects::nonNull);
+        .anyMatch(applicationItemView -> !applicationItemView.getForYourAttentionNotificationViews().isEmpty());
   }
 
   private long countByApplicationProgress(List<ApplicationItemView> applicationItemViews, ApplicationProgress applicationProgress) {
@@ -202,7 +198,7 @@ public class ApplicationListController extends SamlController {
   private List<ApplicationItemView> filterByAttention(ApplicationListTab applicationListTab, List<ApplicationItemView> applicationItemViews) {
     if (applicationListTab == ApplicationListTab.ATTENTION) {
       return applicationItemViews.stream()
-          .filter(view -> view.getForYourAttentionNotificationView() != null)
+          .filter(view -> !view.getForYourAttentionNotificationViews().isEmpty())
           .collect(Collectors.toList());
     } else {
       return applicationItemViews;

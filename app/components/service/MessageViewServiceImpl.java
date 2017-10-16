@@ -15,6 +15,7 @@ import models.AppData;
 import models.File;
 import models.Notification;
 import models.ReadData;
+import models.WithdrawalApproval;
 import models.WithdrawalRejection;
 import models.WithdrawalRequest;
 import models.enums.EventLabelType;
@@ -52,18 +53,34 @@ public class MessageViewServiceImpl implements MessageViewService {
 
   private List<MessageView> getWithdrawalRequestMessageViews(AppData appData, ReadData readData) {
     Map<String, WithdrawalRejection> withdrawalRejectionMap = ApplicationUtil.getWithdrawalRejectionMap(appData);
-    return appData.getWithdrawalRequests().stream().map(withdrawalRequest ->
-        getWithdrawalRequestMessageView(withdrawalRequest, withdrawalRejectionMap.get(withdrawalRequest.getId()), readData))
-        .collect(Collectors.toList());
+    WithdrawalRequest approvedWithdrawalRequest = ApplicationUtil.getApprovedWithdrawalRequest(appData);
+    return appData.getWithdrawalRequests().stream()
+        .map(withdrawalRequest -> {
+              WithdrawalApproval withdrawalApproval;
+              if (approvedWithdrawalRequest != null && approvedWithdrawalRequest.getId().equals(withdrawalRequest.getId())) {
+                withdrawalApproval = appData.getWithdrawalApproval();
+              } else {
+                withdrawalApproval = null;
+              }
+              return getWithdrawalRequestMessageView(withdrawalRequest, withdrawalApproval, withdrawalRejectionMap.get(withdrawalRequest.getId()), readData);
+            }
+        ).collect(Collectors.toList());
   }
 
-  private MessageView getWithdrawalRequestMessageView(WithdrawalRequest withdrawalRequest, WithdrawalRejection withdrawalRejection, ReadData readData) {
+  private MessageView getWithdrawalRequestMessageView(WithdrawalRequest withdrawalRequest, WithdrawalApproval withdrawalApproval, WithdrawalRejection withdrawalRejection, ReadData readData) {
     String anchor = MessageType.WITHDRAWAL_REQUESTED.toString() + "-" + withdrawalRequest.getId();
     String sentOn = TimeUtil.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
     String sender = userService.getUsername(withdrawalRequest.getCreatedByUserId());
     List<FileView> fileViews = withdrawalRequest.getAttachments().stream()
         .map(file -> getWithdrawalRequestFileView(withdrawalRequest, file)).collect(Collectors.toList());
-    MessageReplyView messageReplyView = getMessageReplyView(withdrawalRejection, readData);
+    MessageReplyView messageReplyView;
+    if (withdrawalApproval != null) {
+      messageReplyView = getWithdrawalApprovalMessageReplyView(withdrawalApproval, readData);
+    } else if (withdrawalRejection != null) {
+      messageReplyView = getWithdrawalRejectionMessageReplyView(withdrawalRejection, readData);
+    } else {
+      messageReplyView = null;
+    }
     return new MessageView(EventLabelType.WITHDRAWAL_REQUESTED,
         anchor,
         "Withdrawal request",
@@ -83,16 +100,20 @@ public class MessageViewServiceImpl implements MessageViewService {
     return new FileView(file.getId(), withdrawalRequest.getId(), file.getFilename(), link, null, size);
   }
 
-  private MessageReplyView getMessageReplyView(WithdrawalRejection withdrawalRejection, ReadData readData) {
-    if (withdrawalRejection != null) {
-      boolean showNewIndicator = !readData.getUnreadWithdrawalRejectionIds().isEmpty();
-      String anchor = LinkUtil.getWithdrawalRejectionMessageAnchor(withdrawalRejection);
-      String sender = userService.getUsername(withdrawalRejection.getCreatedByUserId());
-      String withdrawnOn = TimeUtil.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
-      return new MessageReplyView(anchor, "Withdrawal rejected", sender, withdrawnOn, "Your request to withdraw your application has been rejected.", showNewIndicator);
-    } else {
-      return null;
-    }
+  private MessageReplyView getWithdrawalApprovalMessageReplyView(WithdrawalApproval withdrawalApproval, ReadData readData) {
+    boolean showNewIndicator = readData.getUnreadWithdrawalApprovalId() != null;
+    String anchor = LinkUtil.getWithdrawalApprovalMessageAnchor(withdrawalApproval);
+    String sender = userService.getUsername(withdrawalApproval.getCreatedByUserId());
+    String acceptedOn = TimeUtil.formatDateAndTime(withdrawalApproval.getCreatedTimestamp());
+    return new MessageReplyView(anchor, "Withdrawal accepted", sender, acceptedOn, "Your request to withdraw your application has been accepted.", showNewIndicator);
+  }
+
+  private MessageReplyView getWithdrawalRejectionMessageReplyView(WithdrawalRejection withdrawalRejection, ReadData readData) {
+    boolean showNewIndicator = readData.getUnreadWithdrawalRejectionIds().contains(withdrawalRejection.getId());
+    String anchor = LinkUtil.getWithdrawalRejectionMessageAnchor(withdrawalRejection);
+    String sender = userService.getUsername(withdrawalRejection.getCreatedByUserId());
+    String withdrawnOn = TimeUtil.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
+    return new MessageReplyView(anchor, "Withdrawal rejected", sender, withdrawnOn, "Your request to withdraw your application has been rejected.", showNewIndicator);
   }
 
   private List<MessageView> getAmendmentMessageViews(AppData appData) {

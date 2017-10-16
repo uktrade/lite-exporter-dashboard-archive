@@ -2,7 +2,6 @@ package components.dao;
 
 import java.util.List;
 import models.Rfi;
-import models.enums.RfiStatus;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
@@ -17,21 +16,13 @@ public interface RfiJDBIDao {
   @SqlQuery("SELECT * FROM RFI WHERE APP_ID in (<appIds>)")
   List<Rfi> getRfiList(@BindIn("appIds") List<String> appIds);
 
-  @Mapper(RfiRSMapper.class)
-  @SqlQuery("SELECT * FROM RFI WHERE APP_ID = :appId")
-  List<Rfi> getRfiList(@Bind("appId") String appId);
-
-  @SqlQuery("SELECT COUNT(*) FROM RFI WHERE APP_ID = :appId")
-  int getRfiCount(@Bind("appId") String appId);
-
-  @SqlUpdate("INSERT INTO RFI ( ID,  APP_ID, STATUS,  CREATED_TIMESTAMP, DUE_TIMESTAMP, SENT_BY, RECIPIENT_USER_IDS, MESSAGE) VALUES " +
-      "                       (:id, :appId, :status, :createdTimestamp, :dueTimestamp, :sentBy, :recipientUserIds,  :message)")
+  @SqlUpdate("INSERT INTO RFI ( ID,  APP_ID, CREATED_TIMESTAMP, DUE_TIMESTAMP, CREATED_BY_USER_ID, RECIPIENT_USER_IDS, MESSAGE) VALUES " +
+      "                       (:id, :appId, :createdTimestamp, :dueTimestamp, :createdByUserId,   :recipientUserIds,  :message)")
   void insert(@Bind("id") String id,
               @Bind("appId") String appId,
-              @Bind("status") RfiStatus rfiStatus,
               @Bind("createdTimestamp") Long createdTimestamp,
               @Bind("dueTimestamp") Long dueTimestamp,
-              @Bind("sentBy") String sentBy,
+              @Bind("createdByUserId") String createdByUserId,
               @Bind("recipientUserIds") String recipientUserIds,
               @Bind("message") String message);
 

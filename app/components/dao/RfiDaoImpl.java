@@ -32,22 +32,6 @@ public class RfiDaoImpl implements RfiDao {
   }
 
   @Override
-  public List<Rfi> getRfiList(String appId) {
-    try (final Handle handle = dbi.open()) {
-      RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);
-      return rfiJDBIDao.getRfiList(appId);
-    }
-  }
-
-  @Override
-  public int getRfiCount(String appId) {
-    try (final Handle handle = dbi.open()) {
-      RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);
-      return rfiJDBIDao.getRfiCount(appId);
-    }
-  }
-
-  @Override
   public void insertRfi(Rfi rfi) {
     try (final Handle handle = dbi.open()) {
       RfiJDBIDao rfiJDBIDao = handle.attach(RfiJDBIDao.class);
@@ -60,10 +44,9 @@ public class RfiDaoImpl implements RfiDao {
         }
         rfiJDBIDao.insert(rfi.getId(),
             rfi.getAppId(),
-            rfi.getRfiStatus(),
             rfi.getCreatedTimestamp(),
             rfi.getDueTimestamp(),
-            rfi.getSentBy(),
+            rfi.getCreatedByUserId(),
             JsonUtil.convertListToJson(rfi.getRecipientUserIds()),
             rfi.getMessage());
       });

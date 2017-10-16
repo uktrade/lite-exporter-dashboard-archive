@@ -56,7 +56,6 @@ import models.WithdrawalRejection;
 import models.WithdrawalRequest;
 import models.enums.DocumentType;
 import models.enums.DraftType;
-import models.enums.RfiStatus;
 import models.enums.SielStatus;
 import models.enums.StatusType;
 import org.apache.commons.lang3.RandomUtils;
@@ -289,7 +288,6 @@ public class TestDataServiceImpl implements TestDataService {
         String rfiId = rfiId();
         Rfi rfi = new Rfi(rfiId,
             appId,
-            RfiStatus.ACTIVE,
             time(2017, 4, 5 + i, i, i),
             time(2017, 5, 5 + i, i, i),
             OFFICER_ID,
@@ -299,7 +297,6 @@ public class TestDataServiceImpl implements TestDataService {
         String rfiTwoId = rfiId();
         Rfi rfiTwo = new Rfi(rfiTwoId,
             appId,
-            RfiStatus.ACTIVE,
             time(2017, 6, 5 + i, i, i),
             time(2017, 7, 5 + i, i, i),
             OFFICER_ID,
@@ -495,6 +492,7 @@ public class TestDataServiceImpl implements TestDataService {
           appId,
           OFFICER_ID,
           time(2017, 1, 5, 13, 10),
+          RECIPIENTS,
           "");
       withdrawalApprovalDao.insertWithdrawalApproval(withdrawalApproval);
     }
@@ -536,7 +534,6 @@ public class TestDataServiceImpl implements TestDataService {
   private List<Rfi> createRfiTestData(String appId, String rfiId) {
     Rfi rfi = new Rfi(rfiId(),
         appId,
-        RfiStatus.ACTIVE,
         time(2017, 1, 2, 13, 30),
         time(2017, 2, 2, 13, 30),
         OFFICER_ID,
@@ -544,7 +541,6 @@ public class TestDataServiceImpl implements TestDataService {
         "Please reply to this rfi message.");
     Rfi rfiTwo = new Rfi(rfiId,
         appId,
-        RfiStatus.ACTIVE,
         time(2017, 2, 5, 10, 10),
         time(2017, 3, 12, 16, 10),
         OFFICER_ID,
@@ -554,7 +550,6 @@ public class TestDataServiceImpl implements TestDataService {
             + "<p>Than you for your help in this matter.</p>");
     Rfi rfiThree = new Rfi(rfiId(),
         appId,
-        RfiStatus.ACTIVE,
         time(2017, 4, 5, 10, 10),
         time(2017, 5, 12, 16, 10),
         OFFICER_ID,
@@ -562,7 +557,6 @@ public class TestDataServiceImpl implements TestDataService {
         "This is some rfi message.");
     Rfi rfiFour = new Rfi(rfiId(),
         appId,
-        RfiStatus.ACTIVE,
         time(2017, 7, 5, 10, 10),
         time(2018, 8, 5, 10, 10),
         OFFICER_ID,

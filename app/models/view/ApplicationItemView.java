@@ -21,7 +21,8 @@ public class ApplicationItemView {
   private final long applicationStatusTimestamp;
   private final String destination;
   private final List<NotificationView> notificationViews;
-  private final NotificationView forYourAttentionNotificationView;
+  private final List<NotificationView> forYourAttentionNotificationViews;
+  private final Long latestEventTimestamp;
   private final String latestEventDate;
 
   public ApplicationItemView(String appId,
@@ -40,7 +41,8 @@ public class ApplicationItemView {
                              long applicationStatusTimestamp,
                              String destination,
                              List<NotificationView> notificationViews,
-                             NotificationView forYourAttentionNotificationView,
+                             List<NotificationView> forYourAttentionNotificationViews,
+                             Long latestEventTimestamp,
                              String latestEventDate) {
     this.appId = appId;
     this.companyId = companyId;
@@ -58,7 +60,8 @@ public class ApplicationItemView {
     this.applicationStatusTimestamp = applicationStatusTimestamp;
     this.destination = destination;
     this.notificationViews = notificationViews;
-    this.forYourAttentionNotificationView = forYourAttentionNotificationView;
+    this.forYourAttentionNotificationViews = forYourAttentionNotificationViews;
+    this.latestEventTimestamp = latestEventTimestamp;
     this.latestEventDate = latestEventDate;
   }
 
@@ -126,12 +129,16 @@ public class ApplicationItemView {
     return notificationViews;
   }
 
-  public String getLatestEventDate() {
-    return latestEventDate;
+  public List<NotificationView> getForYourAttentionNotificationViews() {
+    return forYourAttentionNotificationViews;
   }
 
-  public NotificationView getForYourAttentionNotificationView() {
-    return forYourAttentionNotificationView;
+  public Long getLatestEventTimestamp() {
+    return latestEventTimestamp;
+  }
+
+  public String getLatestEventDate() {
+    return latestEventDate;
   }
 
 }

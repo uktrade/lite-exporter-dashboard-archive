@@ -4,12 +4,10 @@ public class InformLetterView {
 
   private final String name;
   private final String link;
-  private final String anchor;
 
-  public InformLetterView(String name, String link, String anchor) {
+  public InformLetterView(String name, String link) {
     this.name = name;
     this.link = link;
-    this.anchor = anchor;
   }
 
   public String getName() {
@@ -18,10 +16,6 @@ public class InformLetterView {
 
   public String getLink() {
     return link;
-  }
-
-  public String getAnchor() {
-    return anchor;
   }
 
 }

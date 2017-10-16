@@ -8,10 +8,6 @@ public interface RfiDao {
 
   List<Rfi> getRfiList(List<String> appIds);
 
-  List<Rfi> getRfiList(String appId);
-
-  int getRfiCount(String appId);
-
   void insertRfi(Rfi rfi);
 
   void deleteAllRfiData();

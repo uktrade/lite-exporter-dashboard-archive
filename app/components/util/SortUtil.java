@@ -40,7 +40,7 @@ public class SortUtil {
     APPLICATION_COMPARATORS.put(ApplicationSortType.DATE, createLongComparators(ApplicationItemView::getDateTimestamp));
     APPLICATION_COMPARATORS.put(ApplicationSortType.STATUS, createComparators(new ApplicationStatusComparator()));
     APPLICATION_COMPARATORS.put(ApplicationSortType.EVENT_TYPE, createComparators(new EventTypeComparator()));
-    APPLICATION_COMPARATORS.put(ApplicationSortType.EVENT_DATE, createLongComparators(view -> view.getForYourAttentionNotificationView().getCreatedTimestamp()));
+    APPLICATION_COMPARATORS.put(ApplicationSortType.EVENT_DATE, createLongComparators(ApplicationItemView::getLatestEventTimestamp));
     APPLICATION_COMPARATORS.put(ApplicationSortType.REFERENCE, createComparators(new ApplicationReferenceComparator()));
     APPLICATION_COMPARATORS.put(ApplicationSortType.DESTINATION, createComparators(new DestinationComparator()));
   }
@@ -67,7 +67,7 @@ public class SortUtil {
   }
 
   private static <T> Map<SortDirection, Comparator<T>> createStringComparators(Function<T, String> function) {
-    return createComparators(Comparator.comparing(function));
+    return createComparators(Comparator.comparing(function, String.CASE_INSENSITIVE_ORDER));
   }
 
   private static <T> Map<SortDirection, Comparator<T>> createComparators(Comparator<T> comparator) {

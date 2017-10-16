@@ -8,8 +8,8 @@ public class EventTypeComparator implements Comparator<ApplicationItemView> {
 
   @Override
   public int compare(ApplicationItemView o1, ApplicationItemView o2) {
-    NotificationView left = o1.getForYourAttentionNotificationView();
-    NotificationView right = o2.getForYourAttentionNotificationView();
+    NotificationView left = o1.getForYourAttentionNotificationViews().get(0);
+    NotificationView right = o2.getForYourAttentionNotificationViews().get(0);
     if (!left.getLinkText().equals(right.getLinkText())) {
       return left.getLinkText().compareToIgnoreCase(right.getLinkText());
     } else {

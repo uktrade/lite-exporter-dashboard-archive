@@ -6,6 +6,7 @@ public class ReadData {
 
   private final String unreadDelayNotificationId;
   private final String unreadStopNotificationId;
+  private final String unreadWithdrawalApprovalId;
   private final Set<String> unreadInformNotificationIds;
   private final Set<String> unreadOutcomeIds;
   private final Set<String> unreadWithdrawalRejectionIds;
@@ -13,12 +14,14 @@ public class ReadData {
 
   public ReadData(String unreadDelayNotificationId,
                   String unreadStopNotificationId,
+                  String unreadWithdrawalApprovalId,
                   Set<String> unreadInformNotificationIds,
                   Set<String> unreadOutcomeIds,
                   Set<String> unreadWithdrawalRejectionIds,
                   Set<String> unreadRfiWithdrawalIds) {
     this.unreadDelayNotificationId = unreadDelayNotificationId;
     this.unreadStopNotificationId = unreadStopNotificationId;
+    this.unreadWithdrawalApprovalId = unreadWithdrawalApprovalId;
     this.unreadInformNotificationIds = unreadInformNotificationIds;
     this.unreadOutcomeIds = unreadOutcomeIds;
     this.unreadWithdrawalRejectionIds = unreadWithdrawalRejectionIds;
@@ -31,6 +34,10 @@ public class ReadData {
 
   public String getUnreadStopNotificationId() {
     return unreadStopNotificationId;
+  }
+
+  public String getUnreadWithdrawalApprovalId() {
+    return unreadWithdrawalApprovalId;
   }
 
   public Set<String> getUnreadInformNotificationIds() {

@@ -11,7 +11,6 @@ import components.service.ReadDataService;
 import components.service.UserService;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
-import components.util.LinkUtil;
 import components.util.SortUtil;
 import components.util.TimeUtil;
 import java.util.ArrayList;
@@ -113,10 +112,9 @@ public class OutcomeTabController extends SamlController {
   }
 
   private InformLetterView getInformLetterView(Notification notification) {
-    String name = notification.getDocument().getFilename();
+    String name = TimeUtil.formatDate(notification.getCreatedTimestamp()) + " " + notification.getDocument().getFilename();
     String link = notification.getDocument().getUrl();
-    String anchor = LinkUtil.getInformLetterAnchor(notification);
-    return new InformLetterView(name, link, anchor);
+    return new InformLetterView(name, link);
   }
 
 }

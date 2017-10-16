@@ -15,7 +15,6 @@ public class Comparators {
 
   public static final Comparator<Rfi> RFI_CREATED = Comparator.comparing(Rfi::getCreatedTimestamp);
   public static final Comparator<Rfi> RFI_CREATED_REVERSED = Comparator.comparing(Rfi::getCreatedTimestamp).reversed();
-  public static final Comparator<Outcome> OUTCOME_CREATED = Comparator.comparing(Outcome::getCreatedTimestamp);
   public static final Comparator<Outcome> OUTCOME_CREATED_REVERSED = Comparator.comparing(Outcome::getCreatedTimestamp).reversed();
   public static final Comparator<MessageView> MESSAGE_VIEW_CREATED_REVERSED = Comparator.comparing(MessageView::getCreatedTimestamp).reversed();
   public static final Comparator<WithdrawalRequest> WITHDRAWAL_REQUEST_CREATED = Comparator.comparing(WithdrawalRequest::getCreatedTimestamp);
@@ -29,6 +28,6 @@ public class Comparators {
   public static final Comparator<PreviousRequestItemView> PREVIOUS_REQUEST_ITEM_VIEW_CREATED_REVERSED = Comparator.comparing(PreviousRequestItemView::getCreatedTimestamp).reversed();
 
   public static final Comparator<NotificationView> LINK_TEXT = Comparator.comparing(NotificationView::getLinkText);
-  public static final Comparator<CompanySelectItemView> COMPANY_NAME = Comparator.comparing(CompanySelectItemView::getCompanyName);
+  public static final Comparator<CompanySelectItemView> COMPANY_NAME = Comparator.comparing(CompanySelectItemView::getCompanyName, String.CASE_INSENSITIVE_ORDER);
 
 }

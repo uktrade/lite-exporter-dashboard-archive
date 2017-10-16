@@ -78,7 +78,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     }
     String receivedDate = TimeUtil.formatDateAndTime(rfi.getCreatedTimestamp());
     String replyBy = getReplyBy(rfi);
-    String sender = userService.getUsername(rfi.getSentBy());
+    String sender = userService.getUsername(rfi.getCreatedByUserId());
     RfiReplyView rfiReplyView = getRfiReplyView(rfi.getAppId(), rfi.getId(), rfiReply);
     return new RfiView(rfi.getAppId(), rfi.getId(), receivedDate, replyBy, sender, rfi.getMessage(), withdrawnDate, showNewIndicator, rfiReplyView);
   }

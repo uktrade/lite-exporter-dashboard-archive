@@ -44,6 +44,7 @@ public class ReadDataServiceImpl implements ReadDataService {
     HashSet<String> readOutcomeIds = new HashSet<>();
     HashSet<String> readWithdrawalRejectionIds = new HashSet<>();
     HashSet<String> readRfiWithdrawalIds = new HashSet<>();
+    HashSet<String> readWithdrawalApprovalIds = new HashSet<>();
     for (Read read : readList) {
       switch (read.getReadType()) {
       case OUTCOME:
@@ -52,6 +53,8 @@ public class ReadDataServiceImpl implements ReadDataService {
       case WITHDRAWAL_REJECTION:
         readWithdrawalRejectionIds.add(read.getRelatedId());
         break;
+      case WITHDRAWAL_APPROVAL:
+        readWithdrawalApprovalIds.add(read.getRelatedId());
       case NOTIFICATION:
         readNotificationIds.add(read.getRelatedId());
         break;
@@ -76,6 +79,14 @@ public class ReadDataServiceImpl implements ReadDataService {
         .filter(notification -> notification.getRecipientUserIds().contains(userId))
         .filter(notification -> !readNotificationIds.contains(notification.getId()))
         .forEach(notification -> unreadStopNotificationIds.put(notification.getAppId(), notification.getId()));
+
+    Map<String, String> unreadWithdrawalIds = new HashMap<>();
+    appDataList.stream()
+        .map(AppData::getWithdrawalApproval)
+        .filter(Objects::nonNull)
+        .filter(withdrawalApproval -> withdrawalApproval.getRecipientUserIds().contains(userId))
+        .filter(withdrawalApproval -> !readWithdrawalApprovalIds.contains(withdrawalApproval.getId()))
+        .forEach(withdrawalApproval -> unreadWithdrawalIds.put(withdrawalApproval.getAppId(), withdrawalApproval.getId()));
 
     Multimap<String, String> unreadInformNotificationIds = HashMultimap.create();
     appDataList.stream()
@@ -113,6 +124,7 @@ public class ReadDataServiceImpl implements ReadDataService {
       String appId = appData.getApplication().getId();
       ReadData readData = new ReadData(unreadDelayNotificationIds.get(appId),
           unreadStopNotificationIds.get(appId),
+          unreadWithdrawalIds.get(appId),
           new HashSet<>(unreadInformNotificationIds.get(appId)),
           new HashSet<>(unreadOutcomeIds.get(appId)),
           new HashSet<>(unreadWithdrawalRejectionIdMultimap.get(appId)),
@@ -150,7 +162,11 @@ public class ReadDataServiceImpl implements ReadDataService {
       insertRead(notification.getId(), ReadType.NOTIFICATION, userId);
       sendNotificationReadMessage(userId, notification);
     }
-    readData.getUnreadWithdrawalRejectionIds().forEach(withdrawalRejectionId -> insertRead(withdrawalRejectionId, ReadType.WITHDRAWAL_REJECTION, userId));
+    if (readData.getUnreadWithdrawalApprovalId() != null) {
+      insertRead(readData.getUnreadWithdrawalApprovalId(), ReadType.WITHDRAWAL_APPROVAL, userId);
+    }
+    readData.getUnreadWithdrawalRejectionIds().forEach(withdrawalRejectionId ->
+        insertRead(withdrawalRejectionId, ReadType.WITHDRAWAL_REJECTION, userId));
   }
 
   @Override

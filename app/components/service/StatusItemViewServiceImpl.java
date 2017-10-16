@@ -222,7 +222,7 @@ public class StatusItemViewServiceImpl implements StatusItemViewService {
   private NotificationView getInformNotificationView(Notification notification) {
     String time = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String description = "on " + time;
-    String link = LinkUtil.getInformLetterLink(notification);
+    String link = LinkUtil.getInformLettersLink(notification.getAppId());
     return new NotificationView(EventLabelType.INFORM_ISSUED, "Inform letter issued", link, description, notification.getCreatedTimestamp());
   }
 

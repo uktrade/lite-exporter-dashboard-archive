@@ -2,6 +2,7 @@ package models.enums;
 
 public enum MessageType {
 
+  WITHDRAWAL_APPROVED("withdrawal-approved"),
   WITHDRAWAL_REJECTED("withdrawal-rejected"),
   WITHDRAWAL_REQUESTED("withdrawal-requested"),
   AMENDMENT("amendment"),

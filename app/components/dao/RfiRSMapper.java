@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import models.Rfi;
-import models.enums.RfiStatus;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -15,14 +14,13 @@ public class RfiRSMapper implements ResultSetMapper<Rfi> {
   public Rfi map(int index, ResultSet r, StatementContext ctx) throws SQLException {
     String id = r.getString("id");
     String appId = r.getString("app_id");
-    RfiStatus rfiStatus = RfiStatus.valueOf(r.getString("status"));
     Long createdTimestamp = LongMapper.getLong(r, "created_timestamp");
     Long dueTimestamp = LongMapper.getLong(r, "due_timestamp");
-    String sentBy = r.getString("sent_by");
+    String createdByUserId = r.getString("created_by_user_id");
     String recipientUserIdsJson = r.getString("recipient_user_ids");
     List<String> recipientUserIds = JsonUtil.convertJsonToList(recipientUserIdsJson);
     String message = r.getString("message");
-    return new Rfi(id, appId, rfiStatus, createdTimestamp, dueTimestamp, sentBy, recipientUserIds, message);
+    return new Rfi(id, appId, createdTimestamp, dueTimestamp, createdByUserId, recipientUserIds, message);
   }
 
 }

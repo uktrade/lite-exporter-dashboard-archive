@@ -1,12 +1,12 @@
 package components.dao;
 
 import com.google.inject.Inject;
+import components.util.JsonUtil;
+import java.util.ArrayList;
+import java.util.List;
 import models.WithdrawalApproval;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class WithdrawalApprovalDaoImpl implements WithdrawalApprovalDao {
 
@@ -45,6 +45,7 @@ public class WithdrawalApprovalDaoImpl implements WithdrawalApprovalDao {
           withdrawalApproval.getAppId(),
           withdrawalApproval.getCreatedByUserId(),
           withdrawalApproval.getCreatedTimestamp(),
+          JsonUtil.convertListToJson(withdrawalApproval.getRecipientUserIds()),
           withdrawalApproval.getMessage());
     }
   }

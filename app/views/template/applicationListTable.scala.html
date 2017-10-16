@@ -127,12 +127,17 @@
           }
           @if(applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION) {
             <td>
-              @eventLabel(applicationItemView.getForYourAttentionNotificationView.getEventLabelType,
-                applicationItemView.getForYourAttentionNotificationView.getLinkText,
-                applicationItemView.getForYourAttentionNotificationView.getLink,
-                "",
-                false
-              )
+              @for(index <- 0 until applicationItemView.getForYourAttentionNotificationViews.size) {
+                @eventLabel(applicationItemView.getForYourAttentionNotificationViews.get(index).getEventLabelType,
+                  applicationItemView.getForYourAttentionNotificationViews.get(index).getLinkText,
+                  applicationItemView.getForYourAttentionNotificationViews.get(index).getLink,
+                  "",
+                  false
+                )
+                @if(index < applicationItemView.getForYourAttentionNotificationViews.size-1) {
+                  <br>
+                }
+              }
             </td>
           }
           @if(applicationListView.getApplicationListTab == ApplicationListTab.ATTENTION) {
