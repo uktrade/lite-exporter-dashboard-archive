@@ -4,6 +4,7 @@ public enum RoutingKey {
 
   RFI_REPLY("rfi.reply"),
   WITHDRAWAL_REQUEST_CREATE("withdrawalrequest.create"),
+  WITHDRAWAL_REQUEST_ACCEPT_READ("withdrawalrequest.accept.read"),
   AMENDMENT_CREATE("amendment.create"),
   NOTIFICATION_READ("notification.read"),
   OUTCOME_READ("outcome.read"),

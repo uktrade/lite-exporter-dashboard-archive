@@ -19,11 +19,13 @@ import models.Outcome;
 import models.Read;
 import models.ReadData;
 import models.RfiWithdrawal;
+import models.WithdrawalApproval;
 import models.enums.ReadType;
 import uk.gov.bis.lite.exporterdashboard.api.NotificationReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.OutcomeReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.RfiWithdrawalReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestAcceptReadMessage;
 
 public class ReadDataServiceImpl implements ReadDataService {
 
@@ -163,7 +165,9 @@ public class ReadDataServiceImpl implements ReadDataService {
       sendNotificationReadMessage(userId, notification);
     }
     if (readData.getUnreadWithdrawalApprovalId() != null) {
-      insertRead(readData.getUnreadWithdrawalApprovalId(), ReadType.WITHDRAWAL_APPROVAL, userId);
+      WithdrawalApproval withdrawalApproval = appData.getWithdrawalApproval();
+      insertRead(withdrawalApproval.getId(), ReadType.WITHDRAWAL_APPROVAL, userId);
+      sendWithdrawalRequestAcceptReadMessage(userId, withdrawalApproval.getAppId(), withdrawalApproval.getId());
     }
     readData.getUnreadWithdrawalRejectionIds().forEach(withdrawalRejectionId ->
         insertRead(withdrawalRejectionId, ReadType.WITHDRAWAL_REJECTION, userId));
@@ -204,6 +208,14 @@ public class ReadDataServiceImpl implements ReadDataService {
     notificationReadMessage.setCreatedByUserId(userId);
     notificationReadMessage.setNotificationId(notification.getId());
     messagePublisher.sendMessage(RoutingKey.NOTIFICATION_READ, notificationReadMessage);
+  }
+
+  private void sendWithdrawalRequestAcceptReadMessage(String userId, String appId, String notificationId) {
+    WithdrawalRequestAcceptReadMessage withdrawalRequestAcceptReadMessage = new WithdrawalRequestAcceptReadMessage();
+    withdrawalRequestAcceptReadMessage.setNotificationId(notificationId);
+    withdrawalRequestAcceptReadMessage.setAppId(appId);
+    withdrawalRequestAcceptReadMessage.setCreatedByUserId(userId);
+    messagePublisher.sendMessage(RoutingKey.WITHDRAWAL_REQUEST_ACCEPT_READ, withdrawalRequestAcceptReadMessage);
   }
 
   private void sendRfiWithdrawalReadMessage(String userId, String appId, RfiWithdrawal rfiWithdrawal) {
