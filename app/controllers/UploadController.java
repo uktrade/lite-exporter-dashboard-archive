@@ -83,10 +83,7 @@ public class UploadController extends SamlController {
   }
 
   private String createNewFile(String relatedId, UploadFile uploadFile, DraftType draftType) {
-    File file = new File();
-    file.setId(fileId());
-    file.setFilename(uploadFile.getOriginalFilename());
-    file.setUrl(uploadFile.getDestinationPath());
+    File file = new File(fileId(), uploadFile.getOriginalFilename(), uploadFile.getDestinationPath());
     draftDao.addFile(relatedId, file, draftType);
     return file.getId();
   }

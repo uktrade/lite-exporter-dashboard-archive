@@ -95,6 +95,7 @@ import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserServiceImpl;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Properties;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
@@ -216,7 +217,9 @@ public class GuiceModule extends AbstractModule {
   @Provides
   @Singleton
   public DBI provideDataSourceDbi(Database database) {
-    return new DBI(database.getUrl());
+    Properties properties = new Properties();
+    properties.setProperty("foreign_keys", "true");
+    return new DBI(database.getUrl(), properties);
   }
 
 }

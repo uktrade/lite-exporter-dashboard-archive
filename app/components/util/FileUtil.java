@@ -7,9 +7,9 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import models.File;
 import play.data.Form;
 import play.mvc.Http;
-import models.File;
 
 public class FileUtil {
 
@@ -36,13 +36,8 @@ public class FileUtil {
 
   public static List<File> toFiles(List<UploadFile> uploadFiles) {
     return uploadFiles.stream()
-        .map(uploadFile -> {
-          File file = new File();
-          file.setId(fileId());
-          file.setFilename(uploadFile.getOriginalFilename());
-          file.setUrl(uploadFile.getDestinationPath());
-          return file;
-        }).collect(Collectors.toList());
+        .map(uploadFile -> new File(fileId(), uploadFile.getOriginalFilename(), uploadFile.getDestinationPath()))
+        .collect(Collectors.toList());
   }
 
   public static void processErrors(Form form, List<UploadFile> uploadFiles) {

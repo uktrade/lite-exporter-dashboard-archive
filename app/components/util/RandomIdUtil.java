@@ -32,6 +32,10 @@ public class RandomIdUtil {
     return random("FIL");
   }
 
+  public static String documentId() {
+    return random("DOC");
+  }
+
   public static String outcomeId() {
     return random("OUT");
   }

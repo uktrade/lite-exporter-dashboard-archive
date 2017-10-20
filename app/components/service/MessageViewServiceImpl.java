@@ -170,13 +170,12 @@ public class MessageViewServiceImpl implements MessageViewService {
     boolean showNewIndicator = readData.getUnreadDelayNotificationId() != null;
     String anchor = LinkUtil.getDelayedMessageAnchor(notification);
     String receivedOn = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
-    String sender = userService.getUsername(notification.getCreatedByUserId());
     return new MessageView(EventLabelType.DELAYED,
         anchor,
         "Apology for delay",
         receivedOn,
         null,
-        sender,
+        null,
         notification.getMessage(),
         notification.getCreatedTimestamp(),
         new ArrayList<>(),

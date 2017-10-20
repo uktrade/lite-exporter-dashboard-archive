@@ -1,11 +1,9 @@
 package models;
 
+import java.util.List;
+import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
 
 public class Outcome {
 
@@ -18,6 +16,7 @@ public class Outcome {
   @NotBlank
   private String createdByUserId;
 
+  @NotNull
   private List<String> recipientUserIds;
 
   @NotNull
@@ -26,52 +25,37 @@ public class Outcome {
   @NotEmpty
   private List<Document> documents;
 
-  public String getId() {
-    return id;
+  public Outcome(String id, String appId, String createdByUserId, List<String> recipientUserIds, Long createdTimestamp, List<Document> documents) {
+    this.id = id;
+    this.appId = appId;
+    this.createdByUserId = createdByUserId;
+    this.recipientUserIds = recipientUserIds;
+    this.createdTimestamp = createdTimestamp;
+    this.documents = documents;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public String getId() {
+    return id;
   }
 
   public String getAppId() {
     return appId;
   }
 
-  public void setAppId(String appId) {
-    this.appId = appId;
-  }
-
   public String getCreatedByUserId() {
     return createdByUserId;
-  }
-
-  public void setCreatedByUserId(String createdByUserId) {
-    this.createdByUserId = createdByUserId;
   }
 
   public List<String> getRecipientUserIds() {
     return recipientUserIds;
   }
 
-  public void setRecipientUserIds(List<String> recipientUserIds) {
-    this.recipientUserIds = recipientUserIds;
-  }
-
   public Long getCreatedTimestamp() {
     return createdTimestamp;
   }
 
-  public void setCreatedTimestamp(Long createdTimestamp) {
-    this.createdTimestamp = createdTimestamp;
-  }
-
   public List<Document> getDocuments() {
     return documents;
-  }
-
-  public void setDocuments(List<Document> documents) {
-    this.documents = documents;
   }
 
 }

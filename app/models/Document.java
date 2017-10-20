@@ -1,9 +1,9 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.NotNull;
 import models.enums.DocumentType;
 import org.hibernate.validator.constraints.NotBlank;
-
-import javax.validation.constraints.NotNull;
 
 public class Document {
 
@@ -22,44 +22,36 @@ public class Document {
   @NotBlank
   private String url;
 
-  public String getId() {
-    return id;
+  public Document(@JsonProperty("id") String id,
+                  @JsonProperty("documentType") DocumentType documentType,
+                  @JsonProperty("licenceRef") String licenceRef,
+                  @JsonProperty("filename") String filename,
+                  @JsonProperty("url") String url) {
+    this.id = id;
+    this.documentType = documentType;
+    this.licenceRef = licenceRef;
+    this.filename = filename;
+    this.url = url;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public String getId() {
+    return id;
   }
 
   public DocumentType getDocumentType() {
     return documentType;
   }
 
-  public void setDocumentType(DocumentType documentType) {
-    this.documentType = documentType;
-  }
-
   public String getLicenceRef() {
     return licenceRef;
-  }
-
-  public void setLicenceRef(String licenceRef) {
-    this.licenceRef = licenceRef;
   }
 
   public String getFilename() {
     return filename;
   }
 
-  public void setFilename(String filename) {
-    this.filename = filename;
-  }
-
   public String getUrl() {
     return url;
-  }
-
-  public void setUrl(String url) {
-    this.url = url;
   }
 
 }

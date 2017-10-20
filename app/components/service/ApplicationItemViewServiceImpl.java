@@ -76,7 +76,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     long applicationStatusTimestamp = getApplicationStatusTimestamp(appData, maxStatusUpdate);
     String applicationStatusDate = getApplicationStatusDate(appData, maxStatusUpdate, applicationStatusTimestamp);
 
-    Long dateTimestamp = getDateTimestamp(maxStatusUpdate, application);
+    Long dateTimestamp = getDateTimestamp(maxStatusUpdate, appData);
     String date = TimeUtil.formatDate(dateTimestamp);
 
     String createdById = application.getCreatedByUserId();
@@ -150,13 +150,17 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     }
   }
 
-  private Long getDateTimestamp(StatusUpdate maxStatusUpdate, Application application) {
-    if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
+  private Long getDateTimestamp(StatusUpdate maxStatusUpdate, AppData appData) {
+    if (appData.getWithdrawalApproval() != null) {
+      return appData.getWithdrawalApproval().getCreatedTimestamp();
+    } else if (appData.getStopNotification() != null) {
+      return appData.getStopNotification().getCreatedTimestamp();
+    } else if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
       return maxStatusUpdate.getCreatedTimestamp();
-    } else if (application.getSubmittedTimestamp() != null) {
-      return application.getSubmittedTimestamp();
+    } else if (appData.getApplication().getSubmittedTimestamp() != null) {
+      return appData.getApplication().getSubmittedTimestamp();
     } else {
-      return application.getCreatedTimestamp();
+      return appData.getApplication().getCreatedTimestamp();
     }
   }
 

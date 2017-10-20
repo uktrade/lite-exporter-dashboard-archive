@@ -33,12 +33,14 @@
       </div>
 
       <div class="column-one-third">
-        <span class="heading-small">
-          Sender:
-        </span>
-        <span>
-        @messageView.getSender
-        </span>
+        @if(messageView.getSender != null) {
+          <span class="heading-small">
+            Sender:
+          </span>
+          <span>
+          @messageView.getSender
+          </span>
+          }
       </div>
 
     </div>

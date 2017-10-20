@@ -2,16 +2,27 @@ package models;
 
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 
 public class Notification {
 
+  @NotBlank
   private final String id;
+  @NotBlank
   private final String appId;
+  @NotNull
   private final NotificationType notificationType;
+  @NotBlank
   private final String createdByUserId;
+  @NotNull
   private final Long createdTimestamp;
+  @NotNull
   private final List<String> recipientUserIds;
+  @NotEmpty
   private final String message;
+  @NotNull
   private final File document;
 
   public Notification(String id, String appId, NotificationType notificationType, String createdByUserId, Long createdTimestamp, List<String> recipientUserIds, String message, File document) {

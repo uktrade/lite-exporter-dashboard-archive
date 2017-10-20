@@ -1,14 +1,22 @@
 package models;
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotBlank;
 
 public class WithdrawalRejection {
 
+  @NotBlank
   private final String id;
+  @NotBlank
   private final String appId;
+  @NotBlank
   private final String createdByUserId;
+  @NotNull
   private final Long createdTimestamp;
+  @NotNull
   private final List<String> recipientUserIds;
+  @NotBlank
   private final String message;
 
   public WithdrawalRejection(String id, String appId, String createdByUserId, Long createdTimestamp, List<String> recipientUserIds, String message) {

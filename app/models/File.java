@@ -1,5 +1,6 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotBlank;
 
 public class File {
@@ -13,28 +14,24 @@ public class File {
   @NotBlank
   private String url;
 
-  public String getId() {
-    return id;
+  public File(@JsonProperty("id") String id,
+              @JsonProperty("filename") String filename,
+              @JsonProperty("url") String url) {
+    this.id = id;
+    this.filename = filename;
+    this.url = url;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public String getId() {
+    return id;
   }
 
   public String getFilename() {
     return filename;
   }
 
-  public void setFilename(String filename) {
-    this.filename = filename;
-  }
-
   public String getUrl() {
     return url;
-  }
-
-  public void setUrl(String url) {
-    this.url = url;
   }
 
 }

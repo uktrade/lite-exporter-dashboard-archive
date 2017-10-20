@@ -33,7 +33,7 @@ libraryDependencies ++= Seq(
 libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.3"
 libraryDependencies += "uk.gov.bis.lite" % "lite-customer-service-api" % "1.1"
 libraryDependencies += "uk.gov.bis.lite" % "lite-ogel-service-api" % "1.0"
-libraryDependencies += "uk.gov.bis.lite" % "lite-spire-relay-api" % "1.0-SNAPSHOT"
+libraryDependencies += "uk.gov.bis.lite" % "lite-spire-relay-api" % "1.1-SNAPSHOT"
 // We need this dependency to use JDBI @BindIn annotation
 libraryDependencies += "org.antlr" % "stringtemplate" % "3.2.1"
 
