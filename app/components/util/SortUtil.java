@@ -25,14 +25,16 @@ public class SortUtil {
   private static final Map<LicenceSortType, Map<SortDirection, Comparator<OgelItemView>>> OGEL_COMPARATORS;
   private static final Map<LicenceSortType, Map<SortDirection, Comparator<SielItemView>>> SIEL_COMPARATORS;
 
-  private static final List<DocumentType> DOCUMENT_TYPES = Arrays.asList(DocumentType.ISSUE_LETTER,
-      DocumentType.AMEND_LETTER,
-      DocumentType.ISSUE_LICENCE,
-      DocumentType.AMEND_LICENCE,
-      DocumentType.ISSUE_NLR,
-      DocumentType.AMEND_NLR,
-      DocumentType.ISSUE_REFUSAL,
-      DocumentType.AMEND_REFUSAL);
+  private static final List<DocumentType> DOCUMENT_TYPES = Arrays.asList(DocumentType.ISSUE_COVER_LETTER,
+      DocumentType.AMENDMENT_COVER_LETTER,
+      DocumentType.ISSUE_LICENCE_DOCUMENT,
+      DocumentType.AMENDMENT_LICENCE_DOCUMENT,
+      DocumentType.ISSUE_NLR_DOCUMENT,
+      DocumentType.AMENDMENT_NLR_DOCUMENT,
+      DocumentType.ISSUE_REFUSE_DOCUMENT,
+      DocumentType.AMENDMENT_REFUSE_DOCUMENT,
+      DocumentType.ISSUE_AMENDMENT_LETTER,
+      DocumentType.AMENDMENT_AMENDMENT_LETTER);
 
   static {
     APPLICATION_COMPARATORS = new EnumMap<>(ApplicationSortType.class);

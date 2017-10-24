@@ -3,6 +3,7 @@ package components.service.test;
 import static components.util.RandomIdUtil.amendmentId;
 import static components.util.RandomIdUtil.appId;
 import static components.util.RandomIdUtil.delayNotificationId;
+import static components.util.RandomIdUtil.documentId;
 import static components.util.RandomIdUtil.fileId;
 import static components.util.RandomIdUtil.informNotificationId;
 import static components.util.RandomIdUtil.outcomeId;
@@ -195,22 +196,20 @@ public class TestDataServiceImpl implements TestDataService {
     List<String> rfiIds = rfiDao.getRfiList(appIds).stream()
         .map(Rfi::getId)
         .collect(Collectors.toList());
-    appIds.forEach(rfiDao::deleteRfiListByAppId);
     rfiIds.forEach(rfiReplyDao::deleteRfiRepliesByRfiId);
     rfiIds.forEach(rfiWithdrawalDao::deleteRfiWithdrawalByRfiId);
     customerIds.forEach(sielDao::deleteSielsByCustomerId);
-    appIds.forEach(applicationDao::deleteApplication);
     rfiIds.forEach(rfiId -> draftDao.deleteDraft(rfiId, DraftType.RFI_REPLY));
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT_OR_WITHDRAWAL));
     appIds.forEach(notificationDao::deleteNotificationsByAppId);
     readDao.deleteAllReadDataByUserId(userId);
+    appIds.forEach(rfiDao::deleteRfiListByAppId);
+    appIds.forEach(applicationDao::deleteApplication);
   }
 
   @Override
   public void deleteAllUsers() {
-    applicationDao.deleteAllApplications();
     statusUpdateDao.deleteAllStatusUpdates();
-    rfiDao.deleteAllRfiData();
     rfiReplyDao.deleteAllRfiReplies();
     withdrawalRequestDao.deleteAllWithdrawalRequests();
     withdrawalRejectionDao.deleteAllWithdrawalRejections();
@@ -222,6 +221,8 @@ public class TestDataServiceImpl implements TestDataService {
     notificationDao.deleteAllNotifications();
     rfiWithdrawalDao.deleteAllRfiWithdrawals();
     readDao.deleteAllReadData();
+    rfiDao.deleteAllRfiData();
+    applicationDao.deleteAllApplications();
   }
 
   // Siel Ogel
@@ -322,17 +323,14 @@ public class TestDataServiceImpl implements TestDataService {
 
         }
         if (i % 3 == 0) {
-          File document = new File();
-          document.setId("FIL");
-          document.setUrl("#");
-          document.setFilename("Inform letter");
+          File document = new File(fileId(), "Inform letter", "#");
           Notification notification = new Notification(informNotificationId(),
               appId,
               NotificationType.INFORM,
               OFFICER_ID,
               time(2017, 5, 1 + i, 2, 3),
               RECIPIENTS,
-              "",
+              null,
               document);
           notificationDao.insertNotification(notification);
         }
@@ -374,17 +372,14 @@ public class TestDataServiceImpl implements TestDataService {
         StatusType.INITIAL_CHECKS,
         time(2017, 8, 3, 0, 0));
     statusUpdateDao.insertStatusUpdate(initialChecks);
-    File document = new File();
-    document.setId("FIL");
-    document.setUrl("#");
-    document.setFilename("Inform letter");
+    File document = new File(fileId(), "Inform letter", "#");
     Notification notification = new Notification(informNotificationId(),
         appId,
         NotificationType.INFORM,
         OFFICER_ID,
         time(2017, 9, 1, 2, 3),
         RECIPIENTS,
-        "",
+        null,
         document);
     notificationDao.insertNotification(notification);
   }
@@ -469,7 +464,7 @@ public class TestDataServiceImpl implements TestDataService {
         delayNotificationId(),
         appId,
         NotificationType.DELAY,
-        TestDataServiceImpl.OFFICER_ID,
+        null,
         time(2016, 1, 1, 13, 20),
         RECIPIENTS,
         "We're sorry to inform you that your application has been delayed.",
@@ -651,41 +646,39 @@ public class TestDataServiceImpl implements TestDataService {
     String nlr = "Letter confirming that no licence is required for some or all of your items";
     List<String> licenceRefs = Arrays.asList(letter, licence, refusal, nlr);
 
-    List<DocumentType> issueDocumentTypes = Arrays.asList(DocumentType.ISSUE_LETTER, DocumentType.ISSUE_LICENCE, DocumentType.ISSUE_REFUSAL, DocumentType.ISSUE_NLR);
-    List<DocumentType> amendDocumentTypes = Arrays.asList(DocumentType.AMEND_LETTER, DocumentType.AMEND_LICENCE, DocumentType.AMEND_REFUSAL, DocumentType.AMEND_NLR);
+    List<DocumentType> issueDocumentTypes = Arrays.asList(DocumentType.ISSUE_COVER_LETTER,
+        DocumentType.ISSUE_LICENCE_DOCUMENT,
+        DocumentType.ISSUE_REFUSE_DOCUMENT,
+        DocumentType.ISSUE_NLR_DOCUMENT,
+        DocumentType.ISSUE_AMENDMENT_LETTER);
+    List<DocumentType> amendDocumentTypes = Arrays.asList(DocumentType.AMENDMENT_COVER_LETTER,
+        DocumentType.AMENDMENT_LICENCE_DOCUMENT,
+        DocumentType.AMENDMENT_REFUSE_DOCUMENT,
+        DocumentType.AMENDMENT_NLR_DOCUMENT,
+        DocumentType.AMENDMENT_AMENDMENT_LETTER);
 
     int max = hasAmendments ? 4 : 1;
 
     for (int i = 0; i < max; i++) {
       long createdTimestamp = time(2010 + i, 2 + i, 10 + i, 13, 17);
-      String outcomeId = outcomeId();
-      Outcome outcome = new Outcome();
-      outcome.setId(outcomeId);
-      outcome.setAppId(appId);
-      outcome.setCreatedTimestamp(createdTimestamp);
-      outcome.setCreatedByUserId(userId);
-      outcome.setRecipientUserIds(RECIPIENTS);
       List<Document> documents = new ArrayList<>();
       for (int j = 0; j < 4; j++) {
         DocumentType documentType = i == 0 ? issueDocumentTypes.get(j) : amendDocumentTypes.get(j);
-        Document document = new Document();
-        document.setDocumentType(documentType);
-        document.setFilename(UUID.randomUUID().toString() + ".pdf");
-        document.setLicenceRef(licenceRefs.get(j));
-        document.setUrl("#");
+        Document document = new Document(documentId(),
+            documentType,
+            licenceRefs.get(j),
+            UUID.randomUUID().toString() + ".pdf",
+            "#");
         documents.add(document);
       }
-      outcome.setDocuments(documents);
+      Outcome outcome = new Outcome(outcomeId(), appId, userId, RECIPIENTS, createdTimestamp, documents);
       outcomeDao.insertOutcome(outcome);
     }
 
     for (int i = 0; i < 3; i++) {
       long createdTimestamp = time(2017, 5 + i, 3 + i, 3 + i, 3 + i);
-      File document = new File();
-      document.setId(fileId());
-      document.setFilename("Licence required inform letter number " + (i + 1));
-      document.setUrl("#");
-      Notification notification = new Notification(informNotificationId(), appId, NotificationType.INFORM, OFFICER_ID, createdTimestamp, RECIPIENTS, "", document);
+      File document = new File(fileId(), "Licence required inform letter number " + (i + 1), "#");
+      Notification notification = new Notification(informNotificationId(), appId, NotificationType.INFORM, OFFICER_ID, createdTimestamp, RECIPIENTS, null, document);
       notificationDao.insertNotification(notification);
     }
   }

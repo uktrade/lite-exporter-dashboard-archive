@@ -17,7 +17,7 @@ public class Rfi {
   private final Long dueTimestamp;
   @NotBlank
   private final String createdByUserId;
-  @NotEmpty
+  @NotNull
   private final List<String> recipientUserIds;
   @NotBlank
   private final String message;

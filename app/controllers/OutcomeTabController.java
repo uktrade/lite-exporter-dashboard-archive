@@ -87,7 +87,15 @@ public class OutcomeTabController extends SamlController {
       Outcome outcome = outcomes.get(i);
       boolean showNewIndicator = !readData.getUnreadOutcomeIds().isEmpty();
       List<OutcomeDocumentView> outcomeDocumentViews = outcome.getDocuments().stream()
-          .map(document -> new OutcomeDocumentView(document.getLicenceRef(), document.getUrl()))
+          .map(document -> {
+            String name;
+            if (document.getLicenceRef() != null) {
+              name = document.getLicenceRef() + " " + document.getFilename();
+            } else {
+              name = document.getFilename();
+            }
+            return new OutcomeDocumentView(name, document.getUrl());
+          })
           .collect(Collectors.toList());
       String issuedOn = TimeUtil.formatDate(outcome.getCreatedTimestamp());
       String voidedOn;
