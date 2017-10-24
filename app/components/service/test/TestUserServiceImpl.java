@@ -4,21 +4,23 @@ import com.google.inject.Inject;
 import components.common.auth.AuthInfo;
 import components.common.auth.SpireAuthManager;
 import components.exceptions.ServiceException;
+import components.service.UserPrivilegeService;
 import components.service.UserService;
-import models.User;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+import models.User;
+import org.apache.commons.lang3.StringUtils;
 
 public class TestUserServiceImpl implements UserService {
 
   private static final Map<String, User> users = new HashMap<>();
   private final SpireAuthManager spireAuthManager;
+  private final UserPrivilegeService userPrivilegeService;
 
   @Inject
-  public TestUserServiceImpl(SpireAuthManager spireAuthManager) {
+  public TestUserServiceImpl(SpireAuthManager spireAuthManager, UserPrivilegeService userPrivilegeService) {
     this.spireAuthManager = spireAuthManager;
+    this.userPrivilegeService = userPrivilegeService;
   }
 
   static {
@@ -55,6 +57,7 @@ public class TestUserServiceImpl implements UserService {
     if (!authInfo.isAuthenticated()) {
       throw new ServiceException("Unable to get current user id since no user is logged in.");
     } else {
+      userPrivilegeService.get(authInfo.getId());
       return authInfo.getId();
     }
   }
