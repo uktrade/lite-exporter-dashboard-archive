@@ -1,5 +1,7 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.service.AppDataService;
@@ -11,12 +13,17 @@ import components.service.UserService;
 import java.util.List;
 import models.AppData;
 import models.ReadData;
+import models.Stuff;
 import models.view.ApplicationSummaryView;
 import models.view.ApplicationTabsView;
 import models.view.StatusItemView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.mvc.Result;
+import play.mvc.With;
 import views.html.statusTrackerTab;
 
+@With(AppGuardAction.class)
 public class StatusTabController extends SamlController {
 
   private final String licenceApplicationAddress;
@@ -26,6 +33,9 @@ public class StatusTabController extends SamlController {
   private final ApplicationTabsViewService applicationTabsViewService;
   private final UserService userService;
   private final ReadDataService readDataService;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(StatusTabController.class);
+  private static final ObjectWriter WRITER = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
   @Inject
   public StatusTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -42,6 +52,10 @@ public class StatusTabController extends SamlController {
     this.applicationTabsViewService = applicationTabsViewService;
     this.userService = userService;
     this.readDataService = readDataService;
+  }
+
+  public Result blakeks(Stuff bla) {
+    return ok();
   }
 
   public Result showStatusTab(String appId) {

@@ -57,7 +57,6 @@ public class TestUserServiceImpl implements UserService {
     if (!authInfo.isAuthenticated()) {
       throw new ServiceException("Unable to get current user id since no user is logged in.");
     } else {
-      userPrivilegeService.get(authInfo.getId());
       return authInfo.getId();
     }
   }

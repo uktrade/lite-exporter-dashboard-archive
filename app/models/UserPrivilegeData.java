@@ -1,35 +1,23 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
-import models.enums.UserAccountType;
-import uk.gov.bis.lite.customer.api.view.CustomerView;
-import uk.gov.bis.lite.customer.api.view.SiteView;
+import java.util.Set;
 
 public class UserPrivilegeData {
 
-  private UserAccountType userAccountType;
-  private List<CustomerView> customers;
-  private List<SiteView> sites;
+  private Set<String> customerIds;
+  private Set<String> siteIds;
 
-  public UserPrivilegeData(@JsonProperty("userAccountType") UserAccountType userAccountType,
-                           @JsonProperty("customers") List<CustomerView> customers,
-                           @JsonProperty("sites") List<SiteView> sites) {
-    this.userAccountType = userAccountType;
-    this.customers = customers;
-    this.sites = sites;
+  public UserPrivilegeData(Set<String> customerIds, Set<String> siteIds) {
+    this.customerIds = customerIds;
+    this.siteIds = siteIds;
   }
 
-  public UserAccountType getUserAccountType() {
-    return userAccountType;
+  public Set<String> getCustomerIds() {
+    return customerIds;
   }
 
-  public List<CustomerView> getCustomers() {
-    return customers;
-  }
-
-  public List<SiteView> getSites() {
-    return sites;
+  public Set<String> getSiteIds() {
+    return siteIds;
   }
 
 }
