@@ -92,10 +92,10 @@ public class TestDataServiceImpl implements TestDataService {
   private static final List<String> CONSIGNEE_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
   private static final List<String> END_USER_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
 
-
-  private static final String COMPANY_ID_ONE = "SAR1";
-  private static final String COMPANY_ID_TWO = "SAR2";
-  private static final String COMPANY_ID_THREE = "SAR3";
+  public static final String COMPANY_ID_ONE = "SAR1";
+  public static final String COMPANY_ID_TWO = "SAR2";
+  public static final String COMPANY_ID_THREE = "SAR3";
+  public static final String SITE_ID = "SAR1_SITE1";
 
   private final RfiDao rfiDao;
   private final StatusUpdateDao statusUpdateDao;
@@ -259,7 +259,8 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        SITE_ID);
     applicationDao.insert(application);
   }
 
@@ -278,7 +279,8 @@ public class TestDataServiceImpl implements TestDataService {
           END_USER_COUNTRIES,
           getApplicantReference(),
           caseReference,
-          OFFICER_ID);
+          OFFICER_ID,
+          SITE_ID);
       applicationDao.insert(app);
       if (!isDraft) {
         StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
@@ -351,7 +353,8 @@ public class TestDataServiceImpl implements TestDataService {
           END_USER_COUNTRIES,
           getApplicantReference(),
           null,
-          OFFICER_ID);
+          OFFICER_ID,
+          SITE_ID);
       applicationDao.insert(app);
     }
     // Create application with inform notice
@@ -365,7 +368,8 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        SITE_ID);
     applicationDao.insert(app);
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         app.getId(),
@@ -416,7 +420,8 @@ public class TestDataServiceImpl implements TestDataService {
         endUserCountries,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        SITE_ID);
     applicationDao.insert(application);
 
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
@@ -505,7 +510,8 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        SITE_ID);
     applicationDao.insert(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(appId, rfiId).forEach(rfiDao::insertRfi);
@@ -532,14 +538,14 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 1, 2, 13, 30),
         time(2017, 2, 2, 13, 30),
         OFFICER_ID,
-        RECIPIENTS,
+        new ArrayList<>(),
         "Please reply to this rfi message.");
     Rfi rfiTwo = new Rfi(rfiId,
         appId,
         time(2017, 2, 5, 10, 10),
         time(2017, 3, 12, 16, 10),
         OFFICER_ID,
-        RECIPIENTS,
+        new ArrayList<>(),
         "<p>We note from your application that you have rated all 8 line items as ML10a and that these items are used in production and maintenance of civil and/or military aircraft.</p>"
             + "<p>Would you please provide the make/model of aircraft for which each of the 8 line items on your application was originally designed.</p>"
             + "<p>Than you for your help in this matter.</p>");
@@ -548,14 +554,14 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 4, 5, 10, 10),
         time(2017, 5, 12, 16, 10),
         OFFICER_ID,
-        RECIPIENTS,
+        new ArrayList<>(),
         "This is some rfi message.");
     Rfi rfiFour = new Rfi(rfiId(),
         appId,
         time(2017, 7, 5, 10, 10),
         time(2018, 8, 5, 10, 10),
         OFFICER_ID,
-        RECIPIENTS,
+        new ArrayList<>(),
         "This is another rfi message.");
     List<Rfi> rfiList = new ArrayList<>();
     rfiList.add(rfi);
@@ -596,7 +602,8 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
-        null);
+        null,
+        SITE_ID);
     applicationDao.insert(application);
     StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(),
         appId,
@@ -625,7 +632,8 @@ public class TestDataServiceImpl implements TestDataService {
         endUserCountries,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        SITE_ID);
     applicationDao.insert(application);
     List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
         StatusType.TECHNICAL_ASSESSMENT,

@@ -45,9 +45,11 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.mvc.BodyParser;
 import play.mvc.Result;
+import play.mvc.With;
 import utils.common.SelectOption;
 import views.html.amendApplicationTab;
 
+@With(AppGuardAction.class)
 public class AmendTabController extends SamlController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AmendTabController.class);

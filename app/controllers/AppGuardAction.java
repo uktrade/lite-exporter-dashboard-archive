@@ -1,10 +1,12 @@
 package controllers;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import components.dao.ApplicationDao;
 import components.service.UserPrivilegeService;
 import components.service.UserService;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import models.Application;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +16,6 @@ import play.mvc.Action;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 
-@Singleton
 public class AppGuardAction extends Action.Simple {
 
   private static final String PATH_START = "/application/";
@@ -37,7 +38,6 @@ public class AppGuardAction extends Action.Simple {
 
   @Override
   public CompletionStage<Result> call(Context ctx) {
-    LOGGER.error("code: " + hashCode());
     String path = ctx.request().path();
     String pattern = (String) ctx.args.get("ROUTE_PATTERN");
     if (StringUtils.startsWith(path, PATH_START) && StringUtils.startsWith(pattern, PATTERN_START)) {
@@ -46,10 +46,36 @@ public class AppGuardAction extends Action.Simple {
       if (index > 0) {
         String appId = appIdStart.substring(0, index);
         Application application = applicationDao.getApplication(appId);
-        boolean allowed = userPrivilegeService.isAccessAllowed(userService.getCurrentUserId(), application.getCustomerId());
-        LOGGER.error("allowed: " + allowed);
+        if (application == null) {
+          LOGGER.error("Unknown application id " + appId);
+          return error();
+        } else {
+          String currentUserId = userService.getCurrentUserId();
+          String siteId = application.getSiteId();
+          String customerId = application.getCustomerId();
+          boolean allowed = userPrivilegeService.isAccessAllowed(currentUserId, siteId, customerId);
+          if (allowed) {
+            return delegate.call(ctx);
+          } else {
+            String errorMessage = String.format("User %s has no access to application %s with siteId %s and customerId %s", currentUserId, appId, siteId, customerId);
+            LOGGER.error(errorMessage);
+            return error();
+          }
+        }
+      } else {
+        String errorMessage = String.format("Path %s or pattern %s not valid ", path, pattern);
+        LOGGER.error(errorMessage);
+        return error();
       }
+    } else {
+      String errorMessage = String.format("Path %s or pattern %s not valid ", path, pattern);
+      LOGGER.error(errorMessage);
+      return error();
     }
-    return delegate.call(ctx);
   }
+
+  private CompletableFuture<Result> error() {
+    return completedFuture(notFound("Unknown application."));
+  }
+
 }

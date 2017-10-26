@@ -11,8 +11,9 @@ public class RfiView {
   private final String withdrawnDate;
   private final boolean showNewIndicator;
   private final RfiReplyView rfiReplyView;
+  private final boolean allowReply;
 
-  public RfiView(String appId, String rfiId, String receivedDate, String replyBy, String sender, String message, String withdrawnDate, boolean showNewIndicator, RfiReplyView rfiReplyView) {
+  public RfiView(String appId, String rfiId, String receivedDate, String replyBy, String sender, String message, String withdrawnDate, boolean showNewIndicator, RfiReplyView rfiReplyView, boolean allowReply) {
     this.appId = appId;
     this.rfiId = rfiId;
     this.receivedDate = receivedDate;
@@ -22,6 +23,7 @@ public class RfiView {
     this.withdrawnDate = withdrawnDate;
     this.showNewIndicator = showNewIndicator;
     this.rfiReplyView = rfiReplyView;
+    this.allowReply = allowReply;
   }
 
   public String getAppId() {
@@ -58,6 +60,10 @@ public class RfiView {
 
   public RfiReplyView getRfiReplyView() {
     return rfiReplyView;
+  }
+
+  public boolean isAllowReply() {
+    return allowReply;
   }
 
 }

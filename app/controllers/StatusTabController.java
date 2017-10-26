@@ -13,7 +13,6 @@ import components.service.UserService;
 import java.util.List;
 import models.AppData;
 import models.ReadData;
-import models.Stuff;
 import models.view.ApplicationSummaryView;
 import models.view.ApplicationTabsView;
 import models.view.StatusItemView;
@@ -52,10 +51,6 @@ public class StatusTabController extends SamlController {
     this.applicationTabsViewService = applicationTabsViewService;
     this.userService = userService;
     this.readDataService = readDataService;
-  }
-
-  public Result blakeks(Stuff bla) {
-    return ok();
   }
 
   public Result showStatusTab(String appId) {

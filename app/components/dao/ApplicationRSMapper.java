@@ -24,7 +24,8 @@ public class ApplicationRSMapper implements ResultSetMapper<Application> {
     List<String> endUserCountries = JsonUtil.convertJsonToList(endUserCountriesJson);
     String caseReference = r.getString("case_reference");
     String caseOfficerId = r.getString("case_officer_id");
-    return new Application(id, companyId, createdBy, createdTimestamp, submittedTimestamp, consigneeCountries, endUserCountries, applicantReference, caseReference, caseOfficerId);
+    String siteId = r.getString("site_id");
+    return new Application(id, companyId, createdBy, createdTimestamp, submittedTimestamp, consigneeCountries, endUserCountries, applicantReference, caseReference, caseOfficerId, siteId);
   }
 
 }

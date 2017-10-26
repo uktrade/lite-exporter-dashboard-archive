@@ -1,7 +1,5 @@
 package components.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -11,25 +9,23 @@ import components.common.logging.CorrelationId;
 import filters.common.JwtRequestFilter;
 import filters.common.JwtRequestFilterConfig;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import models.UserPrivilegeData;
-import models.UserPrivilegeView;
+import models.AppData;
+import models.Rfi;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
-import uk.gov.bis.lite.customer.api.view.CustomerView;
-import uk.gov.bis.lite.customer.api.view.SiteView;
+import uk.gov.bis.lite.user.api.view.Role;
+import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
 
 public class UserPrivilegeServiceImpl implements UserPrivilegeService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UserPrivilegeServiceImpl.class);
-  private static final ObjectWriter WRITER = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
   private static final String KEY = "demo-secret-which-is-very-long-so-as-to-hit-the-byte-requirement";
   private static final String ISSUER = "lite-exporter-dashboard";
@@ -39,7 +35,7 @@ public class UserPrivilegeServiceImpl implements UserPrivilegeService {
   private final String address = "http://user-service.svc.dev.licensing.service.trade.gov.uk.test";
   private final int timeoutMilliseconds = 10000;
   private final int cacheExpireAfterWriteMinutes = 10;
-  private LoadingCache<String, Optional<UserPrivilegeData>> privilegesCache;
+  private LoadingCache<String, Optional<UserPrivilegesView>> privilegesCache;
   private final JwtRequestFilter jwtRequestFilter;
 
   @Inject
@@ -49,49 +45,78 @@ public class UserPrivilegeServiceImpl implements UserPrivilegeService {
     init();
   }
 
-  private Optional<UserPrivilegeData> getPrivileges(String userId) {
+  private Optional<UserPrivilegesView> getPrivileges(String userId) {
     try {
       return privilegesCache.get(userId);
     } catch (ExecutionException e) {
-      LOGGER.error("ExecutionException for: " + userId, e);
+      LOGGER.error("ExecutionException for " + userId, e);
       return Optional.empty();
     }
   }
 
   @Override
-  public boolean isAccessAllowed(String userId, String customerId) {
-    Optional<UserPrivilegeData> userPrivilegeData = getPrivileges(userId);
-    return userPrivilegeData.isPresent() && userPrivilegeData.get().getCustomerIds().contains(customerId);
+  public boolean isAccessAllowed(String userId, String siteId, String customerId) {
+    Optional<UserPrivilegesView> userPrivilegeData = getPrivileges(userId);
+    if (userPrivilegeData.isPresent()) {
+      boolean siteAllowed = userPrivilegeData.get().getSites().stream()
+          .anyMatch(siteView -> siteView.getSiteId().equals(siteId));
+      boolean customerAllowed = userPrivilegeData.get().getCustomers().stream()
+          .anyMatch(customerView -> customerView.getCustomerId().equals(customerId));
+      return siteAllowed || customerAllowed;
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public boolean hasRfiReplyPermission(String userId, String rfiId, AppData appData) {
+    Optional<Rfi> rfi = appData.getRfiList().stream()
+        .filter(rfiIterate -> rfiIterate.getId().equals(rfiId))
+        .findAny();
+    Optional<UserPrivilegesView> userPrivilegesView = getPrivileges(userId);
+    if (rfi.isPresent() && userPrivilegesView.isPresent()) {
+      boolean isRecipient = rfi.get().getRecipientUserIds().contains(userId);
+      String siteId = appData.getApplication().getSiteId();
+      boolean hasSiteRole = hasSiteRole(userPrivilegesView.get(), siteId, Role.ADMIN, Role.SUBMITTER);
+      String customerId = appData.getApplication().getCustomerId();
+      boolean hasCustomerRole = hasCustomerRole(userPrivilegesView.get(), customerId, Role.ADMIN, Role.SUBMITTER);
+      return isRecipient || hasSiteRole || hasCustomerRole;
+    } else {
+      return false;
+    }
+  }
+
+  private boolean hasCustomerRole(UserPrivilegesView userPrivilegesView, String customerId, Role... roles) {
+    return userPrivilegesView.getCustomers().stream()
+        .anyMatch(view -> view.getCustomerId().equals(customerId) && ArrayUtils.contains(roles, view.getRole()));
+  }
+
+  private boolean hasSiteRole(UserPrivilegesView userPrivilegesView, String siteId, Role... roles) {
+    return userPrivilegesView.getSites().stream()
+        .anyMatch(view -> view.getSiteId().equals(siteId) && ArrayUtils.contains(roles, view.getRole()));
   }
 
   private void init() {
     privilegesCache = CacheBuilder.newBuilder()
         .expireAfterWrite(this.cacheExpireAfterWriteMinutes, TimeUnit.MINUTES)
-        .build(
-            new CacheLoader<String, Optional<UserPrivilegeData>>() {
-              @Override
-              public Optional<UserPrivilegeData> load(String id) throws Exception {
-                return getUserPrivilegeData(id);
-              }
-            }
+        .build(new CacheLoader<String, Optional<UserPrivilegesView>>() {
+                 @Override
+                 public Optional<UserPrivilegesView> load(String id) throws Exception {
+                   return getUserPrivilegesView(id);
+                 }
+               }
         );
   }
 
-  private Optional<UserPrivilegeData> getUserPrivilegeData(String userId) {
+  protected Optional<UserPrivilegesView> getUserPrivilegesView(String userId) {
     WSRequest request = wsClient.url(address + USER_PRIVILEGES_PATH + userId)
         .withRequestFilter(jwtRequestFilter)
         .withRequestFilter(CorrelationId.requestFilter).setRequestTimeout(timeoutMilliseconds);
     try {
       WSResponse response = request.get().toCompletableFuture().get();
-      UserPrivilegeView userPrivilegeView = Json.fromJson(response.asJson(), UserPrivilegeView.class);
+      UserPrivilegesView userPrivilegeView = Json.fromJson(response.asJson(), UserPrivilegesView.class);
       if (userPrivilegeView != null) {
-        Set<String> customerIds = userPrivilegeView.getCustomers().stream()
-            .map(CustomerView::getCustomerId)
-            .collect(Collectors.toSet());
-        Set<String> siteIds = userPrivilegeView.getSites().stream()
-            .map(SiteView::getSiteId)
-            .collect(Collectors.toSet());
-        return Optional.of(new UserPrivilegeData(customerIds, siteIds));
+        return Optional.of(userPrivilegeView);
       } else {
         LOGGER.error("userPrivilegeView is null for userId " + userId);
         return Optional.empty();

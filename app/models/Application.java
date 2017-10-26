@@ -14,8 +14,9 @@ public class Application {
   private final String applicantReference;
   private final String caseReference;
   private final String caseOfficerId;
+  private final String siteId;
 
-  public Application(String id, String customerId, String createdByUserId, Long createdTimestamp, Long submittedTimestamp, List<String> consigneeCountries, List<String> endUserCountries, String applicantReference, String caseReference, String caseOfficerId) {
+  public Application(String id, String customerId, String createdByUserId, Long createdTimestamp, Long submittedTimestamp, List<String> consigneeCountries, List<String> endUserCountries, String applicantReference, String caseReference, String caseOfficerId, String siteId) {
     this.id = id;
     this.customerId = customerId;
     this.createdByUserId = createdByUserId;
@@ -26,6 +27,7 @@ public class Application {
     this.applicantReference = applicantReference;
     this.caseReference = caseReference;
     this.caseOfficerId = caseOfficerId;
+    this.siteId = siteId;
   }
 
   public String getId() {
@@ -66,6 +68,10 @@ public class Application {
 
   public String getCaseOfficerId() {
     return caseOfficerId;
+  }
+
+  public String getSiteId() {
+    return siteId;
   }
 
 }

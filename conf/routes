@@ -9,7 +9,6 @@ GET         /                                                         controller
 GET         /applications                                             controllers.ApplicationListController.applicationList(tab ?= null, sort ?= null, direction ?=null, company ?= null, show ?= null, page: Integer ?= null)
 
 # Application tabs
-GET         /application/:aha/what                                    controllers.StatusTabController.blakeks(aha: models.Stuff)
 GET         /application/*appId/status-tracker                        controllers.StatusTabController.showStatusTab(appId)
 GET         /application/*appId/rfi                                   controllers.RfiTabController.showRfiTab(appId)
 GET         /application/*appId/rfi/*rfiId                            controllers.RfiTabController.showReplyForm(appId, rfiId)
