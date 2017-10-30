@@ -37,17 +37,17 @@ import models.enums.StatusType;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteCaseStatusUpdate;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteMessageDocument;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteNotificationDelay;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteNotificationInform;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteNotificationStop;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteOutcomeAmend;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteOutcomeDocument;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteOutcomeIssue;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteRfiCreate;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteRfiWithdrawalCreate;
-import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.LiteWithdrawalReject;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardCaseStatusUpdate;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardMessageDocument;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardNotificationDelay;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardNotificationInform;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardNotificationStop;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeAmend;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeDocument;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeIssue;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiCreate;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiWithdrawalCreate;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardWithdrawalReject;
 
 public class MessageConsumerImpl extends DefaultConsumer implements MessageConsumer {
 
@@ -132,74 +132,74 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   }
 
   private void insertRfi(String message) {
-    LiteRfiCreate liteRfiCreate = parse(message, LiteRfiCreate.class);
-    Rfi rfi = new Rfi(liteRfiCreate.getId(),
-        liteRfiCreate.getAppId(),
-        liteRfiCreate.getCreatedTimestamp(),
-        liteRfiCreate.getDeadlineTimestamp(),
-        liteRfiCreate.getSentByUserId(),
-        liteRfiCreate.getRecipientUserIds(),
-        liteRfiCreate.getMessage());
+    DashboardRfiCreate dashboardRfiCreate = parse(message, DashboardRfiCreate.class);
+    Rfi rfi = new Rfi(dashboardRfiCreate.getId(),
+        dashboardRfiCreate.getAppId(),
+        dashboardRfiCreate.getCreatedTimestamp(),
+        dashboardRfiCreate.getDeadlineTimestamp(),
+        dashboardRfiCreate.getCreatedByUserId(),
+        dashboardRfiCreate.getRecipientUserIds(),
+        dashboardRfiCreate.getMessage());
     validate(rfi);
     rfiDao.insertRfi(rfi);
   }
 
   private void insertStatusUpdate(String message) {
-    LiteCaseStatusUpdate liteCaseStatusUpdate = parse(message, LiteCaseStatusUpdate.class);
-    if (liteCaseStatusUpdate.getStatusCode() == null) {
-      throw new ValidationException("statusCode of LiteCaseStatusUpdate cannot be null.");
+    DashboardCaseStatusUpdate dashboardCaseStatusUpdate = parse(message, DashboardCaseStatusUpdate.class);
+    if (dashboardCaseStatusUpdate.getStatusCode() == null) {
+      throw new ValidationException("statusCode of DashboardCaseStatusUpdate cannot be null.");
     }
-    StatusType statusType = EnumUtil.parse(liteCaseStatusUpdate.getStatusCode().toString(), StatusType.class);
+    StatusType statusType = EnumUtil.parse(dashboardCaseStatusUpdate.getStatusCode().toString(), StatusType.class);
     StatusUpdate statusUpdate = new StatusUpdate(RandomIdUtil.statusUpdateId(),
-        liteCaseStatusUpdate.getAppId(),
+        dashboardCaseStatusUpdate.getAppId(),
         statusType,
-        liteCaseStatusUpdate.getTimestamp());
+        dashboardCaseStatusUpdate.getCreatedTimestamp());
     validate(statusUpdate);
     statusUpdateDao.insertStatusUpdate(statusUpdate);
   }
 
   private void insertDelayNotification(String message) {
-    LiteNotificationDelay liteNotificationDelay = parse(message, LiteNotificationDelay.class);
-    Notification notification = new Notification(liteNotificationDelay.getId(),
-        liteNotificationDelay.getAppId(),
+    DashboardNotificationDelay dashboardNotificationDelay = parse(message, DashboardNotificationDelay.class);
+    Notification notification = new Notification(dashboardNotificationDelay.getId(),
+        dashboardNotificationDelay.getAppId(),
         NotificationType.DELAY,
         null,
-        liteNotificationDelay.getSentTimestamp(),
-        liteNotificationDelay.getRecipientUserIds(),
-        liteNotificationDelay.getMessage(),
+        dashboardNotificationDelay.getCreatedTimestamp(),
+        dashboardNotificationDelay.getRecipientUserIds(),
+        dashboardNotificationDelay.getMessage(),
         null);
     validate(notification, "createdByUserId", "document");
     notificationDao.insertNotification(notification);
   }
 
   private void insertStopNotification(String message) {
-    LiteNotificationStop liteNotificationStop = parse(message, LiteNotificationStop.class);
-    Notification notification = new Notification(liteNotificationStop.getId(),
-        liteNotificationStop.getAppId(),
+    DashboardNotificationStop dashboardNotificationStop = parse(message, DashboardNotificationStop.class);
+    Notification notification = new Notification(dashboardNotificationStop.getId(),
+        dashboardNotificationStop.getAppId(),
         NotificationType.STOP,
-        liteNotificationStop.getSentByUserId(),
-        liteNotificationStop.getSentTimestamp(),
-        liteNotificationStop.getRecipientUserIds(),
-        liteNotificationStop.getMessage(),
+        dashboardNotificationStop.getCreatedByUserId(),
+        dashboardNotificationStop.getCreatedTimestamp(),
+        dashboardNotificationStop.getRecipientUserIds(),
+        dashboardNotificationStop.getMessage(),
         null);
     validate(notification, "document");
     notificationDao.insertNotification(notification);
   }
 
   private void insertInformNotification(String message) {
-    LiteNotificationInform liteNotificationInform = parse(message, LiteNotificationInform.class);
-    LiteMessageDocument liteMessageDocument = liteNotificationInform.getDocument();
-    if (liteMessageDocument == null) {
-      throw new ValidationException("Document of LiteNotificationInform cannot be null.");
+    DashboardNotificationInform dashboardNotificationInform = parse(message, DashboardNotificationInform.class);
+    DashboardMessageDocument dashboardMessageDocument = dashboardNotificationInform.getDocument();
+    if (dashboardMessageDocument == null) {
+      throw new ValidationException("Document of DashboardNotificationInform cannot be null.");
     }
-    File file = new File(liteMessageDocument.getId(), liteMessageDocument.getFilename(), liteMessageDocument.getUrl());
+    File file = new File(dashboardMessageDocument.getId(), dashboardMessageDocument.getFilename(), dashboardMessageDocument.getUrl());
     validate(file);
-    Notification notification = new Notification(liteNotificationInform.getId(),
-        liteNotificationInform.getAppId(),
+    Notification notification = new Notification(dashboardNotificationInform.getId(),
+        dashboardNotificationInform.getAppId(),
         NotificationType.INFORM,
-        liteNotificationInform.getSentByUserId(),
-        liteNotificationInform.getSentTimestamp(),
-        liteNotificationInform.getRecipientUserIds(),
+        dashboardNotificationInform.getCreatedByUserId(),
+        dashboardNotificationInform.getCreatedTimestamp(),
+        dashboardNotificationInform.getRecipientUserIds(),
         null,
         file);
     validate(notification, "message");
@@ -207,55 +207,55 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   }
 
   private void insertRfiWithdrawal(String message) {
-    LiteRfiWithdrawalCreate liteRfiWithdrawalCreate = parse(message, LiteRfiWithdrawalCreate.class);
+    DashboardRfiWithdrawalCreate dashboardRfiWithdrawalCreate = parse(message, DashboardRfiWithdrawalCreate.class);
     RfiWithdrawal rfiWithdrawal = new RfiWithdrawal(RandomIdUtil.rfiWithdrawalId(),
-        liteRfiWithdrawalCreate.getRfiId(),
-        liteRfiWithdrawalCreate.getCreatedByUserId(),
-        liteRfiWithdrawalCreate.getCreatedTimestamp(),
-        liteRfiWithdrawalCreate.getRecipientUserIds(),
-        liteRfiWithdrawalCreate.getMessage());
+        dashboardRfiWithdrawalCreate.getRfiId(),
+        dashboardRfiWithdrawalCreate.getCreatedByUserId(),
+        dashboardRfiWithdrawalCreate.getCreatedTimestamp(),
+        dashboardRfiWithdrawalCreate.getRecipientUserIds(),
+        dashboardRfiWithdrawalCreate.getMessage());
     validate(rfiWithdrawal);
     rfiWithdrawalDao.insertRfiWithdrawal(rfiWithdrawal);
   }
 
   private void insertOutcomeIssue(String message) {
-    LiteOutcomeIssue liteOutcomeIssue = parse(message, LiteOutcomeIssue.class);
-    List<Document> documents = parseDocuments(liteOutcomeIssue.getDocuments(), "ISSUE_");
-    Outcome outcome = new Outcome(liteOutcomeIssue.getId(),
-        liteOutcomeIssue.getAppId(),
-        liteOutcomeIssue.getCreatedByUserId(),
-        liteOutcomeIssue.getRecipientUserIds(),
-        liteOutcomeIssue.getCreatedTimestamp(),
+    DashboardOutcomeIssue dashboardOutcomeIssue = parse(message, DashboardOutcomeIssue.class);
+    List<Document> documents = parseDocuments(dashboardOutcomeIssue.getDocuments(), "ISSUE_");
+    Outcome outcome = new Outcome(dashboardOutcomeIssue.getId(),
+        dashboardOutcomeIssue.getAppId(),
+        dashboardOutcomeIssue.getCreatedByUserId(),
+        dashboardOutcomeIssue.getRecipientUserIds(),
+        dashboardOutcomeIssue.getCreatedTimestamp(),
         documents);
     validate(outcome);
     outcomeDao.insertOutcome(outcome);
   }
 
   private void insertOutcomeAmend(String message) {
-    LiteOutcomeAmend liteOutcomeAmend = parse(message, LiteOutcomeAmend.class);
-    List<Document> documents = parseDocuments(liteOutcomeAmend.getDocuments(), "AMENDMENT_");
-    Outcome outcome = new Outcome(liteOutcomeAmend.getId(),
-        liteOutcomeAmend.getAppId(),
-        liteOutcomeAmend.getCreatedByUserId(),
-        liteOutcomeAmend.getRecipientUserIds(),
-        liteOutcomeAmend.getCreatedTimestamp(),
+    DashboardOutcomeAmend dashboardOutcomeAmend = parse(message, DashboardOutcomeAmend.class);
+    List<Document> documents = parseDocuments(dashboardOutcomeAmend.getDocuments(), "AMENDMENT_");
+    Outcome outcome = new Outcome(dashboardOutcomeAmend.getId(),
+        dashboardOutcomeAmend.getAppId(),
+        dashboardOutcomeAmend.getCreatedByUserId(),
+        dashboardOutcomeAmend.getRecipientUserIds(),
+        dashboardOutcomeAmend.getCreatedTimestamp(),
         documents);
     validate(outcome);
     outcomeDao.insertOutcome(outcome);
   }
 
-  private List<Document> parseDocuments(List<LiteOutcomeDocument> liteOutcomeDocuments, String prefix) {
-    if (CollectionUtils.isEmpty(liteOutcomeDocuments) || liteOutcomeDocuments.contains(null)) {
+  private List<Document> parseDocuments(List<DashboardOutcomeDocument> dashboardOutcomeDocuments, String prefix) {
+    if (CollectionUtils.isEmpty(dashboardOutcomeDocuments) || dashboardOutcomeDocuments.contains(null)) {
       throw new ValidationException("Documents cannot be empty or contain null.");
     }
-    List<Document> documents = liteOutcomeDocuments.stream()
-        .map(liteOutcomeDocument -> {
-          DocumentType documentType = EnumUtil.parse(prefix + liteOutcomeDocument.getDocumentType(), DocumentType.class);
-          return new Document(liteOutcomeDocument.getId(),
+    List<Document> documents = dashboardOutcomeDocuments.stream()
+        .map(dashboardOutcomeDocument -> {
+          DocumentType documentType = EnumUtil.parse(prefix + dashboardOutcomeDocument.getDocumentType(), DocumentType.class);
+          return new Document(dashboardOutcomeDocument.getId(),
               documentType,
-              liteOutcomeDocument.getLicenceRef(),
-              liteOutcomeDocument.getFileName(),
-              liteOutcomeDocument.getUrl());
+              dashboardOutcomeDocument.getLicenceRef(),
+              dashboardOutcomeDocument.getFilename(),
+              dashboardOutcomeDocument.getUrl());
         }).collect(Collectors.toList());
     documents.forEach(document -> {
       if (document.getDocumentType() == DocumentType.AMENDMENT_LICENCE_DOCUMENT || document.getDocumentType() == DocumentType.ISSUE_LICENCE_DOCUMENT) {
@@ -268,13 +268,13 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   }
 
   private void insertWithdrawalRejection(String message) {
-    LiteWithdrawalReject liteWithdrawalReject = parse(message, LiteWithdrawalReject.class);
+    DashboardWithdrawalReject dashboardWithdrawalReject = parse(message, DashboardWithdrawalReject.class);
     WithdrawalRejection withdrawalRejection = new WithdrawalRejection(RandomIdUtil.withdrawalRejectionId(),
-        liteWithdrawalReject.getAppId(),
-        liteWithdrawalReject.getRejectedByUserId(),
+        dashboardWithdrawalReject.getAppId(),
+        dashboardWithdrawalReject.getCreatedByUserId(),
         System.currentTimeMillis(),
         new ArrayList<>(),
-        liteWithdrawalReject.getMessage());
+        dashboardWithdrawalReject.getMessage());
     validate(withdrawalRejection);
     withdrawalRejectionDao.insertWithdrawalRejection(withdrawalRejection);
   }

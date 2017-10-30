@@ -2,7 +2,7 @@ package uk.gov.bis.lite.exporterdashboard.api;
 
 import org.hibernate.validator.constraints.NotBlank;
 
-public class File {
+public class DashboardDocument {
 
   @NotBlank
   private String id;

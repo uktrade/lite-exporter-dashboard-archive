@@ -1,6 +1,6 @@
 plugins {
-  id 'application'
-  id 'java'
+    id 'application'
+    id 'java'
 }
 
 apply plugin: 'maven-publish'
@@ -8,56 +8,56 @@ apply plugin: 'maven-publish'
 group 'uk.gov.bis.lite'
 
 repositories {
-  mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-  compile "org.hibernate:hibernate-validator:5.2.4.Final"
+    compile "org.hibernate:hibernate-validator:5.2.4.Final"
 }
 
 publishing {
-  repositories {
-    maven {
-      name "snapshots"
-      url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-snapshots/"
+    repositories {
+        maven {
+            name "snapshots"
+            url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-snapshots/"
+        }
+        maven {
+            name "releases"
+            url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
+        }
+        maven {
+            name "lite-builds"
+            url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/lite-builds/"
+        }
     }
-    maven {
-      name "releases"
-      url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
-    }
-    maven {
-      name "lite-builds"
-      url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/lite-builds/"
-    }
-  }
 }
 
 sourceSets {
-  main {
-    java {
-      srcDirs = ["app"]
-      include 'uk/gov/bis/lite/exporterdashboard/api/**/*'
+    main {
+        java {
+            srcDirs = ["app"]
+            include 'uk/gov/bis/lite/exporterdashboard/api/**/*'
+        }
     }
-  }
 }
 
 task apiJar(type: org.gradle.api.tasks.bundling.Jar, dependsOn: compileJava) {
-  from sourceSets.main.output.classesDir
+    from sourceSets.main.output.classesDir
 }
 
 task apiJarWithSources(type: org.gradle.api.tasks.bundling.Jar) {
-  from sourceSets.main.allJava
+    from sourceSets.main.allJava
 }
 
 publishing {
-  publications {
-    build(MavenPublication) {
-      artifactId 'lite-exporter-dashboard-api'
-      version '1.2-SNAPSHOT'
-      artifact apiJar
-      artifact apiJarWithSources {
-        classifier "sources"
-      }
+    publications {
+        build(MavenPublication) {
+            artifactId 'lite-exporter-dashboard-api'
+            version '1.3-SNAPSHOT'
+            artifact apiJar
+            artifact apiJarWithSources {
+                classifier "sources"
+            }
+        }
     }
-  }
 }

@@ -25,7 +25,7 @@ public class RfiReplyMessage implements ExporterDashboardMessage {
   private String message;
 
   @NotNull
-  private List<File> attachments;
+  private List<DashboardDocument> attachments;
 
   public String getId() {
     return id;
@@ -75,11 +75,11 @@ public class RfiReplyMessage implements ExporterDashboardMessage {
     this.message = message;
   }
 
-  public List<File> getAttachments() {
+  public List<DashboardDocument> getAttachments() {
     return attachments;
   }
 
-  public void setAttachments(List<File> attachments) {
+  public void setAttachments(List<DashboardDocument> attachments) {
     this.attachments = attachments;
   }
 

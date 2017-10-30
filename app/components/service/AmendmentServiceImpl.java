@@ -61,7 +61,7 @@ public class AmendmentServiceImpl implements AmendmentService {
     amendmentMessage.setCreatedByUserId(amendment.getCreatedByUserId());
     amendmentMessage.setCreatedTimestamp(amendment.getCreatedTimestamp());
     amendmentMessage.setMessage(amendment.getMessage());
-    amendmentMessage.setAttachments(MessageUtil.getFiles(amendment.getAttachments()));
+    amendmentMessage.setAttachments(MessageUtil.getDashboardDocuments(amendment.getAttachments()));
     return amendmentMessage;
   }
 

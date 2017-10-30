@@ -2,18 +2,19 @@ package components.util;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import uk.gov.bis.lite.exporterdashboard.api.File;
+import models.File;
+import uk.gov.bis.lite.exporterdashboard.api.DashboardDocument;
 
 public class MessageUtil {
 
-  public static List<File> getFiles(List<models.File> files) {
+  public static List<DashboardDocument> getDashboardDocuments(List<File> files) {
     return files.stream()
         .map(file -> {
-          uk.gov.bis.lite.exporterdashboard.api.File messageFile = new uk.gov.bis.lite.exporterdashboard.api.File();
-          messageFile.setId(file.getId());
-          messageFile.setFilename(file.getFilename());
-          messageFile.setUrl(file.getUrl());
-          return messageFile;
+          DashboardDocument dashboardDocument = new DashboardDocument();
+          dashboardDocument.setId(file.getId());
+          dashboardDocument.setFilename(file.getFilename());
+          dashboardDocument.setUrl(file.getUrl());
+          return dashboardDocument;
         }).collect(Collectors.toList());
   }
 

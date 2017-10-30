@@ -61,7 +61,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     withdrawalRequestMessage.setCreatedByUserId(withdrawalRequest.getCreatedByUserId());
     withdrawalRequestMessage.setCreatedTimestamp(withdrawalRequest.getCreatedTimestamp());
     withdrawalRequestMessage.setMessage(withdrawalRequest.getMessage());
-    withdrawalRequestMessage.setAttachments(MessageUtil.getFiles(withdrawalRequest.getAttachments()));
+    withdrawalRequestMessage.setAttachments(MessageUtil.getDashboardDocuments(withdrawalRequest.getAttachments()));
     return withdrawalRequestMessage;
   }
 

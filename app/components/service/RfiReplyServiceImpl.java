@@ -62,7 +62,7 @@ public class RfiReplyServiceImpl implements RfiReplyService {
     rfiReplyMessage.setCreatedByUserId(rfiReply.getCreatedByUserId());
     rfiReplyMessage.setCreatedTimestamp(rfiReply.getCreatedTimestamp());
     rfiReplyMessage.setMessage(rfiReply.getMessage());
-    rfiReplyMessage.setAttachments(MessageUtil.getFiles(rfiReply.getAttachments()));
+    rfiReplyMessage.setAttachments(MessageUtil.getDashboardDocuments(rfiReply.getAttachments()));
     return rfiReplyMessage;
   }
 

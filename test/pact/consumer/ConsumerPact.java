@@ -67,7 +67,7 @@ public class ConsumerPact {
         .stringType(("id"), "statusUpdateId")
         .stringValue("appId", "appId")
         .stringValue("statusCode", "INITIAL_CHECKS")
-        .integerType("timestamp", 123456789L);
+        .integerType("createdTimestamp", 123456789L);
     return builder.expectsToReceive("a status update message with status code INITIAL_CHECKS")
         .withContent(body)
         .toPact();
@@ -78,7 +78,7 @@ public class ConsumerPact {
     PactDslJsonBody body = new PactDslJsonBody()
         .stringType("id", "rfiId")
         .stringType("appId", "appId")
-        .stringType("sentByUserId", "createdByUserId")
+        .stringType("createdByUserId", "createdByUserId")
         .stringType("message", "This is an rfi message.")
         .integerType("createdTimestamp", 123456789L)
         .integerType("deadlineTimestamp", 987654321L)
@@ -97,7 +97,7 @@ public class ConsumerPact {
         .stringType("id", "delayNotificationId")
         .stringType("appId", "appId")
         .stringType("message", "This is a delay notification.")
-        .integerType("sentTimestamp", 123456789L)
+        .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
         .stringType("recipient")
         .closeArray()
@@ -113,8 +113,8 @@ public class ConsumerPact {
         .stringType("id", "stopNotificationId")
         .stringType("appId", "appId")
         .stringType("message", "This is a stop notification.")
-        .stringType("sentByUserId", "createdByUserId")
-        .integerType("sentTimestamp", 123456789L)
+        .stringType("createdByUserId", "createdByUserId")
+        .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
         .stringType("recipient")
         .closeArray()
@@ -129,8 +129,8 @@ public class ConsumerPact {
     PactDslJsonBody body = new PactDslJsonBody()
         .stringType("id", "informNotificationId")
         .stringType("appId", "appId")
-        .stringType("sentByUserId", "createdByUserId")
-        .integerType("sentTimestamp", 123456789L)
+        .stringType("createdByUserId", "createdByUserId")
+        .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
         .stringType("recipient")
         .closeArray()
@@ -176,7 +176,7 @@ public class ConsumerPact {
         .stringType("id", "documentId")
         .stringType("documentType", "LICENCE_DOCUMENT")
         .stringType("licenceRef", "licenceRef")
-        .stringType("fileName", "filename")
+        .stringType("filename", "filename")
         .stringType("url", "url")
         .closeObject()
         .closeArray();
@@ -200,7 +200,7 @@ public class ConsumerPact {
         .stringType("id", "documentId")
         .stringType("documentType", "LICENCE_DOCUMENT")
         .stringType("licenceRef", "licenceRef")
-        .stringType("fileName", "filename")
+        .stringType("filename", "filename")
         .stringType("url", "url")
         .closeObject()
         .closeArray();
@@ -213,7 +213,7 @@ public class ConsumerPact {
   public MessagePact createWithdrawalRejection(MessagePactBuilder builder) {
     DslPart dslPart = new PactDslJsonBody()
         .stringType("appId", "appId")
-        .stringType("rejectedByUserId", "createdByUserId")
+        .stringType("createdByUserId", "createdByUserId")
         .stringType("message", "This is a withdrawal rejection.");
     return builder.expectsToReceive("a withdrawal rejection")
         .withContent(dslPart)
