@@ -1,20 +1,14 @@
 package components.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.common.logging.CorrelationId;
 import components.common.logging.ServiceClientLogger;
 import components.exceptions.ServiceException;
-import components.service.UserPrivilegeServiceImpl;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
@@ -23,9 +17,6 @@ import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
 
 public class CustomerServiceClientImpl implements CustomerServiceClient {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(UserPrivilegeServiceImpl.class);
-  private static final ObjectWriter WRITER = new ObjectMapper().writer();
 
   private final HttpExecutionContext httpExecutionContext;
   private final WSClient wsClient;
@@ -89,12 +80,6 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
     });
     try {
       CustomerView[] customers = request.toCompletableFuture().get();
-      try {
-        LOGGER.error("url: " + url);
-        LOGGER.error(WRITER.writeValueAsString(customers));
-      } catch (JsonProcessingException e) {
-        e.printStackTrace();
-      }
       return Arrays.asList(customers);
     } catch (InterruptedException | ExecutionException error) {
       String message = String.format("Unable to get customers with user id %s", userId);

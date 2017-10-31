@@ -7,14 +7,22 @@ public class AmendmentView {
 
   private final boolean applicationInProgress;
   private final boolean hasPendingWithdrawalRequest;
+  private final boolean hasAmendmentOrWithdrawalPermission;
   private final List<PreviousRequestItemView> previousRequestItemViews;
   private final List<SelectOption> selectOptions;
   private final List<FileView> fileViews;
   private final OfficerView officerView;
 
-  public AmendmentView(boolean applicationInProgress, boolean hasPendingWithdrawalRequest, List<PreviousRequestItemView> previousRequestItemViews, List<SelectOption> selectOptions, List<FileView> fileViews, OfficerView officerView) {
+  public AmendmentView(boolean applicationInProgress,
+                       boolean hasPendingWithdrawalRequest,
+                       boolean hasAmendmentOrWithdrawalPermission,
+                       List<PreviousRequestItemView> previousRequestItemViews,
+                       List<SelectOption> selectOptions,
+                       List<FileView> fileViews,
+                       OfficerView officerView) {
     this.applicationInProgress = applicationInProgress;
     this.hasPendingWithdrawalRequest = hasPendingWithdrawalRequest;
+    this.hasAmendmentOrWithdrawalPermission = hasAmendmentOrWithdrawalPermission;
     this.previousRequestItemViews = previousRequestItemViews;
     this.selectOptions = selectOptions;
     this.fileViews = fileViews;
@@ -27,6 +35,10 @@ public class AmendmentView {
 
   public boolean isHasPendingWithdrawalRequest() {
     return hasPendingWithdrawalRequest;
+  }
+
+  public boolean isHasAmendmentOrWithdrawalPermission() {
+    return hasAmendmentOrWithdrawalPermission;
   }
 
   public List<PreviousRequestItemView> getPreviousRequestItemViews() {

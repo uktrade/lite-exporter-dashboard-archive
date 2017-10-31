@@ -72,6 +72,8 @@ import components.service.OfficerViewServiceImpl;
 import components.service.OgelDetailsViewService;
 import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelItemViewService;
+import components.service.PreviousRequestItemViewService;
+import components.service.PreviousRequestItemViewServiceImpl;
 import components.service.ReadDataService;
 import components.service.ReadDataServiceImpl;
 import components.service.RfiReplyService;
@@ -157,6 +159,7 @@ public class GuiceModule extends AbstractModule {
     bind(AppDataService.class).to(AppDataServiceImpl.class);
     bind(ReadDataService.class).to(ReadDataServiceImpl.class);
     bind(ApplicationTabsViewService.class).to(ApplicationTabsViewServiceImpl.class);
+    bind(PreviousRequestItemViewService.class).to(PreviousRequestItemViewServiceImpl.class);
     bind(UserPrivilegeService.class).to(TestUserPrivilegeServiceImpl.class).asEagerSingleton();
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);

@@ -9,27 +9,22 @@ import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationTabsViewService;
 import components.service.OfficerViewService;
+import components.service.PreviousRequestItemViewService;
 import components.service.ReadDataService;
+import components.service.UserPrivilegeService;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.ApplicationUtil;
-import components.util.Comparators;
 import components.util.EnumUtil;
 import components.util.FileUtil;
-import components.util.LinkUtil;
-import components.util.TimeUtil;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import models.AppData;
 import models.File;
 import models.ReadData;
-import models.WithdrawalRejection;
-import models.WithdrawalRequest;
 import models.enums.Action;
 import models.enums.DraftType;
 import models.view.AmendmentView;
@@ -65,6 +60,8 @@ public class AmendTabController extends SamlController {
   private final AppDataService appDataService;
   private final ApplicationTabsViewService applicationTabsViewService;
   private final ReadDataService readDataService;
+  private final UserPrivilegeService userPrivilegeService;
+  private final PreviousRequestItemViewService previousRequestItemViewService;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -77,7 +74,9 @@ public class AmendTabController extends SamlController {
                             UserService userService,
                             AppDataService appDataService,
                             ApplicationTabsViewService applicationTabsViewService,
-                            ReadDataService readDataService) {
+                            ReadDataService readDataService,
+                            UserPrivilegeService userPrivilegeService,
+                            PreviousRequestItemViewService previousRequestItemViewService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -89,14 +88,18 @@ public class AmendTabController extends SamlController {
     this.appDataService = appDataService;
     this.applicationTabsViewService = applicationTabsViewService;
     this.readDataService = readDataService;
+    this.userPrivilegeService = userPrivilegeService;
+    this.previousRequestItemViewService = previousRequestItemViewService;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
   public Result deleteFileById(String appId, String fileId) {
+    String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
-    if (!allowAmendment(appData)) {
-      LOGGER.warn("Unable to delete file with id {} since amending application with id {} not allowed.", fileId, appId);
+    if (!isAmendmentOrWithdrawalAllowed(userId, appData)) {
+      LOGGER.error("Unable to delete file with id {} since amending application with id {} not allowed.", fileId, appId);
+      return showAmendTab(appId);
     } else {
       try {
         draftDao.deleteFile(appId, fileId, DraftType.AMENDMENT_OR_WITHDRAWAL);
@@ -105,12 +108,13 @@ public class AmendTabController extends SamlController {
         LOGGER.warn("Unable to delete file.", databaseException);
       }
       amendApplicationForm.discardErrors();
+      return showAmendTab(appId, amendApplicationForm);
     }
-    return showAmendTab(appId, amendApplicationForm);
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
   public Result submitAmendment(String appId) {
+    String userId = userService.getCurrentUserId();
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
     String actionParam = amendApplicationForm.data().get("action");
     Action action = EnumUtil.parse(actionParam, Action.class);
@@ -120,13 +124,12 @@ public class AmendTabController extends SamlController {
     if (action == null) {
       LOGGER.error("Amending application with appId {} and action {} not possible", appId, actionParam);
       return showAmendTab(appId);
-    } else if (!allowAmendment(appData)) {
+    } else if (!isAmendmentOrWithdrawalAllowed(userId, appData)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since amendment not allowed.", appId, action);
       return showAmendTab(appId);
     } else if (amendApplicationForm.hasErrors()) {
       return showAmendTab(appId, amendApplicationForm);
     } else {
-      String userId = userService.getCurrentUserId();
       String message = amendApplicationForm.get().message;
       if (action == Action.AMEND) {
         amendmentService.insertAmendment(userId, appId, message, uploadFiles);
@@ -153,13 +156,18 @@ public class AmendTabController extends SamlController {
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
     OfficerView officerView = officerViewService.getOfficerView(appId);
     List<FileView> fileViews = createFileViews(appId);
-    SelectOption amend = new SelectOption("amend", "Amend your application");
-    SelectOption withdraw = new SelectOption("withdraw", "Withdraw your application");
-    List<SelectOption> selectOptions = Arrays.asList(amend, withdraw);
-    List<PreviousRequestItemView> previousRequestItemViews = getPreviousRequestItemViews(appData);
+    List<SelectOption> selectOptions = getSelectOptions();
+    List<PreviousRequestItemView> previousRequestItemViews = previousRequestItemViewService.getPreviousRequestItemViews(appData);
+    boolean hasPendingWithdrawalRequest = hasPendingWithdrawalRequest(appData);
     boolean applicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
-    boolean hasPendingWithdrawalRequest = appData.getWithdrawalApproval() == null && appData.getWithdrawalRequests().size() > appData.getWithdrawalRejections().size();
-    AmendmentView amendmentView = new AmendmentView(applicationInProgress, hasPendingWithdrawalRequest, previousRequestItemViews, selectOptions, fileViews, officerView);
+    boolean hasPermission = userPrivilegeService.hasAmendmentOrWithdrawalPermission(userId, appData);
+    AmendmentView amendmentView = new AmendmentView(applicationInProgress,
+        hasPendingWithdrawalRequest,
+        hasPermission,
+        previousRequestItemViews,
+        selectOptions,
+        fileViews,
+        officerView);
     return ok(amendApplicationTab.render(licenceApplicationAddress,
         applicationSummaryView,
         applicationTabsView,
@@ -168,8 +176,15 @@ public class AmendTabController extends SamlController {
         .withHeader("Cache-Control", "no-store");
   }
 
-  private boolean allowAmendment(AppData appData) {
-    return ApplicationUtil.isApplicationInProgress(appData) && !(appData.getWithdrawalRequests().size() > appData.getWithdrawalRejections().size());
+  private boolean isAmendmentOrWithdrawalAllowed(String userId, AppData appData) {
+    boolean isApplicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
+    boolean hasPendingWithdrawalRequest = hasPendingWithdrawalRequest(appData);
+    boolean hasAmendmentOrWithdrawalPermission = userPrivilegeService.hasAmendmentOrWithdrawalPermission(userId, appData);
+    return isApplicationInProgress && !hasPendingWithdrawalRequest && hasAmendmentOrWithdrawalPermission;
+  }
+
+  private boolean hasPendingWithdrawalRequest(AppData appData) {
+    return appData.getWithdrawalApproval() == null && appData.getWithdrawalRequests().size() > appData.getWithdrawalRejections().size();
   }
 
   private List<FileView> createFileViews(String appId) {
@@ -185,36 +200,10 @@ public class AmendTabController extends SamlController {
     return new FileView(file.getId(), appId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
   }
 
-  private List<PreviousRequestItemView> getPreviousRequestItemViews(AppData appData) {
-    List<PreviousRequestItemView> previousRequestItemViews = new ArrayList<>();
-    appData.getAmendments().stream()
-        .map(amendment -> {
-          String date = TimeUtil.formatDate(amendment.getCreatedTimestamp());
-          Long createdTimestamp = amendment.getCreatedTimestamp();
-          String type = "Amendment";
-          String link = LinkUtil.getAmendmentMessageLink(amendment);
-          return new PreviousRequestItemView(createdTimestamp, date, type, link, null);
-        }).forEach(previousRequestItemViews::add);
-    Map<String, WithdrawalRejection> withdrawalRejectionMap = ApplicationUtil.getWithdrawalRejectionMap(appData);
-    WithdrawalRequest approvedWithdrawalRequest = ApplicationUtil.getApprovedWithdrawalRequest(appData);
-    appData.getWithdrawalRequests().stream()
-        .map(withdrawalRequest -> {
-          String date = TimeUtil.formatDate(withdrawalRequest.getCreatedTimestamp());
-          Long createdTimestamp = withdrawalRequest.getCreatedTimestamp();
-          String type = "Withdrawal";
-          String link = LinkUtil.getWithdrawalRequestMessageLink(withdrawalRequest);
-          String indicator;
-          if (withdrawalRejectionMap.get(withdrawalRequest.getId()) != null) {
-            indicator = "rejected";
-          } else if (approvedWithdrawalRequest != null && approvedWithdrawalRequest.getId().equals(withdrawalRequest.getId())) {
-            indicator = "approved";
-          } else {
-            indicator = null;
-          }
-          return new PreviousRequestItemView(createdTimestamp, date, type, link, indicator);
-        }).forEach(previousRequestItemViews::add);
-    previousRequestItemViews.sort(Comparators.PREVIOUS_REQUEST_ITEM_VIEW_CREATED_REVERSED);
-    return previousRequestItemViews;
+  private List<SelectOption> getSelectOptions() {
+    SelectOption amend = new SelectOption("amend", "Amend your application");
+    SelectOption withdraw = new SelectOption("withdraw", "Withdraw your application");
+    return Arrays.asList(amend, withdraw);
   }
 
 }

@@ -8,12 +8,13 @@ import components.common.auth.SpireAuthManager;
 import components.common.logging.CorrelationId;
 import filters.common.JwtRequestFilter;
 import filters.common.JwtRequestFilterConfig;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import models.AppData;
 import models.Rfi;
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -38,6 +39,9 @@ public class UserPrivilegeServiceImpl implements UserPrivilegeService {
   private LoadingCache<String, Optional<UserPrivilegesView>> privilegesCache;
   private final JwtRequestFilter jwtRequestFilter;
 
+  private static final Set<Role> BASIC_ROLES = EnumSet.of(Role.ADMIN, Role.SUBMITTER, Role.PREPARER);
+  private static final Set<Role> ADVANCED_ROLES = EnumSet.of(Role.ADMIN, Role.SUBMITTER);
+
   @Inject
   public UserPrivilegeServiceImpl(WSClient wsClient, SpireAuthManager spireAuthManager) {
     this.wsClient = wsClient;
@@ -56,16 +60,7 @@ public class UserPrivilegeServiceImpl implements UserPrivilegeService {
 
   @Override
   public boolean isAccessAllowed(String userId, String siteId, String customerId) {
-    Optional<UserPrivilegesView> userPrivilegeData = getPrivileges(userId);
-    if (userPrivilegeData.isPresent()) {
-      boolean siteAllowed = userPrivilegeData.get().getSites().stream()
-          .anyMatch(siteView -> siteView.getSiteId().equals(siteId));
-      boolean customerAllowed = userPrivilegeData.get().getCustomers().stream()
-          .anyMatch(customerView -> customerView.getCustomerId().equals(customerId));
-      return siteAllowed || customerAllowed;
-    } else {
-      return false;
-    }
+    return hasSiteRole(userId, siteId, BASIC_ROLES) || hasCustomerRole(userId, customerId, BASIC_ROLES);
   }
 
   @Override
@@ -73,27 +68,49 @@ public class UserPrivilegeServiceImpl implements UserPrivilegeService {
     Optional<Rfi> rfi = appData.getRfiList().stream()
         .filter(rfiIterate -> rfiIterate.getId().equals(rfiId))
         .findAny();
-    Optional<UserPrivilegesView> userPrivilegesView = getPrivileges(userId);
-    if (rfi.isPresent() && userPrivilegesView.isPresent()) {
+    if (rfi.isPresent()) {
       boolean isRecipient = rfi.get().getRecipientUserIds().contains(userId);
-      String siteId = appData.getApplication().getSiteId();
-      boolean hasSiteRole = hasSiteRole(userPrivilegesView.get(), siteId, Role.ADMIN, Role.SUBMITTER);
-      String customerId = appData.getApplication().getCustomerId();
-      boolean hasCustomerRole = hasCustomerRole(userPrivilegesView.get(), customerId, Role.ADMIN, Role.SUBMITTER);
-      return isRecipient || hasSiteRole || hasCustomerRole;
+      return isRecipient || hasBasicSiteRole(userId, appData) || hasBasicCustomerRole(userId, appData);
     } else {
       return false;
     }
   }
 
-  private boolean hasCustomerRole(UserPrivilegesView userPrivilegesView, String customerId, Role... roles) {
-    return userPrivilegesView.getCustomers().stream()
-        .anyMatch(view -> view.getCustomerId().equals(customerId) && ArrayUtils.contains(roles, view.getRole()));
+  @Override
+  public boolean hasAmendmentOrWithdrawalPermission(String userId, AppData appData) {
+    boolean isCreator = appData.getApplication().getCreatedByUserId().equals(userId);
+    boolean hasCreatorPermission = isCreator && (hasBasicSiteRole(userId, appData) || hasBasicCustomerRole(userId, appData));
+    boolean hasAdminPermission = hasAdvancedSiteRole(userId, appData) || hasAdvancedCustomerRole(userId, appData);
+    return hasCreatorPermission || hasAdminPermission;
   }
 
-  private boolean hasSiteRole(UserPrivilegesView userPrivilegesView, String siteId, Role... roles) {
-    return userPrivilegesView.getSites().stream()
-        .anyMatch(view -> view.getSiteId().equals(siteId) && ArrayUtils.contains(roles, view.getRole()));
+
+  private boolean hasBasicCustomerRole(String userId, AppData appData) {
+    return hasCustomerRole(userId, appData.getApplication().getCustomerId(), BASIC_ROLES);
+  }
+
+  private boolean hasAdvancedCustomerRole(String userId, AppData appData) {
+    return hasCustomerRole(userId, appData.getApplication().getCustomerId(), ADVANCED_ROLES);
+  }
+
+  private boolean hasCustomerRole(String userId, String customerId, Set<Role> roles) {
+    Optional<UserPrivilegesView> userPrivilegesView = getPrivileges(userId);
+    return userPrivilegesView.isPresent() && userPrivilegesView.get().getCustomers().stream()
+        .anyMatch(view -> view.getCustomerId().equals(customerId) && roles.contains(view.getRole()));
+  }
+
+  private boolean hasBasicSiteRole(String userId, AppData appData) {
+    return hasSiteRole(userId, appData.getApplication().getSiteId(), BASIC_ROLES);
+  }
+
+  private boolean hasAdvancedSiteRole(String userId, AppData appData) {
+    return hasSiteRole(userId, appData.getApplication().getSiteId(), ADVANCED_ROLES);
+  }
+
+  private boolean hasSiteRole(String userId, String siteId, Set<Role> roles) {
+    Optional<UserPrivilegesView> userPrivilegesView = getPrivileges(userId);
+    return userPrivilegesView.isPresent() && userPrivilegesView.get().getSites().stream()
+        .anyMatch(view -> view.getSiteId().equals(siteId) && roles.contains(view.getRole()));
   }
 
   private void init() {
