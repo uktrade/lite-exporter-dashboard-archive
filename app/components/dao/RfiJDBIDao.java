@@ -16,10 +16,6 @@ public interface RfiJDBIDao {
   @SqlQuery("SELECT * FROM RFI WHERE APP_ID in (<appIds>)")
   List<Rfi> getRfiList(@BindIn("appIds") List<String> appIds);
 
-  @Mapper(RfiRSMapper.class)
-  @SqlQuery("SELECT * FROM RFI WHERE ID = :rfiId")
-  Rfi getRfi(@Bind("rfiId") String rfiId);
-
   @SqlUpdate("INSERT INTO RFI ( ID,  APP_ID, CREATED_TIMESTAMP, DUE_TIMESTAMP, CREATED_BY_USER_ID, RECIPIENT_USER_IDS, MESSAGE) VALUES " +
       "                       (:id, :appId, :createdTimestamp, :dueTimestamp, :createdByUserId,   :recipientUserIds,  :message)")
   void insert(@Bind("id") String id,

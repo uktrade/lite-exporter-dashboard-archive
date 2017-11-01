@@ -8,19 +8,19 @@ import org.hibernate.validator.constraints.NotBlank;
 public class Document {
 
   @NotBlank
-  private String id;
+  private final String id;
 
   @NotNull
-  private DocumentType documentType;
+  private final DocumentType documentType;
 
   @NotBlank
-  private String licenceRef;
+  private final String licenceRef;
 
   @NotBlank
-  private String filename;
+  private final String filename;
 
   @NotBlank
-  private String url;
+  private final String url;
 
   public Document(@JsonProperty("id") String id,
                   @JsonProperty("documentType") DocumentType documentType,

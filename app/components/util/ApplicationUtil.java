@@ -1,6 +1,5 @@
 package components.util;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,9 +46,7 @@ public class ApplicationUtil {
 
   private final static List<StatusType> STATUS_TYPE_LIST;
 
-  private final static List<StatusType> INVERSE_STATUS_TYPE_LIST;
-
-  public static final Comparator<StatusUpdate> STATUS_UPDATE_COMPARATOR;
+  private static final Comparator<StatusUpdate> STATUS_UPDATE_COMPARATOR;
 
   static {
     Map<StatusType, String> statuses = new EnumMap<>(StatusType.class);
@@ -78,9 +75,7 @@ public class ApplicationUtil {
         StatusType.COMPLETE);
     STATUS_TYPE_LIST = Collections.unmodifiableList(statusTypeList);
 
-    INVERSE_STATUS_TYPE_LIST = Collections.unmodifiableList(Lists.reverse(statusTypeList));
-
-    STATUS_UPDATE_COMPARATOR = Comparator.comparing(statusUpdate -> INVERSE_STATUS_TYPE_LIST.indexOf(statusUpdate.getStatusType()));
+    STATUS_UPDATE_COMPARATOR = Comparator.comparing(statusUpdate -> STATUS_TYPE_LIST.indexOf(statusUpdate.getStatusType()));
   }
 
   public static String getStatusName(StatusType statusType) {

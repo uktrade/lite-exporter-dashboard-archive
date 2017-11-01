@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import components.common.auth.AuthInfo;
 import components.common.auth.SpireAuthManager;
 import components.exceptions.ServiceException;
-import components.service.UserPrivilegeService;
 import components.service.UserService;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,12 +14,10 @@ public class TestUserServiceImpl implements UserService {
 
   private static final Map<String, User> users = new HashMap<>();
   private final SpireAuthManager spireAuthManager;
-  private final UserPrivilegeService userPrivilegeService;
 
   @Inject
-  public TestUserServiceImpl(SpireAuthManager spireAuthManager, UserPrivilegeService userPrivilegeService) {
+  public TestUserServiceImpl(SpireAuthManager spireAuthManager) {
     this.spireAuthManager = spireAuthManager;
-    this.userPrivilegeService = userPrivilegeService;
   }
 
   static {

@@ -15,7 +15,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
-public class OgelRegistrationsClientImpl implements OgelRegistrationsClient {
+public class OgelRegistrationServiceClientImpl implements OgelRegistrationServiceClient {
 
   private final HttpExecutionContext httpExecutionContext;
   private final WSClient wsClient;
@@ -23,10 +23,10 @@ public class OgelRegistrationsClientImpl implements OgelRegistrationsClient {
   private final String address;
 
   @Inject
-  public OgelRegistrationsClientImpl(HttpExecutionContext httpExecutionContext,
-                                     WSClient wsClient,
-                                     @Named("permissionsServiceAddress") String address,
-                                     @Named("permissionsServiceTimeout") int timeout) {
+  public OgelRegistrationServiceClientImpl(HttpExecutionContext httpExecutionContext,
+                                           WSClient wsClient,
+                                           @Named("permissionsServiceAddress") String address,
+                                           @Named("permissionsServiceTimeout") int timeout) {
     this.httpExecutionContext = httpExecutionContext;
     this.wsClient = wsClient;
     this.address = address;

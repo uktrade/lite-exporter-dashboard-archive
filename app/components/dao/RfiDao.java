@@ -1,12 +1,9 @@
 package components.dao;
 
+import java.util.List;
 import models.Rfi;
 
-import java.util.List;
-
 public interface RfiDao {
-
-  Rfi getRfi(String rfiId);
 
   List<Rfi> getRfiList(List<String> appIds);
 

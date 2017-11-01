@@ -2,25 +2,26 @@ package components.client.test;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.client.OgelRegistrationsClientImpl;
+import components.client.OgelRegistrationServiceClientImpl;
 import components.service.UserService;
 import components.service.test.TestDataServiceImpl;
+import components.util.TestUtil;
 import java.util.ArrayList;
 import java.util.List;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
-public class TestOgelRegistrationsClientImpl extends OgelRegistrationsClientImpl {
+public class TestOgelRegistrationServiceClientImpl extends OgelRegistrationServiceClientImpl {
 
   private final UserService userService;
 
   @Inject
-  public TestOgelRegistrationsClientImpl(HttpExecutionContext httpExecutionContext,
-                                         WSClient wsClient,
-                                         @Named("permissionsServiceAddress") String address,
-                                         @Named("permissionsServiceTimeout") int timeout,
-                                         UserService userService) {
+  public TestOgelRegistrationServiceClientImpl(HttpExecutionContext httpExecutionContext,
+                                               WSClient wsClient,
+                                               @Named("permissionsServiceAddress") String address,
+                                               @Named("permissionsServiceTimeout") int timeout,
+                                               UserService userService) {
     super(httpExecutionContext, wsClient, address, timeout);
     this.userService = userService;
   }
@@ -37,8 +38,10 @@ public class TestOgelRegistrationsClientImpl extends OgelRegistrationsClientImpl
     } else {
       List<OgelRegistrationView> ogelRegistrationViews = super.getOgelRegistrations(TestDataServiceImpl.APPLICANT_ID);
       ogelRegistrationViews.forEach(ogelRegistrationView -> {
-        String wrapCustomerId = TestDataServiceImpl.wrapCustomerId(userService.getCurrentUserId(), ogelRegistrationView.getCustomerId());
+        String wrapCustomerId = TestUtil.wrapCustomerId(userService.getCurrentUserId(), ogelRegistrationView.getCustomerId());
         ogelRegistrationView.setCustomerId(wrapCustomerId);
+        String wrapSiteId = TestUtil.wrapSiteId(userService.getCurrentUserId(), ogelRegistrationView.getSiteId());
+        ogelRegistrationView.setSiteId(wrapSiteId);
       });
       return ogelRegistrationViews;
     }

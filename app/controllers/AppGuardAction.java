@@ -4,7 +4,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
 import components.dao.ApplicationDao;
-import components.service.UserPrivilegeService;
+import components.service.UserPermissionService;
 import components.service.UserService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -18,22 +18,22 @@ import play.mvc.Result;
 
 public class AppGuardAction extends Action.Simple {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(AppGuardAction.class);
+
   private static final String PATH_START = "/application/";
   private static final String PATTERN_START = "/application/$appId<[^/]+>/";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AppGuardAction.class);
-
   private final ApplicationDao applicationDao;
   private final UserService userService;
-  private final UserPrivilegeService userPrivilegeService;
+  private final UserPermissionService userPermissionService;
 
   @Inject
   public AppGuardAction(ApplicationDao applicationDao,
                         UserService userService,
-                        UserPrivilegeService userPrivilegeService) {
+                        UserPermissionService userPermissionService) {
     this.applicationDao = applicationDao;
     this.userService = userService;
-    this.userPrivilegeService = userPrivilegeService;
+    this.userPermissionService = userPermissionService;
   }
 
   @Override
@@ -43,7 +43,7 @@ public class AppGuardAction extends Action.Simple {
     if (StringUtils.startsWith(path, PATH_START) && StringUtils.startsWith(pattern, PATTERN_START)) {
       String appIdStart = StringUtils.removeStart(path, PATH_START);
       int index = appIdStart.indexOf("/");
-      if (index > 0) {
+      if (index != -1) {
         String appId = appIdStart.substring(0, index);
         Application application = applicationDao.getApplication(appId);
         if (application == null) {
@@ -51,7 +51,7 @@ public class AppGuardAction extends Action.Simple {
           return error();
         } else {
           String currentUserId = userService.getCurrentUserId();
-          boolean allowed = userPrivilegeService.isApplicationViewAllowed(currentUserId, application);
+          boolean allowed = userPermissionService.canViewApplication(currentUserId, application);
           if (allowed) {
             return delegate.call(ctx);
           } else {

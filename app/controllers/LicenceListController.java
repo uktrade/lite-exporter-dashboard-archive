@@ -3,13 +3,11 @@ package controllers;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.cache.SessionCache;
-import components.client.OgelRegistrationsClient;
-import components.dao.SielDao;
 import components.service.OgelDetailsViewService;
 import components.service.OgelItemViewService;
 import components.service.SielDetailsViewService;
 import components.service.SielItemViewService;
-import components.service.UserPrivilegeService;
+import components.service.UserPermissionService;
 import components.service.UserService;
 import components.util.EnumUtil;
 import components.util.PageUtil;
@@ -27,7 +25,6 @@ import models.view.OgelItemView;
 import models.view.SielDetailsView;
 import models.view.SielItemView;
 import play.mvc.Result;
-import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 import views.html.licenceList;
 import views.html.ogelDetails;
 import views.html.sielDetails;
@@ -43,9 +40,7 @@ public class LicenceListController extends SamlController {
   private final UserService userService;
   private final SielItemViewService sielItemViewService;
   private final SielDetailsViewService sielDetailsViewService;
-  private final OgelRegistrationsClient ogelRegistrationsClient;
-  private final UserPrivilegeService userPrivilegeService;
-  private final SielDao sielDao;
+  private final UserPermissionService userPermissionService;
 
 
   @Inject
@@ -55,18 +50,14 @@ public class LicenceListController extends SamlController {
                                UserService userService,
                                SielItemViewService sielItemViewService,
                                SielDetailsViewService sielDetailsViewService,
-                               OgelRegistrationsClient ogelRegistrationsClient,
-                               UserPrivilegeService userPrivilegeService,
-                               SielDao sielDao) {
+                               UserPermissionService userPermissionService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.ogelItemViewService = ogelItemViewService;
     this.ogelDetailsViewService = ogelDetailsViewService;
     this.userService = userService;
     this.sielItemViewService = sielItemViewService;
     this.sielDetailsViewService = sielDetailsViewService;
-    this.ogelRegistrationsClient = ogelRegistrationsClient;
-    this.userPrivilegeService = userPrivilegeService;
-    this.sielDao = sielDao;
+    this.userPermissionService = userPermissionService;
   }
 
   public Result licenceList(String tab, String sort, String direction, Integer page) {
@@ -114,7 +105,7 @@ public class LicenceListController extends SamlController {
 
   public Result ogelDetails(String registrationReference) {
     String userId = userService.getCurrentUserId();
-    if (isOgelViewAllowed(userId, registrationReference)) {
+    if (userPermissionService.canViewOgel(userId, registrationReference)) {
       OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(userId, registrationReference);
       return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView));
     } else {
@@ -122,26 +113,15 @@ public class LicenceListController extends SamlController {
     }
   }
 
-  private boolean isOgelViewAllowed(String userId, String registrationReference) {
-    List<OgelRegistrationView> ogelRegistrationViews = ogelRegistrationsClient.getOgelRegistrations(userId);
-    return ogelRegistrationViews.stream()
-        .anyMatch(ogelRegistrationView -> ogelRegistrationView.getRegistrationReference().equals(registrationReference));
-  }
 
   public Result sielDetails(String registrationReference) {
     String userId = userService.getCurrentUserId();
-    if (isSielViewAllowed(userId, registrationReference)) {
+    if (userPermissionService.canViewSiel(userId, registrationReference)) {
       SielDetailsView sielDetailsView = sielDetailsViewService.getSielDetailsView(registrationReference);
       return ok(sielDetails.render(licenceApplicationAddress, sielDetailsView));
     } else {
       return notFound("Unknown siel.");
     }
-  }
-  
-  private boolean isSielViewAllowed(String userId, String registrationReference) {
-    List<String> customerIds = userPrivilegeService.getCustomerIdsWithBasicPermission(userId);
-    return sielDao.getSiels(customerIds).stream()
-        .anyMatch(siel -> siel.getCaseReference().equals(registrationReference));
   }
 
 }

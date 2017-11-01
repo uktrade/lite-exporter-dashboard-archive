@@ -7,7 +7,7 @@ import com.google.inject.Inject;
 import components.dao.DraftDao;
 import components.exceptions.DatabaseException;
 import components.service.AppDataService;
-import components.service.UserPrivilegeService;
+import components.service.UserPermissionService;
 import components.service.UserService;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
@@ -37,14 +37,14 @@ public class UploadController extends SamlController {
   private final AppDataService appDataService;
   private final UserService userService;
   private final DraftDao draftDao;
-  private final UserPrivilegeService userPrivilegeService;
+  private final UserPermissionService userPermissionService;
 
   @Inject
-  public UploadController(AppDataService appDataService, UserService userService, DraftDao draftDao, UserPrivilegeService userPrivilegeService) {
+  public UploadController(AppDataService appDataService, UserService userService, DraftDao draftDao, UserPermissionService userPermissionService) {
     this.appDataService = appDataService;
     this.userService = userService;
     this.draftDao = draftDao;
-    this.userPrivilegeService = userPrivilegeService;
+    this.userPermissionService = userPermissionService;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
@@ -53,23 +53,12 @@ public class UploadController extends SamlController {
     DraftType draftType = EnumUtil.parse(draftTypeStr, DraftType.class, null);
     if (draftType == null) {
       return completedFuture(badRequest("Unknown draftType " + draftTypeStr));
-    } else if (!hasPermissions(userId, appId, draftType, relatedId)) {
+    } else if (!canAddOrDeleteFile(userId, appId, draftType, relatedId)) {
       return completedFuture(notFound("Unknown relatedId " + relatedId));
     } else {
       List<UploadFile> files = FileUtil.getUploadFiles(request());
       FileUploadResponse fileUploadResponse = insertDraftAttachments(appId, relatedId, files, draftType);
       return completedFuture(ok(Json.toJson(fileUploadResponse)));
-    }
-  }
-
-  private boolean hasPermissions(String userId, String appId, DraftType draftType, String relatedId) {
-    AppData appData = appDataService.getAppData(appId);
-    if (draftType == DraftType.AMENDMENT_OR_WITHDRAWAL) {
-      return appId.equals(relatedId) && userPrivilegeService.isAmendmentOrWithdrawalAllowed(userId, appData);
-    } else if (draftType == DraftType.RFI_REPLY) {
-      return userPrivilegeService.isReplyAllowed(userId, relatedId, appData);
-    } else {
-      return false;
     }
   }
 
@@ -82,7 +71,7 @@ public class UploadController extends SamlController {
     DraftType draftType = EnumUtil.parse(fileType, DraftType.class, null);
     if (draftType == null) {
       return completedFuture(badRequest("Unknown draftType " + fileType));
-    } else if (!hasPermissions(userId, appId, draftType, relatedId)) {
+    } else if (!canAddOrDeleteFile(userId, appId, draftType, relatedId)) {
       return completedFuture(notFound("Unknown relatedId " + relatedId));
     } else {
       try {
@@ -92,6 +81,17 @@ public class UploadController extends SamlController {
         return completedFuture(badRequest());
       }
       return completedFuture(ok());
+    }
+  }
+
+  private boolean canAddOrDeleteFile(String userId, String appId, DraftType draftType, String relatedId) {
+    AppData appData = appDataService.getAppData(appId);
+    if (draftType == DraftType.AMENDMENT_OR_WITHDRAWAL) {
+      return appId.equals(relatedId) && userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData);
+    } else if (draftType == DraftType.RFI_REPLY) {
+      return userPermissionService.canAddRfiReply(userId, relatedId, appData);
+    } else {
+      return false;
     }
   }
 

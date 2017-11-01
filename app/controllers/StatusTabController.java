@@ -1,7 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.service.AppDataService;
@@ -16,8 +14,6 @@ import models.ReadData;
 import models.view.ApplicationSummaryView;
 import models.view.ApplicationTabsView;
 import models.view.StatusItemView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.mvc.Result;
 import play.mvc.With;
 import views.html.statusTrackerTab;
@@ -32,9 +28,6 @@ public class StatusTabController extends SamlController {
   private final ApplicationTabsViewService applicationTabsViewService;
   private final UserService userService;
   private final ReadDataService readDataService;
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(StatusTabController.class);
-  private static final ObjectWriter WRITER = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
   @Inject
   public StatusTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,

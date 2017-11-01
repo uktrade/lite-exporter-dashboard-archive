@@ -33,24 +33,24 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final UserService userService;
   private final AppDataService appDataService;
   private final ReadDataService readDataService;
-  private final UserPrivilegeService userPrivilegeService;
+  private final UserPermissionService userPermissionService;
 
   @Inject
   public ApplicationItemViewServiceImpl(CustomerServiceClient customerServiceClient,
                                         UserService userService,
                                         AppDataService appDataService,
                                         ReadDataService readDataService,
-                                        UserPrivilegeService userPrivilegeService) {
+                                        UserPermissionService userPermissionService) {
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
     this.appDataService = appDataService;
     this.readDataService = readDataService;
-    this.userPrivilegeService = userPrivilegeService;
+    this.userPermissionService = userPermissionService;
   }
 
   @Override
   public List<ApplicationItemView> getApplicationItemViews(String userId) {
-    List<String> customerIds = userPrivilegeService.getCustomerIdsWithBasicPermission(userId);
+    List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
 
     Map<String, String> customerIdToCompanyName = customerIds.stream()
         .map(customerServiceClient::getCustomer)

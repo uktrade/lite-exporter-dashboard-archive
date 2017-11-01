@@ -1,7 +1,7 @@
 package components.service;
 
 import com.google.inject.Inject;
-import components.client.OgelRegistrationsClient;
+import components.client.OgelRegistrationServiceClient;
 import components.client.OgelServiceClient;
 import components.exceptions.ServiceException;
 import models.view.OgelDetailsView;
@@ -13,18 +13,18 @@ import java.util.Optional;
 
 public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
 
-  private final OgelRegistrationsClient ogelRegistrationsClient;
+  private final OgelRegistrationServiceClient ogelRegistrationServiceClient;
   private final OgelServiceClient ogelServiceClient;
 
   @Inject
-  public OgelDetailsViewServiceImpl(OgelRegistrationsClient ogelRegistrationsClient, OgelServiceClient ogelServiceClient) {
-    this.ogelRegistrationsClient = ogelRegistrationsClient;
+  public OgelDetailsViewServiceImpl(OgelRegistrationServiceClient ogelRegistrationServiceClient, OgelServiceClient ogelServiceClient) {
+    this.ogelRegistrationServiceClient = ogelRegistrationServiceClient;
     this.ogelServiceClient = ogelServiceClient;
   }
 
   @Override
   public OgelDetailsView getOgelDetailsView(String userId, String registrationReference) {
-    List<OgelRegistrationView> ogelRegistrationViews = ogelRegistrationsClient.getOgelRegistrations(userId);
+    List<OgelRegistrationView> ogelRegistrationViews = ogelRegistrationServiceClient.getOgelRegistrations(userId);
     Optional<OgelRegistrationView> ogelRegistrationView = ogelRegistrationViews.stream()
         .filter(orv -> orv.getRegistrationReference().equals(registrationReference))
         .findAny();

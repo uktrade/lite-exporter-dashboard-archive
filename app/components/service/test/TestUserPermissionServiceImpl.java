@@ -1,39 +1,42 @@
 package components.service.test;
 
 import com.google.inject.Inject;
-import components.common.auth.SpireAuthManager;
-import components.service.UserPrivilegeServiceImpl;
-import java.util.Arrays;
+import com.google.inject.name.Named;
+import components.client.OgelRegistrationServiceClient;
+import components.client.UserServiceClient;
+import components.dao.SielDao;
+import components.service.UserPermissionServiceImpl;
+import components.util.TestUtil;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import models.AppData;
-import play.libs.ws.WSClient;
 import uk.gov.bis.lite.user.api.view.CustomerView;
 import uk.gov.bis.lite.user.api.view.Role;
 import uk.gov.bis.lite.user.api.view.SiteView;
 import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
 
-public class TestUserPrivilegeServiceImpl extends UserPrivilegeServiceImpl {
-
-  private static final List<String> COMPANY_IDS = Arrays.asList(TestDataServiceImpl.COMPANY_ID_ONE, TestDataServiceImpl.COMPANY_ID_TWO, TestDataServiceImpl.COMPANY_ID_THREE);
+public class TestUserPermissionServiceImpl extends UserPermissionServiceImpl {
 
   @Inject
-  public TestUserPrivilegeServiceImpl(WSClient wsClient, SpireAuthManager spireAuthManager) {
-    super(wsClient, spireAuthManager);
+  public TestUserPermissionServiceImpl(@Named("userServiceCacheExpiryMinutes") Long cacheExpireMinutes,
+                                       UserServiceClient userServiceClient,
+                                       OgelRegistrationServiceClient ogelRegistrationServiceClient,
+                                       SielDao sielDao) {
+    super(cacheExpireMinutes, userServiceClient, ogelRegistrationServiceClient, sielDao);
   }
 
   @Override
   protected UserPrivilegesView getUserPrivilegesView(String userId) {
     // fake call just to make sure client call works
     super.getUserPrivilegesView(userId);
-    // fake data
 
+    // fake data
     UserPrivilegesView userPrivilegesView = new UserPrivilegesView();
-    List<CustomerView> customerViews = COMPANY_IDS.stream()
+    List<CustomerView> customerViews = TestDataServiceImpl.COMPANY_IDS.stream()
         .map(companyId -> {
           CustomerView customerView = new CustomerView();
-          customerView.setCustomerId(TestDataServiceImpl.wrapCustomerId(userId, companyId));
+          customerView.setCustomerId(TestUtil.wrapCustomerId(userId, companyId));
           if (userId.equals(TestDataServiceImpl.APPLICANT_ID)) {
             customerView.setRole(Role.PREPARER);
           } else {
@@ -49,7 +52,7 @@ public class TestUserPrivilegeServiceImpl extends UserPrivilegeServiceImpl {
     } else {
       siteView.setRole(Role.ADMIN);
     }
-    siteView.setSiteId(TestDataServiceImpl.SITE_ID);
+    siteView.setSiteId(TestUtil.wrapSiteId(userId, TestDataServiceImpl.SITE_ID));
     userPrivilegesView.setSites(Collections.singletonList(siteView));
 
     return userPrivilegesView;

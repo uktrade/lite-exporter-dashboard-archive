@@ -2,7 +2,6 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.dao.DraftDao;
-import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.FileUtil;
 import components.util.TimeUtil;
@@ -26,18 +25,17 @@ public class RfiViewServiceImpl implements RfiViewService {
 
   private final UserService userService;
   private final DraftDao draftDao;
-  private final UserPrivilegeService userPrivilegeService;
+  private final UserPermissionService userPermissionService;
 
   @Inject
-  public RfiViewServiceImpl(UserService userService, DraftDao draftDao, UserPrivilegeService userPrivilegeService) {
+  public RfiViewServiceImpl(UserService userService, DraftDao draftDao, UserPermissionService userPermissionService) {
     this.userService = userService;
     this.draftDao = draftDao;
-    this.userPrivilegeService = userPrivilegeService;
+    this.userPermissionService = userPermissionService;
   }
 
   @Override
   public List<RfiView> getRfiViews(String userId, AppData appData) {
-    boolean isApplicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
 
     List<Rfi> rfiList = appData.getRfiList();
 
@@ -48,7 +46,7 @@ public class RfiViewServiceImpl implements RfiViewService {
         .collect(Collectors.toMap(RfiReply::getRfiId, Function.identity()));
 
     Map<String, Boolean> rfiIdToIsReplyAllowed = appData.getRfiList().stream()
-        .collect(Collectors.toMap(Rfi::getId, rfi -> userPrivilegeService.isReplyAllowed(userId, rfi.getId(), appData)));
+        .collect(Collectors.toMap(Rfi::getId, rfi -> userPermissionService.canAddRfiReply(userId, rfi.getId(), appData)));
 
     return rfiList.stream()
         .sorted(Comparators.RFI_CREATED_REVERSED)
@@ -93,8 +91,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     String replyBy = getReplyBy(rfi);
     String sender = userService.getUsername(rfi.getCreatedByUserId());
     RfiReplyView rfiReplyView = getRfiReplyView(rfi.getAppId(), rfi.getId(), rfiReply);
-    boolean allowReply = rfiReply == null && rfiWithdrawal == null && isReplyAllowed;
-    return new RfiView(rfi.getAppId(), rfi.getId(), receivedDate, replyBy, sender, rfi.getMessage(), withdrawnDate, showNewIndicator, rfiReplyView, allowReply);
+    return new RfiView(rfi.getAppId(), rfi.getId(), receivedDate, replyBy, sender, rfi.getMessage(), withdrawnDate, showNewIndicator, rfiReplyView, isReplyAllowed);
   }
 
   private RfiReplyView getRfiReplyView(String appId, String rfiId, RfiReply rfiReply) {

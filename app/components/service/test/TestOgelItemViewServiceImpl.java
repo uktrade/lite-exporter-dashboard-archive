@@ -4,8 +4,8 @@ import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
+import components.client.OgelRegistrationServiceClient;
 import components.client.OgelServiceClient;
-import components.client.OgelRegistrationsClient;
 import components.service.OgelItemViewServiceImpl;
 import components.util.LicenceUtil;
 import components.util.TimeUtil;
@@ -18,10 +18,10 @@ import java.util.List;
 public class TestOgelItemViewServiceImpl extends OgelItemViewServiceImpl {
 
   @Inject
-  public TestOgelItemViewServiceImpl(OgelRegistrationsClient ogelRegistrationsClient,
+  public TestOgelItemViewServiceImpl(OgelRegistrationServiceClient ogelRegistrationServiceClient,
                                      CustomerServiceClient customerServiceClient,
                                      OgelServiceClient ogelServiceClient) {
-    super(ogelRegistrationsClient, customerServiceClient, ogelServiceClient);
+    super(ogelRegistrationServiceClient, customerServiceClient, ogelServiceClient);
   }
 
   @Override

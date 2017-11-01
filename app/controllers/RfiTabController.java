@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import components.dao.DraftDao;
 import components.exceptions.DatabaseException;
 import components.service.AppDataService;
@@ -9,7 +10,7 @@ import components.service.ApplicationTabsViewService;
 import components.service.ReadDataService;
 import components.service.RfiReplyService;
 import components.service.RfiViewService;
-import components.service.UserPrivilegeService;
+import components.service.UserPermissionService;
 import components.service.UserService;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
@@ -47,10 +48,10 @@ public class RfiTabController extends SamlController {
   private final AppDataService appDataService;
   private final ApplicationTabsViewService applicationTabsViewService;
   private final ReadDataService readDataService;
-  private final UserPrivilegeService userPrivilegeService;
+  private final UserPermissionService userPermissionService;
 
   @Inject
-  public RfiTabController(String licenceApplicationAddress,
+  public RfiTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
                           FormFactory formFactory,
                           ApplicationSummaryViewService applicationSummaryViewService,
                           RfiViewService rfiViewService,
@@ -60,7 +61,7 @@ public class RfiTabController extends SamlController {
                           AppDataService appDataService,
                           ApplicationTabsViewService applicationTabsViewService,
                           ReadDataService readDataService,
-                          UserPrivilegeService userPrivilegeService) {
+                          UserPermissionService userPermissionService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -71,7 +72,7 @@ public class RfiTabController extends SamlController {
     this.appDataService = appDataService;
     this.applicationTabsViewService = applicationTabsViewService;
     this.readDataService = readDataService;
-    this.userPrivilegeService = userPrivilegeService;
+    this.userPermissionService = userPermissionService;
   }
 
   public Result deleteFileById(String appId, String fileId) {
@@ -79,8 +80,8 @@ public class RfiTabController extends SamlController {
     AppData appData = appDataService.getAppData(appId);
     Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
     String rfiId = rfiReplyForm.data().get("rfiId");
-    if (!userPrivilegeService.isReplyAllowed(userId, rfiId, appData)) {
-      LOGGER.error("Unable to delete fileId %s Reply to rfiId {} and appId {} not allowed", fileId, rfiId, appId);
+    if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
+      LOGGER.error("Unable to delete fileId {} since reply to rfiId {} and appId {} not allowed", fileId, rfiId, appId);
       return showRfiTab(appId);
     } else {
       try {
@@ -102,7 +103,7 @@ public class RfiTabController extends SamlController {
     List<UploadFile> uploadFiles = FileUtil.getUploadFiles(request());
     FileUtil.processErrors(rfiReplyForm, uploadFiles);
     AppData appData = appDataService.getAppData(appId);
-    if (!userPrivilegeService.isReplyAllowed(userId, rfiId, appData)) {
+    if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
       return showRfiTab(appId);
     } else if (rfiReplyForm.hasErrors()) {
@@ -118,7 +119,7 @@ public class RfiTabController extends SamlController {
   public Result showReplyForm(String appId, String rfiId) {
     String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
-    if (!userPrivilegeService.isReplyAllowed(userId, rfiId, appData)) {
+    if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
       return showRfiTab(appId);
     } else {
@@ -127,17 +128,6 @@ public class RfiTabController extends SamlController {
       Form<RfiReplyForm> form = formFactory.form(RfiReplyForm.class).fill(rfiReplyForm);
       return showReplyForm(appId, rfiId, form);
     }
-  }
-
-  public Result showRfiTab(String appId) {
-    String userId = userService.getCurrentUserId();
-    AppData appData = appDataService.getAppData(appId);
-    ReadData readData = readDataService.getReadData(userId, appData);
-    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appData);
-    ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
-    List<RfiView> rfiViews = rfiViewService.getRfiViews(userId, appData);
-    readDataService.updateRfiTabReadData(userId, appData, readData);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, null, null)).withHeader("Cache-Control", "no-store");
   }
 
   private Result showReplyForm(String appId, String rfiId, Form<RfiReplyForm> rfiReplyForm) {
@@ -150,6 +140,17 @@ public class RfiTabController extends SamlController {
     AddRfiReplyView addRfiReplyView = rfiViewService.getAddRfiReplyView(appId, rfiId);
     readDataService.updateRfiTabReadData(userId, appData, readData);
     return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store");
+  }
+
+  public Result showRfiTab(String appId) {
+    String userId = userService.getCurrentUserId();
+    AppData appData = appDataService.getAppData(appId);
+    ReadData readData = readDataService.getReadData(userId, appData);
+    ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appData);
+    ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
+    List<RfiView> rfiViews = rfiViewService.getRfiViews(userId, appData);
+    readDataService.updateRfiTabReadData(userId, appData, readData);
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, null, null)).withHeader("Cache-Control", "no-store");
   }
 
 }

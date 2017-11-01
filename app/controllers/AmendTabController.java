@@ -11,7 +11,7 @@ import components.service.ApplicationTabsViewService;
 import components.service.OfficerViewService;
 import components.service.PreviousRequestItemViewService;
 import components.service.ReadDataService;
-import components.service.UserPrivilegeService;
+import components.service.UserPermissionService;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.upload.UploadFile;
@@ -60,7 +60,7 @@ public class AmendTabController extends SamlController {
   private final AppDataService appDataService;
   private final ApplicationTabsViewService applicationTabsViewService;
   private final ReadDataService readDataService;
-  private final UserPrivilegeService userPrivilegeService;
+  private final UserPermissionService userPermissionService;
   private final PreviousRequestItemViewService previousRequestItemViewService;
 
   @Inject
@@ -75,7 +75,7 @@ public class AmendTabController extends SamlController {
                             AppDataService appDataService,
                             ApplicationTabsViewService applicationTabsViewService,
                             ReadDataService readDataService,
-                            UserPrivilegeService userPrivilegeService,
+                            UserPermissionService userPermissionService,
                             PreviousRequestItemViewService previousRequestItemViewService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
@@ -88,16 +88,15 @@ public class AmendTabController extends SamlController {
     this.appDataService = appDataService;
     this.applicationTabsViewService = applicationTabsViewService;
     this.readDataService = readDataService;
-    this.userPrivilegeService = userPrivilegeService;
+    this.userPermissionService = userPermissionService;
     this.previousRequestItemViewService = previousRequestItemViewService;
   }
 
-  @BodyParser.Of(UploadMultipartParser.class)
   public Result deleteFileById(String appId, String fileId) {
     String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
-    if (!userPrivilegeService.isAmendmentOrWithdrawalAllowed(userId, appData)) {
+    if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
       LOGGER.error("Unable to delete file with id {} since amending application with id {} not allowed.", fileId, appId);
       return showAmendTab(appId);
     } else {
@@ -121,14 +120,14 @@ public class AmendTabController extends SamlController {
     AppData appData = appDataService.getAppData(appId);
     List<UploadFile> uploadFiles = FileUtil.getUploadFiles(request());
     FileUtil.processErrors(amendApplicationForm, uploadFiles);
-    if (action == null) {
-      LOGGER.error("Amending application with appId {} and action {} not possible", appId, actionParam);
-      return showAmendTab(appId);
-    } else if (!userPrivilegeService.isAmendmentOrWithdrawalAllowed(userId, appData)) {
+    if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since amendment not allowed.", appId, action);
       return showAmendTab(appId);
     } else if (amendApplicationForm.hasErrors()) {
       return showAmendTab(appId, amendApplicationForm);
+    } else if (action == null) {
+      LOGGER.error("Amending application with appId {} and action {} not possible", appId, actionParam);
+      return showAmendTab(appId);
     } else {
       String message = amendApplicationForm.get().message;
       if (action == Action.AMEND) {
@@ -160,7 +159,7 @@ public class AmendTabController extends SamlController {
     List<PreviousRequestItemView> previousRequestItemViews = previousRequestItemViewService.getPreviousRequestItemViews(appData);
     boolean hasPendingWithdrawalRequest = ApplicationUtil.hasPendingWithdrawalRequest(appData);
     boolean applicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
-    boolean hasCreatorOrAdminPermission = userPrivilegeService.hasCreatorOrAdminPermission(userId, appData);
+    boolean hasCreatorOrAdminPermission = userPermissionService.hasCreatorOrAdminPermission(userId, appData);
     AmendmentView amendmentView = new AmendmentView(applicationInProgress,
         hasPendingWithdrawalRequest,
         hasCreatorOrAdminPermission,

@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.client.CustomerServiceClientImpl;
 import components.service.UserService;
-import components.service.test.TestDataServiceImpl;
+import components.util.TestUtil;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
@@ -26,18 +26,20 @@ public class TestCustomerServiceClientImpl extends CustomerServiceClientImpl {
 
   @Override
   public CustomerView getCustomer(String customerId) {
-    String unwrapCustomerId = TestDataServiceImpl.unwrapCustomerId(customerId);
+    String unwrapCustomerId = TestUtil.unwrapCustomerId(customerId);
     CustomerView customerView = super.getCustomer(unwrapCustomerId);
-    String wrapCustomerId = TestDataServiceImpl.wrapCustomerId(userService.getCurrentUserId(), customerView.getCustomerId());
+    String wrapCustomerId = TestUtil.wrapCustomerId(userService.getCurrentUserId(), customerView.getCustomerId());
     customerView.setCustomerId(wrapCustomerId);
     return customerView;
   }
 
   @Override
   public SiteView getSite(String siteId) {
-    SiteView siteView = super.getSite(siteId);
-    String wrapCustomerId = TestDataServiceImpl.wrapCustomerId(userService.getCurrentUserId(), siteView.getCustomerId());
+    String unwrapSiteId = TestUtil.unwrapSiteId(siteId);
+    SiteView siteView = super.getSite(unwrapSiteId);
+    String wrapCustomerId = TestUtil.wrapCustomerId(userService.getCurrentUserId(), siteView.getCustomerId());
     siteView.setCustomerId(wrapCustomerId);
+    siteView.setSiteId(siteId);
     return siteView;
   }
 

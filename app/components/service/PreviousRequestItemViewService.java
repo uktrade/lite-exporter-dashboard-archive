@@ -7,4 +7,5 @@ import models.view.PreviousRequestItemView;
 public interface PreviousRequestItemViewService {
 
   List<PreviousRequestItemView> getPreviousRequestItemViews(AppData appData);
+
 }

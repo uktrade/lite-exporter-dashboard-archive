@@ -8,22 +8,22 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class Outcome {
 
   @NotBlank
-  private String id;
+  private final String id;
 
   @NotBlank
-  private String appId;
+  private final String appId;
 
   @NotBlank
-  private String createdByUserId;
+  private final String createdByUserId;
 
   @NotNull
-  private List<String> recipientUserIds;
+  private final List<String> recipientUserIds;
 
   @NotNull
-  private Long createdTimestamp;
+  private final Long createdTimestamp;
 
   @NotEmpty
-  private List<Document> documents;
+  private final List<Document> documents;
 
   public Outcome(String id, String appId, String createdByUserId, List<String> recipientUserIds, Long createdTimestamp, List<Document> documents) {
     this.id = id;
