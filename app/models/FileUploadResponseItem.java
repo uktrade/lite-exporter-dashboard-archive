@@ -2,6 +2,7 @@ package models;
 
 public class FileUploadResponseItem {
 
+  private final String appId;
   private final String name;
   private final String url;
   private final String error;
@@ -10,7 +11,8 @@ public class FileUploadResponseItem {
   private final String fileId;
   private final String fileType;
 
-  public FileUploadResponseItem(String name, String url, String error, String size, String relatedId, String fileId, String fileType) {
+  public FileUploadResponseItem(String appId, String name, String url, String error, String size, String relatedId, String fileId, String fileType) {
+    this.appId = appId;
     this.name = name;
     this.url = url;
     this.error = error;
@@ -18,6 +20,10 @@ public class FileUploadResponseItem {
     this.relatedId = relatedId;
     this.fileId = fileId;
     this.fileType = fileType;
+  }
+
+  public String getAppId() {
+    return appId;
   }
 
   public String getName() {

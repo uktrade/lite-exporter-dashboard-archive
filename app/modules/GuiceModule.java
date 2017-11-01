@@ -9,9 +9,9 @@ import components.auth.SamlModule;
 import components.client.CustomerServiceClient;
 import components.client.OgelServiceClient;
 import components.client.OgelServiceClientImpl;
-import components.client.PermissionsServiceClient;
+import components.client.OgelRegistrationsClient;
 import components.client.test.TestCustomerServiceClientImpl;
-import components.client.test.TestPermissionsServiceClientImpl;
+import components.client.test.TestOgelRegistrationsClientImpl;
 import components.common.journey.JourneyContextParamProvider;
 import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
@@ -127,11 +127,11 @@ public class GuiceModule extends AbstractModule {
     bindConstant("customerServiceTimeout", "customerService.timeout");
     // TODO Test
     bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
-    // PermissionsServiceClient
+    // OgelRegistrationsClient
     bindConstant("permissionsServiceAddress", "permissionsService.address");
     bindConstant("permissionsServiceTimeout", "permissionsService.timeout");
     // TODO Test
-    bind(PermissionsServiceClient.class).to(TestPermissionsServiceClientImpl.class);
+    bind(OgelRegistrationsClient.class).to(TestOgelRegistrationsClientImpl.class);
     // OgelServiceClient
     bindConstant("ogelServiceAddress", "ogelService.address");
     bindConstant("ogelServiceTimeout", "ogelService.timeout");

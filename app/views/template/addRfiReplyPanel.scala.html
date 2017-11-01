@@ -24,7 +24,7 @@
         <input type="hidden" name="rfiId" value="@rfiReplyForm("rfiId").value" >
 
         <h4 class="heading-small">Attach a file</h4>
-        @fileUpload(addRfiReplyView.getRfiId, DraftType.RFI_REPLY, addRfiReplyView.getFileViews)
+        @fileUpload(appId, addRfiReplyView.getRfiId, DraftType.RFI_REPLY, addRfiReplyView.getFileViews)
 
         <button class="button">Send</button>
 

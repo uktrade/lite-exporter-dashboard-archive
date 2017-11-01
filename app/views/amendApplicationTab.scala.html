@@ -49,7 +49,7 @@
       Make another request
     </div>
   }
-  @if(amendmentView.isHasAmendmentOrWithdrawalPermission) {
+  @if(amendmentView.isHasCreatorOrAdminPermission) {
     @if(amendmentView.isApplicationInProgress) {
       @if(amendmentView.isHasPendingWithdrawalRequest) {
         You cannot make any further requests while your previous withdrawal request is pending.
@@ -57,11 +57,13 @@
         @amendApplication(applicationSummaryView.getAppId, form, amendmentView)
       }
     } else {
+
       @if(amendmentView.getPreviousRequestItemViews.isEmpty) {
         No requests to amend or withdraw the application can be made as the application processing is complete.
       } else {
         No further requests to amend or withdraw the application can be made as the application processing is complete.
       }
+
     }
   } else {
     @if(amendmentView.isApplicationInProgress) {
@@ -71,7 +73,13 @@
         You do not have access rights to make a request.
       }
     } else {
-      TODO
+
+        @if(amendmentView.getPreviousRequestItemViews.isEmpty) {
+          No requests to amend or withdraw the application can be made as the application processing is complete.
+        } else {
+          No further requests to amend or withdraw the application can be made as the application processing is complete.
+        }
+
     }
   }
 

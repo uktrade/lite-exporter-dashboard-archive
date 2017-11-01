@@ -1,14 +1,14 @@
 @import models.enums.DraftType
 @import models.view.FileView
 
-@(relatedId: String, draftType: DraftType,  fileViews: java.util.List[FileView])
+@(appId: String, relatedId: String, draftType: DraftType,  fileViews: java.util.List[FileView])
 
 <script src="@routes.Assets.versioned("javascripts/jquery-file-upload/js/jquery.fileupload.js")"></script>
 
 <div class="file-upload-drop-target">
   <div class="file-upload-help-text">Drag and drop your files here <br>or</div>
   <button class="button secondary file-upload-button" tabindex="0">Select a file</button>
-  <input id="fileupload" type="file" name="files[]" data-url="@routes.UploadController.submitFiles(draftType.toString, relatedId).toString" multiple>
+  <input id="fileupload" type="file" name="files[]" data-url="@routes.UploadController.submitFiles(appId, draftType.toString, relatedId).toString" multiple>
 
 </div>
 
@@ -27,7 +27,7 @@
       <td class="file-upload-status">@file.getSize</td>
       <td>
         <button class=js-hidden formaction="@file.getDeleteLink">Remove</button>
-        <a href="#" class="file-delete-link" data-related-id="@file.getRelatedId" data-file-id="@file.getId" data-file-type="@draftType.toString"><div class="js-only">Remove</div>
+        <a href="#" class="file-delete-link" data-app-id="@file.getAppId" data-related-id="@file.getRelatedId" data-file-id="@file.getId" data-file-type="@draftType.toString"><div class="js-only">Remove</div>
           <span class="visually-hidden">@file.getName</span>
         </a>
       </td>

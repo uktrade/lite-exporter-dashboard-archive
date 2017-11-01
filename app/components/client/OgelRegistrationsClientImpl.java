@@ -5,18 +5,17 @@ import com.google.inject.name.Named;
 import components.common.logging.CorrelationId;
 import components.common.logging.ServiceClientLogger;
 import components.exceptions.ServiceException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-
-public class PermissionsServiceClientImpl implements PermissionsServiceClient {
+public class OgelRegistrationsClientImpl implements OgelRegistrationsClient {
 
   private final HttpExecutionContext httpExecutionContext;
   private final WSClient wsClient;
@@ -24,10 +23,10 @@ public class PermissionsServiceClientImpl implements PermissionsServiceClient {
   private final String address;
 
   @Inject
-  public PermissionsServiceClientImpl(HttpExecutionContext httpExecutionContext,
-                                      WSClient wsClient,
-                                      @Named("permissionsServiceAddress") String address,
-                                      @Named("permissionsServiceTimeout") int timeout) {
+  public OgelRegistrationsClientImpl(HttpExecutionContext httpExecutionContext,
+                                     WSClient wsClient,
+                                     @Named("permissionsServiceAddress") String address,
+                                     @Named("permissionsServiceTimeout") int timeout) {
     this.httpExecutionContext = httpExecutionContext;
     this.wsClient = wsClient;
     this.address = address;

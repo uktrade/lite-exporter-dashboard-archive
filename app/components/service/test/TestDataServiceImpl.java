@@ -34,6 +34,7 @@ import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
+import components.service.UserPrivilegeService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,7 +61,6 @@ import models.enums.DraftType;
 import models.enums.SielStatus;
 import models.enums.StatusType;
 import org.apache.commons.lang3.RandomUtils;
-import uk.gov.bis.lite.customer.api.view.CustomerView;
 
 public class TestDataServiceImpl implements TestDataService {
 
@@ -112,6 +112,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final WithdrawalApprovalDao withdrawalApprovalDao;
   private final RfiWithdrawalDao rfiWithdrawalDao;
   private final ReadDao readDao;
+  private final UserPrivilegeService userPrivilegeService;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -128,7 +129,8 @@ public class TestDataServiceImpl implements TestDataService {
                              WithdrawalRejectionDao withdrawalRejectionDao,
                              WithdrawalApprovalDao withdrawalApprovalDao,
                              RfiWithdrawalDao rfiWithdrawalDao,
-                             ReadDao readDao) {
+                             ReadDao readDao,
+                             UserPrivilegeService userPrivilegeService) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiReplyDao = rfiReplyDao;
@@ -144,6 +146,7 @@ public class TestDataServiceImpl implements TestDataService {
     this.withdrawalApprovalDao = withdrawalApprovalDao;
     this.rfiWithdrawalDao = rfiWithdrawalDao;
     this.readDao = readDao;
+    this.userPrivilegeService = userPrivilegeService;
   }
 
   @Override
@@ -181,9 +184,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   @Override
   public void deleteCurrentUser(String userId) {
-    List<String> customerIds = customerServiceClient.getCustomers(userId).stream()
-        .map(CustomerView::getCustomerId)
-        .collect(Collectors.toList());
+    List<String> customerIds = userPrivilegeService.getCustomerIdsWithBasicPermission(userId);
     List<String> appIds = applicationDao.getApplications(customerIds).stream()
         .map(Application::getId)
         .collect(Collectors.toList());
@@ -243,7 +244,7 @@ public class TestDataServiceImpl implements TestDataService {
           time(2015, 3, i, 15, 10),
           expiryTimestamp,
           sielStatus,
-          "SAR1_SITE1",
+          SITE_ID,
           destinationList);
       sielDao.insert(siel);
     }

@@ -1,12 +1,18 @@
 package components.service;
 
+import java.util.List;
 import models.AppData;
+import models.Application;
 
 public interface UserPrivilegeService {
 
-  boolean isAccessAllowed(String userId, String siteId, String customerId);
+  boolean isAmendmentOrWithdrawalAllowed(String userId, AppData appData);
 
-  boolean hasRfiReplyPermission(String userId, String rfiId, AppData appData);
+  boolean isReplyAllowed(String userId, String rfiId, AppData appData);
 
-  boolean hasAmendmentOrWithdrawalPermission(String userId, AppData appData);
+  List<String> getCustomerIdsWithBasicPermission(String userId);
+
+  boolean isApplicationViewAllowed(String userId, Application application);
+
+  boolean hasCreatorOrAdminPermission(String userId, AppData appData);
 }

@@ -96,8 +96,8 @@ public class MessageViewServiceImpl implements MessageViewService {
 
   private FileView getWithdrawalRequestFileView(WithdrawalRequest withdrawalRequest, File file) {
     String size = FileUtil.getReadableFileSize(file.getUrl());
-    String link = controllers.routes.DownloadController.getFile(withdrawalRequest.getAppId(), file.getId()).toString();
-    return new FileView(file.getId(), withdrawalRequest.getId(), file.getFilename(), link, null, size);
+    String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalFile(withdrawalRequest.getAppId(), file.getId()).toString();
+    return new FileView(file.getId(), withdrawalRequest.getAppId(), withdrawalRequest.getId(), file.getFilename(), link, null, size);
   }
 
   private MessageReplyView getWithdrawalApprovalMessageReplyView(WithdrawalApproval withdrawalApproval, ReadData readData) {
@@ -144,8 +144,8 @@ public class MessageViewServiceImpl implements MessageViewService {
 
   private FileView getAmendmentFileView(Amendment amendment, File file) {
     String size = FileUtil.getReadableFileSize(file.getUrl());
-    String link = controllers.routes.DownloadController.getFile(amendment.getAppId(), file.getId()).toString();
-    return new FileView(file.getId(), amendment.getId(), file.getFilename(), link, null, size);
+    String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalFile(amendment.getAppId(), file.getId()).toString();
+    return new FileView(file.getId(), amendment.getAppId(), amendment.getId(), file.getFilename(), link, null, size);
   }
 
   private MessageView getStopMessageView(Notification notification, ReadData readData) {

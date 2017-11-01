@@ -80,6 +80,7 @@ $(function () {
       var error = data.result.files[0].error;
       var size = data.result.files[0].size;
       var filename = data.result.files[0].name;
+      var appId = data.result.files[0].appId
       var relatedId = data.result.files[0].relatedId;
       var fileId = data.result.files[0].fileId;
       var fileType = data.result.files[0].fileType;
@@ -102,7 +103,8 @@ $(function () {
           }, 2000);
 
           // Create the delete action
-          data.context.find('.file-upload-actions').html('<a href="#" data-related-id="' + relatedId +
+          data.context.find('.file-upload-actions').html('<a href="#" data-app-id="' + appId +
+            '"data-related-id="' + relatedId +
             '" data-file-id="' + fileId +
             '" data-file-type="' + fileType +
             '"class="file-delete-link">Remove<span class="visually-hidden"> ' + filename + '</span></a>');
@@ -143,6 +145,7 @@ $('#fileupload').attr('tabindex', '-1');
 
 //Bind click events to file delete links
 $('body').on('click', '.file-delete-link', function (e) {
+  var appId = $(this).attr('data-app-id');
   var relatedId = $(this).attr('data-related-id');
   var fileId = $(this).attr('data-file-id');
   var fileType = $(this).attr('data-file-type');
@@ -150,7 +153,7 @@ $('body').on('click', '.file-delete-link', function (e) {
   $fileRow.hide();
 
   $.ajax({
-    url: '/upload/delete',
+    url: '/application/'+appId+'/upload/delete',
     method: 'POST',
     headers: {
       "Csrf-Token": $('input[name=csrfToken]').val()

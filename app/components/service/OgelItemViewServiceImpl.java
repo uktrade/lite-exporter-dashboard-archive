@@ -2,8 +2,8 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
+import components.client.OgelRegistrationsClient;
 import components.client.OgelServiceClient;
-import components.client.PermissionsServiceClient;
 import components.util.EnumUtil;
 import components.util.LicenceUtil;
 import components.util.TimeUtil;
@@ -21,27 +21,27 @@ import java.util.stream.Collectors;
 
 public class OgelItemViewServiceImpl implements OgelItemViewService {
 
-  private final PermissionsServiceClient permissionsServiceClient;
+  private final OgelRegistrationsClient ogelRegistrationsClient;
   private final CustomerServiceClient customerServiceClient;
   private final OgelServiceClient ogelServiceClient;
 
   @Inject
-  public OgelItemViewServiceImpl(PermissionsServiceClient permissionsServiceClient,
+  public OgelItemViewServiceImpl(OgelRegistrationsClient ogelRegistrationsClient,
                                  CustomerServiceClient customerServiceClient,
                                  OgelServiceClient ogelServiceClient) {
-    this.permissionsServiceClient = permissionsServiceClient;
+    this.ogelRegistrationsClient = ogelRegistrationsClient;
     this.customerServiceClient = customerServiceClient;
     this.ogelServiceClient = ogelServiceClient;
   }
 
   @Override
   public boolean hasOgelItemViews(String userId) {
-    return !permissionsServiceClient.getOgelRegistrations(userId).isEmpty();
+    return !ogelRegistrationsClient.getOgelRegistrations(userId).isEmpty();
   }
 
   @Override
   public List<OgelItemView> getOgelItemViews(String userId) {
-    List<OgelRegistrationView> ogelRegistrationViews = permissionsServiceClient.getOgelRegistrations(userId);
+    List<OgelRegistrationView> ogelRegistrationViews = ogelRegistrationsClient.getOgelRegistrations(userId);
     Map<String, SiteView> sites = getSites(ogelRegistrationViews);
     Map<String, CustomerView> customers = getCustomers(ogelRegistrationViews);
     Map<String, OgelFullView> ogels = getOgels(ogelRegistrationViews);

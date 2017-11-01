@@ -10,8 +10,6 @@ import play.libs.ws.WSClient;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
 
-import java.util.List;
-
 public class TestCustomerServiceClientImpl extends CustomerServiceClientImpl {
 
   private final UserService userService;
@@ -33,16 +31,6 @@ public class TestCustomerServiceClientImpl extends CustomerServiceClientImpl {
     String wrapCustomerId = TestDataServiceImpl.wrapCustomerId(userService.getCurrentUserId(), customerView.getCustomerId());
     customerView.setCustomerId(wrapCustomerId);
     return customerView;
-  }
-
-  @Override
-  public List<CustomerView> getCustomers(String userId) {
-    List<CustomerView> customerViews = super.getCustomers(TestDataServiceImpl.APPLICANT_ID);
-    customerViews.forEach(customerView -> {
-      String wrapCustomerId = TestDataServiceImpl.wrapCustomerId(userService.getCurrentUserId(), customerView.getCustomerId());
-      customerView.setCustomerId(wrapCustomerId);
-    });
-    return customerViews;
   }
 
   @Override

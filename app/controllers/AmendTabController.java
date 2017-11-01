@@ -97,7 +97,7 @@ public class AmendTabController extends SamlController {
     String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
-    if (!isAmendmentOrWithdrawalAllowed(userId, appData)) {
+    if (!userPrivilegeService.isAmendmentOrWithdrawalAllowed(userId, appData)) {
       LOGGER.error("Unable to delete file with id {} since amending application with id {} not allowed.", fileId, appId);
       return showAmendTab(appId);
     } else {
@@ -124,7 +124,7 @@ public class AmendTabController extends SamlController {
     if (action == null) {
       LOGGER.error("Amending application with appId {} and action {} not possible", appId, actionParam);
       return showAmendTab(appId);
-    } else if (!isAmendmentOrWithdrawalAllowed(userId, appData)) {
+    } else if (!userPrivilegeService.isAmendmentOrWithdrawalAllowed(userId, appData)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since amendment not allowed.", appId, action);
       return showAmendTab(appId);
     } else if (amendApplicationForm.hasErrors()) {
@@ -158,12 +158,12 @@ public class AmendTabController extends SamlController {
     List<FileView> fileViews = createFileViews(appId);
     List<SelectOption> selectOptions = getSelectOptions();
     List<PreviousRequestItemView> previousRequestItemViews = previousRequestItemViewService.getPreviousRequestItemViews(appData);
-    boolean hasPendingWithdrawalRequest = hasPendingWithdrawalRequest(appData);
+    boolean hasPendingWithdrawalRequest = ApplicationUtil.hasPendingWithdrawalRequest(appData);
     boolean applicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
-    boolean hasPermission = userPrivilegeService.hasAmendmentOrWithdrawalPermission(userId, appData);
+    boolean hasCreatorOrAdminPermission = userPrivilegeService.hasCreatorOrAdminPermission(userId, appData);
     AmendmentView amendmentView = new AmendmentView(applicationInProgress,
         hasPendingWithdrawalRequest,
-        hasPermission,
+        hasCreatorOrAdminPermission,
         previousRequestItemViews,
         selectOptions,
         fileViews,
@@ -176,17 +176,6 @@ public class AmendTabController extends SamlController {
         .withHeader("Cache-Control", "no-store");
   }
 
-  private boolean isAmendmentOrWithdrawalAllowed(String userId, AppData appData) {
-    boolean isApplicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
-    boolean hasPendingWithdrawalRequest = hasPendingWithdrawalRequest(appData);
-    boolean hasAmendmentOrWithdrawalPermission = userPrivilegeService.hasAmendmentOrWithdrawalPermission(userId, appData);
-    return isApplicationInProgress && !hasPendingWithdrawalRequest && hasAmendmentOrWithdrawalPermission;
-  }
-
-  private boolean hasPendingWithdrawalRequest(AppData appData) {
-    return appData.getWithdrawalApproval() == null && appData.getWithdrawalRequests().size() > appData.getWithdrawalRejections().size();
-  }
-
   private List<FileView> createFileViews(String appId) {
     List<File> files = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     return files.stream()
@@ -195,9 +184,9 @@ public class AmendTabController extends SamlController {
   }
 
   private FileView createFileView(String appId, File file) {
-    String link = routes.DownloadController.getFile(appId, file.getId()).toString();
+    String link = routes.DownloadController.getAmendmentOrWithdrawalFile(appId, file.getId()).toString();
     String deleteLink = routes.AmendTabController.deleteFileById(appId, file.getId()).toString();
-    return new FileView(file.getId(), appId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
+    return new FileView(file.getId(), appId, appId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
   }
 
   private List<SelectOption> getSelectOptions() {

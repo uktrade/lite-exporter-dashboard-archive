@@ -5,7 +5,6 @@ import components.client.CustomerServiceClient;
 import components.dao.SielDao;
 import components.util.LicenceUtil;
 import components.util.TimeUtil;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,23 +14,26 @@ import uk.gov.bis.lite.customer.api.view.CustomerView;
 
 public class SielItemViewServiceImpl implements SielItemViewService {
 
+  private final UserPrivilegeService userPrivilegeService;
   private final CustomerServiceClient customerServiceClient;
   private final SielDao sielDao;
 
   @Inject
-  public SielItemViewServiceImpl(CustomerServiceClient customerServiceClient, SielDao sielDao) {
+  public SielItemViewServiceImpl(UserPrivilegeService userPrivilegeService,
+                                 CustomerServiceClient customerServiceClient,
+                                 SielDao sielDao) {
+    this.userPrivilegeService = userPrivilegeService;
     this.customerServiceClient = customerServiceClient;
     this.sielDao = sielDao;
   }
 
   @Override
   public List<SielItemView> getSielItemViews(String userId) {
-    List<CustomerView> customerViews = customerServiceClient.getCustomers(userId);
+    List<String> customerIds = userPrivilegeService.getCustomerIdsWithBasicPermission(userId);
 
-    Map<String, String> customerIdToCompanyName = customerViews.stream()
+    Map<String, String> customerIdToCompanyName = customerIds.stream()
+        .map(customerServiceClient::getCustomer)
         .collect(Collectors.toMap(CustomerView::getCustomerId, CustomerView::getCompanyName));
-
-    List<String> customerIds = new ArrayList<>(customerIdToCompanyName.keySet());
 
     List<Siel> siels = sielDao.getSiels(customerIds);
 
@@ -42,9 +44,7 @@ public class SielItemViewServiceImpl implements SielItemViewService {
 
   @Override
   public boolean hasSielItemViews(String userId) {
-    List<String> customerIds = customerServiceClient.getCustomers(userId).stream()
-        .map(CustomerView::getCustomerId)
-        .collect(Collectors.toList());
+    List<String> customerIds = userPrivilegeService.getCustomerIdsWithBasicPermission(userId);
     return !sielDao.getSiels(customerIds).isEmpty();
   }
 

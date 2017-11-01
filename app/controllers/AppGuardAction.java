@@ -19,7 +19,7 @@ import play.mvc.Result;
 public class AppGuardAction extends Action.Simple {
 
   private static final String PATH_START = "/application/";
-  private static final String PATTERN_START = "/application/$appId<.+>/";
+  private static final String PATTERN_START = "/application/$appId<[^/]+>/";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AppGuardAction.class);
 
@@ -51,13 +51,11 @@ public class AppGuardAction extends Action.Simple {
           return error();
         } else {
           String currentUserId = userService.getCurrentUserId();
-          String siteId = application.getSiteId();
-          String customerId = application.getCustomerId();
-          boolean allowed = userPrivilegeService.isAccessAllowed(currentUserId, siteId, customerId);
+          boolean allowed = userPrivilegeService.isApplicationViewAllowed(currentUserId, application);
           if (allowed) {
             return delegate.call(ctx);
           } else {
-            String errorMessage = String.format("User %s has no access to application %s with siteId %s and customerId %s", currentUserId, appId, siteId, customerId);
+            String errorMessage = String.format("User %s has no access to application %s", currentUserId, appId);
             LOGGER.error(errorMessage);
             return error();
           }

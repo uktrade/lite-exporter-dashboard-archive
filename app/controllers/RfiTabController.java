@@ -2,7 +2,6 @@ package controllers;
 
 import com.google.inject.Inject;
 import components.dao.DraftDao;
-import components.dao.RfiReplyDao;
 import components.exceptions.DatabaseException;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
@@ -42,7 +41,6 @@ public class RfiTabController extends SamlController {
   private final FormFactory formFactory;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final RfiViewService rfiViewService;
-  private final RfiReplyDao rfiReplyDao;
   private final RfiReplyService rfiReplyService;
   private final DraftDao draftDao;
   private final UserService userService;
@@ -56,9 +54,9 @@ public class RfiTabController extends SamlController {
                           FormFactory formFactory,
                           ApplicationSummaryViewService applicationSummaryViewService,
                           RfiViewService rfiViewService,
-                          RfiReplyDao rfiReplyDao,
                           RfiReplyService rfiReplyService,
-                          DraftDao draftDao, UserService userService,
+                          DraftDao draftDao,
+                          UserService userService,
                           AppDataService appDataService,
                           ApplicationTabsViewService applicationTabsViewService,
                           ReadDataService readDataService,
@@ -67,7 +65,6 @@ public class RfiTabController extends SamlController {
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.rfiViewService = rfiViewService;
-    this.rfiReplyDao = rfiReplyDao;
     this.rfiReplyService = rfiReplyService;
     this.draftDao = draftDao;
     this.userService = userService;
@@ -82,7 +79,7 @@ public class RfiTabController extends SamlController {
     AppData appData = appDataService.getAppData(appId);
     Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
     String rfiId = rfiReplyForm.data().get("rfiId");
-    if (!rfiViewService.isReplyAllowed(userId, rfiId, appData)) {
+    if (!userPrivilegeService.isReplyAllowed(userId, rfiId, appData)) {
       LOGGER.error("Unable to delete fileId %s Reply to rfiId {} and appId {} not allowed", fileId, rfiId, appId);
       return showRfiTab(appId);
     } else {
@@ -105,7 +102,7 @@ public class RfiTabController extends SamlController {
     List<UploadFile> uploadFiles = FileUtil.getUploadFiles(request());
     FileUtil.processErrors(rfiReplyForm, uploadFiles);
     AppData appData = appDataService.getAppData(appId);
-    if (!rfiViewService.isReplyAllowed(userId, rfiId, appData)) {
+    if (!userPrivilegeService.isReplyAllowed(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
       return showRfiTab(appId);
     } else if (rfiReplyForm.hasErrors()) {
@@ -121,7 +118,7 @@ public class RfiTabController extends SamlController {
   public Result showReplyForm(String appId, String rfiId) {
     String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
-    if (!rfiViewService.isReplyAllowed(userId, rfiId, appData)) {
+    if (!userPrivilegeService.isReplyAllowed(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
       return showRfiTab(appId);
     } else {

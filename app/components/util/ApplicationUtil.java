@@ -205,4 +205,8 @@ public class ApplicationUtil {
     }
   }
 
+  public static boolean hasPendingWithdrawalRequest(AppData appData) {
+    return appData.getWithdrawalApproval() == null && appData.getWithdrawalRequests().size() > appData.getWithdrawalRejections().size();
+  }
+
 }

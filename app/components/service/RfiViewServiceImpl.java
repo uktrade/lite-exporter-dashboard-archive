@@ -29,8 +29,7 @@ public class RfiViewServiceImpl implements RfiViewService {
   private final UserPrivilegeService userPrivilegeService;
 
   @Inject
-  public RfiViewServiceImpl(UserService userService,
-                            DraftDao draftDao, UserPrivilegeService userPrivilegeService) {
+  public RfiViewServiceImpl(UserService userService, DraftDao draftDao, UserPrivilegeService userPrivilegeService) {
     this.userService = userService;
     this.draftDao = draftDao;
     this.userPrivilegeService = userPrivilegeService;
@@ -49,7 +48,7 @@ public class RfiViewServiceImpl implements RfiViewService {
         .collect(Collectors.toMap(RfiReply::getRfiId, Function.identity()));
 
     Map<String, Boolean> rfiIdToIsReplyAllowed = appData.getRfiList().stream()
-        .collect(Collectors.toMap(Rfi::getId, rfi -> isReplyAllowed(userId, rfi.getId(), appData)));
+        .collect(Collectors.toMap(Rfi::getId, rfi -> userPrivilegeService.isReplyAllowed(userId, rfi.getId(), appData)));
 
     return rfiList.stream()
         .sorted(Comparators.RFI_CREATED_REVERSED)
@@ -70,17 +69,6 @@ public class RfiViewServiceImpl implements RfiViewService {
     return new AddRfiReplyView(rfiId, fileViews);
   }
 
-  @Override
-  public boolean isReplyAllowed(String userId, String rfiId, AppData appData) {
-    boolean hasReply = appData.getRfiReplies().stream()
-        .anyMatch(rfiReply -> rfiReply.getRfiId().equals(rfiId));
-    boolean wasWithdrawn = appData.getRfiWithdrawals().stream()
-        .anyMatch(rfiWithdrawal -> rfiWithdrawal.getRfiId().equals(rfiId));
-    boolean isApplicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
-    boolean hasRfiReplyPermission = userPrivilegeService.hasRfiReplyPermission(userId, rfiId, appData);
-    return !hasReply && !wasWithdrawn && isApplicationInProgress && hasRfiReplyPermission;
-  }
-
   private List<FileView> createFileViews(String appId, String rfiId, List<File> files) {
     return files.stream()
         .map(file -> createFileView(appId, rfiId, file))
@@ -88,9 +76,9 @@ public class RfiViewServiceImpl implements RfiViewService {
   }
 
   private FileView createFileView(String appId, String rfiId, File file) {
-    String link = controllers.routes.DownloadController.getRfiReplyFile(rfiId, file.getId()).toString();
+    String link = controllers.routes.DownloadController.getRfiReplyFile(appId, rfiId, file.getId()).toString();
     String deleteLink = controllers.routes.RfiTabController.deleteFileById(appId, file.getId()).toString();
-    return new FileView(file.getId(), rfiId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
+    return new FileView(file.getId(), appId, rfiId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
   }
 
   private RfiView getRfiView(Rfi rfi, RfiReply rfiReply, RfiWithdrawal rfiWithdrawal, boolean isReplyAllowed) {

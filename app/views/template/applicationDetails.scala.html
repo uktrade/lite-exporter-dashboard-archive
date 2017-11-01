@@ -23,11 +23,11 @@
     @applicationSummaryPanel(applicationSummaryView)
 
     @tabs("application-tabs", size = "large", fitToPage = true) {
-      @tab("Status tracker", "/application/" + applicationSummaryView.getAppId + "/status-tracker", activeTab.equals("statusTracker"), false)
-      @tab("Requests for information", "/application/" + applicationSummaryView.getAppId + "/rfi", activeTab.equals("rfi"), applicationTabsView.isNewRfi)
-      @tab("Messages", "/application/" + applicationSummaryView.getAppId + "/messages", activeTab.equals("messages"), applicationTabsView.isNewMessage)
-      @tab("Amend / withdraw", "/application/" + applicationSummaryView.getAppId + "/amend-application", activeTab.equals("amend"), false)
-      @tab("Documents", "/application/" + applicationSummaryView.getAppId + "/outcome-documents", activeTab.equals("outcomeDocs"), applicationTabsView.isNewDocument)
+      @tab("Status tracker", routes.StatusTabController.showStatusTab(applicationSummaryView.getAppId).toString, activeTab.equals("statusTracker"), false)
+      @tab("Requests for information", routes.RfiTabController.showRfiTab(applicationSummaryView.getAppId).toString, activeTab.equals("rfi"), applicationTabsView.isNewRfi)
+      @tab("Messages", routes.MessageTabController.showMessages(applicationSummaryView.getAppId).toString, applicationTabsView.isNewMessage)
+      @tab("Amend / withdraw", routes.AmendTabController.showAmendTab(applicationSummaryView.getAppId).toString, activeTab.equals("amend"), false)
+      @tab("Documents", routes.OutcomeTabController.showOutcomeTab(applicationSummaryView.getAppId).toString, activeTab.equals("outcomeDocs"), applicationTabsView.isNewDocument)
     }
 
     @content

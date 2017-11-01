@@ -11,5 +11,4 @@ public interface RfiViewService {
 
   AddRfiReplyView getAddRfiReplyView(String appId, String rfiId);
 
-  boolean isReplyAllowed(String userId, String rfiId, AppData appData);
 }
