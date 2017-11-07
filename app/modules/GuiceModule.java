@@ -15,7 +15,6 @@ import components.client.UserServiceClient;
 import components.client.UserServiceClientImpl;
 import components.client.test.TestCustomerServiceClientImpl;
 import components.client.test.TestOgelRegistrationServiceClientImpl;
-import components.common.auth.SpireAuthManager;
 import components.common.journey.JourneyContextParamProvider;
 import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
@@ -101,15 +100,15 @@ import components.service.test.TestDataServiceImpl;
 import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
-import filters.common.JwtRequestFilter;
 import filters.common.JwtRequestFilterConfig;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Properties;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
 import play.db.Database;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
 
 public class GuiceModule extends AbstractModule {
 
@@ -220,9 +219,8 @@ public class GuiceModule extends AbstractModule {
   }
 
   @Provides
-  @Singleton
-  JwtRequestFilter provideJwtRequestFilter(@Named("userServiceKey") String key, @Named("userServiceIssuer") String issuer, SpireAuthManager spireAuthManager) {
-    return new JwtRequestFilter(spireAuthManager, new JwtRequestFilterConfig(key, issuer));
+  public JwtRequestFilterConfig provideJwtRequestFilterConfig(@Named("userServiceKey") String key, @Named("userServiceIssuer") String issuer) {
+    return new JwtRequestFilterConfig(key, issuer);
   }
 
   @Provides

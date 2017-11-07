@@ -6,11 +6,13 @@ import components.client.OgelRegistrationServiceClientImpl;
 import components.service.UserService;
 import components.service.test.TestDataServiceImpl;
 import components.util.TestUtil;
-import java.util.ArrayList;
-import java.util.List;
+import filters.common.JwtRequestFilter;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestOgelRegistrationServiceClientImpl extends OgelRegistrationServiceClientImpl {
 
@@ -21,8 +23,9 @@ public class TestOgelRegistrationServiceClientImpl extends OgelRegistrationServi
                                                WSClient wsClient,
                                                @Named("permissionsServiceAddress") String address,
                                                @Named("permissionsServiceTimeout") int timeout,
-                                               UserService userService) {
-    super(httpExecutionContext, wsClient, address, timeout);
+                                               UserService userService,
+                                               JwtRequestFilter jwtRequestFilter) {
+    super(httpExecutionContext, wsClient, address, timeout, jwtRequestFilter);
     this.userService = userService;
   }
 

@@ -63,6 +63,9 @@ buildInfoKeys ++= Seq[BuildInfoKey](
   }
 )
 
+pactBrokerAddress := "http://pact-broker.mgmt.licensing.service.trade.gov.uk.test"
+pactContractVersion := "1.0.0"
+
 buildInfoOptions += BuildInfoOption.BuildTime
 buildInfoOptions += BuildInfoOption.ToJson
 PlayKeys.externalizeResources := false
