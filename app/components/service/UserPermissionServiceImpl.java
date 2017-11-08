@@ -5,9 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.client.OgelRegistrationServiceClient;
 import components.client.UserServiceClient;
-import components.dao.SielDao;
 import components.exceptions.UnexpectedStateException;
 import components.util.ApplicationUtil;
 import java.util.ArrayList;
@@ -22,7 +20,6 @@ import javax.annotation.Nonnull;
 import models.AppData;
 import models.Application;
 import models.Rfi;
-import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 import uk.gov.bis.lite.user.api.view.CustomerView;
 import uk.gov.bis.lite.user.api.view.Role;
 import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
@@ -31,22 +28,15 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
   private final UserServiceClient userServiceClient;
   private final LoadingCache<String, UserPrivilegesView> privilegesCache;
-  private final OgelRegistrationServiceClient ogelRegistrationServiceClient;
-  private final SielDao sielDao;
-
 
   private static final Set<Role> VIEWER_ROLES = EnumSet.of(Role.ADMIN, Role.SUBMITTER, Role.PREPARER);
   private static final Set<Role> ADMIN_ROLES = EnumSet.of(Role.ADMIN, Role.SUBMITTER);
 
   @Inject
   public UserPermissionServiceImpl(@Named("userServiceCacheExpireMinutes") Long cacheExpireMinutes,
-                                   UserServiceClient userServiceClient,
-                                   OgelRegistrationServiceClient ogelRegistrationServiceClient,
-                                   SielDao sielDao) {
+                                   UserServiceClient userServiceClient) {
     this.userServiceClient = userServiceClient;
     this.privilegesCache = createPrivilegesCache(cacheExpireMinutes);
-    this.ogelRegistrationServiceClient = ogelRegistrationServiceClient;
-    this.sielDao = sielDao;
   }
 
   private LoadingCache<String, UserPrivilegesView> createPrivilegesCache(Long cacheExpireMinutes) {
@@ -68,20 +58,6 @@ public class UserPermissionServiceImpl implements UserPermissionService {
       String message = "Unable to get user privileges from cache for user id " + userId;
       throw new UnexpectedStateException(message, exception);
     }
-  }
-
-  @Override
-  public boolean canViewOgel(String userId, String registrationReference) {
-    List<OgelRegistrationView> ogelRegistrationViews = ogelRegistrationServiceClient.getOgelRegistrations(userId);
-    return ogelRegistrationViews.stream()
-        .anyMatch(ogelRegistrationView -> ogelRegistrationView.getRegistrationReference().equals(registrationReference));
-  }
-
-  @Override
-  public boolean canViewSiel(String userId, String registrationReference) {
-    List<String> customerIds = getCustomerIdsWithViewingPermission(userId);
-    return sielDao.getSiels(customerIds).stream()
-        .anyMatch(siel -> siel.getCaseReference().equals(registrationReference));
   }
 
   @Override

@@ -2,9 +2,7 @@ package components.service.test;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.client.OgelRegistrationServiceClient;
 import components.client.UserServiceClient;
-import components.dao.SielDao;
 import components.service.UserPermissionServiceImpl;
 import components.util.TestUtil;
 import java.util.Collections;
@@ -20,10 +18,8 @@ public class TestUserPermissionServiceImpl extends UserPermissionServiceImpl {
 
   @Inject
   public TestUserPermissionServiceImpl(@Named("userServiceCacheExpiryMinutes") Long cacheExpireMinutes,
-                                       UserServiceClient userServiceClient,
-                                       OgelRegistrationServiceClient ogelRegistrationServiceClient,
-                                       SielDao sielDao) {
-    super(cacheExpireMinutes, userServiceClient, ogelRegistrationServiceClient, sielDao);
+                                       UserServiceClient userServiceClient) {
+    super(cacheExpireMinutes, userServiceClient);
   }
 
   @Override

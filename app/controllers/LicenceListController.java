@@ -7,13 +7,13 @@ import components.service.OgelDetailsViewService;
 import components.service.OgelItemViewService;
 import components.service.SielDetailsViewService;
 import components.service.SielItemViewService;
-import components.service.UserPermissionService;
 import components.service.UserService;
 import components.util.EnumUtil;
 import components.util.PageUtil;
 import components.util.SortUtil;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import models.LicenceListState;
 import models.Page;
 import models.enums.LicenceListTab;
@@ -40,8 +40,6 @@ public class LicenceListController extends SamlController {
   private final UserService userService;
   private final SielItemViewService sielItemViewService;
   private final SielDetailsViewService sielDetailsViewService;
-  private final UserPermissionService userPermissionService;
-
 
   @Inject
   public LicenceListController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -49,15 +47,13 @@ public class LicenceListController extends SamlController {
                                OgelDetailsViewService ogelDetailsViewService,
                                UserService userService,
                                SielItemViewService sielItemViewService,
-                               SielDetailsViewService sielDetailsViewService,
-                               UserPermissionService userPermissionService) {
+                               SielDetailsViewService sielDetailsViewService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.ogelItemViewService = ogelItemViewService;
     this.ogelDetailsViewService = ogelDetailsViewService;
     this.userService = userService;
     this.sielItemViewService = sielItemViewService;
     this.sielDetailsViewService = sielDetailsViewService;
-    this.userPermissionService = userPermissionService;
   }
 
   public Result licenceList(String tab, String sort, String direction, Integer page) {
@@ -105,20 +101,19 @@ public class LicenceListController extends SamlController {
 
   public Result ogelDetails(String registrationReference) {
     String userId = userService.getCurrentUserId();
-    if (userPermissionService.canViewOgel(userId, registrationReference)) {
-      OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(userId, registrationReference);
-      return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView));
+    Optional<OgelDetailsView> ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(userId, registrationReference);
+    if (ogelDetailsView.isPresent()) {
+      return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView.get()));
     } else {
       return notFound("Unknown ogel.");
     }
   }
 
-
   public Result sielDetails(String registrationReference) {
     String userId = userService.getCurrentUserId();
-    if (userPermissionService.canViewSiel(userId, registrationReference)) {
-      SielDetailsView sielDetailsView = sielDetailsViewService.getSielDetailsView(registrationReference);
-      return ok(sielDetails.render(licenceApplicationAddress, sielDetailsView));
+    Optional<SielDetailsView> sielDetailsView = sielDetailsViewService.getSielDetailsView(userId, registrationReference);
+    if (sielDetailsView.isPresent()) {
+      return ok(sielDetails.render(licenceApplicationAddress, sielDetailsView.get()));
     } else {
       return notFound("Unknown siel.");
     }

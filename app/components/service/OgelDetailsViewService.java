@@ -1,9 +1,10 @@
 package components.service;
 
+import java.util.Optional;
 import models.view.OgelDetailsView;
 
 public interface OgelDetailsViewService {
 
-  OgelDetailsView getOgelDetailsView(String userId, String registrationReference);
+  Optional<OgelDetailsView> getOgelDetailsView(String userId, String registrationReference);
 
 }

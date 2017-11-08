@@ -1,9 +1,10 @@
 package components.service;
 
+import java.util.Optional;
 import models.view.SielDetailsView;
 
 public interface SielDetailsViewService {
 
-  SielDetailsView getSielDetailsView(String caseReference);
+  Optional<SielDetailsView> getSielDetailsView(String userId, String caseReference);
 
 }
