@@ -6,4 +6,8 @@ public class UnexpectedStateException extends RuntimeException {
     super(message);
   }
 
+  public UnexpectedStateException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
 }

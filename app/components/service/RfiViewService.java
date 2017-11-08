@@ -7,7 +7,7 @@ import models.view.RfiView;
 
 public interface RfiViewService {
 
-  List<RfiView> getRfiViews(AppData appData);
+  List<RfiView> getRfiViews(String userId, AppData appData);
 
   AddRfiReplyView getAddRfiReplyView(String appId, String rfiId);
 

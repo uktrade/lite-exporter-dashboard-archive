@@ -49,18 +49,39 @@
       Make another request
     </div>
   }
-  @if(amendmentView.isApplicationInProgress) {
-    @if(amendmentView.isHasPendingWithdrawalRequest) {
-      You cannot make any further requests while your previous withdrawal request is pending.
+  @if(amendmentView.isHasCreatorOrAdminPermission) {
+    @if(amendmentView.isApplicationInProgress) {
+      @if(amendmentView.isHasPendingWithdrawalRequest) {
+        You cannot make any further requests while your previous withdrawal request is pending.
+      } else {
+        @amendApplication(applicationSummaryView.getAppId, form, amendmentView)
+      }
     } else {
-      @amendApplication(applicationSummaryView.getAppId, form, amendmentView)
+
+      @if(amendmentView.getPreviousRequestItemViews.isEmpty) {
+        No requests to amend or withdraw the application can be made as the application processing is complete.
+      } else {
+        No further requests to amend or withdraw the application can be made as the application processing is complete.
+      }
+
     }
   } else {
-    @if(amendmentView.getPreviousRequestItemViews.isEmpty) {
-      No requests to amend or withdraw the application can be made as the application processing is complete.
+    @if(amendmentView.isApplicationInProgress) {
+      @if(amendmentView.getPreviousRequestItemViews.isEmpty) {
+        There are no amendment or withdrawal requests and you do not have access rights to make a request.
+      } else {
+        You do not have access rights to make a request.
+      }
     } else {
-      No further requests to amend or withdraw the application can be made as the application processing is complete.
+
+        @if(amendmentView.getPreviousRequestItemViews.isEmpty) {
+          No requests to amend or withdraw the application can be made as the application processing is complete.
+        } else {
+          No further requests to amend or withdraw the application can be made as the application processing is complete.
+        }
+
     }
   }
+
   @officer(applicationSummaryView.getAppId, amendmentView.getOfficerView)
 }

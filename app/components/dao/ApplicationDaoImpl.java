@@ -58,7 +58,8 @@ public class ApplicationDaoImpl implements ApplicationDao {
           JsonUtil.convertListToJson(application.getEndUserCountries()),
           application.getApplicantReference(),
           application.getCaseReference(),
-          application.getCaseOfficerId());
+          application.getCaseOfficerId(),
+          application.getSiteId());
     }
   }
 

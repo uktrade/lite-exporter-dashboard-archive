@@ -15,8 +15,10 @@ import models.view.ApplicationSummaryView;
 import models.view.ApplicationTabsView;
 import models.view.StatusItemView;
 import play.mvc.Result;
+import play.mvc.With;
 import views.html.statusTrackerTab;
 
+@With(AppGuardAction.class)
 public class StatusTabController extends SamlController {
 
   private final String licenceApplicationAddress;

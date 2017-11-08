@@ -1,8 +1,7 @@
 package components.dao;
 
-import models.Rfi;
-
 import java.util.List;
+import models.Rfi;
 
 public interface RfiDao {
 

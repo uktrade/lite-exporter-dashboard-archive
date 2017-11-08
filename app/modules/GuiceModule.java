@@ -3,15 +3,18 @@ package modules;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.rabbitmq.client.Channel;
 import components.auth.SamlModule;
 import components.client.CustomerServiceClient;
+import components.client.OgelRegistrationServiceClient;
 import components.client.OgelServiceClient;
 import components.client.OgelServiceClientImpl;
-import components.client.PermissionsServiceClient;
+import components.client.UserServiceClient;
+import components.client.UserServiceClientImpl;
 import components.client.test.TestCustomerServiceClientImpl;
-import components.client.test.TestPermissionsServiceClientImpl;
+import components.client.test.TestOgelRegistrationServiceClientImpl;
 import components.common.journey.JourneyContextParamProvider;
 import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
@@ -72,6 +75,8 @@ import components.service.OfficerViewServiceImpl;
 import components.service.OgelDetailsViewService;
 import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelItemViewService;
+import components.service.PreviousRequestItemViewService;
+import components.service.PreviousRequestItemViewServiceImpl;
 import components.service.ReadDataService;
 import components.service.ReadDataServiceImpl;
 import components.service.RfiReplyService;
@@ -86,20 +91,24 @@ import components.service.StartUpService;
 import components.service.StartUpServiceImpl;
 import components.service.StatusItemViewService;
 import components.service.StatusItemViewServiceImpl;
+import components.service.UserPermissionService;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
 import components.service.test.TestOgelItemViewServiceImpl;
+import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Properties;
+import filters.common.JwtRequestFilterConfig;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
 import play.db.Database;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
 
 public class GuiceModule extends AbstractModule {
 
@@ -113,25 +122,10 @@ public class GuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
-
     install(new SamlModule(configuration));
-
+    bindClients();
     // Upload
     bindConstant("uploadFolder", "upload.folder");
-    // CustomerServiceClient
-    bindConstant("customerServiceAddress", "customerService.address");
-    bindConstant("customerServiceTimeout", "customerService.timeout");
-    // TODO Test
-    bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
-    // PermissionsServiceClient
-    bindConstant("permissionsServiceAddress", "permissionsService.address");
-    bindConstant("permissionsServiceTimeout", "permissionsService.timeout");
-    // TODO Test
-    bind(PermissionsServiceClient.class).to(TestPermissionsServiceClientImpl.class);
-    // OgelServiceClient
-    bindConstant("ogelServiceAddress", "ogelService.address");
-    bindConstant("ogelServiceTimeout", "ogelService.timeout");
-    bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
     // LicenceApplication
     bindConstant("licenceApplicationAddress", "licenceApplication.address");
     // Service
@@ -155,6 +149,8 @@ public class GuiceModule extends AbstractModule {
     bind(AppDataService.class).to(AppDataServiceImpl.class);
     bind(ReadDataService.class).to(ReadDataServiceImpl.class);
     bind(ApplicationTabsViewService.class).to(ApplicationTabsViewServiceImpl.class);
+    bind(PreviousRequestItemViewService.class).to(PreviousRequestItemViewServiceImpl.class);
+    bind(UserPermissionService.class).to(TestUserPermissionServiceImpl.class).asEagerSingleton();
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -194,8 +190,37 @@ public class GuiceModule extends AbstractModule {
     }
   }
 
+  private void bindClients() {
+    // CustomerServiceClient
+    bindConstant("customerServiceAddress", "customerService.address");
+    bindConstant("customerServiceTimeout", "customerService.timeout");
+    // TODO Test
+    bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
+    // OgelRegistrationServiceClient
+    bindConstant("permissionsServiceAddress", "permissionsService.address");
+    bindConstant("permissionsServiceTimeout", "permissionsService.timeout");
+    // TODO Test
+    bind(OgelRegistrationServiceClient.class).to(TestOgelRegistrationServiceClientImpl.class);
+    // OgelServiceClient
+    bindConstant("ogelServiceAddress", "ogelService.address");
+    bindConstant("ogelServiceTimeout", "ogelService.timeout");
+    bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
+    // UserServiceClient
+    bindConstant("userServiceAddress", "userService.address");
+    bindConstant("userServiceTimeout", "userService.timeout");
+    bindConstant("userServiceCacheExpiryMinutes", "userService.cacheExpiryMinutes");
+    bindConstant("userServiceIssuer", "userService.issuer");
+    bindConstant("userServiceKey", "userService.key");
+    bind(UserServiceClient.class).to(UserServiceClientImpl.class);
+  }
+
   private void bindConstant(String name, String configKey) {
     bindConstant().annotatedWith(Names.named(name)).to(configuration.getString(configKey));
+  }
+
+  @Provides
+  public JwtRequestFilterConfig provideJwtRequestFilterConfig(@Named("userServiceKey") String key, @Named("userServiceIssuer") String issuer) {
+    return new JwtRequestFilterConfig(key, issuer);
   }
 
   @Provides

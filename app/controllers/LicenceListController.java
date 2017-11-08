@@ -13,6 +13,7 @@ import components.util.PageUtil;
 import components.util.SortUtil;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import models.LicenceListState;
 import models.Page;
 import models.enums.LicenceListTab;
@@ -39,7 +40,6 @@ public class LicenceListController extends SamlController {
   private final UserService userService;
   private final SielItemViewService sielItemViewService;
   private final SielDetailsViewService sielDetailsViewService;
-
 
   @Inject
   public LicenceListController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -101,13 +101,22 @@ public class LicenceListController extends SamlController {
 
   public Result ogelDetails(String registrationReference) {
     String userId = userService.getCurrentUserId();
-    OgelDetailsView ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(userId, registrationReference);
-    return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView));
+    Optional<OgelDetailsView> ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(userId, registrationReference);
+    if (ogelDetailsView.isPresent()) {
+      return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView.get()));
+    } else {
+      return notFound("Unknown ogel.");
+    }
   }
 
   public Result sielDetails(String registrationReference) {
-    SielDetailsView sielDetailsView = sielDetailsViewService.getSielDetailsView(registrationReference);
-    return ok(sielDetails.render(licenceApplicationAddress, sielDetailsView));
+    String userId = userService.getCurrentUserId();
+    Optional<SielDetailsView> sielDetailsView = sielDetailsViewService.getSielDetailsView(userId, registrationReference);
+    if (sielDetailsView.isPresent()) {
+      return ok(sielDetails.render(licenceApplicationAddress, sielDetailsView.get()));
+    } else {
+      return notFound("Unknown siel.");
+    }
   }
 
 }

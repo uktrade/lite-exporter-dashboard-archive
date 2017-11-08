@@ -1,10 +1,8 @@
 package components.dao;
 
 import com.google.inject.Inject;
-import components.exceptions.DatabaseException;
 import java.util.ArrayList;
 import java.util.List;
-import models.Application;
 import models.StatusUpdate;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;

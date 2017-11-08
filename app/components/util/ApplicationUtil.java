@@ -1,10 +1,10 @@
 package components.util;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,7 +46,7 @@ public class ApplicationUtil {
 
   private final static List<StatusType> STATUS_TYPE_LIST;
 
-  private static final List<StatusType> INVERSE_STATUS_TYPE_LIST;
+  private static final Comparator<StatusUpdate> STATUS_UPDATE_COMPARATOR;
 
   static {
     Map<StatusType, String> statuses = new EnumMap<>(StatusType.class);
@@ -74,7 +74,8 @@ public class ApplicationUtil {
         StatusType.FINAL_ASSESSMENT,
         StatusType.COMPLETE);
     STATUS_TYPE_LIST = Collections.unmodifiableList(statusTypeList);
-    INVERSE_STATUS_TYPE_LIST = Collections.unmodifiableList(Lists.reverse(statusTypeList));
+
+    STATUS_UPDATE_COMPARATOR = Comparator.comparing(statusUpdate -> STATUS_TYPE_LIST.indexOf(statusUpdate.getStatusType()));
   }
 
   public static String getStatusName(StatusType statusType) {
@@ -91,16 +92,10 @@ public class ApplicationUtil {
 
   public static StatusUpdate getMaxStatusUpdate(Collection<StatusUpdate> statusUpdates) {
     if (!CollectionUtils.isEmpty(statusUpdates)) {
-      Map<StatusType, StatusUpdate> statusUpdateMap = new EnumMap<>(StatusType.class);
-      statusUpdates.forEach(statusUpdate -> statusUpdateMap.put(statusUpdate.getStatusType(), statusUpdate));
-      for (StatusType statusType : INVERSE_STATUS_TYPE_LIST) {
-        StatusUpdate statusUpdate = statusUpdateMap.get(statusType);
-        if (statusUpdate != null) {
-          return statusUpdate;
-        }
-      }
+      return Collections.max(statusUpdates, STATUS_UPDATE_COMPARATOR);
+    } else {
+      return null;
     }
-    return null;
   }
 
   public static String getSielDestinations(Siel siel) {
@@ -203,6 +198,10 @@ public class ApplicationUtil {
     } else {
       return null;
     }
+  }
+
+  public static boolean hasPendingWithdrawalRequest(AppData appData) {
+    return appData.getWithdrawalApproval() == null && appData.getWithdrawalRequests().size() > appData.getWithdrawalRejections().size();
   }
 
 }

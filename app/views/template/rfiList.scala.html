@@ -2,10 +2,10 @@
 @import play.data.Form
 @import template._
 
-@(rfiViews: java.util.List[RfiView], allowReplies: Boolean, rfiReplyForm: Form[_], addRfiReplyView: AddRfiReplyView)
+@(rfiViews: java.util.List[RfiView], rfiReplyForm: Form[_], addRfiReplyView: AddRfiReplyView)
 
 @for(rfiView <- rfiViews) {
-  @rfiPanel(rfiView, allowReplies)
+  @rfiPanel(rfiView)
   @if(flash.containsKey(rfiView.getRfiId)) {
     <div class="form-group form-group-error">
       <span class="error-message">@flash.get(rfiView.getRfiId)</span>

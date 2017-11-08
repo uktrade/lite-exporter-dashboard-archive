@@ -28,8 +28,10 @@ import models.view.InformLetterView;
 import models.view.OutcomeDocumentView;
 import models.view.OutcomeView;
 import play.mvc.Result;
+import play.mvc.With;
 import views.html.outcomeDocsTab;
 
+@With(AppGuardAction.class)
 public class OutcomeTabController extends SamlController {
 
   private final String licenceApplicationAddress;

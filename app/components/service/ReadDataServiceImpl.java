@@ -116,9 +116,7 @@ public class ReadDataServiceImpl implements ReadDataService {
       appData.getRfiWithdrawals().stream()
           .filter(rfiWithdrawal -> rfiWithdrawal.getRecipientUserIds().contains(userId))
           .filter(rfiWithdrawal -> !readRfiWithdrawalIds.contains(rfiWithdrawal.getId()))
-          .forEach(rfiWithdrawal -> {
-            unreadRfiWithdrawalIds.put(appData.getApplication().getId(), rfiWithdrawal.getId());
-          });
+          .forEach(rfiWithdrawal -> unreadRfiWithdrawalIds.put(appData.getApplication().getId(), rfiWithdrawal.getId()));
     });
 
     Map<String, ReadData> readDataMap = new HashMap<>();

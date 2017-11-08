@@ -34,6 +34,8 @@ import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
+import components.service.UserPermissionService;
+import components.util.TestUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,14 +62,13 @@ import models.enums.DraftType;
 import models.enums.SielStatus;
 import models.enums.StatusType;
 import org.apache.commons.lang3.RandomUtils;
-import uk.gov.bis.lite.customer.api.view.CustomerView;
 
 public class TestDataServiceImpl implements TestDataService {
 
   public static final String APPLICANT_ID = "24492";
-  public static final String APPLICANT_TWO_ID = "24493";
-  public static final String APPLICANT_THREE_ID = "24494";
-  public static final List<String> RECIPIENTS = Arrays.asList(APPLICANT_ID, APPLICANT_TWO_ID, APPLICANT_THREE_ID);
+  private static final String APPLICANT_TWO_ID = "24493";
+  private static final String APPLICANT_THREE_ID = "24494";
+  private static final List<String> RECIPIENTS = Arrays.asList(APPLICANT_ID, APPLICANT_TWO_ID, APPLICANT_THREE_ID);
   public static final String ADMIN_ID = "1";
 
   public static final String OTHER_APPLICANT_ID = "2";
@@ -92,10 +93,13 @@ public class TestDataServiceImpl implements TestDataService {
   private static final List<String> CONSIGNEE_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
   private static final List<String> END_USER_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
 
-
   private static final String COMPANY_ID_ONE = "SAR1";
   private static final String COMPANY_ID_TWO = "SAR2";
   private static final String COMPANY_ID_THREE = "SAR3";
+  public static final List<String> COMPANY_IDS = Arrays.asList(TestDataServiceImpl.COMPANY_ID_ONE,
+      TestDataServiceImpl.COMPANY_ID_TWO,
+      TestDataServiceImpl.COMPANY_ID_THREE);
+  public static final String SITE_ID = "SAR1_SITE1";
 
   private final RfiDao rfiDao;
   private final StatusUpdateDao statusUpdateDao;
@@ -106,12 +110,12 @@ public class TestDataServiceImpl implements TestDataService {
   private final DraftDao draftDao;
   private final SielDao sielDao;
   private final OutcomeDao outcomeDao;
-  private final CustomerServiceClient customerServiceClient;
   private final NotificationDao notificationDao;
   private final WithdrawalRejectionDao withdrawalRejectionDao;
   private final WithdrawalApprovalDao withdrawalApprovalDao;
   private final RfiWithdrawalDao rfiWithdrawalDao;
   private final ReadDao readDao;
+  private final UserPermissionService userPermissionService;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -128,7 +132,8 @@ public class TestDataServiceImpl implements TestDataService {
                              WithdrawalRejectionDao withdrawalRejectionDao,
                              WithdrawalApprovalDao withdrawalApprovalDao,
                              RfiWithdrawalDao rfiWithdrawalDao,
-                             ReadDao readDao) {
+                             ReadDao readDao,
+                             UserPermissionService userPermissionService) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiReplyDao = rfiReplyDao;
@@ -138,12 +143,12 @@ public class TestDataServiceImpl implements TestDataService {
     this.draftDao = draftDao;
     this.sielDao = sielDao;
     this.outcomeDao = outcomeDao;
-    this.customerServiceClient = customerServiceClient;
     this.notificationDao = notificationDao;
     this.withdrawalRejectionDao = withdrawalRejectionDao;
     this.withdrawalApprovalDao = withdrawalApprovalDao;
     this.rfiWithdrawalDao = rfiWithdrawalDao;
     this.readDao = readDao;
+    this.userPermissionService = userPermissionService;
   }
 
   @Override
@@ -181,9 +186,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   @Override
   public void deleteCurrentUser(String userId) {
-    List<String> customerIds = customerServiceClient.getCustomers(userId).stream()
-        .map(CustomerView::getCustomerId)
-        .collect(Collectors.toList());
+    List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
     List<String> appIds = applicationDao.getApplications(customerIds).stream()
         .map(Application::getId)
         .collect(Collectors.toList());
@@ -232,7 +235,7 @@ public class TestDataServiceImpl implements TestDataService {
   // Applicant3: N Y
   private void createSiels(String userId) {
     for (int i = 1; i < 22; i++) {
-      String companyId = i % 2 == 0 ? wrapCustomerId(userId, COMPANY_ID_ONE) : wrapCustomerId(userId, COMPANY_ID_TWO);
+      String companyId = i % 2 == 0 ? TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE) : TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO);
       SielStatus sielStatus = SielStatus.values()[i % SielStatus.values().length];
       List<String> destinationList = i % 2 == 0 ? Collections.singletonList(GERMANY) : Arrays.asList(ICELAND, FRANCE);
       Long expiryTimestamp = sielStatus == SielStatus.ACTIVE ? time(2017, 3, i, 15, 10) : time(2016, 3, i, 15, 10);
@@ -243,7 +246,7 @@ public class TestDataServiceImpl implements TestDataService {
           time(2015, 3, i, 15, 10),
           expiryTimestamp,
           sielStatus,
-          "SAR1_SITE1",
+          TestUtil.wrapSiteId(userId, SITE_ID),
           destinationList);
       sielDao.insert(siel);
     }
@@ -251,7 +254,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   private void createEmptyQueueApplication(String userId) {
     Application application = new Application(userId + "_" + APP_QUEUE_ID,
-        wrapCustomerId(userId, COMPANY_ID_TWO),
+        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2015, 1, 1, 1, 1),
         time(2015, 2, 1, 1, 1),
@@ -259,7 +262,8 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        TestUtil.wrapSiteId(userId, SITE_ID));
     applicationDao.insert(application);
   }
 
@@ -270,7 +274,7 @@ public class TestDataServiceImpl implements TestDataService {
       Long submittedTimestamp = isDraft ? null : time(2017, 4, 3 + i, i, i);
       String caseReference = isDraft ? null : randomNumber("ECO");
       Application app = new Application(appId,
-          wrapCustomerId(userId, COMPANY_ID_ONE),
+          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           userId,
           time(2017, 3, 3 + i, i, i),
           submittedTimestamp,
@@ -278,7 +282,8 @@ public class TestDataServiceImpl implements TestDataService {
           END_USER_COUNTRIES,
           getApplicantReference(),
           caseReference,
-          OFFICER_ID);
+          OFFICER_ID,
+          TestUtil.wrapSiteId(userId, SITE_ID));
       applicationDao.insert(app);
       if (!isDraft) {
         StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
@@ -343,7 +348,7 @@ public class TestDataServiceImpl implements TestDataService {
     for (int i = 0; i < 4; i++) {
       String appId = appId();
       Application app = new Application(appId,
-          wrapCustomerId(userId, COMPANY_ID_ONE),
+          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           OTHER_APPLICANT_ID,
           time(2017, 1, 3 + i, i, i),
           null,
@@ -351,13 +356,14 @@ public class TestDataServiceImpl implements TestDataService {
           END_USER_COUNTRIES,
           getApplicantReference(),
           null,
-          OFFICER_ID);
+          OFFICER_ID,
+          TestUtil.wrapSiteId(userId, SITE_ID));
       applicationDao.insert(app);
     }
     // Create application with inform notice
     String appId = appId();
     Application app = new Application(appId,
-        wrapCustomerId(userId, COMPANY_ID_ONE),
+        TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
         OTHER_APPLICANT_ID,
         time(2017, 1, 7, 1, 1),
         time(2017, 1, 8, 1, 1),
@@ -365,7 +371,8 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        TestUtil.wrapSiteId(userId, SITE_ID));
     applicationDao.insert(app);
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         app.getId(),
@@ -408,7 +415,7 @@ public class TestDataServiceImpl implements TestDataService {
       endUserCountries = END_USER_COUNTRIES_THREE;
     }
     Application application = new Application(appId,
-        wrapCustomerId(userId, COMPANY_ID_TWO),
+        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2013, 11, 4, 13, 10),
         time(2013, 11, 4, 14, 10),
@@ -416,7 +423,8 @@ public class TestDataServiceImpl implements TestDataService {
         endUserCountries,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        TestUtil.wrapSiteId(userId, SITE_ID));
     applicationDao.insert(application);
 
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
@@ -497,7 +505,7 @@ public class TestDataServiceImpl implements TestDataService {
     String appId = appId();
     String rfiId = rfiId();
     Application application = new Application(appId,
-        wrapCustomerId(userId, COMPANY_ID_TWO),
+        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2016, 11, 4, 13, 10),
         time(2016, 11, 4, 14, 10),
@@ -505,7 +513,8 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        TestUtil.wrapSiteId(userId, SITE_ID));
     applicationDao.insert(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(appId, rfiId).forEach(rfiDao::insertRfi);
@@ -532,14 +541,14 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 1, 2, 13, 30),
         time(2017, 2, 2, 13, 30),
         OFFICER_ID,
-        RECIPIENTS,
+        new ArrayList<>(),
         "Please reply to this rfi message.");
     Rfi rfiTwo = new Rfi(rfiId,
         appId,
         time(2017, 2, 5, 10, 10),
         time(2017, 3, 12, 16, 10),
         OFFICER_ID,
-        RECIPIENTS,
+        new ArrayList<>(),
         "<p>We note from your application that you have rated all 8 line items as ML10a and that these items are used in production and maintenance of civil and/or military aircraft.</p>"
             + "<p>Would you please provide the make/model of aircraft for which each of the 8 line items on your application was originally designed.</p>"
             + "<p>Than you for your help in this matter.</p>");
@@ -548,14 +557,14 @@ public class TestDataServiceImpl implements TestDataService {
         time(2017, 4, 5, 10, 10),
         time(2017, 5, 12, 16, 10),
         OFFICER_ID,
-        RECIPIENTS,
+        new ArrayList<>(),
         "This is some rfi message.");
     Rfi rfiFour = new Rfi(rfiId(),
         appId,
         time(2017, 7, 5, 10, 10),
         time(2018, 8, 5, 10, 10),
         OFFICER_ID,
-        RECIPIENTS,
+        new ArrayList<>(),
         "This is another rfi message.");
     List<Rfi> rfiList = new ArrayList<>();
     rfiList.add(rfi);
@@ -588,7 +597,7 @@ public class TestDataServiceImpl implements TestDataService {
   private void createNoCaseOfficerApplication(String userId) {
     String appId = appId();
     Application application = new Application(appId,
-        wrapCustomerId(userId, COMPANY_ID_TWO),
+        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2016, 11, 3, 3, 3),
         time(2016, 12, 4, 3, 3),
@@ -596,7 +605,8 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         randomNumber("ECO"),
-        null);
+        null,
+        TestUtil.wrapSiteId(userId, SITE_ID));
     applicationDao.insert(application);
     StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(),
         appId,
@@ -617,7 +627,7 @@ public class TestDataServiceImpl implements TestDataService {
       endUserCountries = END_USER_COUNTRIES_FIVE;
     }
     Application application = new Application(appId,
-        wrapCustomerId(userId, COMPANY_ID_TWO),
+        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2015, 3, 3, 3, 3),
         time(2015, 4, 3, 3, 3),
@@ -625,7 +635,8 @@ public class TestDataServiceImpl implements TestDataService {
         endUserCountries,
         getApplicantReference(),
         randomNumber("ECO"),
-        OFFICER_ID);
+        OFFICER_ID,
+        TestUtil.wrapSiteId(userId, SITE_ID));
     applicationDao.insert(application);
     List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
         StatusType.TECHNICAL_ASSESSMENT,
@@ -689,14 +700,6 @@ public class TestDataServiceImpl implements TestDataService {
       stringBuilder.append(RandomUtils.nextInt(0, 9));
     }
     return prefix + stringBuilder.toString();
-  }
-
-  public static String wrapCustomerId(String userId, String customerId) {
-    return userId + "_" + customerId;
-  }
-
-  public static String unwrapCustomerId(String customerId) {
-    return customerId.replaceAll(".*_", "");
   }
 
 }

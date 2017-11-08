@@ -6,13 +6,13 @@ import org.hibernate.validator.constraints.NotBlank;
 public class File {
 
   @NotBlank
-  private String id;
+  private final String id;
 
   @NotBlank
-  private String filename;
+  private final String filename;
 
   @NotBlank
-  private String url;
+  private final String url;
 
   public File(@JsonProperty("id") String id,
               @JsonProperty("filename") String filename,

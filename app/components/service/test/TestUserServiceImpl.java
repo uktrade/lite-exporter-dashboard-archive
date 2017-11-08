@@ -5,11 +5,10 @@ import components.common.auth.AuthInfo;
 import components.common.auth.SpireAuthManager;
 import components.exceptions.ServiceException;
 import components.service.UserService;
-import models.User;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+import models.User;
+import org.apache.commons.lang3.StringUtils;
 
 public class TestUserServiceImpl implements UserService {
 

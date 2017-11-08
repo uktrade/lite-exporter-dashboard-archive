@@ -23,8 +23,8 @@ public interface ApplicationJDBIDao {
   @SqlQuery("SELECT COUNT(*) FROM APPLICATION")
   long getApplicationCount();
 
-  @SqlUpdate("INSERT INTO APPLICATION ( ID,  CUSTOMER_ID, CREATED_BY_USER_ID, CREATED_TIMESTAMP, SUBMITTED_TIMESTAMP, CONSIGNEE_COUNTRIES, END_USER_COUNTRIES, APPLICANT_REFERENCE, CASE_REFERENCE, CASE_OFFICER_ID) " +
-      "                        VALUES (:id, :customerId, :createdByUserId,   :createdTimestamp, :submittedTimestamp, :consigneeCountries, :endUserCountries, :applicantReference, :caseReference, :caseOfficerId) ")
+  @SqlUpdate("INSERT INTO APPLICATION ( ID,  CUSTOMER_ID, CREATED_BY_USER_ID, CREATED_TIMESTAMP, SUBMITTED_TIMESTAMP, CONSIGNEE_COUNTRIES, END_USER_COUNTRIES, APPLICANT_REFERENCE, CASE_REFERENCE, CASE_OFFICER_ID, SITE_ID) " +
+      "                        VALUES (:id, :customerId, :createdByUserId,   :createdTimestamp, :submittedTimestamp, :consigneeCountries, :endUserCountries,  :applicantReference, :caseReference, :caseOfficerId,  :siteId) ")
   void insert(@Bind("id") String id,
               @Bind("customerId") String customerId,
               @Bind("createdByUserId") String createdByUserId,
@@ -34,7 +34,8 @@ public interface ApplicationJDBIDao {
               @Bind("endUserCountries") String endUserCountries,
               @Bind("applicantReference") String applicantReference,
               @Bind("caseReference") String caseReference,
-              @Bind("caseOfficerId") String caseOfficerId);
+              @Bind("caseOfficerId") String caseOfficerId,
+              @Bind("siteId") String siteId);
 
   @SqlUpdate("DELETE FROM APPLICATION WHERE ID = :id")
   void delete(@Bind("id") String id);

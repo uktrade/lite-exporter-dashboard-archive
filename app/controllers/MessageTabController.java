@@ -15,8 +15,10 @@ import models.view.ApplicationSummaryView;
 import models.view.ApplicationTabsView;
 import models.view.MessageView;
 import play.mvc.Result;
+import play.mvc.With;
 import views.html.messagesTab;
 
+@With(AppGuardAction.class)
 public class MessageTabController extends SamlController {
 
   private final String licenceApplicationAddress;
