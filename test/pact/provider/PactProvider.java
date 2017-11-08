@@ -9,9 +9,6 @@ import au.com.dius.pact.provider.junit.target.Target;
 import au.com.dius.pact.provider.junit.target.TestTarget;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.List;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import uk.gov.bis.lite.exporterdashboard.api.AmendmentMessage;
 import uk.gov.bis.lite.exporterdashboard.api.DashboardDocument;
@@ -19,10 +16,11 @@ import uk.gov.bis.lite.exporterdashboard.api.NotificationReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.OutcomeReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.RfiReplyMessage;
 import uk.gov.bis.lite.exporterdashboard.api.RfiWithdrawalReadMessage;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestAcceptReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestMessage;
 
-@Ignore
+import java.util.Collections;
+import java.util.List;
+
 @RunWith(PactRunner.class)
 @Provider("lite-exporter-dashboard")
 @PactBroker(host = "pact-broker.mgmt.licensing.service.trade.gov.uk.test", port = "80")
@@ -33,7 +31,7 @@ public class PactProvider {
   @TestTarget
   public final Target target = new AmqpTarget(Collections.singletonList("pact.provider.*"));
 
-  @PactVerifyProvider("an rfi was replied to")
+  @PactVerifyProvider("the rfi was replied to")
   public String verifyRfiReplyMessage() throws JsonProcessingException {
     RfiReplyMessage rfiReplyMessage = new RfiReplyMessage();
     rfiReplyMessage.setId("rfiReplyId");
@@ -70,7 +68,7 @@ public class PactProvider {
     return MAPPER.writeValueAsString(amendmentMessage);
   }
 
-  @PactVerifyProvider("an rfi withdrawal was read")
+  @PactVerifyProvider("the rfi withdrawal was read")
   public String verifyRfiWithdrawalReadMessage() throws JsonProcessingException {
     RfiWithdrawalReadMessage rfiWithdrawalReadMessage = new RfiWithdrawalReadMessage();
     rfiWithdrawalReadMessage.setAppId("appId");
@@ -79,34 +77,7 @@ public class PactProvider {
     return MAPPER.writeValueAsString(rfiWithdrawalReadMessage);
   }
 
-  @PactVerifyProvider("an outcome was read")
-  public String verifyOutcomeReadMessage() throws JsonProcessingException {
-    OutcomeReadMessage outcomeReadMessage = new OutcomeReadMessage();
-    outcomeReadMessage.setOutcomeId("outcomeId");
-    outcomeReadMessage.setAppId("appId");
-    outcomeReadMessage.setCreatedByUserId("createdByUserId");
-    return MAPPER.writeValueAsString(outcomeReadMessage);
-  }
-
-  @PactVerifyProvider("a stop notification was read")
-  public String verifyStopNotificationReadMessage() throws JsonProcessingException {
-    NotificationReadMessage notificationReadMessage = new NotificationReadMessage();
-    notificationReadMessage.setNotificationId("stopNotificationId");
-    notificationReadMessage.setCreatedByUserId("createdByUserId");
-    notificationReadMessage.setAppId("appId");
-    return MAPPER.writeValueAsString(notificationReadMessage);
-  }
-
-  @PactVerifyProvider("a delay notification was read")
-  public String verifyDelayNotificationReadMessage() throws JsonProcessingException {
-    NotificationReadMessage notificationReadMessage = new NotificationReadMessage();
-    notificationReadMessage.setNotificationId("delayNotificationId");
-    notificationReadMessage.setCreatedByUserId("createdByUserId");
-    notificationReadMessage.setAppId("appId");
-    return MAPPER.writeValueAsString(notificationReadMessage);
-  }
-
-  @PactVerifyProvider("an inform notification was read")
+  @PactVerifyProvider("the notification was read")
   public String verifyInformNotificationReadMessage() throws JsonProcessingException {
     NotificationReadMessage notificationReadMessage = new NotificationReadMessage();
     notificationReadMessage.setNotificationId("informNotificationId");
@@ -115,13 +86,13 @@ public class PactProvider {
     return MAPPER.writeValueAsString(notificationReadMessage);
   }
 
-  @PactVerifyProvider("a withdrawal request accept was read")
+  @PactVerifyProvider("an outcome was read")
   public String verifyWithdrawalRequestAcceptReadMessage() throws JsonProcessingException {
-    WithdrawalRequestAcceptReadMessage withdrawalRequestAcceptReadMessage = new WithdrawalRequestAcceptReadMessage();
-    withdrawalRequestAcceptReadMessage.setNotificationId("withdrawalRequestAcceptNotificationId");
-    withdrawalRequestAcceptReadMessage.setCreatedByUserId("createdByUserId");
-    withdrawalRequestAcceptReadMessage.setAppId("appId");
-    return MAPPER.writeValueAsString(withdrawalRequestAcceptReadMessage);
+    OutcomeReadMessage outcomeReadMessage = new OutcomeReadMessage();
+    outcomeReadMessage.setOutcomeId("outcomeId");
+    outcomeReadMessage.setCreatedByUserId("createdByUserId");
+    outcomeReadMessage.setAppId("appId");
+    return MAPPER.writeValueAsString(outcomeReadMessage);
   }
 
   private List<DashboardDocument> createDashboardDocument() {

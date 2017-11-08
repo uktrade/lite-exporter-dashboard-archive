@@ -64,11 +64,11 @@ public class ConsumerPact {
   @Pact(provider = PROVIDER, consumer = CONSUMER)
   public MessagePact createStatusUpdate(MessagePactBuilder builder) {
     PactDslJsonBody body = new PactDslJsonBody()
-        .stringType(("id"), "statusUpdateId")
         .stringValue("appId", "appId")
         .stringValue("statusCode", "INITIAL_CHECKS")
         .integerType("createdTimestamp", 123456789L);
-    return builder.expectsToReceive("a status update message with status code INITIAL_CHECKS")
+    return builder
+        .expectsToReceive("a status update message with status code INITIAL_CHECKS")
         .withContent(body)
         .toPact();
   }
@@ -86,7 +86,7 @@ public class ConsumerPact {
         .stringType("recipient")
         .closeArray()
         .asBody();
-    return builder.expectsToReceive("an rfi message")
+    return builder.expectsToReceive("a rfi message")
         .withContent(body)
         .toPact();
   }
@@ -156,7 +156,7 @@ public class ConsumerPact {
         .array("recipientUserIds")
         .stringType("recipient")
         .closeArray();
-    return builder.expectsToReceive("an inform message")
+    return builder.expectsToReceive("withdraw rfi")
         .withContent(dslPart)
         .toPact();
   }
@@ -215,7 +215,7 @@ public class ConsumerPact {
         .stringType("appId", "appId")
         .stringType("createdByUserId", "createdByUserId")
         .stringType("message", "This is a withdrawal rejection.");
-    return builder.expectsToReceive("a withdrawal rejection")
+    return builder.expectsToReceive("reject withdrawal request")
         .withContent(dslPart)
         .toPact();
   }
