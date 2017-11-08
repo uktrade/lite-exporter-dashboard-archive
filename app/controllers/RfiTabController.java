@@ -94,14 +94,13 @@ public class RfiTabController extends SamlController {
     String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
     Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
-    String rfiId = rfiReplyForm.data().get("rfiId");
+    String rfiId = rfiReplyForm.rawData().get("rfiId");
     if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Unable to delete fileId {} since reply to rfiId {} and appId {} not allowed", fileId, rfiId, appId);
       return showRfiTab(appId);
     } else {
       draftFileService.deleteDraftFile(fileId, rfiId, DraftType.RFI_REPLY);
-      rfiReplyForm.discardErrors();
-      return showReplyForm(appId, rfiId, rfiReplyForm);
+      return showReplyForm(appId, rfiId, rfiReplyForm.discardingErrors());
     }
   }
 
@@ -109,7 +108,7 @@ public class RfiTabController extends SamlController {
   public CompletionStage<Result> submitReply(String appId) {
     String userId = userService.getCurrentUserId();
     Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
-    String rfiId = rfiReplyForm.data().get("rfiId");
+    String rfiId = rfiReplyForm.rawData().get("rfiId");
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
@@ -120,11 +119,11 @@ public class RfiTabController extends SamlController {
             uploadResults.stream()
                 .filter(UploadResult::isValid)
                 .forEach(uploadResult -> draftFileDao.addDraftFile(uploadResult, rfiId, DraftType.RFI_REPLY));
-            FileUtil.addUploadErrorsToForm(rfiReplyForm, uploadResults);
-            if (rfiReplyForm.hasErrors()) {
-              return showReplyForm(appId, rfiId, rfiReplyForm);
+            Form<RfiReplyForm> form = FileUtil.addUploadErrorsToForm(rfiReplyForm, uploadResults);
+            if (form.hasErrors()) {
+              return showReplyForm(appId, rfiId, form);
             } else {
-              String message = rfiReplyForm.get().replyMessage;
+              String message = form.get().replyMessage;
               rfiReplyService.insertRfiReply(userId, appId, rfiId, message);
               flash("message", "Your message has been sent");
               return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
@@ -156,7 +155,7 @@ public class RfiTabController extends SamlController {
     List<RfiView> rfiViews = rfiViewService.getRfiViews(userId, appData);
     AddRfiReplyView addRfiReplyView = rfiViewService.getAddRfiReplyView(appId, rfiId);
     readDataService.updateRfiTabReadData(userId, appData, readData);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store");
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
   public Result showRfiTab(String appId) {
@@ -167,7 +166,7 @@ public class RfiTabController extends SamlController {
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(userId, appData);
     readDataService.updateRfiTabReadData(userId, appData, readData);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, null, null)).withHeader("Cache-Control", "no-store");
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, null, null)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
 }

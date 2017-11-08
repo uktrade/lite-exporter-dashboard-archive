@@ -13,6 +13,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import com.typesafe.config.Config;
 import components.auth.SamlModule;
 import components.client.CustomerServiceClient;
 import components.client.LicenceClient;
@@ -113,7 +114,6 @@ import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.skife.jdbi.v2.DBI;
-import play.Configuration;
 import play.Environment;
 import play.db.Database;
 
@@ -125,21 +125,21 @@ public class GuiceModule extends AbstractModule {
   private static final String ISSUER = "lite-exporter-dashboard";
 
   private final Environment environment;
-  private final Configuration configuration;
+  private final Config config;
 
-  public GuiceModule(Environment environment, Configuration configuration) {
+  public GuiceModule(Environment environment, Config config) {
     this.environment = environment;
-    this.configuration = configuration;
+    this.config = config;
   }
 
   @Override
   protected void configure() {
-    install(new SamlModule(configuration));
+    install(new SamlModule(config));
     bindClients();
     // Jwt
-    bindConstant().annotatedWith(Names.named("jwtSharedSecret")).to(configuration.getString("jwtSharedSecret"));
+    bindConstant().annotatedWith(Names.named("jwtSharedSecret")).to(config.getString("jwtSharedSecret"));
     // LicenceApplication
-    bindConstant().annotatedWith(Names.named("licenceApplicationAddress")).to(configuration.getString("licenceApplication.address"));
+    bindConstant().annotatedWith(Names.named("licenceApplicationAddress")).to(config.getString("licenceApplication.address"));
     // Service
     bind(JourneySerialiser.class).to(JourneySerialiserMock.class);
     bind(StatusTrackerViewService.class).to(StatusTrackerViewServiceImpl.class);
@@ -189,16 +189,16 @@ public class GuiceModule extends AbstractModule {
     // Amazon
     bindSnsAndSqsServices();
     // Upload
-    install(new UploadGuiceModule(configuration));
+    install(new UploadGuiceModule(config));
   }
 
   private void bindSnsAndSqsServices() {
-    String region = configuration.getString("aws.region");
+    String region = config.getString("aws.region");
     AWSCredentialsProvider awsCredentialsProvider = getAwsCredentials();
     // Sqs and Sns
-    bindConstant().annotatedWith(Names.named("awsSnsTopicArn")).to(configuration.getString("aws.snsTopicArn"));
-    bindConstant().annotatedWith(Names.named("awsSqsWaitTimeSeconds")).to(configuration.getString("aws.sqsWaitTimeSeconds"));
-    bindConstant().annotatedWith(Names.named("awsSqsQueueUrl")).to(configuration.getString("aws.sqsQueueUrl"));
+    bindConstant().annotatedWith(Names.named("awsSnsTopicArn")).to(config.getString("aws.snsTopicArn"));
+    bindConstant().annotatedWith(Names.named("awsSqsWaitTimeSeconds")).to(config.getString("aws.sqsWaitTimeSeconds"));
+    bindConstant().annotatedWith(Names.named("awsSqsQueueUrl")).to(config.getString("aws.sqsQueueUrl"));
     AmazonSQS amazonSQS = AmazonSQSClientBuilder.standard()
         .withRegion(region)
         .withCredentials(awsCredentialsProvider)
@@ -215,9 +215,9 @@ public class GuiceModule extends AbstractModule {
   }
 
   private AWSCredentialsProvider getAwsCredentials() {
-    String profileName = configuration.getString("aws.credentials.profileName");
-    String accessKey = configuration.getString("aws.credentials.accessKey");
-    String secretKey = configuration.getString("aws.credentials.secretKey");
+    String profileName = config.getString("aws.credentials.profileName");
+    String accessKey = config.getString("aws.credentials.accessKey");
+    String secretKey = config.getString("aws.credentials.secretKey");
     if (StringUtils.isNoneBlank(profileName)) {
       return new ProfileCredentialsProvider(profileName);
     } else if (StringUtils.isBlank(accessKey) || StringUtils.isBlank(secretKey)) {
@@ -229,24 +229,24 @@ public class GuiceModule extends AbstractModule {
 
   private void bindClients() {
     // CustomerServiceClient
-    bindConstant().annotatedWith(Names.named("customerServiceAddress")).to(configuration.getString("customerService.address"));
-    bindConstant().annotatedWith(Names.named("customerServiceTimeout")).to(configuration.getString("customerService.timeout"));
+    bindConstant().annotatedWith(Names.named("customerServiceAddress")).to(config.getString("customerService.address"));
+    bindConstant().annotatedWith(Names.named("customerServiceTimeout")).to(config.getString("customerService.timeout"));
     // TODO Test
     bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
     // LicenceClient
-    bindConstant().annotatedWith(Names.named("permissionsServiceAddress")).to(configuration.getString("permissionsService.address"));
-    bindConstant().annotatedWith(Names.named("permissionsServiceTimeout")).to(configuration.getString("permissionsService.timeout"));
+    bindConstant().annotatedWith(Names.named("permissionsServiceAddress")).to(config.getString("permissionsService.address"));
+    bindConstant().annotatedWith(Names.named("permissionsServiceTimeout")).to(config.getString("permissionsService.timeout"));
     // TODO Test
     bind(LicenceClient.class).to(TestLicenceClientImpl.class);
     // OgelServiceClient
-    bindConstant().annotatedWith(Names.named("ogelServiceAddress")).to(configuration.getString("ogelService.address"));
-    bindConstant().annotatedWith(Names.named("ogelServiceTimeout")).to(configuration.getString("ogelService.timeout"));
-    bindConstant().annotatedWith(Names.named("ogelServiceCredentials")).to(configuration.getString("ogelService.credentials"));
+    bindConstant().annotatedWith(Names.named("ogelServiceAddress")).to(config.getString("ogelService.address"));
+    bindConstant().annotatedWith(Names.named("ogelServiceTimeout")).to(config.getString("ogelService.timeout"));
+    bindConstant().annotatedWith(Names.named("ogelServiceCredentials")).to(config.getString("ogelService.credentials"));
     bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
     // UserServiceClient
-    bindConstant().annotatedWith(Names.named("userServiceAddress")).to(configuration.getString("userService.address"));
-    bindConstant().annotatedWith(Names.named("userServiceTimeout")).to(configuration.getString("userService.timeout"));
-    bindConstant().annotatedWith(Names.named("userServiceCacheExpiryMinutes")).to(configuration.getString("userService.cacheExpiryMinutes"));
+    bindConstant().annotatedWith(Names.named("userServiceAddress")).to(config.getString("userService.address"));
+    bindConstant().annotatedWith(Names.named("userServiceTimeout")).to(config.getString("userService.timeout"));
+    bindConstant().annotatedWith(Names.named("userServiceCacheExpiryMinutes")).to(config.getString("userService.cacheExpiryMinutes"));
 
     bind(UserServiceClient.class).to(UserServiceClientImpl.class);
   }
@@ -268,10 +268,10 @@ public class GuiceModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public DBI provideDataSourceDbi(Configuration configuration, Database database) {
+  public DBI provideDataSourceDbi(Config config, Database database) {
     return new DBI(database.getUrl(),
-        configuration.getString("db.default.username"),
-        configuration.getString("db.default.password"));
+        config.getString("db.default.username"),
+        config.getString("db.default.password"));
   }
 
 }

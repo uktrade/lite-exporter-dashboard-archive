@@ -118,7 +118,7 @@ public class ApplicationListController extends SamlController {
         completedCount,
         pageData);
 
-    return ok(applicationList.render(licenceApplicationAddress, applicationListView)).withHeader("Cache-Control", "no-store");
+    return ok(applicationList.render(licenceApplicationAddress, applicationListView)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
   private ApplicationListTab defaultTab(ApplicationListTab applicationListTab, boolean hasUserApplications, boolean hasOtherUserApplications, boolean hasForYourAttentionApplications) {

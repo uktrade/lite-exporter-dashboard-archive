@@ -10,14 +10,6 @@ import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
 import components.util.TimeUtil;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import models.AppData;
 import models.Application;
 import models.CaseData;
@@ -33,6 +25,15 @@ import models.view.NotificationView;
 import models.view.StatusItemView;
 import models.view.StatusTrackerView;
 import utils.common.ViewUtil;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 

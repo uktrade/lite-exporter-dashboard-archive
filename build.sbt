@@ -13,14 +13,15 @@ lazy val root = (project in file("."))
     buildInfoPackage := "buildinfo"
   )
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
+  guice,
   javaJdbc,
-  cache,
+  cacheApi,
   javaWs,
   filters,
-  "org.flywaydb" %% "flyway-play" % "3.2.0",
+  "org.flywaydb" %% "flyway-play" % "4.0.0",
   "org.postgresql" % "postgresql" % "42.1.4",
   "org.jdbi" % "jdbi" % "2.78",
   "org.apache.commons" % "commons-collections4" % "4.1",
@@ -38,6 +39,7 @@ libraryDependencies += "uk.gov.bis.lite" % "lite-user-service-api" % "1.0"
 
 libraryDependencies += "au.com.dius" % "pact-jvm-consumer-junit_2.11" % "3.3.10" % "test"
 libraryDependencies += "au.com.dius" % "pact-jvm-provider-junit_2.11" % "3.3.10" % "test"
+
 libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
 libraryDependencies += "ru.yandex.qatools.embed" % "postgresql-embedded" % "2.6" % "test"
 

@@ -20,7 +20,7 @@
         @formTextarea(rfiReplyForm("replyMessage"), rows = "4", cssClass = "form-control-wide") {
           <span class="heading-small">Message</span>
         }
-        <input type="hidden" name="rfiId" value="@rfiReplyForm("rfiId").value" >
+        <input type="hidden" name="rfiId" value="@rfiReplyForm("rfiId").getValue.get" >
 
         <h4 class="heading-small">Attach a file</h4>
         @fileUpload(appId, addRfiReplyView.getRfiId, DraftType.RFI_REPLY, addRfiReplyView.getFileViews)

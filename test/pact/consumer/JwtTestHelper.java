@@ -2,11 +2,11 @@ package pact.consumer;
 
 import com.google.common.collect.ImmutableMap;
 import filters.common.JwtRequestFilter;
+import java.util.Map;
 import play.libs.ws.WSRequestExecutor;
 
-import java.util.Map;
-
 public class JwtTestHelper {
+
   /*
     {
       "typ": "JWT",
@@ -34,6 +34,7 @@ public class JwtTestHelper {
   }
 
   public static class TestJwtRequestFilter extends JwtRequestFilter {
+
     public TestJwtRequestFilter() {
       super(null, null);
     }
@@ -41,7 +42,7 @@ public class JwtTestHelper {
     @Override
     public WSRequestExecutor apply(WSRequestExecutor executor) {
       return request -> {
-        request.setHeader("Authorization", "Bearer " + JWT_TOKEN);
+        request.addHeader("Authorization", "Bearer " + JWT_TOKEN);
         return executor.apply(request);
       };
     }
