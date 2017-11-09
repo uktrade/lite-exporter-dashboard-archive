@@ -87,12 +87,29 @@ public class PermissionsServicePact {
   @Pact(provider = PROVIDER, consumer = CONSUMER)
   public PactFragment noRegistrations(PactDslWithProvider builder) {
 
+    PactDslJsonArray emptyArrayBody = new PactDslJsonArray();
     return builder
         .given("no OGEL registrations exist for provided user")
         .uponReceiving("request to get OGEL registrations by user ID")
           .path("/ogel-registrations/user/" + USER_ID)
           .method("GET")
           .headers(REQUEST_HEADERS)
+        .willRespondWith()
+          .status(200)
+          .headers(RESPONSE_HEADERS)
+          .body(emptyArrayBody)
+        .toFragment();
+  }
+
+    @Pact(provider = PROVIDER, consumer = CONSUMER)
+  public PactFragment userNotFound(PactDslWithProvider builder) {
+
+    return builder
+        .given("provided user does not exist")
+        .uponReceiving("request to get OGEL registrations by user ID")
+          .path("/ogel-registrations/user/" + USER_ID)
+          .method("GET")
+          .headers(JWT_AUTHORIZATION_HEADER)
         .willRespondWith()
           .status(404)
           .headers(RESPONSE_HEADERS)
@@ -117,6 +134,13 @@ public class PermissionsServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "noRegistrations")
   public void noRegistrationsPact() throws Exception {
+    List<OgelRegistrationView> registrations = client.getOgelRegistrations(USER_ID);
+    assertThat(registrations.size()).isEqualTo(0);
+  }
+
+  @Test
+  @PactVerification(value = PROVIDER, fragment = "userNotFound")
+  public void userNotFoundPact() throws Exception {
     assertThatThrownBy(() -> client.getOgelRegistrations(USER_ID))
         .isExactlyInstanceOf(ServiceException.class)
         .hasMessageContaining("Unable to get ogel registrations with user id");
