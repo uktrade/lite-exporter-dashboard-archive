@@ -101,16 +101,17 @@ import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
 import play.db.Database;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Properties;
-
 public class GuiceModule extends AbstractModule {
+
+  private static final String ISSUER = "lite-exporter-dashboard";
 
   private final Environment environment;
   private final Configuration configuration;
@@ -124,6 +125,8 @@ public class GuiceModule extends AbstractModule {
   protected void configure() {
     install(new SamlModule(configuration));
     bindClients();
+    // Jwt
+    bindConstant("jwtSharedSecret", "jwtSharedSecret");
     // Upload
     bindConstant("uploadFolder", "upload.folder");
     // LicenceApplication
@@ -209,8 +212,6 @@ public class GuiceModule extends AbstractModule {
     bindConstant("userServiceAddress", "userService.address");
     bindConstant("userServiceTimeout", "userService.timeout");
     bindConstant("userServiceCacheExpiryMinutes", "userService.cacheExpiryMinutes");
-    bindConstant("userServiceIssuer", "userService.issuer");
-    bindConstant("userServiceKey", "userService.key");
     bind(UserServiceClient.class).to(UserServiceClientImpl.class);
   }
 
@@ -219,8 +220,8 @@ public class GuiceModule extends AbstractModule {
   }
 
   @Provides
-  public JwtRequestFilterConfig provideJwtRequestFilterConfig(@Named("userServiceKey") String key, @Named("userServiceIssuer") String issuer) {
-    return new JwtRequestFilterConfig(key, issuer);
+  public JwtRequestFilterConfig provideJwtRequestFilterConfig(@Named("jwtSharedSecret") String key) {
+    return new JwtRequestFilterConfig(key, ISSUER);
   }
 
   @Provides
