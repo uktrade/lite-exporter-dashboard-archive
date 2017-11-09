@@ -38,7 +38,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-public class ConsumerPact {
+public class SpireRelayServicePact {
 
   private final static String PROVIDER = "lite-spire-relay-service";
   private final static String CONSUMER = "lite-exporter-dashboard";
@@ -83,7 +83,7 @@ public class ConsumerPact {
         .integerType("createdTimestamp", 123456789L)
         .integerType("deadlineTimestamp", 987654321L)
         .array("recipientUserIds")
-        .stringType("recipient")
+          .stringType("recipient")
         .closeArray()
         .asBody();
     return builder.expectsToReceive("a rfi message")
@@ -99,7 +99,7 @@ public class ConsumerPact {
         .stringType("message", "This is a delay notification.")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-        .stringType("recipient")
+          .stringType("recipient")
         .closeArray()
         .asBody();
     return builder.expectsToReceive("a delay message")
@@ -115,7 +115,7 @@ public class ConsumerPact {
         .stringType("message", "This is a stop notification.")
         .stringType("createdByUserId", "createdByUserId")
         .integerType("createdTimestamp", 123456789L)
-        .array("recipientUserIds")
+          .array("recipientUserIds")
         .stringType("recipient")
         .closeArray()
         .asBody();
@@ -132,12 +132,12 @@ public class ConsumerPact {
         .stringType("createdByUserId", "createdByUserId")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-        .stringType("recipient")
+          .stringType("recipient")
         .closeArray()
         .object("document")
-        .stringType("id", "fileId")
-        .stringType("filename", "filename")
-        .stringType("url", "url")
+          .stringType("id", "fileId")
+          .stringType("filename", "filename")
+          .stringType("url", "url")
         .closeObject()
         .asBody();
     return builder.expectsToReceive("an inform message")
@@ -154,7 +154,7 @@ public class ConsumerPact {
         .stringType("message", "This is an rfi withdrawal.")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-        .stringType("recipient")
+          .stringType("recipient")
         .closeArray();
     return builder.expectsToReceive("withdraw rfi")
         .withContent(dslPart)
@@ -169,16 +169,16 @@ public class ConsumerPact {
         .stringType("createdByUserId", "createdByUserId")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-        .stringType("recipient")
+          .stringType("recipient")
         .closeArray()
         .array("documents")
-        .object()
-        .stringType("id", "documentId")
-        .stringType("documentType", "LICENCE_DOCUMENT")
-        .stringType("licenceRef", "licenceRef")
-        .stringType("filename", "filename")
-        .stringType("url", "url")
-        .closeObject()
+          .object()
+            .stringType("id", "documentId")
+            .stringType("documentType", "LICENCE_DOCUMENT")
+            .stringType("licenceRef", "licenceRef")
+            .stringType("filename", "filename")
+            .stringType("url", "url")
+          .closeObject()
         .closeArray();
     return builder.expectsToReceive("issue of an outcome")
         .withContent(dslPart)
@@ -193,16 +193,16 @@ public class ConsumerPact {
         .stringType("createdByUserId", "createdByUserId")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-        .stringType("recipient")
+          .stringType("recipient")
         .closeArray()
         .array("documents")
-        .object()
-        .stringType("id", "documentId")
-        .stringType("documentType", "LICENCE_DOCUMENT")
-        .stringType("licenceRef", "licenceRef")
-        .stringType("filename", "filename")
-        .stringType("url", "url")
-        .closeObject()
+          .object()
+            .stringType("id", "documentId")
+            .stringType("documentType", "LICENCE_DOCUMENT")
+            .stringType("licenceRef", "licenceRef")
+            .stringType("filename", "filename")
+            .stringType("url", "url")
+          .closeObject()
         .closeArray();
     return builder.expectsToReceive("amend an outcome")
         .withContent(dslPart)
