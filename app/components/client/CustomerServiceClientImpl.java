@@ -7,6 +7,8 @@ import components.common.logging.ServiceClientLogger;
 import components.exceptions.ServiceException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+
+import filters.common.JwtRequestFilter;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
@@ -19,17 +21,20 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
   private final HttpExecutionContext httpExecutionContext;
   private final WSClient wsClient;
   private final int timeout;
+  private final JwtRequestFilter jwtRequestFilter;
   private final String address;
 
   @Inject
   public CustomerServiceClientImpl(HttpExecutionContext httpExecutionContext,
                                    WSClient wsClient,
                                    @Named("customerServiceAddress") String address,
-                                   @Named("customerServiceTimeout") int timeout) {
+                                   @Named("customerServiceTimeout") int timeout,
+                                   JwtRequestFilter jwtRequestFilter) {
     this.httpExecutionContext = httpExecutionContext;
     this.wsClient = wsClient;
     this.address = address;
     this.timeout = timeout;
+    this.jwtRequestFilter = jwtRequestFilter;
   }
 
   @Override
@@ -38,6 +43,7 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
     WSRequest req = wsClient.url(url)
         .withRequestFilter(CorrelationId.requestFilter)
         .withRequestFilter(ServiceClientLogger.requestFilter("Customer", "GET", httpExecutionContext))
+        .withRequestFilter(jwtRequestFilter)
         .setRequestTimeout(timeout);
     CompletionStage<CustomerView> request = req.get().handle((response, error) -> {
       if (error != null) {
@@ -64,6 +70,7 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
     WSRequest req = wsClient.url(url)
         .withRequestFilter(CorrelationId.requestFilter)
         .withRequestFilter(ServiceClientLogger.requestFilter("Site", "GET", httpExecutionContext))
+        .withRequestFilter(jwtRequestFilter)
         .setRequestTimeout(timeout);
     CompletionStage<SiteView> request = req.get().handle((response, error) -> {
       if (error != null) {

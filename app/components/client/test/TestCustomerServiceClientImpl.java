@@ -5,6 +5,7 @@ import com.google.inject.name.Named;
 import components.client.CustomerServiceClientImpl;
 import components.service.UserService;
 import components.util.TestUtil;
+import filters.common.JwtRequestFilter;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
@@ -19,8 +20,9 @@ public class TestCustomerServiceClientImpl extends CustomerServiceClientImpl {
                                        WSClient wsClient,
                                        @Named("customerServiceAddress") String address,
                                        @Named("customerServiceTimeout") int timeout,
-                                       UserService userService) {
-    super(httpExecutionContext, wsClient, address, timeout);
+                                       UserService userService,
+                                       JwtRequestFilter jwtRequestFilter) {
+    super(httpExecutionContext, wsClient, address, timeout, jwtRequestFilter);
     this.userService = userService;
   }
 
