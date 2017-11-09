@@ -2,6 +2,8 @@ package pact.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static pact.consumer.JwtTestHelper.JWT_AUTHORIZATION_HEADER;
+import static pact.consumer.JwtTestHelper.TestJwtRequestFilter;
 
 import au.com.dius.pact.consumer.Pact;
 import au.com.dius.pact.consumer.PactProviderRule;
@@ -20,7 +22,6 @@ import org.junit.Test;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WS;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSRequestExecutor;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
 import java.util.HashMap;
@@ -30,42 +31,11 @@ import java.util.Map;
 public class PermissionsServicePact {
   private final static String PROVIDER = "lite-permissions-service";
   private final static String CONSUMER = "lite-exporter-dashboard";
-  private static final String USER_ID = "45356";
+  private static final String USER_ID = "123456";
   private static final Map<String, String> REQUEST_HEADERS = requestHeaders();
   private static final Map<String, String> RESPONSE_HEADERS = responseHeaders();
-  /*
-    {
-      "typ": "JWT",
-      "alg": "HS256"
-    }
-    {
-      "iss": "lite-ogel-registration",
-        "exp": 1825343742,
-        "jti": "Jw2OnEQBVAOjQ5ZfIM9pnw",
-        "iat": 1509983743,
-        "nbf": 1509983623,
-        "sub": "45356",
-        "email": "example@example.com",
-        "fullName": "Mr Test"
-    }
-    Secret: demo-secret-which-is-very-long-so-as-to-hit-the-byte-requirement
-  */
-  private static final String JWT_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJsaXRlLW9nZWwtcmVnaXN0cmF0aW9uIiwiZXhwIjoxODI1MzQzNzQyLCJqdGkiOiJKdzJPbkVRQlZBT2pRNVpmSU05cG53IiwiaWF0IjoxNTA5OTgzNzQzLCJuYmYiOjE1MDk5ODM2MjMsInN1YiI6IjQ1MzU2IiwiZW1haWwiOiJleGFtcGxlQGV4YW1wbGUuY29tIiwiZnVsbE5hbWUiOiJNciBUZXN0In0.C3xLajjSOx50bpi1dArX-jOA5wFOkw73ComRk9lev30";
 
   private OgelRegistrationServiceClient client;
-
-  class TestJwtRequestFilter extends JwtRequestFilter {
-    public TestJwtRequestFilter() {
-      super(null, null);
-    }
-    @Override
-    public WSRequestExecutor apply(WSRequestExecutor executor) {
-      return request -> {
-        request.setHeader("Authorization", "Bearer " + JWT_TOKEN);
-        return executor.apply(request);
-      };
-    }
-  }
 
   @Rule
   public PactProviderRule mockProvider = new PactProviderRule(PROVIDER, this);
@@ -79,7 +49,7 @@ public class PermissionsServicePact {
 
   private static Map<String, String> requestHeaders() {
     Map<String, String> headers = new HashMap<>();
-    headers.put("Authorization", "Bearer " + JWT_TOKEN);
+    headers.putAll(JWT_AUTHORIZATION_HEADER);
     return headers;
   }
 
@@ -104,13 +74,13 @@ public class PermissionsServicePact {
     return builder
         .given("OGEL registrations exist for provided user")
         .uponReceiving("request to get OGEL registrations by user ID")
-        .path("/ogel-registrations/user/" + USER_ID)
-        .method("GET")
-        .headers(REQUEST_HEADERS)
+          .path("/ogel-registrations/user/" + USER_ID)
+          .method("GET")
+          .headers(REQUEST_HEADERS)
         .willRespondWith()
-        .status(200)
-        .headers(RESPONSE_HEADERS)
-        .body(ogelRegistrations)
+          .status(200)
+          .headers(RESPONSE_HEADERS)
+          .body(ogelRegistrations)
         .toFragment();
   }
 
@@ -120,12 +90,12 @@ public class PermissionsServicePact {
     return builder
         .given("no OGEL registrations exist for provided user")
         .uponReceiving("request to get OGEL registrations by user ID")
-        .path("/ogel-registrations/user/" + USER_ID)
-        .method("GET")
-        .headers(REQUEST_HEADERS)
+          .path("/ogel-registrations/user/" + USER_ID)
+          .method("GET")
+          .headers(REQUEST_HEADERS)
         .willRespondWith()
-        .status(404)
-        .headers(RESPONSE_HEADERS)
+          .status(404)
+          .headers(RESPONSE_HEADERS)
         .toFragment();
   }
 
