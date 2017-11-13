@@ -1,6 +1,7 @@
 plugins {
     id 'application'
     id 'java'
+    id "au.com.dius.pact" version "3.3.10"
 }
 
 apply plugin: 'maven-publish'
@@ -47,6 +48,14 @@ task apiJar(type: org.gradle.api.tasks.bundling.Jar, dependsOn: compileJava) {
 
 task apiJarWithSources(type: org.gradle.api.tasks.bundling.Jar) {
     from sourceSets.main.allJava
+}
+
+pact {
+    publish {
+        pactDirectory = 'target/pacts'
+        pactBrokerUrl = 'http://pact-broker.mgmt.licensing.service.trade.gov.uk.test/'
+        version = '1.0.0'
+    }
 }
 
 publishing {

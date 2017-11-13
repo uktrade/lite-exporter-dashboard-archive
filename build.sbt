@@ -40,7 +40,6 @@ libraryDependencies += "org.antlr" % "stringtemplate" % "3.2.1"
 
 libraryDependencies += "au.com.dius" % "pact-jvm-consumer-junit_2.11" % "3.3.10" % "test"
 libraryDependencies += "au.com.dius" % "pact-jvm-provider-junit_2.11" % "3.3.10" % "test"
-libraryDependencies += "com.itv" %% "scalapact-scalatest" % "2.1.2" % "test"
 libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
 
 libraryDependencies += "org.apache.commons" % "commons-collections4" % "4.1"
@@ -62,9 +61,6 @@ buildInfoKeys ++= Seq[BuildInfoKey](
     }
   }
 )
-
-pactBrokerAddress := "http://pact-broker.mgmt.licensing.service.trade.gov.uk.test"
-pactContractVersion := "1.0.0"
 
 buildInfoOptions += BuildInfoOption.BuildTime
 buildInfoOptions += BuildInfoOption.ToJson
