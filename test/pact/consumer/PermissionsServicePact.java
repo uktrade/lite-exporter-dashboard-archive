@@ -101,7 +101,7 @@ public class PermissionsServicePact {
         .toFragment();
   }
 
-    @Pact(provider = PROVIDER, consumer = CONSUMER)
+  @Pact(provider = PROVIDER, consumer = CONSUMER)
   public PactFragment userNotFound(PactDslWithProvider builder) {
 
     return builder
