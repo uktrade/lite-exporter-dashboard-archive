@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import models.Amendment;
+import models.AmendmentRequest;
 import models.AppData;
 import models.File;
 import models.Notification;
@@ -35,17 +35,13 @@ public class MessageViewServiceImpl implements MessageViewService {
 
   @Override
   public List<MessageView> getMessageViews(AppData appData, ReadData readData) {
-    String appId = appData.getApplication().getId();
     List<MessageView> messageViews = new ArrayList<>();
-    if (appData.getStopNotification() != null) {
-      MessageView stopMessageView = getStopMessageView(appData.getStopNotification(), readData);
-      messageViews.add(stopMessageView);
-    }
+    messageViews.addAll(getStopMessageViews(appData, readData));
     if (appData.getDelayNotification() != null) {
       MessageView delayMessageView = getDelayMessageView(appData.getDelayNotification(), readData);
       messageViews.add(delayMessageView);
     }
-    messageViews.addAll(getAmendmentMessageViews(appData));
+    messageViews.addAll(getAmendmentRequestMessageViews(appData));
     messageViews.addAll(getWithdrawalRequestMessageViews(appData, readData));
     messageViews.sort(Comparators.MESSAGE_VIEW_CREATED_REVERSED);
     return messageViews;
@@ -72,7 +68,7 @@ public class MessageViewServiceImpl implements MessageViewService {
     String sentOn = TimeUtil.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
     String sender = userService.getUsername(withdrawalRequest.getCreatedByUserId());
     List<FileView> fileViews = withdrawalRequest.getAttachments().stream()
-        .map(file -> getWithdrawalRequestFileView(withdrawalRequest, file)).collect(Collectors.toList());
+        .map(file -> getFileView(withdrawalRequest.getAppId(), withdrawalRequest.getId(), file)).collect(Collectors.toList());
     MessageReplyView messageReplyView;
     if (withdrawalApproval != null) {
       messageReplyView = getWithdrawalApprovalMessageReplyView(withdrawalApproval, readData);
@@ -94,12 +90,6 @@ public class MessageViewServiceImpl implements MessageViewService {
         false);
   }
 
-  private FileView getWithdrawalRequestFileView(WithdrawalRequest withdrawalRequest, File file) {
-    String size = FileUtil.getReadableFileSize(file.getUrl());
-    String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalFile(withdrawalRequest.getAppId(), file.getId()).toString();
-    return new FileView(file.getId(), withdrawalRequest.getAppId(), withdrawalRequest.getId(), file.getFilename(), link, null, size);
-  }
-
   private MessageReplyView getWithdrawalApprovalMessageReplyView(WithdrawalApproval withdrawalApproval, ReadData readData) {
     boolean showNewIndicator = readData.getUnreadWithdrawalApprovalId() != null;
     String anchor = LinkUtil.getWithdrawalApprovalMessageAnchor(withdrawalApproval);
@@ -116,18 +106,18 @@ public class MessageViewServiceImpl implements MessageViewService {
     return new MessageReplyView(anchor, "Withdrawal rejected", sender, withdrawnOn, "Your request to withdraw your application has been rejected.", showNewIndicator);
   }
 
-  private List<MessageView> getAmendmentMessageViews(AppData appData) {
-    return appData.getAmendments().stream()
-        .map(this::getAmendmentMessageView)
+  private List<MessageView> getAmendmentRequestMessageViews(AppData appData) {
+    return appData.getAmendmentRequests().stream()
+        .map(this::getAmendmentRequestMessageView)
         .collect(Collectors.toList());
   }
 
-  private MessageView getAmendmentMessageView(Amendment amendment) {
-    String anchor = LinkUtil.getAmendmentMessageAnchor(amendment);
-    String sentOn = TimeUtil.formatDateAndTime(amendment.getCreatedTimestamp());
-    String sender = userService.getUsername(amendment.getCreatedByUserId());
-    List<FileView> fileViews = amendment.getAttachments().stream()
-        .map(file -> getAmendmentFileView(amendment, file))
+  private MessageView getAmendmentRequestMessageView(AmendmentRequest amendmentRequest) {
+    String anchor = LinkUtil.getAmendmentRequestMessageAnchor(amendmentRequest);
+    String sentOn = TimeUtil.formatDateAndTime(amendmentRequest.getCreatedTimestamp());
+    String sender = userService.getUsername(amendmentRequest.getCreatedByUserId());
+    List<FileView> fileViews = amendmentRequest.getAttachments().stream()
+        .map(file -> getFileView(amendmentRequest.getAppId(), amendmentRequest.getId(), file))
         .collect(Collectors.toList());
     return new MessageView(EventLabelType.AMENDMENT_REQUESTED,
         anchor,
@@ -135,21 +125,27 @@ public class MessageViewServiceImpl implements MessageViewService {
         null,
         sentOn,
         sender,
-        amendment.getMessage(),
-        amendment.getCreatedTimestamp(),
+        amendmentRequest.getMessage(),
+        amendmentRequest.getCreatedTimestamp(),
         fileViews,
         null,
         false);
   }
 
-  private FileView getAmendmentFileView(Amendment amendment, File file) {
+  private FileView getFileView(String appId, String relatedId, File file) {
     String size = FileUtil.getReadableFileSize(file.getUrl());
-    String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalFile(amendment.getAppId(), file.getId()).toString();
-    return new FileView(file.getId(), amendment.getAppId(), amendment.getId(), file.getFilename(), link, null, size);
+    String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalFile(appId, file.getId()).toString();
+    return new FileView(file.getId(), appId, relatedId, file.getFilename(), link, null, size);
+  }
+
+  private List<MessageView> getStopMessageViews(AppData appData, ReadData readData) {
+    return ApplicationUtil.getAllStopNotifications(appData).stream()
+        .map(notification -> getStopMessageView(notification, readData))
+        .collect(Collectors.toList());
   }
 
   private MessageView getStopMessageView(Notification notification, ReadData readData) {
-    boolean showNewIndicator = readData.getUnreadStopNotificationId() != null;
+    boolean showNewIndicator = readData.getUnreadStopNotificationIds().contains(notification.getId());
     String anchor = LinkUtil.getStoppedMessageAnchor(notification);
     String receivedOn = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
     String sender = userService.getUsername(notification.getCreatedByUserId());

@@ -1,9 +1,34 @@
 @import models.view.StatusItemView
+@import models.view.StatusTrackerView
 @import template._
 
-@(statusItemViews: java.util.List[StatusItemView])
+@(statusTrackerView: StatusTrackerView)
 
-<p>Track the stages of your application.</p>
+@if(!statusTrackerView.getCaseStatusItemViews.isEmpty) {
+  <div class="bold-medium">Changes since your application was completed<p></p></div>
+  @for(caseStatusItemViews <- statusTrackerView.getCaseStatusItemViews) {
+    <table class="table-hidden-head status-tracker-table table-align-top">
+      <thead>
+      <tr>
+        <th>Application stage</th>
+        <th>Status</th>
+      </tr>
+      </thead>
+      <tbody>
+        @for(statusItemView <- caseStatusItemViews) {
+          @statusTrackerRow(statusItemView)
+        }
+    </tbody>
+  </table>
+  <br><br><br>
+  }
+}
+
+@if(!statusTrackerView.getCaseStatusItemViews.isEmpty) {
+  <div class="bold-medium">Your original application<p></p></div>
+} else {
+  <p>Track the stages of your application.</p>
+}
 
 <table class="table-hidden-head status-tracker-table table-align-top">
   <thead>
@@ -13,7 +38,7 @@
     </tr>
   </thead>
   <tbody>
-    @for(statusItemView <- statusItemViews) {
+    @for(statusItemView <- statusTrackerView.getOriginalStatusItemViews) {
       @statusTrackerRow(statusItemView)
     }
   </tbody>

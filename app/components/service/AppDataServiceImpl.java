@@ -3,8 +3,9 @@ package components.service;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
-import components.dao.AmendmentDao;
+import components.dao.AmendmentRequestDao;
 import components.dao.ApplicationDao;
+import components.dao.CaseDetailsDao;
 import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
 import components.dao.RfiDao;
@@ -15,15 +16,21 @@ import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
 import components.exceptions.UnexpectedStateException;
+import components.util.ApplicationUtil;
+import components.util.Comparators;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import models.Amendment;
+import models.AmendmentRequest;
 import models.AppData;
 import models.Application;
+import models.CaseData;
+import models.CaseDetails;
 import models.Notification;
 import models.Outcome;
 import models.Rfi;
@@ -46,7 +53,8 @@ public class AppDataServiceImpl implements AppDataService {
   private final RfiReplyDao rfiReplyDao;
   private final RfiWithdrawalDao rfiWithdrawalDao;
   private final OutcomeDao outcomeDao;
-  private final AmendmentDao amendmentDao;
+  private final AmendmentRequestDao amendmentRequestDao;
+  private final CaseDetailsDao caseDetailsDao;
 
   @Inject
   public AppDataServiceImpl(StatusUpdateDao statusUpdateDao,
@@ -59,7 +67,8 @@ public class AppDataServiceImpl implements AppDataService {
                             RfiReplyDao rfiReplyDao,
                             RfiWithdrawalDao rfiWithdrawalDao,
                             OutcomeDao outcomeDao,
-                            AmendmentDao amendmentDao) {
+                            AmendmentRequestDao amendmentRequestDao,
+                            CaseDetailsDao caseDetailsDao) {
     this.statusUpdateDao = statusUpdateDao;
     this.applicationDao = applicationDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
@@ -70,12 +79,13 @@ public class AppDataServiceImpl implements AppDataService {
     this.rfiReplyDao = rfiReplyDao;
     this.rfiWithdrawalDao = rfiWithdrawalDao;
     this.outcomeDao = outcomeDao;
-    this.amendmentDao = amendmentDao;
+    this.amendmentRequestDao = amendmentRequestDao;
+    this.caseDetailsDao = caseDetailsDao;
   }
 
   @Override
   public List<AppData> getAppDataList(List<String> customerIds) {
-    List<Application> applications = applicationDao.getApplications(customerIds);
+    List<Application> applications = applicationDao.getApplicationsByCustomerIds(customerIds);
     List<AppData> appDataList = getAppDataListFromApplications(applications);
     appDataList.forEach(this::verifyWithdrawalData);
     return appDataList;
@@ -93,6 +103,14 @@ public class AppDataServiceImpl implements AppDataService {
   private List<AppData> getAppDataListFromApplications(List<Application> applications) {
     List<String> appIds = applications.stream()
         .map(Application::getId)
+        .distinct()
+        .collect(Collectors.toList());
+
+    List<CaseDetails> caseDetailsList = caseDetailsDao.getCaseDetailsListByAppIds(appIds);
+
+    List<String> caseReferences = caseDetailsList.stream()
+        .map(CaseDetails::getCaseReference)
+        .filter(Objects::nonNull)
         .collect(Collectors.toList());
 
     Multimap<String, StatusUpdate> statusUpdateMultimap = HashMultimap.create();
@@ -107,61 +125,91 @@ public class AppDataServiceImpl implements AppDataService {
     Multimap<String, WithdrawalRejection> withdrawalRejectionMultimap = HashMultimap.create();
     withdrawalRejectionDao.getWithdrawalRejectionsByAppIds(appIds).forEach(withdrawalRejection -> withdrawalRejectionMultimap.put(withdrawalRejection.getAppId(), withdrawalRejection));
 
-    List<Rfi> rfiList = rfiDao.getRfiList(appIds);
-    Multimap<String, Rfi> rfiMultimap = HashMultimap.create();
-    rfiList.forEach(rfi -> rfiMultimap.put(rfi.getAppId(), rfi));
+    List<Rfi> rfiList = rfiDao.getRfiList(caseReferences);
+    Multimap<String, Rfi> caseReferenceToRfiList = HashMultimap.create();
+    rfiList.forEach(rfi -> caseReferenceToRfiList.put(rfi.getCaseReference(), rfi));
 
-    Map<String, String> rfiIdToAppId = new HashMap<>();
-    rfiList.forEach(rfi -> rfiIdToAppId.put(rfi.getId(), rfi.getAppId()));
+    Map<String, String> rfiIdToCaseReference = new HashMap<>();
+    rfiList.forEach(rfi -> rfiIdToCaseReference.put(rfi.getId(), rfi.getCaseReference()));
 
-    List<String> rfiIds = new ArrayList<>(rfiIdToAppId.keySet());
+    List<String> rfiIds = new ArrayList<>(rfiIdToCaseReference.keySet());
+    Multimap<String, RfiReply> caseReferenceToRfiReplies = HashMultimap.create();
+    rfiReplyDao.getRfiReplies(rfiIds).forEach(rfiReply -> caseReferenceToRfiReplies.put(rfiIdToCaseReference.get(rfiReply.getRfiId()), rfiReply));
 
-    Multimap<String, RfiReply> rfiReplyMultimap = HashMultimap.create();
-    rfiReplyDao.getRfiReplies(rfiIds).forEach(rfiReply -> rfiReplyMultimap.put(rfiIdToAppId.get(rfiReply.getRfiId()), rfiReply));
+    Multimap<String, RfiWithdrawal> caseReferenceToRfiWithdrawals = HashMultimap.create();
+    rfiWithdrawalDao.getRfiWithdrawals(rfiIds).forEach(rfiWithdrawal -> caseReferenceToRfiWithdrawals.put(rfiIdToCaseReference.get(rfiWithdrawal.getRfiId()), rfiWithdrawal));
 
-    Multimap<String, RfiWithdrawal> rfiWithdrawalMultimap = HashMultimap.create();
-    rfiWithdrawalDao.getRfiWithdrawals(rfiIds).forEach(rfiWithdrawal -> rfiWithdrawalMultimap.put(rfiIdToAppId.get(rfiWithdrawal.getRfiId()), rfiWithdrawal));
+    Map<String, Notification> caseReferenceToStopNotification = new HashMap<>();
+    Map<String, Notification> caseReferenceToDelayNotification = new HashMap<>();
+    Multimap<String, Notification> caseReferenceToInformNotifications = HashMultimap.create();
 
-    HashMap<String, Notification> stopNotifications = new HashMap<>();
-    HashMap<String, Notification> delayNotifications = new HashMap<>();
-    Multimap<String, Notification> informNotifications = HashMultimap.create();
-
-    notificationDao.getNotifications(appIds).forEach(notification -> {
+    notificationDao.getNotifications(caseReferences).forEach(notification -> {
       switch (notification.getNotificationType()) {
-      case INFORM:
-        informNotifications.put(notification.getAppId(), notification);
-        break;
-      case DELAY:
-        delayNotifications.put(notification.getAppId(), notification);
-        break;
-      case STOP:
-        stopNotifications.put(notification.getAppId(), notification);
-        break;
-      default:
-        throw new UnexpectedStateException("Unexpected notification type " + notification.getNotificationType());
+        case INFORM:
+          caseReferenceToInformNotifications.put(notification.getCaseReference(), notification);
+          break;
+        case DELAY:
+          caseReferenceToDelayNotification.put(notification.getCaseReference(), notification);
+          break;
+        case STOP:
+          caseReferenceToStopNotification.put(notification.getCaseReference(), notification);
+          break;
+        default:
+          throw new UnexpectedStateException("Unexpected notification type " + notification.getNotificationType());
       }
     });
 
-    Multimap<String, Outcome> outcomeMultimap = HashMultimap.create();
-    outcomeDao.getOutcomes(appIds).forEach(outcome -> outcomeMultimap.put(outcome.getAppId(), outcome));
+    Map<String, Outcome> caseReferenceToOutcome = new HashMap<>();
+    outcomeDao.getOutcomes(caseReferences).forEach(outcome -> caseReferenceToOutcome.put(outcome.getCaseReference(), outcome));
 
-    Multimap<String, Amendment> amendmentMultimap = HashMultimap.create();
-    amendmentDao.getAmendments(appIds).forEach(amendment -> amendmentMultimap.put(amendment.getAppId(), amendment));
+    Multimap<String, AmendmentRequest> amendmentMultimap = HashMultimap.create();
+    amendmentRequestDao.getAmendmentRequests(appIds).forEach(amendment -> amendmentMultimap.put(amendment.getAppId(), amendment));
+
+    HashMultimap<String, CaseDetails> caseDetailsMultimap = HashMultimap.create();
+    caseDetailsList.forEach(caseDetails -> caseDetailsMultimap.put(caseDetails.getAppId(), caseDetails));
 
     return applications.stream().map(application -> {
       String appId = application.getId();
-      return new AppData(application, new ArrayList<>(statusUpdateMultimap.get(appId)),
+      Collection<CaseDetails> allCaseDetails = caseDetailsMultimap.get(appId);
+      String applicationCaseReference;
+      if (!allCaseDetails.isEmpty()) {
+        CaseDetails original = Collections.min(allCaseDetails, Comparators.CASE_DETAILS_CREATED);
+        applicationCaseReference = original.getCaseReference();
+      } else {
+        applicationCaseReference = null;
+      }
+
+      List<CaseData> caseDataList = allCaseDetails.stream()
+          .filter(caseDetails -> !caseDetails.getCaseReference().equals(applicationCaseReference))
+          .map(caseDetails -> {
+            String caseReference = caseDetails.getCaseReference();
+            return new CaseData(caseDetails,
+                new ArrayList<>(caseReferenceToRfiList.get(caseReference)),
+                new ArrayList<>(caseReferenceToRfiReplies.get(caseReference)),
+                new ArrayList<>(caseReferenceToRfiWithdrawals.get(caseReference)),
+                new ArrayList<>(caseReferenceToInformNotifications.get(caseReference)),
+                caseReferenceToStopNotification.get(caseReference),
+                caseReferenceToOutcome.get(caseReference));
+          })
+          // Cases that have been created but have no data attached to them are omitted
+          .filter(caseData -> ApplicationUtil.isCaseStarted(caseData) || ApplicationUtil.isCaseFinished(caseData))
+          .collect(Collectors.toList());
+
+      return new AppData(application,
+          applicationCaseReference,
+          new ArrayList<>(statusUpdateMultimap.get(appId)),
           new ArrayList<>(withdrawalRequestMultimap.get(appId)),
           new ArrayList<>(withdrawalRejectionMultimap.get(appId)),
           withdrawalApprovalMap.get(appId),
-          new ArrayList<>(rfiMultimap.get(appId)),
-          new ArrayList<>(rfiReplyMultimap.get(appId)),
-          new ArrayList<>(rfiWithdrawalMultimap.get(appId)),
-          delayNotifications.get(appId),
-          stopNotifications.get(appId),
-          new ArrayList<>(informNotifications.get(appId)),
-          new ArrayList<>(outcomeMultimap.get(appId)),
-          new ArrayList<>(amendmentMultimap.get(appId)));
+          new ArrayList<>(caseReferenceToRfiList.get(applicationCaseReference)),
+          new ArrayList<>(caseReferenceToRfiReplies.get(applicationCaseReference)),
+          new ArrayList<>(caseReferenceToRfiWithdrawals.get(applicationCaseReference)),
+          caseReferenceToDelayNotification.get(applicationCaseReference),
+          caseReferenceToStopNotification.get(applicationCaseReference),
+          new ArrayList<>(caseReferenceToInformNotifications.get(applicationCaseReference)),
+          caseReferenceToOutcome.get(applicationCaseReference),
+          new ArrayList<>(amendmentMultimap.get(appId)),
+          caseDataList);
     }).collect(Collectors.toList());
   }
 

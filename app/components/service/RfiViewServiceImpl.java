@@ -2,6 +2,7 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.dao.DraftDao;
+import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.FileUtil;
 import components.util.TimeUtil;
@@ -37,22 +38,23 @@ public class RfiViewServiceImpl implements RfiViewService {
   @Override
   public List<RfiView> getRfiViews(String userId, AppData appData) {
 
-    List<Rfi> rfiList = appData.getRfiList();
+    List<Rfi> rfiList = ApplicationUtil.getAllRfi(appData);
 
-    Map<String, RfiWithdrawal> rfiIdToRfiWithdrawal = appData.getRfiWithdrawals().stream()
+    Map<String, RfiWithdrawal> rfiIdToRfiWithdrawal = ApplicationUtil.getAllRfiWithdrawals(appData).stream()
         .collect(Collectors.toMap(RfiWithdrawal::getRfiId, Function.identity()));
 
-    Map<String, RfiReply> rfiIdToRfiReply = appData.getRfiReplies().stream()
+    Map<String, RfiReply> rfiIdToRfiReply = ApplicationUtil.getAllRfiReplies(appData).stream()
         .collect(Collectors.toMap(RfiReply::getRfiId, Function.identity()));
 
-    Map<String, Boolean> rfiIdToIsReplyAllowed = appData.getRfiList().stream()
+    Map<String, Boolean> rfiIdToIsReplyAllowed = rfiList.stream()
         .collect(Collectors.toMap(Rfi::getId, rfi -> userPermissionService.canAddRfiReply(userId, rfi.getId(), appData)));
 
     return rfiList.stream()
         .sorted(Comparators.RFI_CREATED_REVERSED)
         .map(rfi -> {
           String rfiId = rfi.getId();
-          return getRfiView(rfi,
+          return getRfiView(appData.getApplication().getId(),
+              rfi,
               rfiIdToRfiReply.get(rfiId),
               rfiIdToRfiWithdrawal.get(rfiId),
               rfiIdToIsReplyAllowed.get(rfiId));
@@ -79,7 +81,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     return new FileView(file.getId(), appId, rfiId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
   }
 
-  private RfiView getRfiView(Rfi rfi, RfiReply rfiReply, RfiWithdrawal rfiWithdrawal, boolean isReplyAllowed) {
+  private RfiView getRfiView(String appId, Rfi rfi, RfiReply rfiReply, RfiWithdrawal rfiWithdrawal, boolean isReplyAllowed) {
     boolean showNewIndicator = rfiWithdrawal == null && rfiReply == null;
     String withdrawnDate;
     if (rfiWithdrawal != null) {
@@ -90,8 +92,8 @@ public class RfiViewServiceImpl implements RfiViewService {
     String receivedDate = TimeUtil.formatDateAndTime(rfi.getCreatedTimestamp());
     String replyBy = getReplyBy(rfi);
     String sender = userService.getUsername(rfi.getCreatedByUserId());
-    RfiReplyView rfiReplyView = getRfiReplyView(rfi.getAppId(), rfi.getId(), rfiReply);
-    return new RfiView(rfi.getAppId(), rfi.getId(), receivedDate, replyBy, sender, rfi.getMessage(), withdrawnDate, showNewIndicator, rfiReplyView, isReplyAllowed);
+    RfiReplyView rfiReplyView = getRfiReplyView(appId, rfi.getId(), rfiReply);
+    return new RfiView(appId, rfi.getId(), receivedDate, replyBy, sender, rfi.getMessage(), withdrawnDate, showNewIndicator, rfiReplyView, isReplyAllowed);
   }
 
   private RfiReplyView getRfiReplyView(String appId, String rfiId, RfiReply rfiReply) {

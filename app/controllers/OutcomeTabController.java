@@ -2,7 +2,6 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.dao.NotificationDao;
 import components.dao.WithdrawalApprovalDao;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import models.AppData;
 import models.Notification;
-import models.NotificationType;
 import models.Outcome;
 import models.ReadData;
 import models.view.ApplicationSummaryView;
@@ -36,7 +34,6 @@ public class OutcomeTabController extends SamlController {
 
   private final String licenceApplicationAddress;
   private final ApplicationSummaryViewService applicationSummaryViewService;
-  private final NotificationDao notificationDao;
   private final WithdrawalApprovalDao withdrawalApprovalDao;
   private final AppDataService appDataService;
   private final ApplicationTabsViewService applicationTabsViewService;
@@ -46,7 +43,6 @@ public class OutcomeTabController extends SamlController {
   @Inject
   public OutcomeTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
                               ApplicationSummaryViewService applicationSummaryViewService,
-                              NotificationDao notificationDao,
                               WithdrawalApprovalDao withdrawalApprovalDao,
                               AppDataService appDataService,
                               ApplicationTabsViewService applicationTabsViewService,
@@ -54,7 +50,6 @@ public class OutcomeTabController extends SamlController {
                               ReadDataService readDataService) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.applicationSummaryViewService = applicationSummaryViewService;
-    this.notificationDao = notificationDao;
     this.withdrawalApprovalDao = withdrawalApprovalDao;
     this.appDataService = appDataService;
     this.applicationTabsViewService = applicationTabsViewService;
@@ -64,14 +59,12 @@ public class OutcomeTabController extends SamlController {
 
   public Result showOutcomeTab(String appId) {
     String userId = userService.getCurrentUserId();
-    List<Notification> notifications = notificationDao.getNotifications(appId);
     AppData appData = appDataService.getAppData(appId);
     ReadData readData = readDataService.getReadData(userId, appData);
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appData);
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
-    boolean isInProgress = ApplicationUtil.isApplicationInProgress(appData);
-    boolean isStopped = notifications.stream()
-        .anyMatch(notification -> notification.getNotificationType() == NotificationType.STOP);
+    boolean isInProgress = ApplicationUtil.isOriginalApplicationInProgress(appData);
+    boolean isStopped = appData.getStopNotification() != null;
     boolean isWithdrawn = withdrawalApprovalDao.getWithdrawalApproval(appId) != null;
     List<OutcomeView> outcomeViews = getOutcomeViews(appData, readData);
     InformLetterSectionView informLetterSectionView = getInformLetterSectionView(appData, readData);
@@ -80,14 +73,13 @@ public class OutcomeTabController extends SamlController {
   }
 
   private List<OutcomeView> getOutcomeViews(AppData appData, ReadData readData) {
+    List<Outcome> outcomes = ApplicationUtil.getAllOutcomes(appData);
+    outcomes.sort(Comparators.OUTCOME_CREATED_REVERSED);
     List<OutcomeView> outcomeViews = new ArrayList<>();
-    List<Outcome> outcomes = appData.getOutcomes().stream()
-        .sorted(Comparators.OUTCOME_CREATED_REVERSED)
-        .collect(Collectors.toList());
-    outcomes.forEach(outcome -> SortUtil.sortDocuments(outcome.getDocuments()));
     for (int i = 0; i < outcomes.size(); i++) {
       Outcome outcome = outcomes.get(i);
-      boolean showNewIndicator = !readData.getUnreadOutcomeIds().isEmpty();
+      boolean showNewIndicator = readData.getUnreadOutcomeIds().contains(outcome.getId());
+      SortUtil.sortDocuments(outcome.getDocuments());
       List<OutcomeDocumentView> outcomeDocumentViews = outcome.getDocuments().stream()
           .map(document -> {
             String name;
@@ -113,7 +105,7 @@ public class OutcomeTabController extends SamlController {
   }
 
   private InformLetterSectionView getInformLetterSectionView(AppData appData, ReadData readData) {
-    List<InformLetterView> informLetterViews = appData.getInformNotifications().stream()
+    List<InformLetterView> informLetterViews = ApplicationUtil.getAllInformNotifications(appData).stream()
         .sorted(Comparators.NOTIFICATION_CREATED_REVERSED)
         .map(this::getInformLetterView)
         .collect(Collectors.toList());

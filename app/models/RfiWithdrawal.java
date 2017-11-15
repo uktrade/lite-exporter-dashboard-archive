@@ -4,7 +4,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 
-public class RfiWithdrawal {
+public class RfiWithdrawal implements RecipientMessage {
 
   @NotBlank
   private final String id;

@@ -9,7 +9,7 @@ public class AttentionTabNotificationViews {
   private final List<NotificationView> withdrawalRejectionNotificationViews;
   private final List<NotificationView> informNotificationViews;
   private final List<NotificationView> outcomeNotificationViews;
-  private final NotificationView stopNotificationView;
+  private final List<NotificationView> stopNotificationViews;
   private final NotificationView withdrawalApprovalNotificationView;
   private final NotificationView delayNotificationView;
 
@@ -17,14 +17,14 @@ public class AttentionTabNotificationViews {
                                        List<NotificationView> withdrawalRejectionNotificationViews,
                                        List<NotificationView> informNotificationViews,
                                        List<NotificationView> outcomeNotificationViews,
-                                       NotificationView stopNotificationView,
+                                       List<NotificationView> stopNotificationViews,
                                        NotificationView withdrawalApprovalNotificationView,
                                        NotificationView delayNotificationView) {
     this.rfiNotificationViews = rfiNotificationViews;
     this.withdrawalRejectionNotificationViews = withdrawalRejectionNotificationViews;
     this.informNotificationViews = informNotificationViews;
     this.outcomeNotificationViews = outcomeNotificationViews;
-    this.stopNotificationView = stopNotificationView;
+    this.stopNotificationViews = stopNotificationViews;
     this.withdrawalApprovalNotificationView = withdrawalApprovalNotificationView;
     this.delayNotificationView = delayNotificationView;
   }
@@ -45,8 +45,8 @@ public class AttentionTabNotificationViews {
     return outcomeNotificationViews;
   }
 
-  public NotificationView getStopNotificationView() {
-    return stopNotificationView;
+  public List<NotificationView> getStopNotificationViews() {
+    return stopNotificationViews;
   }
 
   public NotificationView getWithdrawalApprovalNotificationView() {

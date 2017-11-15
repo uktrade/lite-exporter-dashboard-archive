@@ -18,19 +18,19 @@ public class PreviousRequestItemViewServiceImpl implements PreviousRequestItemVi
   @Override
   public List<PreviousRequestItemView> getPreviousRequestItemViews(AppData appData) {
     List<PreviousRequestItemView> previousRequestItemViews = new ArrayList<>();
-    previousRequestItemViews.addAll(getPreviousAmendments(appData));
+    previousRequestItemViews.addAll(getPreviousAmendmentRequests(appData));
     previousRequestItemViews.addAll(getPreviousWithdrawalRequests(appData));
     previousRequestItemViews.sort(Comparators.PREVIOUS_REQUEST_ITEM_VIEW_CREATED_REVERSED);
     return previousRequestItemViews;
   }
 
-  private List<PreviousRequestItemView> getPreviousAmendments(AppData appData) {
-    return appData.getAmendments().stream()
-        .map(amendment -> {
-          String date = TimeUtil.formatDate(amendment.getCreatedTimestamp());
-          Long createdTimestamp = amendment.getCreatedTimestamp();
+  private List<PreviousRequestItemView> getPreviousAmendmentRequests(AppData appData) {
+    return appData.getAmendmentRequests().stream()
+        .map(amendmentRequest -> {
+          String date = TimeUtil.formatDate(amendmentRequest.getCreatedTimestamp());
+          Long createdTimestamp = amendmentRequest.getCreatedTimestamp();
           String type = "Amendment";
-          String link = LinkUtil.getAmendmentMessageLink(amendment);
+          String link = LinkUtil.getAmendmentRequestMessageLink(amendmentRequest);
           return new PreviousRequestItemView(createdTimestamp, date, type, link, null);
         }).collect(Collectors.toList());
   }

@@ -20,9 +20,9 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
   public ApplicationSummaryView getApplicationSummaryView(AppData appData) {
     Application application = appData.getApplication();
     String dateSubmitted = TimeUtil.formatDate(application.getSubmittedTimestamp());
-    String applicationStatus = ApplicationUtil.getApplicationStatus(appData);
+    String applicationStatus = ApplicationUtil.getStatusInfo(appData).getApplicationStatus();
     return new ApplicationSummaryView(application.getId(),
-        application.getCaseReference(),
+        appData.getCaseReference(),
         application.getApplicantReference(),
         ApplicationUtil.getDestinations(application),
         dateSubmitted,

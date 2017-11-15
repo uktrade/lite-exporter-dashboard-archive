@@ -10,21 +10,32 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import models.AppData;
 import models.Application;
+import models.CaseData;
+import models.Notification;
+import models.Outcome;
 import models.Rfi;
 import models.RfiReply;
 import models.RfiWithdrawal;
 import models.Siel;
+import models.StatusColumnInfo;
 import models.StatusUpdate;
 import models.WithdrawalRejection;
 import models.WithdrawalRequest;
 import models.enums.StatusType;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 public class ApplicationUtil {
+
+  public static final String CREATED = "Created";
+
+  public static final String RE_OPENED = "Re-opened";
+
+  public static final String COMPLETED = "Completed";
 
   public static final String WITHDRAWN = "Withdrawn";
 
@@ -39,6 +50,14 @@ public class ApplicationUtil {
   public static final String NOT_STARTED = "Not started";
 
   public static final String IN_PROGRESS = "In progress";
+
+  public static final String AMENDMENT = "Amendment";
+
+  public static final String OUTCOME_DOCUMENTS_UPDATED = "Outcome documents updated";
+
+  public static final String BEING_AMENDED = "Being amended";
+
+  public static final String AMENDMENT_STOPPED = "Amendment stopped";
 
   private static final Map<StatusType, String> STATUS_NAME_MAP;
 
@@ -132,37 +151,85 @@ public class ApplicationUtil {
     }
   }
 
-  public static boolean isApplicationInProgress(AppData appData) {
-    StatusUpdate maxStatusUpdate = getMaxStatusUpdate(appData.getStatusUpdates());
-    boolean isStopped = appData.getStopNotification() != null;
-    boolean isWithdrawn = appData.getWithdrawalApproval() != null;
-    boolean isComplete = maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE;
-    return !isStopped && !isWithdrawn && !isComplete;
-  }
-
-  public static String getApplicationStatus(AppData appData) {
-    StatusUpdate maxStatusUpdate = getMaxStatusUpdate(appData.getStatusUpdates());
-    if (appData.getWithdrawalApproval() != null) {
-      return ApplicationUtil.WITHDRAWN;
-    } else if (appData.getStopNotification() != null) {
-      return ApplicationUtil.STOPPED;
-    } else if (maxStatusUpdate != null) {
-      return ApplicationUtil.getStatusName(maxStatusUpdate.getStatusType());
-    } else if (appData.getApplication().getSubmittedTimestamp() != null) {
-      return ApplicationUtil.SUBMITTED;
+  public static boolean isOriginalApplicationInProgress(AppData appData) {
+    if (!appData.getCaseDataList().isEmpty()) {
+      return false;
     } else {
-      return ApplicationUtil.DRAFT;
+      StatusUpdate maxStatusUpdate = getMaxStatusUpdate(appData.getStatusUpdates());
+      boolean isStopped = appData.getStopNotification() != null;
+      boolean isWithdrawn = appData.getWithdrawalApproval() != null;
+      boolean isComplete = maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE;
+      return !isStopped && !isWithdrawn && !isComplete;
     }
   }
 
+  public static boolean isCaseInProgress(CaseData caseData) {
+    return isCaseStarted(caseData) && !isCaseFinished(caseData);
+  }
+
+  public static boolean isCaseStarted(CaseData caseData) {
+    return !caseData.getRfiList().isEmpty() || !caseData.getInformNotifications().isEmpty();
+  }
+
+  public static boolean isCaseFinished(CaseData caseData) {
+    return caseData.getOutcome() != null || caseData.getStopNotification() != null;
+  }
+
+  public static CaseData getMostRecentCase(AppData appData) {
+    return appData.getCaseDataList().stream()
+        .sorted(Comparators.CASE_DATA_CREATED.reversed())
+        .findFirst()
+        .orElse(null);
+  }
+
+  public static StatusColumnInfo getStatusInfo(AppData appData) {
+    if (!appData.getCaseDataList().isEmpty()) {
+      CaseData caseData = ApplicationUtil.getMostRecentCase(appData);
+      if (caseData.getOutcome() != null) {
+        return new StatusColumnInfo("On", caseData.getOutcome().getCreatedTimestamp(), OUTCOME_DOCUMENTS_UPDATED);
+      } else if (caseData.getStopNotification() != null) {
+        return new StatusColumnInfo("On", caseData.getStopNotification().getCreatedTimestamp(), AMENDMENT_STOPPED);
+      } else {
+        return new StatusColumnInfo("Since", caseData.getCaseDetails().getCreatedTimestamp(), BEING_AMENDED);
+      }
+    } else {
+      StatusUpdate maxStatusUpdate = getMaxStatusUpdate(appData.getStatusUpdates());
+      if (appData.getWithdrawalApproval() != null) {
+        return new StatusColumnInfo("On", appData.getWithdrawalApproval().getCreatedTimestamp(), WITHDRAWN);
+      } else if (appData.getStopNotification() != null) {
+        return new StatusColumnInfo("On", appData.getStopNotification().getCreatedTimestamp(), STOPPED);
+      } else if (maxStatusUpdate != null) {
+        return new StatusColumnInfo("Since", maxStatusUpdate.getCreatedTimestamp(), getStatusName(maxStatusUpdate.getStatusType()));
+      } else if (appData.getApplication().getSubmittedTimestamp() != null) {
+        return new StatusColumnInfo("On", appData.getApplication().getSubmittedTimestamp(), SUBMITTED);
+      } else {
+        return new StatusColumnInfo("Since", appData.getApplication().getCreatedTimestamp(), DRAFT);
+      }
+    }
+  }
+
+  public static List<Rfi> getAllOpenRfiList(AppData appData) {
+    List<Rfi> openRfiList = ApplicationUtil.getOpenRfiList(appData);
+    appData.getCaseDataList().forEach(caseData -> openRfiList.addAll(getOpenRfiList(caseData)));
+    return openRfiList;
+  }
+
+  public static List<Rfi> getOpenRfiList(CaseData caseData) {
+    return getOpenRfiList(caseData.getRfiList(), caseData.getRfiReplies(), caseData.getRfiWithdrawals());
+  }
+
   public static List<Rfi> getOpenRfiList(AppData appData) {
-    Set<String> repliedToRfiIds = appData.getRfiReplies().stream()
+    return getOpenRfiList(appData.getRfiList(), appData.getRfiReplies(), appData.getRfiWithdrawals());
+  }
+
+  private static List<Rfi> getOpenRfiList(List<Rfi> rfiList, List<RfiReply> rfiReplies, List<RfiWithdrawal> rfiWithdrawals) {
+    Set<String> repliedToRfiIds = rfiReplies.stream()
         .map(RfiReply::getRfiId)
         .collect(Collectors.toSet());
-    Set<String> withdrawnRfiIds = appData.getRfiWithdrawals().stream()
+    Set<String> withdrawnRfiIds = rfiWithdrawals.stream()
         .map(RfiWithdrawal::getRfiId)
         .collect(Collectors.toSet());
-    return appData.getRfiList().stream()
+    return rfiList.stream()
         .filter(rfi -> !repliedToRfiIds.contains(rfi.getId()) && !withdrawnRfiIds.contains(rfi.getId()))
         .collect(Collectors.toList());
   }
@@ -202,6 +269,50 @@ public class ApplicationUtil {
 
   public static boolean hasPendingWithdrawalRequest(AppData appData) {
     return appData.getWithdrawalApproval() == null && appData.getWithdrawalRequests().size() > appData.getWithdrawalRejections().size();
+  }
+
+  public static List<Rfi> getAllRfi(AppData appData) {
+    List<Rfi> rfiList = new ArrayList<>(appData.getRfiList());
+    appData.getCaseDataList().forEach(caseData -> rfiList.addAll(caseData.getRfiList()));
+    return rfiList;
+  }
+
+  public static List<RfiReply> getAllRfiReplies(AppData appData) {
+    List<RfiReply> rfiReplies = new ArrayList<>(appData.getRfiReplies());
+    appData.getCaseDataList().forEach(caseData -> rfiReplies.addAll(caseData.getRfiReplies()));
+    return rfiReplies;
+  }
+
+  public static List<RfiWithdrawal> getAllRfiWithdrawals(AppData appData) {
+    List<RfiWithdrawal> rfiWithdrawals = new ArrayList<>(appData.getRfiWithdrawals());
+    appData.getCaseDataList().forEach(caseData -> rfiWithdrawals.addAll(caseData.getRfiWithdrawals()));
+    return rfiWithdrawals;
+  }
+
+  public static List<Outcome> getAllOutcomes(AppData appData) {
+    List<Outcome> outcomes = new ArrayList<>();
+    CollectionUtils.addIgnoreNull(outcomes, appData.getOutcome());
+    appData.getCaseDataList().forEach(caseData -> CollectionUtils.addIgnoreNull(outcomes, caseData.getOutcome()));
+    return outcomes;
+  }
+
+  public static List<Notification> getAllStopNotifications(AppData appData) {
+    List<Notification> notifications = new ArrayList<>();
+    CollectionUtils.addIgnoreNull(notifications, appData.getStopNotification());
+    appData.getCaseDataList().forEach(caseData -> CollectionUtils.addIgnoreNull(notifications, caseData.getStopNotification()));
+    return notifications;
+  }
+
+  public static List<Notification> getAllInformNotifications(AppData appData) {
+    List<Notification> notifications = new ArrayList<>(appData.getInformNotifications());
+    appData.getCaseDataList().forEach(caseData -> notifications.addAll(caseData.getInformNotifications()));
+    return notifications;
+  }
+
+  public static Optional<Rfi> getRfi(List<Rfi> rfiList, String rfiId) {
+    return rfiList.stream()
+        .filter(rfi -> rfi.getId().equals(rfiId))
+        .findAny();
   }
 
 }

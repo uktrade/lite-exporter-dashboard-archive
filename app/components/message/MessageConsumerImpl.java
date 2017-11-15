@@ -6,6 +6,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import components.dao.CaseDetailsDao;
 import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
 import components.dao.RfiDao;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import models.CaseDetails;
 import models.Document;
 import models.File;
 import models.Notification;
@@ -37,6 +39,7 @@ import models.enums.StatusType;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardCaseCreated;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardCaseStatusUpdate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardMessageDocument;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardNotificationDelay;
@@ -61,6 +64,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   private final RfiWithdrawalDao rfiWithdrawalDao;
   private final OutcomeDao outcomeDao;
   private final WithdrawalRejectionDao withdrawalRejectionDao;
+  private final CaseDetailsDao caseDetailsDao;
 
   @Inject
   public MessageConsumerImpl(
@@ -70,7 +74,8 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
       NotificationDao notificationDao,
       RfiWithdrawalDao rfiWithdrawalDao,
       OutcomeDao outcomeDao,
-      WithdrawalRejectionDao withdrawalRejectionDao) {
+      WithdrawalRejectionDao withdrawalRejectionDao,
+      CaseDetailsDao caseDetailsDao) {
     super(channel);
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
@@ -78,6 +83,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     this.rfiWithdrawalDao = rfiWithdrawalDao;
     this.outcomeDao = outcomeDao;
     this.withdrawalRejectionDao = withdrawalRejectionDao;
+    this.caseDetailsDao = caseDetailsDao;
   }
 
   @Override
@@ -119,6 +125,9 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
         case WITHDRAWAL_REJECTION:
           insertWithdrawalRejection(message);
           break;
+        case CASE_CREATE:
+          insertCaseCreate(message);
+          break;
         default:
           throw new ValidationException("Unknown routing key " + consumerRoutingKey);
       }
@@ -134,7 +143,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   private void insertRfi(String message) {
     DashboardRfiCreate dashboardRfiCreate = parse(message, DashboardRfiCreate.class);
     Rfi rfi = new Rfi(dashboardRfiCreate.getId(),
-        dashboardRfiCreate.getAppId(),
+        dashboardRfiCreate.getCaseRef(),
         dashboardRfiCreate.getCreatedTimestamp(),
         dashboardRfiCreate.getDeadlineTimestamp(),
         dashboardRfiCreate.getCreatedByUserId(),
@@ -161,7 +170,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   private void insertDelayNotification(String message) {
     DashboardNotificationDelay dashboardNotificationDelay = parse(message, DashboardNotificationDelay.class);
     Notification notification = new Notification(dashboardNotificationDelay.getId(),
-        dashboardNotificationDelay.getAppId(),
+        dashboardNotificationDelay.getCaseRef(),
         NotificationType.DELAY,
         null,
         dashboardNotificationDelay.getCreatedTimestamp(),
@@ -175,7 +184,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   private void insertStopNotification(String message) {
     DashboardNotificationStop dashboardNotificationStop = parse(message, DashboardNotificationStop.class);
     Notification notification = new Notification(dashboardNotificationStop.getId(),
-        dashboardNotificationStop.getAppId(),
+        dashboardNotificationStop.getCaseRef(),
         NotificationType.STOP,
         dashboardNotificationStop.getCreatedByUserId(),
         dashboardNotificationStop.getCreatedTimestamp(),
@@ -195,7 +204,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     File file = new File(dashboardMessageDocument.getId(), dashboardMessageDocument.getFilename(), dashboardMessageDocument.getUrl());
     validate(file);
     Notification notification = new Notification(dashboardNotificationInform.getId(),
-        dashboardNotificationInform.getAppId(),
+        dashboardNotificationInform.getCaseRef(),
         NotificationType.INFORM,
         dashboardNotificationInform.getCreatedByUserId(),
         dashboardNotificationInform.getCreatedTimestamp(),
@@ -222,7 +231,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     DashboardOutcomeIssue dashboardOutcomeIssue = parse(message, DashboardOutcomeIssue.class);
     List<Document> documents = parseDocuments(dashboardOutcomeIssue.getDocuments(), "ISSUE_");
     Outcome outcome = new Outcome(dashboardOutcomeIssue.getId(),
-        dashboardOutcomeIssue.getAppId(),
+        dashboardOutcomeIssue.getCaseRef(),
         dashboardOutcomeIssue.getCreatedByUserId(),
         dashboardOutcomeIssue.getRecipientUserIds(),
         dashboardOutcomeIssue.getCreatedTimestamp(),
@@ -235,7 +244,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     DashboardOutcomeAmend dashboardOutcomeAmend = parse(message, DashboardOutcomeAmend.class);
     List<Document> documents = parseDocuments(dashboardOutcomeAmend.getDocuments(), "AMENDMENT_");
     Outcome outcome = new Outcome(dashboardOutcomeAmend.getId(),
-        dashboardOutcomeAmend.getAppId(),
+        dashboardOutcomeAmend.getCaseRef(),
         dashboardOutcomeAmend.getCreatedByUserId(),
         dashboardOutcomeAmend.getRecipientUserIds(),
         dashboardOutcomeAmend.getCreatedTimestamp(),
@@ -277,6 +286,16 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
         dashboardWithdrawalReject.getMessage());
     validate(withdrawalRejection);
     withdrawalRejectionDao.insertWithdrawalRejection(withdrawalRejection);
+  }
+
+  private void insertCaseCreate(String message) {
+    DashboardCaseCreated dashboardCaseCreated = parse(message, DashboardCaseCreated.class);
+    CaseDetails caseDetails = new CaseDetails(dashboardCaseCreated.getAppId(),
+        dashboardCaseCreated.getCaseRef(),
+        dashboardCaseCreated.getCreatedByUserId(),
+        dashboardCaseCreated.getCreatedTimestamp());
+    validate(caseDetails);
+    caseDetailsDao.insert(caseDetails);
   }
 
   private void reject(Envelope envelope) throws IOException {

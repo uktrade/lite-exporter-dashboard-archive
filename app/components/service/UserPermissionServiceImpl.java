@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import models.AppData;
 import models.Application;
+import models.CaseData;
 import models.Rfi;
 import uk.gov.bis.lite.user.api.view.CustomerView;
 import uk.gov.bis.lite.user.api.view.Role;
@@ -63,18 +64,26 @@ public class UserPermissionServiceImpl implements UserPermissionService {
   @Override
   public boolean canAddAmendmentOrWithdrawalRequest(String userId, AppData appData) {
     boolean hasCreatorOrAdminPermission = hasCreatorOrAdminPermission(userId, appData);
-    boolean isApplicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
+    boolean isOriginalApplicationInProgress = ApplicationUtil.isOriginalApplicationInProgress(appData);
     boolean hasPendingWithdrawalRequest = ApplicationUtil.hasPendingWithdrawalRequest(appData);
-    return isApplicationInProgress && !hasPendingWithdrawalRequest && hasCreatorOrAdminPermission;
+    return isOriginalApplicationInProgress && !hasPendingWithdrawalRequest && hasCreatorOrAdminPermission;
   }
 
   @Override
   public boolean canAddRfiReply(String userId, String rfiId, AppData appData) {
-    boolean hasReply = appData.getRfiReplies().stream()
+    boolean hasReply = ApplicationUtil.getAllRfiReplies(appData).stream()
         .anyMatch(rfiReply -> rfiReply.getRfiId().equals(rfiId));
-    boolean wasWithdrawn = appData.getRfiWithdrawals().stream()
+    boolean wasWithdrawn = ApplicationUtil.getAllRfiWithdrawals(appData).stream()
         .anyMatch(rfiWithdrawal -> rfiWithdrawal.getRfiId().equals(rfiId));
-    boolean isApplicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
+
+    boolean isApplicationInProgress;
+    if (!appData.getCaseDataList().isEmpty()) {
+      CaseData mostRecentCase = ApplicationUtil.getMostRecentCase(appData);
+      isApplicationInProgress = ApplicationUtil.isCaseInProgress(mostRecentCase) && ApplicationUtil.getRfi(mostRecentCase.getRfiList(), rfiId).isPresent();
+    } else {
+      isApplicationInProgress = ApplicationUtil.isOriginalApplicationInProgress(appData) && ApplicationUtil.getRfi(appData.getRfiList(), rfiId).isPresent();
+    }
+
     boolean hasRfiReplyPermission = hasRfiReplyPermission(userId, rfiId, appData);
     return !hasReply && !wasWithdrawn && isApplicationInProgress && hasRfiReplyPermission;
   }
@@ -101,9 +110,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
   }
 
   private boolean hasRfiReplyPermission(String userId, String rfiId, AppData appData) {
-    Optional<Rfi> rfi = appData.getRfiList().stream()
-        .filter(rfiIterate -> rfiIterate.getId().equals(rfiId))
-        .findAny();
+    Optional<Rfi> rfi = ApplicationUtil.getRfi(ApplicationUtil.getAllRfi(appData), rfiId);
     if (rfi.isPresent()) {
       boolean isRecipient = rfi.get().getRecipientUserIds().contains(userId);
       return isRecipient || canAdminSite(userId, appData) || canAdminCustomer(userId, appData);

@@ -10,7 +10,8 @@ public enum ConsumerRoutingKey {
   INFORM_NOTIFICATION("notification.inform"),
   OUTCOME_ISSUE("outcome.issue"),
   OUTCOME_AMEND("outcome.amend"),
-  WITHDRAWAL_REJECTION("withdrawalrequest.reject");
+  WITHDRAWAL_REJECTION("withdrawalrequest.reject"),
+  CASE_CREATE("case.create");
 
   private final String text;
 
