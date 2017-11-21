@@ -16,6 +16,7 @@ import uk.gov.bis.lite.exporterdashboard.api.NotificationReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.OutcomeReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.RfiReplyMessage;
 import uk.gov.bis.lite.exporterdashboard.api.RfiWithdrawalReadMessage;
+import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestAcceptReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestMessage;
 
 import java.util.Collections;
@@ -86,8 +87,17 @@ public class PactProvider {
     return MAPPER.writeValueAsString(notificationReadMessage);
   }
 
-  @PactVerifyProvider("an outcome was read")
+  @PactVerifyProvider("withdrawal request accept was read")
   public String verifyWithdrawalRequestAcceptReadMessage() throws JsonProcessingException {
+    WithdrawalRequestAcceptReadMessage withdrawalReadMessage = new WithdrawalRequestAcceptReadMessage();
+    withdrawalReadMessage.setNotificationId("notificationId");
+    withdrawalReadMessage.setCreatedByUserId("createdByUserId");
+    withdrawalReadMessage.setAppId("appId");
+    return MAPPER.writeValueAsString(withdrawalReadMessage);
+  }
+
+  @PactVerifyProvider("an outcome was read")
+  public String verifyOutcomeReadMessage() throws JsonProcessingException {
     OutcomeReadMessage outcomeReadMessage = new OutcomeReadMessage();
     outcomeReadMessage.setOutcomeId("outcomeId");
     outcomeReadMessage.setCreatedByUserId("createdByUserId");
