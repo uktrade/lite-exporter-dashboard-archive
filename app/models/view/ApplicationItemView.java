@@ -11,8 +11,9 @@ public class ApplicationItemView {
   private final String createdById;
   private final String createdByFirstName;
   private final String createdByLastName;
-  private final Long dateTimestamp;
+  private final String dateStatus;
   private final String date;
+  private final Long dateTimestamp;
   private final String caseReference;
   private final String applicantReference;
   private final ApplicationProgress applicationProgress;
@@ -31,8 +32,9 @@ public class ApplicationItemView {
                              String createdById,
                              String createdByFirstName,
                              String createdByLastName,
-                             Long dateTimestamp,
+                             String dateStatus,
                              String date,
+                             Long dateTimestamp,
                              String caseReference,
                              String applicantReference,
                              ApplicationProgress applicationProgress,
@@ -50,8 +52,9 @@ public class ApplicationItemView {
     this.createdById = createdById;
     this.createdByFirstName = createdByFirstName;
     this.createdByLastName = createdByLastName;
-    this.dateTimestamp = dateTimestamp;
+    this.dateStatus = dateStatus;
     this.date = date;
+    this.dateTimestamp = dateTimestamp;
     this.caseReference = caseReference;
     this.applicantReference = applicantReference;
     this.applicationProgress = applicationProgress;
@@ -88,13 +91,17 @@ public class ApplicationItemView {
   public String getCreatedByLastName() {
     return createdByLastName;
   }
+  
+  public String getDate() {
+    return date;
+  }
 
   public Long getDateTimestamp() {
     return dateTimestamp;
   }
 
-  public String getDate() {
-    return date;
+  public String getDateStatus() {
+    return dateStatus;
   }
 
   public String getCaseReference() {

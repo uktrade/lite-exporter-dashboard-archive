@@ -71,15 +71,7 @@
         <tr>
           @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
             <td class="no-wrap">
-              @if(applicationItemView.getApplicationProgress == ApplicationProgress.DRAFT) {
-                Created
-              }
-              @if(applicationItemView.getApplicationProgress == ApplicationProgress.CURRENT) {
-                Submitted
-              }
-              @if(applicationItemView.getApplicationProgress == ApplicationProgress.COMPLETED) {
-                Completed
-              }
+              @applicationItemView.getDateStatus
               <div class="bold">
                 @applicationItemView.getDate
               </div>

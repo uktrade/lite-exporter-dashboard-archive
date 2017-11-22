@@ -5,13 +5,13 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class Outcome {
+public class Outcome implements RecipientMessage {
 
   @NotBlank
   private final String id;
 
   @NotBlank
-  private final String appId;
+  private final String caseReference;
 
   @NotBlank
   private final String createdByUserId;
@@ -25,9 +25,9 @@ public class Outcome {
   @NotEmpty
   private final List<Document> documents;
 
-  public Outcome(String id, String appId, String createdByUserId, List<String> recipientUserIds, Long createdTimestamp, List<Document> documents) {
+  public Outcome(String id, String caseReference, String createdByUserId, List<String> recipientUserIds, Long createdTimestamp, List<Document> documents) {
     this.id = id;
-    this.appId = appId;
+    this.caseReference = caseReference;
     this.createdByUserId = createdByUserId;
     this.recipientUserIds = recipientUserIds;
     this.createdTimestamp = createdTimestamp;
@@ -38,8 +38,8 @@ public class Outcome {
     return id;
   }
 
-  public String getAppId() {
-    return appId;
+  public String getCaseReference() {
+    return caseReference;
   }
 
   public String getCreatedByUserId() {

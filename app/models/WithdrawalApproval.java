@@ -2,7 +2,7 @@ package models;
 
 import java.util.List;
 
-public class WithdrawalApproval {
+public class WithdrawalApproval implements RecipientMessage {
 
   private final String id;
   private final String appId;

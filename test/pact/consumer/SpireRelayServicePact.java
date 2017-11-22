@@ -14,6 +14,7 @@ import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.model.v3.messaging.MessagePact;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Envelope;
+import components.dao.CaseDetailsDao;
 import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
 import components.dao.RfiDao;
@@ -49,6 +50,7 @@ public class SpireRelayServicePact {
   private final NotificationDao notificationDao = mock(NotificationDao.class);
   private final OutcomeDao outcomeDao = mock(OutcomeDao.class);
   private final WithdrawalRejectionDao withdrawalRejectionDao = mock(WithdrawalRejectionDao.class);
+  private final CaseDetailsDao caseDetailsDao = mock(CaseDetailsDao.class);
   private final Channel channel = mock(Channel.class);
   private final MessageConsumer messageConsumer = new MessageConsumerImpl(channel,
       rfiDao,
@@ -56,7 +58,8 @@ public class SpireRelayServicePact {
       notificationDao,
       rfiWithdrawalDao,
       outcomeDao,
-      withdrawalRejectionDao);
+      withdrawalRejectionDao,
+      caseDetailsDao);
 
   @Rule
   public MessagePactProviderRule mockProvider = new MessagePactProviderRule(PROVIDER, this);
@@ -78,12 +81,13 @@ public class SpireRelayServicePact {
     PactDslJsonBody body = new PactDslJsonBody()
         .stringType("id", "rfiId")
         .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
         .stringType("createdByUserId", "createdByUserId")
         .stringType("message", "This is an rfi message.")
         .integerType("createdTimestamp", 123456789L)
         .integerType("deadlineTimestamp", 987654321L)
         .array("recipientUserIds")
-          .stringType("recipient")
+        .stringType("recipient")
         .closeArray()
         .asBody();
     return builder.expectsToReceive("an rfi message")
@@ -96,10 +100,11 @@ public class SpireRelayServicePact {
     PactDslJsonBody body = new PactDslJsonBody()
         .stringType("id", "delayNotificationId")
         .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
         .stringType("message", "This is a delay notification.")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-          .stringType("recipient")
+        .stringType("recipient")
         .closeArray()
         .asBody();
     return builder.expectsToReceive("a delay message")
@@ -112,10 +117,11 @@ public class SpireRelayServicePact {
     PactDslJsonBody body = new PactDslJsonBody()
         .stringType("id", "stopNotificationId")
         .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
         .stringType("message", "This is a stop notification.")
         .stringType("createdByUserId", "createdByUserId")
         .integerType("createdTimestamp", 123456789L)
-          .array("recipientUserIds")
+        .array("recipientUserIds")
         .stringType("recipient")
         .closeArray()
         .asBody();
@@ -129,15 +135,16 @@ public class SpireRelayServicePact {
     PactDslJsonBody body = new PactDslJsonBody()
         .stringType("id", "informNotificationId")
         .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
         .stringType("createdByUserId", "createdByUserId")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-          .stringType("recipient")
+        .stringType("recipient")
         .closeArray()
         .object("document")
-          .stringType("id", "fileId")
-          .stringType("filename", "filename")
-          .stringType("url", "url")
+        .stringType("id", "fileId")
+        .stringType("filename", "filename")
+        .stringType("url", "url")
         .closeObject()
         .asBody();
     return builder.expectsToReceive("an inform message")
@@ -154,7 +161,7 @@ public class SpireRelayServicePact {
         .stringType("message", "This is an rfi withdrawal.")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-          .stringType("recipient")
+        .stringType("recipient")
         .closeArray();
     return builder.expectsToReceive("an inform message")
         .withContent(dslPart)
@@ -166,19 +173,20 @@ public class SpireRelayServicePact {
     DslPart dslPart = new PactDslJsonBody()
         .stringType("id", "outcomeId")
         .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
         .stringType("createdByUserId", "createdByUserId")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-          .stringType("recipient")
+        .stringType("recipient")
         .closeArray()
         .array("documents")
-          .object()
-            .stringType("id", "documentId")
-            .stringType("documentType", "LICENCE_DOCUMENT")
-            .stringType("licenceRef", "licenceRef")
-            .stringType("filename", "filename")
-            .stringType("url", "url")
-          .closeObject()
+        .object()
+        .stringType("id", "documentId")
+        .stringType("documentType", "LICENCE_DOCUMENT")
+        .stringType("licenceRef", "licenceRef")
+        .stringType("filename", "filename")
+        .stringType("url", "url")
+        .closeObject()
         .closeArray();
     return builder.expectsToReceive("issue of an outcome")
         .withContent(dslPart)
@@ -190,19 +198,20 @@ public class SpireRelayServicePact {
     DslPart dslPart = new PactDslJsonBody()
         .stringType("id", "outcomeId")
         .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
         .stringType("createdByUserId", "createdByUserId")
         .integerType("createdTimestamp", 123456789L)
         .array("recipientUserIds")
-          .stringType("recipient")
+        .stringType("recipient")
         .closeArray()
         .array("documents")
-          .object()
-            .stringType("id", "documentId")
-            .stringType("documentType", "LICENCE_DOCUMENT")
-            .stringType("licenceRef", "licenceRef")
-            .stringType("filename", "filename")
-            .stringType("url", "url")
-          .closeObject()
+        .object()
+        .stringType("id", "documentId")
+        .stringType("documentType", "LICENCE_DOCUMENT")
+        .stringType("licenceRef", "licenceRef")
+        .stringType("filename", "filename")
+        .stringType("url", "url")
+        .closeObject()
         .closeArray();
     return builder.expectsToReceive("amend an outcome")
         .withContent(dslPart)
@@ -246,7 +255,7 @@ public class SpireRelayServicePact {
 
     Rfi rfi = captor.getValue();
     assertThat(rfi.getId()).isEqualTo("rfiId");
-    assertThat(rfi.getAppId()).isEqualTo("appId");
+    assertThat(rfi.getCaseReference()).isEqualTo("caseRef");
     assertThat(rfi.getCreatedTimestamp()).isEqualTo(123456789L);
     assertThat(rfi.getDueTimestamp()).isEqualTo(987654321L);
     assertThat(rfi.getCreatedByUserId()).isEqualTo("createdByUserId");
@@ -264,7 +273,7 @@ public class SpireRelayServicePact {
 
     Notification notification = captor.getValue();
     assertThat(notification.getId()).isEqualTo("delayNotificationId");
-    assertThat(notification.getAppId()).isEqualTo("appId");
+    assertThat(notification.getCaseReference()).isEqualTo("caseRef");
     assertThat(notification.getNotificationType()).isEqualTo(NotificationType.DELAY);
     assertThat(notification.getCreatedByUserId()).isNull();
     assertThat(notification.getCreatedTimestamp()).isEqualTo(123456789L);
@@ -283,7 +292,7 @@ public class SpireRelayServicePact {
 
     Notification notification = captor.getValue();
     assertThat(notification.getId()).isEqualTo("stopNotificationId");
-    assertThat(notification.getAppId()).isEqualTo("appId");
+    assertThat(notification.getCaseReference()).isEqualTo("caseRef");
     assertThat(notification.getNotificationType()).isEqualTo(NotificationType.STOP);
     assertThat(notification.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(notification.getCreatedTimestamp()).isEqualTo(123456789L);
@@ -302,7 +311,7 @@ public class SpireRelayServicePact {
 
     Notification notification = captor.getValue();
     assertThat(notification.getId()).isEqualTo("informNotificationId");
-    assertThat(notification.getAppId()).isEqualTo("appId");
+    assertThat(notification.getCaseReference()).isEqualTo("caseRef");
     assertThat(notification.getNotificationType()).isEqualByComparingTo(NotificationType.INFORM);
     assertThat(notification.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(notification.getCreatedTimestamp()).isEqualTo(123456789L);
@@ -341,7 +350,7 @@ public class SpireRelayServicePact {
 
     Outcome outcome = captor.getValue();
     assertThat(outcome.getId()).isEqualTo("outcomeId");
-    assertThat(outcome.getAppId()).isEqualTo("appId");
+    assertThat(outcome.getCaseReference()).isEqualTo("caseRef");
     assertThat(outcome.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(outcome.getRecipientUserIds()).containsExactly("recipient");
     assertThat(outcome.getCreatedTimestamp()).isEqualTo(123456789L);
@@ -364,7 +373,7 @@ public class SpireRelayServicePact {
 
     Outcome outcome = captor.getValue();
     assertThat(outcome.getId()).isEqualTo("outcomeId");
-    assertThat(outcome.getAppId()).isEqualTo("appId");
+    assertThat(outcome.getCaseReference()).isEqualTo("caseRef");
     assertThat(outcome.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(outcome.getRecipientUserIds()).containsExactly("recipient");
     assertThat(outcome.getCreatedTimestamp()).isEqualTo(123456789L);

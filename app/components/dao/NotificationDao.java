@@ -1,18 +1,15 @@
 package components.dao;
 
-import models.Notification;
-
 import java.util.List;
+import models.Notification;
 
 public interface NotificationDao {
 
-  List<Notification> getNotifications(List<String> appIds);
-
-  List<Notification> getNotifications(String appId);
+  List<Notification> getNotifications(List<String> caseReferences);
 
   void insertNotification(Notification notification);
 
-  void deleteNotificationsByAppId(String appId);
+  void deleteNotifications(String caseReference);
 
   void deleteAllNotifications();
 

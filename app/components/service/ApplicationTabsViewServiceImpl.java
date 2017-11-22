@@ -9,7 +9,7 @@ public class ApplicationTabsViewServiceImpl implements ApplicationTabsViewServic
 
   @Override
   public ApplicationTabsView getApplicationTabsView(AppData appData, ReadData readData) {
-    boolean newRfi = !ApplicationUtil.getOpenRfiList(appData).isEmpty();
+    boolean newRfi = !ApplicationUtil.getAllOpenRfiList(appData).isEmpty();
     boolean newDocument = isNewDocument(readData);
     boolean isNewMessage = isNewMessage(readData);
     return new ApplicationTabsView(newRfi, isNewMessage, newDocument);
@@ -22,7 +22,7 @@ public class ApplicationTabsViewServiceImpl implements ApplicationTabsViewServic
   }
 
   private boolean isNewMessage(ReadData readData) {
-    boolean isNewStopMessage = readData.getUnreadStopNotificationId() != null;
+    boolean isNewStopMessage = !readData.getUnreadStopNotificationIds().isEmpty();
     boolean isNewDelayMessage = readData.getUnreadDelayNotificationId() != null;
     boolean isNewWithdrawalRejectionMessage = !readData.getUnreadWithdrawalRejectionIds().isEmpty();
     return isNewStopMessage || isNewDelayMessage || isNewWithdrawalRejectionMessage;

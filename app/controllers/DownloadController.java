@@ -1,16 +1,17 @@
 package controllers;
 
 import com.google.inject.Inject;
-import components.dao.AmendmentDao;
+import components.dao.AmendmentRequestDao;
 import components.dao.DraftDao;
 import components.dao.WithdrawalRequestDao;
 import components.service.AppDataService;
 import components.service.UserPermissionService;
 import components.service.UserService;
+import components.util.ApplicationUtil;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import models.Amendment;
+import models.AmendmentRequest;
 import models.AppData;
 import models.File;
 import models.RfiReply;
@@ -26,7 +27,7 @@ public class DownloadController extends SamlController {
   private final UserService userService;
   private final AppDataService appDataService;
   private final DraftDao draftDao;
-  private final AmendmentDao amendmentDao;
+  private final AmendmentRequestDao amendmentRequestDao;
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final UserPermissionService userPermissionService;
 
@@ -34,13 +35,13 @@ public class DownloadController extends SamlController {
   public DownloadController(UserService userService,
                             AppDataService appDataService,
                             DraftDao draftDao,
-                            AmendmentDao amendmentDao,
+                            AmendmentRequestDao amendmentRequestDao,
                             WithdrawalRequestDao withdrawalRequestDao,
                             UserPermissionService userPermissionService) {
     this.userService = userService;
     this.appDataService = appDataService;
     this.draftDao = draftDao;
-    this.amendmentDao = amendmentDao;
+    this.amendmentRequestDao = amendmentRequestDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.userPermissionService = userPermissionService;
   }
@@ -48,7 +49,7 @@ public class DownloadController extends SamlController {
   public Result getRfiReplyFile(String appId, String rfiId, String fileId) {
     String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
-    Optional<RfiReply> rfiReply = appData.getRfiReplies().stream()
+    Optional<RfiReply> rfiReply = ApplicationUtil.getAllRfiReplies(appData).stream()
         .filter(reply -> reply.getRfiId().equals(rfiId))
         .findAny();
     if (rfiReply.isPresent() && containsFile(rfiReply.get().getAttachments(), fileId)) {
@@ -63,8 +64,8 @@ public class DownloadController extends SamlController {
   }
 
   public Result getAmendmentOrWithdrawalFile(String appId, String fileId) {
-    List<File> amendmentFiles = amendmentDao.getAmendments(appId).stream()
-        .map(Amendment::getAttachments)
+    List<File> amendmentFiles = amendmentRequestDao.getAmendmentRequests(appId).stream()
+        .map(AmendmentRequest::getAttachments)
         .flatMap(List::stream)
         .collect(Collectors.toList());
     List<File> withdrawalFiles = withdrawalRequestDao.getWithdrawalRequestsByAppId(appId).stream()

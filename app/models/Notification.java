@@ -6,12 +6,12 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class Notification {
+public class Notification implements RecipientMessage {
 
   @NotBlank
   private final String id;
   @NotBlank
-  private final String appId;
+  private final String caseReference;
   @NotNull
   private final NotificationType notificationType;
   @NotBlank
@@ -25,9 +25,9 @@ public class Notification {
   @NotNull
   private final File document;
 
-  public Notification(String id, String appId, NotificationType notificationType, String createdByUserId, Long createdTimestamp, List<String> recipientUserIds, String message, File document) {
+  public Notification(String id, String caseReference, NotificationType notificationType, String createdByUserId, Long createdTimestamp, List<String> recipientUserIds, String message, File document) {
     this.id = id;
-    this.appId = appId;
+    this.caseReference = caseReference;
     this.notificationType = notificationType;
     this.createdByUserId = createdByUserId;
     this.createdTimestamp = createdTimestamp;
@@ -40,8 +40,8 @@ public class Notification {
     return id;
   }
 
-  public String getAppId() {
-    return appId;
+  public String getCaseReference() {
+    return caseReference;
   }
 
   public NotificationType getNotificationType() {

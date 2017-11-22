@@ -153,12 +153,12 @@ public class AmendTabController extends SamlController {
     ReadData readData = readDataService.getReadData(userId, appData);
     ApplicationSummaryView applicationSummaryView = applicationSummaryViewService.getApplicationSummaryView(appData);
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
-    OfficerView officerView = officerViewService.getOfficerView(appId);
+    OfficerView officerView = officerViewService.getOfficerView(appData.getApplication().getCaseOfficerId());
     List<FileView> fileViews = createFileViews(appId);
     List<SelectOption> selectOptions = getSelectOptions();
     List<PreviousRequestItemView> previousRequestItemViews = previousRequestItemViewService.getPreviousRequestItemViews(appData);
     boolean hasPendingWithdrawalRequest = ApplicationUtil.hasPendingWithdrawalRequest(appData);
-    boolean applicationInProgress = ApplicationUtil.isApplicationInProgress(appData);
+    boolean applicationInProgress = ApplicationUtil.isOriginalApplicationInProgress(appData);
     boolean hasCreatorOrAdminPermission = userPermissionService.hasCreatorOrAdminPermission(userId, appData);
     AmendmentView amendmentView = new AmendmentView(applicationInProgress,
         hasPendingWithdrawalRequest,

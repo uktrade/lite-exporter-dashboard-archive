@@ -9,7 +9,7 @@ public class Rfi {
   @NotBlank
   private final String id;
   @NotBlank
-  private final String appId;
+  private final String caseReference;
   @NotNull
   private final Long createdTimestamp;
   @NotNull
@@ -21,9 +21,9 @@ public class Rfi {
   @NotBlank
   private final String message;
 
-  public Rfi(String id, String appId, Long createdTimestamp, Long dueTimestamp, String createdByUserId, List<String> recipientUserIds, String message) {
+  public Rfi(String id, String caseReference, Long createdTimestamp, Long dueTimestamp, String createdByUserId, List<String> recipientUserIds, String message) {
     this.id = id;
-    this.appId = appId;
+    this.caseReference = caseReference;
     this.createdTimestamp = createdTimestamp;
     this.dueTimestamp = dueTimestamp;
     this.createdByUserId = createdByUserId;
@@ -35,8 +35,8 @@ public class Rfi {
     return id;
   }
 
-  public String getAppId() {
-    return appId;
+  public String getCaseReference() {
+    return caseReference;
   }
 
   public Long getCreatedTimestamp() {

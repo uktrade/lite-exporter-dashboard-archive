@@ -12,11 +12,19 @@ public class Application {
   private final List<String> consigneeCountries;
   private final List<String> endUserCountries;
   private final String applicantReference;
-  private final String caseReference;
   private final String caseOfficerId;
   private final String siteId;
 
-  public Application(String id, String customerId, String createdByUserId, Long createdTimestamp, Long submittedTimestamp, List<String> consigneeCountries, List<String> endUserCountries, String applicantReference, String caseReference, String caseOfficerId, String siteId) {
+  public Application(String id,
+                     String customerId,
+                     String createdByUserId,
+                     Long createdTimestamp,
+                     Long submittedTimestamp,
+                     List<String> consigneeCountries,
+                     List<String> endUserCountries,
+                     String applicantReference,
+                     String caseOfficerId,
+                     String siteId) {
     this.id = id;
     this.customerId = customerId;
     this.createdByUserId = createdByUserId;
@@ -25,7 +33,6 @@ public class Application {
     this.consigneeCountries = consigneeCountries;
     this.endUserCountries = endUserCountries;
     this.applicantReference = applicantReference;
-    this.caseReference = caseReference;
     this.caseOfficerId = caseOfficerId;
     this.siteId = siteId;
   }
@@ -60,10 +67,6 @@ public class Application {
 
   public String getApplicantReference() {
     return applicantReference;
-  }
-
-  public String getCaseReference() {
-    return caseReference;
   }
 
   public String getCaseOfficerId() {

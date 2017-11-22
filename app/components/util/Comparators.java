@@ -1,6 +1,8 @@
 package components.util;
 
 import java.util.Comparator;
+import models.CaseData;
+import models.CaseDetails;
 import models.Notification;
 import models.Outcome;
 import models.Rfi;
@@ -26,6 +28,8 @@ public class Comparators {
   public static final Comparator<NotificationView> NOTIFICATION_VIEW_CREATED = Comparator.comparing(NotificationView::getCreatedTimestamp);
   public static final Comparator<NotificationView> NOTIFICATION_VIEW_CREATED_REVERSED = Comparator.comparing(NotificationView::getCreatedTimestamp).reversed();
   public static final Comparator<PreviousRequestItemView> PREVIOUS_REQUEST_ITEM_VIEW_CREATED_REVERSED = Comparator.comparing(PreviousRequestItemView::getCreatedTimestamp).reversed();
+  public static final Comparator<CaseData> CASE_DATA_CREATED = Comparator.comparing(caseData -> caseData.getCaseDetails().getCreatedTimestamp());
+  public static final Comparator<CaseDetails> CASE_DETAILS_CREATED = Comparator.comparing(CaseDetails::getCreatedTimestamp);
 
   public static final Comparator<NotificationView> LINK_TEXT = Comparator.comparing(NotificationView::getLinkText);
   public static final Comparator<CompanySelectItemView> COMPANY_NAME = Comparator.comparing(CompanySelectItemView::getCompanyName, String.CASE_INSENSITIVE_ORDER);

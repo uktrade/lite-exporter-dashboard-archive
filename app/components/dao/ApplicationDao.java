@@ -7,9 +7,11 @@ public interface ApplicationDao {
 
   long getApplicationCount();
 
-  List<Application> getApplications(List<String> customerIds);
-
   Application getApplication(String id);
+
+  List<Application> getApplications(String id);
+
+  List<Application> getApplicationsByCustomerIds(List<String> customerIds);
 
   void insert(Application application);
 

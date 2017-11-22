@@ -7,24 +7,30 @@ import components.util.Comparators;
 import components.util.LinkUtil;
 import components.util.TimeUtil;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import models.AppData;
 import models.Application;
 import models.AttentionTabNotificationViews;
+import models.CaseData;
+import models.DateColumnInfo;
 import models.Notification;
 import models.Outcome;
 import models.ReadData;
 import models.Rfi;
+import models.StatusColumnInfo;
 import models.StatusUpdate;
 import models.User;
 import models.WithdrawalRejection;
+import models.WithdrawalRequest;
 import models.enums.ApplicationProgress;
 import models.enums.EventLabelType;
 import models.enums.StatusType;
 import models.view.ApplicationItemView;
 import models.view.NotificationView;
+import org.apache.commons.collections4.CollectionUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
@@ -72,26 +78,23 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
     Application application = appData.getApplication();
 
-    StatusUpdate maxStatusUpdate = ApplicationUtil.getMaxStatusUpdate(appData.getStatusUpdates());
+    StatusColumnInfo statusColumnInfo = ApplicationUtil.getStatusInfo(appData);
+    String applicationStatusDate = statusColumnInfo.getPrefix() + " " + TimeUtil.formatDate(statusColumnInfo.getApplicationStatusTimestamp());
 
-    String applicationStatus = ApplicationUtil.getApplicationStatus(appData);
-    long applicationStatusTimestamp = getApplicationStatusTimestamp(appData, maxStatusUpdate);
-    String applicationStatusDate = getApplicationStatusDate(appData, maxStatusUpdate, applicationStatusTimestamp);
-
-    Long dateTimestamp = getDateTimestamp(maxStatusUpdate, appData);
-    String date = TimeUtil.formatDate(dateTimestamp);
+    DateColumnInfo dateColumnInfo = getDateColumnInfo(appData);
+    String date = TimeUtil.formatDate(dateColumnInfo.getDateTimestamp());
 
     String createdById = application.getCreatedByUserId();
     User user = userService.getUser(createdById);
     String destination = ApplicationUtil.getDestinations(application);
 
-    ApplicationProgress applicationProgress = getApplicationProgress(appData, maxStatusUpdate);
+    ApplicationProgress applicationProgress = getApplicationProgress(appData);
 
     List<NotificationView> notificationViews = getNotificationViews(appData, readData, applicationProgress);
 
     AttentionTabNotificationViews attentionTabNotificationViews = getAttentionTabNotificationViews(userId, appData, readData);
     List<NotificationView> forYourAttentionNotificationViews = getForYourAttentionNotificationViews(attentionTabNotificationViews);
-    Long latestEventTimestamp = getLatestEventTimestamp(attentionTabNotificationViews);
+    Long latestEventTimestamp = getMostRecentEventTimestamp(attentionTabNotificationViews);
     String latestEventDate;
     if (latestEventTimestamp != null) {
       latestEventDate = TimeUtil.formatDate(latestEventTimestamp);
@@ -105,14 +108,15 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         createdById,
         user.getFirstName(),
         user.getLastName(),
-        dateTimestamp,
+        dateColumnInfo.getDateStatus(),
         date,
-        application.getCaseReference(),
+        dateColumnInfo.getDateTimestamp(),
+        appData.getCaseReference(),
         application.getApplicantReference(),
         applicationProgress,
-        applicationStatus,
+        statusColumnInfo.getApplicationStatus(),
         applicationStatusDate,
-        applicationStatusTimestamp,
+        statusColumnInfo.getApplicationStatusTimestamp(),
         destination,
         notificationViews,
         forYourAttentionNotificationViews,
@@ -120,88 +124,103 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         latestEventDate);
   }
 
-  private String getApplicationStatusDate(AppData appData, StatusUpdate maxStatusUpdate, long applicationStatusTimestamp) {
-    if (appData.getWithdrawalApproval() != null || appData.getStopNotification() != null || (maxStatusUpdate != null && StatusType.COMPLETE == maxStatusUpdate.getStatusType())) {
-      return "On " + TimeUtil.formatDate(applicationStatusTimestamp);
+  private ApplicationProgress getApplicationProgress(AppData appData) {
+    if (!appData.getCaseDataList().isEmpty()) {
+      CaseData caseData = ApplicationUtil.getMostRecentCase(appData);
+      if (caseData.getOutcome() != null || caseData.getStopNotification() != null) {
+        return ApplicationProgress.COMPLETED;
+      } else {
+        return ApplicationProgress.CURRENT;
+      }
     } else {
-      return "Since " + TimeUtil.formatDate(applicationStatusTimestamp);
+      StatusUpdate maxStatusUpdate = ApplicationUtil.getMaxStatusUpdate(appData.getStatusUpdates());
+      if (appData.getWithdrawalApproval() != null || appData.getStopNotification() != null || (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE)) {
+        return ApplicationProgress.COMPLETED;
+      } else if (appData.getApplication().getSubmittedTimestamp() != null) {
+        return ApplicationProgress.CURRENT;
+      } else {
+        return ApplicationProgress.DRAFT;
+      }
     }
   }
 
-  private Long getApplicationStatusTimestamp(AppData appData, StatusUpdate maxStatusUpdate) {
-    if (appData.getWithdrawalApproval() != null) {
-      return appData.getWithdrawalApproval().getCreatedTimestamp();
-    } else if (appData.getStopNotification() != null) {
-      return appData.getStopNotification().getCreatedTimestamp();
-    } else if (maxStatusUpdate != null) {
-      return maxStatusUpdate.getCreatedTimestamp();
-    } else if (appData.getApplication().getSubmittedTimestamp() != null) {
-      return appData.getApplication().getSubmittedTimestamp();
+  private DateColumnInfo getDateColumnInfo(AppData appData) {
+    if (!appData.getCaseDataList().isEmpty()) {
+      CaseData caseData = ApplicationUtil.getMostRecentCase(appData);
+      if (caseData.getOutcome() != null) {
+        return new DateColumnInfo(ApplicationUtil.COMPLETED, caseData.getOutcome().getCreatedTimestamp());
+      } else if (caseData.getStopNotification() != null) {
+        return new DateColumnInfo(ApplicationUtil.COMPLETED, caseData.getStopNotification().getCreatedTimestamp());
+      } else {
+        return new DateColumnInfo(ApplicationUtil.RE_OPENED, caseData.getCaseDetails().getCreatedTimestamp());
+      }
     } else {
-      return appData.getApplication().getCreatedTimestamp();
-    }
-  }
-
-  private ApplicationProgress getApplicationProgress(AppData appData, StatusUpdate maxStatusUpdate) {
-    if (appData.getWithdrawalApproval() != null || appData.getStopNotification() != null || (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE)) {
-      return ApplicationProgress.COMPLETED;
-    } else if (appData.getApplication().getSubmittedTimestamp() != null) {
-      return ApplicationProgress.CURRENT;
-    } else {
-      return ApplicationProgress.DRAFT;
-    }
-  }
-
-  private Long getDateTimestamp(StatusUpdate maxStatusUpdate, AppData appData) {
-    if (appData.getWithdrawalApproval() != null) {
-      return appData.getWithdrawalApproval().getCreatedTimestamp();
-    } else if (appData.getStopNotification() != null) {
-      return appData.getStopNotification().getCreatedTimestamp();
-    } else if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
-      return maxStatusUpdate.getCreatedTimestamp();
-    } else if (appData.getApplication().getSubmittedTimestamp() != null) {
-      return appData.getApplication().getSubmittedTimestamp();
-    } else {
-      return appData.getApplication().getCreatedTimestamp();
+      StatusUpdate maxStatusUpdate = ApplicationUtil.getMaxStatusUpdate(appData.getStatusUpdates());
+      if (appData.getWithdrawalApproval() != null) {
+        return new DateColumnInfo(ApplicationUtil.COMPLETED, appData.getWithdrawalApproval().getCreatedTimestamp());
+      } else if (appData.getStopNotification() != null) {
+        return new DateColumnInfo(ApplicationUtil.COMPLETED, appData.getStopNotification().getCreatedTimestamp());
+      } else if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
+        return new DateColumnInfo(ApplicationUtil.SUBMITTED, maxStatusUpdate.getCreatedTimestamp());
+      } else if (appData.getApplication().getSubmittedTimestamp() != null) {
+        return new DateColumnInfo(ApplicationUtil.SUBMITTED, appData.getApplication().getSubmittedTimestamp());
+      } else {
+        return new DateColumnInfo(ApplicationUtil.CREATED, appData.getApplication().getCreatedTimestamp());
+      }
     }
   }
 
   private List<NotificationView> getNotificationViews(AppData appData, ReadData readData, ApplicationProgress applicationProgress) {
+    String appId = appData.getApplication().getId();
     List<NotificationView> notificationViews = new ArrayList<>();
-    ApplicationUtil.getOpenRfiList(appData)
-        .stream()
+    List<Rfi> openRfiList;
+    if (!appData.getCaseDataList().isEmpty()) {
+      CaseData caseData = ApplicationUtil.getMostRecentCase(appData);
+      openRfiList = ApplicationUtil.getOpenRfiList(caseData);
+    } else {
+      openRfiList = ApplicationUtil.getOpenRfiList(appData);
+    }
+    openRfiList.stream()
         .sorted(Comparators.RFI_CREATED)
         .findFirst()
         .ifPresent(rfi -> {
-          NotificationView notificationView = getRfiNotificationView(rfi);
+          NotificationView notificationView = getRfiNotificationView(appId, rfi);
           notificationViews.add(notificationView);
         });
-    ApplicationUtil.getOpenWithdrawalRequests(appData).stream()
-        .findFirst()
-        .ifPresent(withdrawalRequest -> {
-          String link = LinkUtil.getWithdrawalRequestMessageLink(withdrawalRequest);
-          NotificationView notificationView = new NotificationView(EventLabelType.WITHDRAWAL_REQUESTED, "Withdrawal requested", link, null, null);
-          notificationViews.add(notificationView);
-        });
-    appData.getWithdrawalRejections().stream()
-        .filter(withdrawalRejection -> readData.getUnreadWithdrawalRejectionIds().contains(withdrawalRejection.getId()))
-        .sorted(Comparators.WITHDRAWAL_REJECTION_CREATED_REVERSED)
-        .findFirst()
-        .ifPresent(withdrawalRejection -> {
-          NotificationView notificationView = getWithdrawalRejectedNotificationView(withdrawalRejection);
-          notificationViews.add(notificationView);
-        });
-    if (readData.getUnreadWithdrawalApprovalId() != null) {
-      NotificationView notificationView = getWithdrawalApprovalNotificationView(appData);
-      notificationViews.add(notificationView);
+    if (appData.getCaseDataList().isEmpty()) {
+      if (applicationProgress != ApplicationProgress.COMPLETED) {
+        ApplicationUtil.getOpenWithdrawalRequests(appData).stream()
+            .findFirst()
+            .ifPresent(withdrawalRequest -> {
+              NotificationView notificationView = getWithdrawalRequestedNotificationView(withdrawalRequest);
+              notificationViews.add(notificationView);
+            });
+      }
+      appData.getWithdrawalRejections().stream()
+          .filter(withdrawalRejection -> readData.getUnreadWithdrawalRejectionIds().contains(withdrawalRejection.getId()))
+          .sorted(Comparators.WITHDRAWAL_REJECTION_CREATED_REVERSED)
+          .findFirst()
+          .ifPresent(withdrawalRejection -> {
+            NotificationView notificationView = getWithdrawalRejectedNotificationView(withdrawalRejection);
+            notificationViews.add(notificationView);
+          });
+      if (readData.getUnreadWithdrawalApprovalId() != null) {
+        NotificationView notificationView = getWithdrawalApprovalNotificationView(appData);
+        notificationViews.add(notificationView);
+      }
     }
     if (applicationProgress != ApplicationProgress.COMPLETED) {
-      appData.getInformNotifications().stream()
+      List<Notification> informNotifications;
+      if (!appData.getCaseDataList().isEmpty()) {
+        informNotifications = ApplicationUtil.getMostRecentCase(appData).getInformNotifications();
+      } else {
+        informNotifications = appData.getInformNotifications();
+      }
+      informNotifications.stream()
           .sorted(Comparators.NOTIFICATION_CREATED)
           .findFirst()
           .ifPresent(notification -> {
-            String link = LinkUtil.getInformLettersLink(notification.getAppId());
-            NotificationView notificationView = new NotificationView(EventLabelType.INFORM_ISSUED, "Inform letter issued", link, null, null);
+            NotificationView notificationView = getInformNotificationView(appId, notification);
             notificationViews.add(notificationView);
           });
     }
@@ -210,32 +229,30 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   private AttentionTabNotificationViews getAttentionTabNotificationViews(String userId, AppData appData, ReadData readData) {
-    List<NotificationView> rfiNotificationViews = ApplicationUtil.getOpenRfiList(appData).stream()
+    String appId = appData.getApplication().getId();
+    List<NotificationView> rfiNotificationViews = ApplicationUtil.getAllOpenRfiList(appData).stream()
         .filter(rfi -> rfi.getRecipientUserIds().contains(userId))
-        .map(this::getRfiNotificationView)
+        .map(rfi -> getRfiNotificationView(appId, rfi))
         .collect(Collectors.toList());
-    NotificationView stopNotificationView;
-    if (readData.getUnreadStopNotificationId() != null) {
-      stopNotificationView = getStopNotificationView(appData.getStopNotification());
-    } else {
-      stopNotificationView = null;
-    }
+    List<NotificationView> stopNotificationViews = ApplicationUtil.getAllStopNotifications(appData).stream()
+        .filter(notification -> readData.getUnreadStopNotificationIds().contains(notification.getId()))
+        .map(notification -> getStopNotificationView(appId, notification))
+        .collect(Collectors.toList());
     List<NotificationView> withdrawalRejectionNotificationViews = appData.getWithdrawalRejections().stream()
         .filter(withdrawalRejection -> readData.getUnreadWithdrawalRejectionIds().contains(withdrawalRejection.getId()))
         .map(this::getWithdrawalRejectedNotificationView)
         .collect(Collectors.toList());
-    List<NotificationView> informNotificationViews =
-        appData.getInformNotifications().stream()
-            .filter(notification -> readData.getUnreadInformNotificationIds().contains(notification.getId()))
-            .map(this::getInformNotificationView)
-            .collect(Collectors.toList());
-    List<NotificationView> outcomeNotificationViews = appData.getOutcomes().stream()
-        .filter(outcome -> readData.getUnreadOutcomeIds().contains(outcome.getId()))
-        .map(this::getOutcomeNotificationView)
+    List<NotificationView> informNotificationViews = ApplicationUtil.getAllInformNotifications(appData).stream()
+        .filter(notification -> readData.getUnreadInformNotificationIds().contains(notification.getId()))
+        .map(notification -> getInformNotificationView(appId, notification))
+        .collect(Collectors.toList());
+    List<NotificationView> outcomeNotificationViews = ApplicationUtil.getAllOutcomes(appData).stream()
+        .filter(outcome -> readData.getUnreadOutcomeIds().contains(appData.getOutcome().getId()))
+        .map(outcome -> getOutcomeNotificationView(appId, outcome))
         .collect(Collectors.toList());
     NotificationView delayNotificationView;
     if (readData.getUnreadDelayNotificationId() != null) {
-      delayNotificationView = getDelayNotificationView(appData.getDelayNotification());
+      delayNotificationView = getDelayNotificationView(appId, appData.getDelayNotification());
     } else {
       delayNotificationView = null;
     }
@@ -249,73 +266,68 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         withdrawalRejectionNotificationViews,
         informNotificationViews,
         outcomeNotificationViews,
-        stopNotificationView,
+        stopNotificationViews,
         withdrawalApprovalNotificationView,
         delayNotificationView);
   }
 
-  private Long getLatestEventTimestamp(AttentionTabNotificationViews attentionTabNotificationViews) {
+  private Long getMostRecentEventTimestamp(AttentionTabNotificationViews views) {
     List<NotificationView> notifications = new ArrayList<>();
-    notifications.addAll(attentionTabNotificationViews.getRfiNotificationViews());
-    notifications.addAll(attentionTabNotificationViews.getWithdrawalRejectionNotificationViews());
-    notifications.addAll(attentionTabNotificationViews.getInformNotificationViews());
-    notifications.addAll(attentionTabNotificationViews.getOutcomeNotificationViews());
-    if (attentionTabNotificationViews.getStopNotificationView() != null) {
-      notifications.add(attentionTabNotificationViews.getStopNotificationView());
-    }
-    if (attentionTabNotificationViews.getDelayNotificationView() != null) {
-      notifications.add(attentionTabNotificationViews.getDelayNotificationView());
-    }
-    if (attentionTabNotificationViews.getWithdrawalApprovalNotificationView() != null) {
-      notifications.add(attentionTabNotificationViews.getWithdrawalApprovalNotificationView());
-    }
-    notifications.sort(Comparators.NOTIFICATION_VIEW_CREATED_REVERSED);
+    notifications.addAll(views.getRfiNotificationViews());
+    notifications.addAll(views.getWithdrawalRejectionNotificationViews());
+    notifications.addAll(views.getInformNotificationViews());
+    notifications.addAll(views.getStopNotificationViews());
+    notifications.addAll(views.getOutcomeNotificationViews());
+    CollectionUtils.addIgnoreNull(notifications, views.getDelayNotificationView());
+    CollectionUtils.addIgnoreNull(notifications, views.getWithdrawalApprovalNotificationView());
     if (notifications.isEmpty()) {
       return null;
     } else {
-      return notifications.get(0).getCreatedTimestamp();
+      return Collections.max(notifications, Comparators.NOTIFICATION_VIEW_CREATED).getCreatedTimestamp();
     }
   }
 
-  private List<NotificationView> getForYourAttentionNotificationViews(AttentionTabNotificationViews attentionTabNotificationViews) {
+  private List<NotificationView> getForYourAttentionNotificationViews(AttentionTabNotificationViews views) {
     List<NotificationView> notificationViews = new ArrayList<>();
-    attentionTabNotificationViews.getRfiNotificationViews().stream()
+    views.getRfiNotificationViews().stream()
         .sorted(Comparators.NOTIFICATION_VIEW_CREATED)
         .findFirst()
         .ifPresent(notificationViews::add);
-    attentionTabNotificationViews.getWithdrawalRejectionNotificationViews().stream()
+    views.getWithdrawalRejectionNotificationViews().stream()
         .sorted(Comparators.NOTIFICATION_VIEW_CREATED_REVERSED)
         .findFirst()
         .ifPresent(notificationViews::add);
-    attentionTabNotificationViews.getInformNotificationViews().stream()
+    views.getInformNotificationViews().stream()
         .sorted(Comparators.NOTIFICATION_VIEW_CREATED_REVERSED)
         .findFirst()
         .ifPresent(notificationViews::add);
-    attentionTabNotificationViews.getOutcomeNotificationViews().stream()
+    views.getOutcomeNotificationViews().stream()
         .sorted(Comparators.NOTIFICATION_VIEW_CREATED_REVERSED)
         .findFirst()
         .ifPresent(notificationViews::add);
-    if (attentionTabNotificationViews.getStopNotificationView() != null) {
-      notificationViews.add(attentionTabNotificationViews.getStopNotificationView());
-    }
-    if (attentionTabNotificationViews.getDelayNotificationView() != null) {
-      notificationViews.add(attentionTabNotificationViews.getDelayNotificationView());
-    }
-    if (attentionTabNotificationViews.getWithdrawalApprovalNotificationView() != null) {
-      notificationViews.add(attentionTabNotificationViews.getWithdrawalApprovalNotificationView());
-    }
+    views.getStopNotificationViews().stream()
+        .sorted(Comparators.NOTIFICATION_VIEW_CREATED_REVERSED)
+        .findFirst()
+        .ifPresent(notificationViews::add);
+    CollectionUtils.addIgnoreNull(notificationViews, views.getDelayNotificationView());
+    CollectionUtils.addIgnoreNull(notificationViews, views.getWithdrawalApprovalNotificationView());
     notificationViews.sort(Comparators.LINK_TEXT);
     return notificationViews;
   }
 
-  private NotificationView getRfiNotificationView(Rfi rfi) {
-    String link = controllers.routes.RfiTabController.showRfiTab(rfi.getAppId()).withFragment(rfi.getId()).toString();
+  private NotificationView getRfiNotificationView(String appId, Rfi rfi) {
+    String link = controllers.routes.RfiTabController.showRfiTab(appId).withFragment(rfi.getId()).toString();
     return new NotificationView(EventLabelType.RFI, "Request for information", link, null, rfi.getCreatedTimestamp());
   }
 
-  private NotificationView getStopNotificationView(Notification notification) {
-    String link = LinkUtil.getStoppedMessageLink(notification);
+  private NotificationView getStopNotificationView(String appId, Notification notification) {
+    String link = LinkUtil.getStoppedMessageLink(appId, notification);
     return new NotificationView(EventLabelType.STOPPED, "View reason for stop", link, null, notification.getCreatedTimestamp());
+  }
+
+  private NotificationView getWithdrawalRequestedNotificationView(WithdrawalRequest withdrawalRequest) {
+    String link = LinkUtil.getWithdrawalRequestMessageLink(withdrawalRequest);
+    return new NotificationView(EventLabelType.WITHDRAWAL_REQUESTED, "Withdrawal requested", link, null, withdrawalRequest.getCreatedTimestamp());
   }
 
   private NotificationView getWithdrawalApprovalNotificationView(AppData appData) {
@@ -328,18 +340,18 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     return new NotificationView(EventLabelType.WITHDRAWAL_REJECTED, "Withdrawal rejected", link, null, withdrawalRejection.getCreatedTimestamp());
   }
 
-  private NotificationView getInformNotificationView(Notification notification) {
-    String link = LinkUtil.getInformLettersLink(notification.getAppId());
+  private NotificationView getInformNotificationView(String appId, Notification notification) {
+    String link = LinkUtil.getInformLettersLink(appId);
     return new NotificationView(EventLabelType.INFORM_ISSUED, "Inform letter issued", link, null, notification.getCreatedTimestamp());
   }
 
-  private NotificationView getOutcomeNotificationView(Outcome outcome) {
-    String link = LinkUtil.getOutcomeDocumentsLink(outcome.getAppId());
-    return new NotificationView(EventLabelType.DECISION, "View outcome documents", link, null, System.currentTimeMillis());
+  private NotificationView getOutcomeNotificationView(String appId, Outcome outcome) {
+    String link = LinkUtil.getOutcomeDocumentsLink(appId);
+    return new NotificationView(EventLabelType.DECISION, "View outcome documents", link, null, outcome.getCreatedTimestamp());
   }
 
-  private NotificationView getDelayNotificationView(Notification notification) {
-    String link = LinkUtil.getDelayedMessageLink(notification);
+  private NotificationView getDelayNotificationView(String appId, Notification notification) {
+    String link = LinkUtil.getDelayedMessageLink(appId, notification);
     return new NotificationView(EventLabelType.DELAYED, "Apology for delay received", link, null, notification.getCreatedTimestamp());
   }
 

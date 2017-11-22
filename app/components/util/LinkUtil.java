@@ -1,7 +1,7 @@
 package components.util;
 
 import controllers.routes;
-import models.Amendment;
+import models.AmendmentRequest;
 import models.Notification;
 import models.WithdrawalApproval;
 import models.WithdrawalRejection;
@@ -14,13 +14,13 @@ public class LinkUtil {
     return routes.OutcomeTabController.showOutcomeTab(appId).withFragment("outcome-documents").toString();
   }
 
-  public static String getAmendmentMessageAnchor(Amendment amendment) {
-    return MessageType.AMENDMENT.toString() + "-" + amendment.getId();
+  public static String getAmendmentRequestMessageAnchor(AmendmentRequest amendmentRequest) {
+    return MessageType.AMENDMENT_REQUESTED.toString() + "-" + amendmentRequest.getId();
   }
 
-  public static String getAmendmentMessageLink(Amendment amendment) {
-    return routes.MessageTabController.showMessages(amendment.getAppId())
-        .withFragment(getAmendmentMessageAnchor(amendment))
+  public static String getAmendmentRequestMessageLink(AmendmentRequest amendmentRequest) {
+    return routes.MessageTabController.showMessages(amendmentRequest.getAppId())
+        .withFragment(getAmendmentRequestMessageAnchor(amendmentRequest))
         .toString();
 
   }
@@ -29,8 +29,8 @@ public class LinkUtil {
     return MessageType.STOPPED.toString() + "-" + notification.getId();
   }
 
-  public static String getStoppedMessageLink(Notification notification) {
-    return routes.MessageTabController.showMessages(notification.getAppId())
+  public static String getStoppedMessageLink(String appId, Notification notification) {
+    return routes.MessageTabController.showMessages(appId)
         .withFragment(getStoppedMessageAnchor(notification))
         .toString();
   }
@@ -39,8 +39,8 @@ public class LinkUtil {
     return MessageType.DELAYED.toString() + "-" + notification.getId();
   }
 
-  public static String getDelayedMessageLink(Notification notification) {
-    return routes.MessageTabController.showMessages(notification.getAppId())
+  public static String getDelayedMessageLink(String appId, Notification notification) {
+    return routes.MessageTabController.showMessages(appId)
         .withFragment(getDelayedMessageAnchor(notification))
         .toString();
   }

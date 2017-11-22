@@ -1,19 +1,16 @@
 package components.dao;
 
-import models.Outcome;
-
 import java.util.List;
+import models.Outcome;
 
 public interface OutcomeDao {
 
-  List<Outcome> getOutcomes(List<String> appIds);
-
-  List<Outcome> getOutcomes(String appId);
+  List<Outcome> getOutcomes(List<String> caseReferences);
 
   void insertOutcome(Outcome outcome);
 
   void deleteAllOutcomes();
 
-  void deleteOutcomesByAppId(String appId);
+  void deleteOutcome(String caseReference);
 
 }

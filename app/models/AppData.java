@@ -5,6 +5,7 @@ import java.util.List;
 public class AppData {
 
   private final Application application;
+  private final String caseReference;
   private final List<StatusUpdate> statusUpdates;
   private final List<WithdrawalRequest> withdrawalRequests;
   private final List<WithdrawalRejection> withdrawalRejections;
@@ -15,11 +16,13 @@ public class AppData {
   private final Notification delayNotification;
   private final Notification stopNotification;
   private final List<Notification> informNotifications;
-  private final List<Outcome> outcomes;
-  private final List<Amendment> amendments;
+  private final Outcome outcome;
+  private final List<AmendmentRequest> amendmentRequests;
+  private final List<CaseData> caseDataList;
 
-  public AppData(Application application, List<StatusUpdate> statusUpdates, List<WithdrawalRequest> withdrawalRequests, List<WithdrawalRejection> withdrawalRejections, WithdrawalApproval withdrawalApproval, List<Rfi> rfiList, List<RfiReply> rfiReplies, List<RfiWithdrawal> rfiWithdrawals, Notification delayNotification, Notification stopNotification, List<Notification> informNotifications, List<Outcome> outcomes, List<Amendment> amendments) {
+  public AppData(Application application, String caseReference, List<StatusUpdate> statusUpdates, List<WithdrawalRequest> withdrawalRequests, List<WithdrawalRejection> withdrawalRejections, WithdrawalApproval withdrawalApproval, List<Rfi> rfiList, List<RfiReply> rfiReplies, List<RfiWithdrawal> rfiWithdrawals, Notification delayNotification, Notification stopNotification, List<Notification> informNotifications, Outcome outcome, List<AmendmentRequest> amendmentRequests, List<CaseData> caseDataList) {
     this.application = application;
+    this.caseReference = caseReference;
     this.statusUpdates = statusUpdates;
     this.withdrawalRequests = withdrawalRequests;
     this.withdrawalRejections = withdrawalRejections;
@@ -30,12 +33,17 @@ public class AppData {
     this.delayNotification = delayNotification;
     this.stopNotification = stopNotification;
     this.informNotifications = informNotifications;
-    this.outcomes = outcomes;
-    this.amendments = amendments;
+    this.outcome = outcome;
+    this.amendmentRequests = amendmentRequests;
+    this.caseDataList = caseDataList;
   }
 
   public Application getApplication() {
     return application;
+  }
+
+  public String getCaseReference() {
+    return caseReference;
   }
 
   public List<StatusUpdate> getStatusUpdates() {
@@ -78,12 +86,16 @@ public class AppData {
     return informNotifications;
   }
 
-  public List<Outcome> getOutcomes() {
-    return outcomes;
+  public Outcome getOutcome() {
+    return outcome;
   }
 
-  public List<Amendment> getAmendments() {
-    return amendments;
+  public List<AmendmentRequest> getAmendmentRequests() {
+    return amendmentRequests;
+  }
+
+  public List<CaseData> getCaseDataList() {
+    return caseDataList;
   }
 
 }
