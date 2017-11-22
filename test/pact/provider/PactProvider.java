@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import uk.gov.bis.lite.exporterdashboard.api.AmendmentMessage;
 import uk.gov.bis.lite.exporterdashboard.api.DashboardDocument;
@@ -22,7 +21,6 @@ import uk.gov.bis.lite.exporterdashboard.api.RfiWithdrawalReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestAcceptReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestMessage;
 
-@Ignore
 @RunWith(PactRunner.class)
 @Provider("lite-exporter-dashboard")
 @PactBroker(host = "pact-broker.mgmt.licensing.service.trade.gov.uk.test", port = "80")
@@ -88,28 +86,10 @@ public class PactProvider {
     return MAPPER.writeValueAsString(outcomeReadMessage);
   }
 
-  @PactVerifyProvider("a stop notification was read")
-  public String verifyStopNotificationReadMessage() throws JsonProcessingException {
-    NotificationReadMessage notificationReadMessage = new NotificationReadMessage();
-    notificationReadMessage.setNotificationId("stopNotificationId");
-    notificationReadMessage.setCreatedByUserId("createdByUserId");
-    notificationReadMessage.setAppId("appId");
-    return MAPPER.writeValueAsString(notificationReadMessage);
-  }
-
-  @PactVerifyProvider("a delay notification was read")
-  public String verifyDelayNotificationReadMessage() throws JsonProcessingException {
-    NotificationReadMessage notificationReadMessage = new NotificationReadMessage();
-    notificationReadMessage.setNotificationId("delayNotificationId");
-    notificationReadMessage.setCreatedByUserId("createdByUserId");
-    notificationReadMessage.setAppId("appId");
-    return MAPPER.writeValueAsString(notificationReadMessage);
-  }
-
-  @PactVerifyProvider("an inform notification was read")
+  @PactVerifyProvider("a notification was read")
   public String verifyInformNotificationReadMessage() throws JsonProcessingException {
     NotificationReadMessage notificationReadMessage = new NotificationReadMessage();
-    notificationReadMessage.setNotificationId("informNotificationId");
+    notificationReadMessage.setNotificationId("notificationId");
     notificationReadMessage.setCreatedByUserId("createdByUserId");
     notificationReadMessage.setAppId("appId");
     return MAPPER.writeValueAsString(notificationReadMessage);

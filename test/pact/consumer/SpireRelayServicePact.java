@@ -25,6 +25,7 @@ import components.message.ConsumerRoutingKey;
 import components.message.MessageConsumer;
 import components.message.MessageConsumerImpl;
 import java.io.IOException;
+import models.CaseDetails;
 import models.Document;
 import models.Notification;
 import models.NotificationType;
@@ -67,9 +68,9 @@ public class SpireRelayServicePact {
   @Pact(provider = PROVIDER, consumer = CONSUMER)
   public MessagePact createStatusUpdate(MessagePactBuilder builder) {
     PactDslJsonBody body = new PactDslJsonBody()
-        .stringType(("id"), "statusUpdateId")
-        .stringValue("appId", "appId")
-        .stringValue("statusCode", "INITIAL_CHECKS")
+        .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
+        .stringType("statusCode", "INITIAL_CHECKS")
         .integerType("createdTimestamp", 123456789L);
     return builder.expectsToReceive("a status update message with status code INITIAL_CHECKS")
         .withContent(body)
@@ -163,7 +164,7 @@ public class SpireRelayServicePact {
         .array("recipientUserIds")
         .stringType("recipient")
         .closeArray();
-    return builder.expectsToReceive("an inform message")
+    return builder.expectsToReceive("an rfi withdrawal")
         .withContent(dslPart)
         .toPact();
   }
@@ -184,6 +185,7 @@ public class SpireRelayServicePact {
         .stringType("id", "documentId")
         .stringType("documentType", "LICENCE_DOCUMENT")
         .stringType("licenceRef", "licenceRef")
+        .stringType("licenceExpiry","2018-01-04")
         .stringType("filename", "filename")
         .stringType("url", "url")
         .closeObject()
@@ -209,6 +211,7 @@ public class SpireRelayServicePact {
         .stringType("id", "documentId")
         .stringType("documentType", "LICENCE_DOCUMENT")
         .stringType("licenceRef", "licenceRef")
+        .stringType("licenceExpiry","2018-01-04")
         .stringType("filename", "filename")
         .stringType("url", "url")
         .closeObject()
@@ -225,6 +228,19 @@ public class SpireRelayServicePact {
         .stringType("createdByUserId", "createdByUserId")
         .stringType("message", "This is a withdrawal rejection.");
     return builder.expectsToReceive("a withdrawal rejection")
+        .withContent(dslPart)
+        .toPact();
+  }
+
+  @Pact(provider = PROVIDER, consumer = CONSUMER)
+  public MessagePact createCase(MessagePactBuilder builder) {
+    DslPart dslPart = new PactDslJsonBody()
+        .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
+        .stringType("createdByUserId", "createdByUserId")
+        .integerType("createdTimestamp", 123456789L);
+
+    return builder.expectsToReceive("case created")
         .withContent(dslPart)
         .toPact();
   }
@@ -399,6 +415,22 @@ public class SpireRelayServicePact {
     assertThat(withdrawalRejection.getAppId()).isEqualTo("appId");
     assertThat(withdrawalRejection.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(withdrawalRejection.getMessage()).isEqualTo("This is a withdrawal rejection.");
+  }
+
+
+  @Test
+  @PactVerification(value = PROVIDER, fragment = "createCase")
+  public void receiveCaseCreate() throws Exception {
+    handleDelivery(ConsumerRoutingKey.CASE_CREATE);
+    verify(channel).basicAck(0, false);
+    ArgumentCaptor<CaseDetails> captor = ArgumentCaptor.forClass(CaseDetails.class);
+    verify(caseDetailsDao).insert(captor.capture());
+
+    CaseDetails caseDetails = captor.getValue();
+    assertThat(caseDetails.getAppId()).isEqualTo("appId");
+    assertThat(caseDetails.getCaseReference()).isEqualTo("caseRef");
+    assertThat(caseDetails.getCreatedByUserId()).isEqualTo("createdByUserId");
+    assertThat(caseDetails.getCreatedTimestamp()).isEqualTo(123456789L);
   }
 
   private void handleDelivery(ConsumerRoutingKey consumerRoutingKey) throws IOException {
