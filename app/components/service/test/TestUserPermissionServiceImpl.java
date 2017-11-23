@@ -14,7 +14,7 @@ import uk.gov.bis.lite.user.api.view.SiteView;
 import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
 
 public class TestUserPermissionServiceImpl extends UserPermissionServiceImpl {
-
+  
   @Inject
   public TestUserPermissionServiceImpl(@Named("userServiceCacheExpiryMinutes") Long cacheExpireMinutes,
                                        UserServiceClient userServiceClient) {
@@ -23,8 +23,10 @@ public class TestUserPermissionServiceImpl extends UserPermissionServiceImpl {
 
   @Override
   protected UserPrivilegesView getUserPrivilegesView(String userId) {
-    // fake call just to make sure client call works
-    super.getUserPrivilegesView(userId);
+    // fake call just to make sure client call works - currently doesn't work for admin user (user with id 1)
+    if (!TestDataServiceImpl.ADMIN.equals(userId)) {
+      super.getUserPrivilegesView(userId);
+    }
 
     // fake data
     UserPrivilegesView userPrivilegesView = new UserPrivilegesView();

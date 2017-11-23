@@ -12,10 +12,13 @@ import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.dsl.PactDslJsonArray;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.model.PactFragment;
+import com.google.common.collect.ImmutableMap;
 import components.client.OgelRegistrationServiceClient;
 import components.client.OgelRegistrationServiceClientImpl;
 import components.exceptions.ServiceException;
 import filters.common.JwtRequestFilter;
+import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,16 +27,13 @@ import play.libs.ws.WS;
 import play.libs.ws.WSClient;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class PermissionsServicePact {
+
   private final static String PROVIDER = "lite-permissions-service";
   private final static String CONSUMER = "lite-exporter-dashboard";
   private static final String USER_ID = "123456";
-  private static final Map<String, String> REQUEST_HEADERS = requestHeaders();
-  private static final Map<String, String> RESPONSE_HEADERS = responseHeaders();
+  private static final String REGISTRATION_REFERENCE = "REG/123";
+  private static final Map<String, String> RESPONSE_HEADERS = ImmutableMap.of("Content-Type", "application/json");
 
   private OgelRegistrationServiceClient client;
 
@@ -47,16 +47,44 @@ public class PermissionsServicePact {
     client = new OgelRegistrationServiceClientImpl(new HttpExecutionContext(Runnable::run), ws, "http://" + mockProvider.getConfig().getHostname() + ":" + mockProvider.getConfig().getPort(), 10000, jwtRequestFilter);
   }
 
-  private static Map<String, String> requestHeaders() {
-    Map<String, String> headers = new HashMap<>();
-    headers.putAll(JWT_AUTHORIZATION_HEADER);
-    return headers;
+  @Pact(provider = PROVIDER, consumer = CONSUMER)
+  public PactFragment existingRegistration(PactDslWithProvider builder) {
+    DslPart ogelRegistrations = PactDslJsonArray.arrayMaxLike(1)
+        .stringType("siteId", "SITE_1")
+        .stringType("customerId", "CUSTOMER_1")
+        .stringType("registrationReference", REGISTRATION_REFERENCE)
+        .stringType("registrationDate", "2015-01-01")
+        .stringType("status", "EXTANT")
+        .stringType("ogelType", "OGL1")
+        .closeObject();
+
+    return builder
+        .given("OGEL registrations exist for provided user")
+        .uponReceiving("request to get the OGEL registration with the given registration reference for the provided user ID")
+        .path("/ogel-registrations/user/" + USER_ID)
+        .query("registrationReference=" + REGISTRATION_REFERENCE)
+        .method("GET")
+        .headers(JWT_AUTHORIZATION_HEADER)
+        .willRespondWith()
+        .status(200)
+        .headers(RESPONSE_HEADERS)
+        .body(ogelRegistrations)
+        .toFragment();
   }
 
-  private static Map<String, String> responseHeaders() {
-    Map<String, String> headers = new HashMap<>();
-    headers.put("Content-Type", "application/json");
-    return headers;
+  @Pact(provider = PROVIDER, consumer = CONSUMER)
+  public PactFragment noRegistration(PactDslWithProvider builder) {
+    return builder
+        .given("no OGEL registrations exist for provided user")
+        .uponReceiving("request to get the OGEL registration with the given registration reference for the provided user ID")
+        .path("/ogel-registrations/user/" + USER_ID)
+        .query("registrationReference=" + REGISTRATION_REFERENCE)
+        .method("GET")
+        .headers(JWT_AUTHORIZATION_HEADER)
+        .willRespondWith()
+        .status(404)
+        .headers(RESPONSE_HEADERS)
+        .toFragment();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
@@ -74,13 +102,13 @@ public class PermissionsServicePact {
     return builder
         .given("OGEL registrations exist for provided user")
         .uponReceiving("request to get OGEL registrations by user ID")
-          .path("/ogel-registrations/user/" + USER_ID)
-          .method("GET")
-          .headers(REQUEST_HEADERS)
+        .path("/ogel-registrations/user/" + USER_ID)
+        .method("GET")
+        .headers(JWT_AUTHORIZATION_HEADER)
         .willRespondWith()
-          .status(200)
-          .headers(RESPONSE_HEADERS)
-          .body(ogelRegistrations)
+        .status(200)
+        .headers(RESPONSE_HEADERS)
+        .body(ogelRegistrations)
         .toFragment();
   }
 
@@ -91,13 +119,13 @@ public class PermissionsServicePact {
     return builder
         .given("no OGEL registrations exist for provided user")
         .uponReceiving("request to get OGEL registrations by user ID")
-          .path("/ogel-registrations/user/" + USER_ID)
-          .method("GET")
-          .headers(REQUEST_HEADERS)
+        .path("/ogel-registrations/user/" + USER_ID)
+        .method("GET")
+        .headers(JWT_AUTHORIZATION_HEADER)
         .willRespondWith()
-          .status(200)
-          .headers(RESPONSE_HEADERS)
-          .body(emptyArrayBody)
+        .status(200)
+        .headers(RESPONSE_HEADERS)
+        .body(emptyArrayBody)
         .toFragment();
   }
 
@@ -107,13 +135,34 @@ public class PermissionsServicePact {
     return builder
         .given("provided user does not exist")
         .uponReceiving("request to get OGEL registrations by user ID")
-          .path("/ogel-registrations/user/" + USER_ID)
-          .method("GET")
-          .headers(JWT_AUTHORIZATION_HEADER)
+        .path("/ogel-registrations/user/" + USER_ID)
+        .method("GET")
+        .headers(JWT_AUTHORIZATION_HEADER)
         .willRespondWith()
-          .status(404)
-          .headers(RESPONSE_HEADERS)
+        .status(404)
+        .headers(RESPONSE_HEADERS)
         .toFragment();
+  }
+
+  @Test
+  @PactVerification(value = PROVIDER, fragment = "existingRegistration")
+  public void existingRegistrationPact() {
+    OgelRegistrationView registration = client.getOgelRegistration(USER_ID, REGISTRATION_REFERENCE);
+    assertThat(registration).isNotNull();
+    assertThat(registration.getCustomerId()).isEqualTo("CUSTOMER_1");
+    assertThat(registration.getSiteId()).isEqualTo("SITE_1");
+    assertThat(registration.getRegistrationReference()).isEqualTo(REGISTRATION_REFERENCE);
+    assertThat(registration.getRegistrationDate()).isEqualTo("2015-01-01");
+    assertThat(registration.getStatus()).isEqualTo(OgelRegistrationView.Status.EXTANT);
+    assertThat(registration.getOgelType()).isEqualTo("OGL1");
+  }
+
+  @Test
+  @PactVerification(value = PROVIDER, fragment = "noRegistration")
+  public void noRegistrationPact() {
+    assertThatThrownBy(() -> client.getOgelRegistration(USER_ID, REGISTRATION_REFERENCE))
+        .isInstanceOf(ServiceException.class)
+        .hasMessage("Unable to get ogel registration with user id " + USER_ID + " and registration reference " + REGISTRATION_REFERENCE);
   }
 
   @Test

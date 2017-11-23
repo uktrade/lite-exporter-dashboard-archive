@@ -7,12 +7,11 @@ import components.service.UserService;
 import components.service.test.TestDataServiceImpl;
 import components.util.TestUtil;
 import filters.common.JwtRequestFilter;
+import java.util.ArrayList;
+import java.util.List;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TestOgelRegistrationServiceClientImpl extends OgelRegistrationServiceClientImpl {
 
@@ -36,10 +35,10 @@ public class TestOgelRegistrationServiceClientImpl extends OgelRegistrationServi
   // Applicant3: N Y
   @Override
   public List<OgelRegistrationView> getOgelRegistrations(String userId) {
-    if ("1".equals(userId) || TestDataServiceImpl.APPLICANT_ID.equals(userId)) {
+    if (TestDataServiceImpl.ADMIN.equals(userId) || TestDataServiceImpl.APPLICANT_ID.equals(userId)) {
       return new ArrayList<>();
     } else {
-      List<OgelRegistrationView> ogelRegistrationViews = super.getOgelRegistrations(TestDataServiceImpl.APPLICANT_ID);
+      List<OgelRegistrationView> ogelRegistrationViews = super.getOgelRegistrations(userId);
       ogelRegistrationViews.forEach(ogelRegistrationView -> {
         String wrapCustomerId = TestUtil.wrapCustomerId(userService.getCurrentUserId(), ogelRegistrationView.getCustomerId());
         ogelRegistrationView.setCustomerId(wrapCustomerId);
