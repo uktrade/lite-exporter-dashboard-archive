@@ -68,9 +68,10 @@ import org.apache.commons.lang3.RandomUtils;
 
 public class TestDataServiceImpl implements TestDataService {
 
+  public static final String ADMIN = "1";
   public static final String APPLICANT_ID = "24492";
   private static final String APPLICANT_TWO_ID = "24493";
-  private static final String APPLICANT_THREE_ID = "24494";
+  public static final String APPLICANT_THREE_ID = "24494";
   private static final List<String> RECIPIENTS = Arrays.asList(APPLICANT_ID, APPLICANT_TWO_ID, APPLICANT_THREE_ID);
 
   public static final String OTHER_APPLICANT_ID = "2";
