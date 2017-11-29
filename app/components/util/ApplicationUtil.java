@@ -1,5 +1,21 @@
 package components.util;
 
+import models.AppData;
+import models.Application;
+import models.CaseData;
+import models.Notification;
+import models.Outcome;
+import models.Rfi;
+import models.RfiReply;
+import models.RfiWithdrawal;
+import models.StatusColumnInfo;
+import models.StatusUpdate;
+import models.WithdrawalRejection;
+import models.WithdrawalRequest;
+import models.enums.StatusType;
+import org.apache.commons.collections4.CollectionUtils;
+import uk.gov.bis.lite.permissions.api.view.LicenceView;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,21 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import models.AppData;
-import models.Application;
-import models.CaseData;
-import models.Notification;
-import models.Outcome;
-import models.Rfi;
-import models.RfiReply;
-import models.RfiWithdrawal;
-import models.Siel;
-import models.StatusColumnInfo;
-import models.StatusUpdate;
-import models.WithdrawalRejection;
-import models.WithdrawalRequest;
-import models.enums.StatusType;
-import org.apache.commons.collections4.CollectionUtils;
 
 public class ApplicationUtil {
 
@@ -117,14 +118,14 @@ public class ApplicationUtil {
     }
   }
 
-  public static String getSielDestinations(Siel siel) {
-    int destinationCount = siel.getDestinationList().size();
-    if (destinationCount == 1) {
-      return siel.getDestinationList().get(0);
-    } else if (destinationCount > 1) {
-      return String.format("%d destinations", destinationCount);
-    } else {
+  public static String getSielDestinations(LicenceView licenceView) {
+    int destinationCount = licenceView.getCountryList().size();
+    if (destinationCount == 0) {
       return "";
+    } else if (destinationCount == 1) {
+      return licenceView.getCountryList().get(0);
+    } else {
+      return String.format("%d destinations", destinationCount);
     }
   }
 

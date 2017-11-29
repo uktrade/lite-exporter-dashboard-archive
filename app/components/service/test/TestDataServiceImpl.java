@@ -10,7 +10,6 @@ import static components.util.RandomIdUtil.outcomeId;
 import static components.util.RandomIdUtil.rfiId;
 import static components.util.RandomIdUtil.rfiReplyId;
 import static components.util.RandomIdUtil.rfiWithdrawalId;
-import static components.util.RandomIdUtil.sielId;
 import static components.util.RandomIdUtil.statusUpdateId;
 import static components.util.RandomIdUtil.stopNotificationId;
 import static components.util.RandomIdUtil.withdrawalApprovalId;
@@ -29,7 +28,6 @@ import components.dao.ReadDao;
 import components.dao.RfiDao;
 import components.dao.RfiReplyDao;
 import components.dao.RfiWithdrawalDao;
-import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
@@ -37,13 +35,7 @@ import components.dao.WithdrawalRequestDao;
 import components.service.UserPermissionService;
 import components.util.RandomIdUtil;
 import components.util.TestUtil;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import components.util.TimeUtil;
 import models.AmendmentRequest;
 import models.Application;
 import models.CaseDetails;
@@ -55,16 +47,26 @@ import models.Outcome;
 import models.Rfi;
 import models.RfiReply;
 import models.RfiWithdrawal;
-import models.Siel;
 import models.StatusUpdate;
 import models.WithdrawalApproval;
 import models.WithdrawalRejection;
 import models.WithdrawalRequest;
 import models.enums.DocumentType;
 import models.enums.DraftType;
-import models.enums.SielStatus;
 import models.enums.StatusType;
 import org.apache.commons.lang3.RandomUtils;
+import uk.gov.bis.lite.permissions.api.view.LicenceView;
+import uk.gov.bis.lite.permissions.api.view.LicenceView.Type;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class TestDataServiceImpl implements TestDataService {
 
@@ -96,13 +98,13 @@ public class TestDataServiceImpl implements TestDataService {
   private static final List<String> CONSIGNEE_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
   private static final List<String> END_USER_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
 
-  private static final String COMPANY_ID_ONE = "SAR1";
+  public static final String COMPANY_ID_ONE = "SAR1";
   private static final String COMPANY_ID_TWO = "SAR2";
   private static final String COMPANY_ID_THREE = "SAR3";
   public static final List<String> COMPANY_IDS = Arrays.asList(TestDataServiceImpl.COMPANY_ID_ONE,
       TestDataServiceImpl.COMPANY_ID_TWO,
       TestDataServiceImpl.COMPANY_ID_THREE);
-  public static final String SITE_ID = "SAR1_SITE1";
+  public static final String SITE_ID = "SITE1";
 
   private static final List<DocumentType> ISSUE_DOCUMENT_TYPES = Arrays.asList(DocumentType.ISSUE_COVER_LETTER,
       DocumentType.ISSUE_LICENCE_DOCUMENT,
@@ -126,7 +128,6 @@ public class TestDataServiceImpl implements TestDataService {
     LICENCE_REFERENCES = Arrays.asList(letter, licence, refusal, nlr);
   }
 
-
   private final RfiDao rfiDao;
   private final StatusUpdateDao statusUpdateDao;
   private final RfiReplyDao rfiReplyDao;
@@ -134,7 +135,6 @@ public class TestDataServiceImpl implements TestDataService {
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final AmendmentRequestDao amendmentRequestDao;
   private final DraftDao draftDao;
-  private final SielDao sielDao;
   private final OutcomeDao outcomeDao;
   private final NotificationDao notificationDao;
   private final WithdrawalRejectionDao withdrawalRejectionDao;
@@ -152,7 +152,6 @@ public class TestDataServiceImpl implements TestDataService {
                              WithdrawalRequestDao withdrawalRequestDao,
                              AmendmentRequestDao amendmentRequestDao,
                              DraftDao draftDao,
-                             SielDao sielDao,
                              OutcomeDao outcomeDao,
                              NotificationDao notificationDao,
                              WithdrawalRejectionDao withdrawalRejectionDao,
@@ -168,7 +167,6 @@ public class TestDataServiceImpl implements TestDataService {
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.amendmentRequestDao = amendmentRequestDao;
     this.draftDao = draftDao;
-    this.sielDao = sielDao;
     this.outcomeDao = outcomeDao;
     this.notificationDao = notificationDao;
     this.withdrawalRejectionDao = withdrawalRejectionDao;
@@ -193,7 +191,6 @@ public class TestDataServiceImpl implements TestDataService {
     createNoCaseOfficerApplication(userId);
     createAdvancedApplication(userId);
     createEmptyQueueApplication(userId);
-    createSiels(userId);
     createWithdrawnOrStoppedApplication(userId, false);
     createWithdrawnOrStoppedApplication(userId, true);
   }
@@ -204,7 +201,6 @@ public class TestDataServiceImpl implements TestDataService {
     createApplications(userId);
     createSecondUserApplications(userId);
     createAdvancedApplication(userId);
-    createSiels(userId);
   }
 
   @Override
@@ -238,7 +234,6 @@ public class TestDataServiceImpl implements TestDataService {
         .collect(Collectors.toList());
     rfiIds.forEach(rfiReplyDao::deleteRfiRepliesByRfiId);
     rfiIds.forEach(rfiWithdrawalDao::deleteRfiWithdrawalByRfiId);
-    customerIds.forEach(sielDao::deleteSielsByCustomerId);
     rfiIds.forEach(rfiId -> draftDao.deleteDraft(rfiId, DraftType.RFI_REPLY));
     appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT_OR_WITHDRAWAL));
     caseReferences.forEach(notificationDao::deleteNotifications);
@@ -257,7 +252,6 @@ public class TestDataServiceImpl implements TestDataService {
     withdrawalApprovalDao.deleteAllWithdrawalApprovals();
     amendmentRequestDao.deleteAllAmendmentRequests();
     draftDao.deleteAllDrafts();
-    sielDao.deleteAllSiels();
     outcomeDao.deleteAllOutcomes();
     notificationDao.deleteAllNotifications();
     rfiWithdrawalDao.deleteAllRfiWithdrawals();
@@ -265,30 +259,6 @@ public class TestDataServiceImpl implements TestDataService {
     rfiDao.deleteAllRfiData();
     caseDetailsDao.deleteAllCaseDetails();
     applicationDao.deleteAllApplications();
-  }
-
-  // Siel Ogel
-  // Admin: N N
-  // Applicant11: Y N
-  // Applicant2: Y Y
-  // Applicant3: N Y
-  private void createSiels(String userId) {
-    for (int i = 1; i < 22; i++) {
-      String companyId = i % 2 == 0 ? TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE) : TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO);
-      SielStatus sielStatus = SielStatus.values()[i % SielStatus.values().length];
-      List<String> destinationList = i % 2 == 0 ? Collections.singletonList(GERMANY) : Arrays.asList(ICELAND, FRANCE);
-      Long expiryTimestamp = sielStatus == SielStatus.ACTIVE ? time(2017, 3, i, 15, 10) : time(2016, 3, i, 15, 10);
-      Siel siel = new Siel(sielId(),
-          companyId,
-          getApplicantReference(),
-          "GBSIE2017/417" + String.format("%02d", i),
-          time(2015, 3, i, 15, 10),
-          expiryTimestamp,
-          sielStatus,
-          TestUtil.wrapSiteId(userId, SITE_ID),
-          destinationList);
-      sielDao.insert(siel);
-    }
   }
 
   private void createEmptyQueueApplication(String userId) {
@@ -301,7 +271,7 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         OFFICER_ID,
-        TestUtil.wrapSiteId(userId, SITE_ID));
+        SITE_ID);
     CaseDetails caseDetails = new CaseDetails(application.getId(),
         getCaseReference(),
         OFFICER_ID,
@@ -322,7 +292,7 @@ public class TestDataServiceImpl implements TestDataService {
           END_USER_COUNTRIES,
           getApplicantReference(),
           OFFICER_ID,
-          TestUtil.wrapSiteId(userId, SITE_ID));
+          SITE_ID);
       applicationDao.insert(app);
     }
   }
@@ -341,7 +311,7 @@ public class TestDataServiceImpl implements TestDataService {
           END_USER_COUNTRIES,
           getApplicantReference(),
           OFFICER_ID,
-          TestUtil.wrapSiteId(userId, SITE_ID));
+          SITE_ID);
       applicationDao.insert(app);
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
@@ -417,7 +387,7 @@ public class TestDataServiceImpl implements TestDataService {
           END_USER_COUNTRIES,
           getApplicantReference(),
           OFFICER_ID,
-          TestUtil.wrapSiteId(userId, SITE_ID));
+          SITE_ID);
       applicationDao.insert(app);
       CaseDetails caseDetails = new CaseDetails(appId,
           getCaseReference(),
@@ -437,7 +407,7 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         OFFICER_ID,
-        TestUtil.wrapSiteId(userId, SITE_ID));
+        SITE_ID);
     applicationDao.insert(application);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
@@ -477,7 +447,7 @@ public class TestDataServiceImpl implements TestDataService {
     return randomNumber("ECO");
   }
 
-  private String randomNumber(String prefix) {
+  private static String randomNumber(String prefix) {
     StringBuilder stringBuilder = new StringBuilder();
     for (int i = 0; i < 12; i++) {
       stringBuilder.append(RandomUtils.nextInt(0, 9));
@@ -506,7 +476,7 @@ public class TestDataServiceImpl implements TestDataService {
         endUserCountries,
         getApplicantReference(),
         OFFICER_ID,
-        TestUtil.wrapSiteId(userId, SITE_ID));
+        SITE_ID);
     applicationDao.insert(application);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
@@ -600,7 +570,7 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         OFFICER_ID,
-        TestUtil.wrapSiteId(userId, SITE_ID));
+        SITE_ID);
     applicationDao.insert(application);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
@@ -696,7 +666,7 @@ public class TestDataServiceImpl implements TestDataService {
         END_USER_COUNTRIES,
         getApplicantReference(),
         null,
-        TestUtil.wrapSiteId(userId, SITE_ID));
+        SITE_ID);
     applicationDao.insert(application);
     CaseDetails caseDetails = new CaseDetails(appId,
         getCaseReference(),
@@ -732,7 +702,7 @@ public class TestDataServiceImpl implements TestDataService {
           endUserCountries,
           getApplicantReference(),
           OFFICER_ID,
-          TestUtil.wrapSiteId(userId, SITE_ID));
+          SITE_ID);
       applicationDao.insert(application);
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
@@ -857,6 +827,37 @@ public class TestDataServiceImpl implements TestDataService {
       Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, documents);
       outcomeDao.insertOutcome(amendOutcome);
     }
+  }
+
+  private static Map<String, List<LicenceView>> licenceViewMap = new ConcurrentHashMap<>();
+
+  public static synchronized List<LicenceView> getLicenceViews(String userId) {
+    if (licenceViewMap.get(userId) == null) {
+      List<LicenceView> licenceViews = new ArrayList<>();
+      for (int i = 0; i < 20; i++) {
+        String customerId = i % 2 == 0 ? TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE) : TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO);
+        LicenceView.Status status = LicenceView.Status.values()[i % LicenceView.Status.values().length];
+        List<String> destinationList = i % 2 == 0 ? Collections.singletonList(GERMANY) : Arrays.asList(ICELAND, FRANCE);
+        Long issueTimestamp = time(2015, 3, 1 + i, 15, 10);
+        Long expiryTimestamp = status == LicenceView.Status.ACTIVE ? time(2019, 3, 1 + i, 15, 10) : time(2016, 3, 1 + i, 15, 10);
+        LicenceView licenceView = new LicenceView();
+        licenceView.setLicenceRef(randomNumber("REF-"));
+        licenceView.setOriginalAppId(randomNumber("APP"));
+        licenceView.setOriginalExporterRef(randomNumber("EREF-"));
+        licenceView.setCustomerId(customerId);
+        licenceView.setSiteId(SITE_ID);
+        licenceView.setType(Type.SIEL);
+        licenceView.setSubType(null);
+        licenceView.setIssueDate(TimeUtil.toLocalDate(issueTimestamp));
+        licenceView.setExpiryDate(TimeUtil.toLocalDate(expiryTimestamp));
+        licenceView.setStatus(status);
+        licenceView.setCountryList(destinationList);
+        licenceView.setExternalDocumentUrl("");
+        licenceViews.add(licenceView);
+      }
+      licenceViewMap.put(userId, licenceViews);
+    }
+    return licenceViewMap.get(userId);
   }
 
 }

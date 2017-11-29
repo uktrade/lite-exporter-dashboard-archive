@@ -1,7 +1,7 @@
 package components.service;
 
 import com.google.inject.Inject;
-import components.client.OgelRegistrationServiceClient;
+import components.client.LicenceClient;
 import components.client.OgelServiceClient;
 import java.util.Optional;
 import models.view.OgelDetailsView;
@@ -14,12 +14,12 @@ public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OgelDetailsViewServiceImpl.class);
 
-  private final OgelRegistrationServiceClient ogelRegistrationServiceClient;
+  private final LicenceClient licenceClient;
   private final OgelServiceClient ogelServiceClient;
 
   @Inject
-  public OgelDetailsViewServiceImpl(OgelRegistrationServiceClient ogelRegistrationServiceClient, OgelServiceClient ogelServiceClient) {
-    this.ogelRegistrationServiceClient = ogelRegistrationServiceClient;
+  public OgelDetailsViewServiceImpl(LicenceClient licenceClient, OgelServiceClient ogelServiceClient) {
+    this.licenceClient = licenceClient;
     this.ogelServiceClient = ogelServiceClient;
   }
 
@@ -27,7 +27,7 @@ public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
   public Optional<OgelDetailsView> getOgelDetailsView(String userId, String registrationReference) {
     OgelRegistrationView ogelRegistrationView;
     try {
-      ogelRegistrationView = ogelRegistrationServiceClient.getOgelRegistration(userId, registrationReference);
+      ogelRegistrationView = licenceClient.getOgelRegistration(userId, registrationReference);
     } catch (Exception exception) {
       LOGGER.error("Unable to find ogel licence with registration reference {} for user {}", registrationReference, userId, exception);
       return Optional.empty();

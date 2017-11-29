@@ -8,13 +8,13 @@ import com.google.inject.name.Names;
 import com.rabbitmq.client.Channel;
 import components.auth.SamlModule;
 import components.client.CustomerServiceClient;
-import components.client.OgelRegistrationServiceClient;
+import components.client.LicenceClient;
 import components.client.OgelServiceClient;
 import components.client.OgelServiceClientImpl;
 import components.client.UserServiceClient;
 import components.client.UserServiceClientImpl;
 import components.client.test.TestCustomerServiceClientImpl;
-import components.client.test.TestOgelRegistrationServiceClientImpl;
+import components.client.test.TestLicenceClientImpl;
 import components.common.journey.JourneyContextParamProvider;
 import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
@@ -30,7 +30,6 @@ import components.dao.ReadDao;
 import components.dao.RfiDao;
 import components.dao.RfiReplyDao;
 import components.dao.RfiWithdrawalDao;
-import components.dao.SielDao;
 import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
@@ -45,7 +44,6 @@ import components.dao.impl.ReadDaoImpl;
 import components.dao.impl.RfiDaoImpl;
 import components.dao.impl.RfiReplyDaoImpl;
 import components.dao.impl.RfiWithdrawalDaoImpl;
-import components.dao.impl.SielDaoImpl;
 import components.dao.impl.StatusUpdateDaoImpl;
 import components.dao.impl.WithdrawalApprovalDaoImpl;
 import components.dao.impl.WithdrawalRejectionDaoImpl;
@@ -103,13 +101,14 @@ import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Properties;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
 import play.db.Database;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
 
 public class GuiceModule extends AbstractModule {
 
@@ -164,7 +163,6 @@ public class GuiceModule extends AbstractModule {
     bind(WithdrawalRequestDao.class).to(WithdrawalRequestDaoImpl.class);
     bind(AmendmentRequestDao.class).to(AmendmentRequestDaoImpl.class);
     bind(DraftDao.class).to(DraftDaoImpl.class).asEagerSingleton();
-    bind(SielDao.class).to(SielDaoImpl.class);
     bind(OutcomeDao.class).to(OutcomeDaoImpl.class);
     bind(NotificationDao.class).to(NotificationDaoImpl.class);
     bind(WithdrawalRejectionDao.class).to(WithdrawalRejectionDaoImpl.class);
@@ -202,11 +200,11 @@ public class GuiceModule extends AbstractModule {
     bindConstant("customerServiceTimeout", "customerService.timeout");
     // TODO Test
     bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
-    // OgelRegistrationServiceClient
+    // LicenceClient
     bindConstant("permissionsServiceAddress", "permissionsService.address");
     bindConstant("permissionsServiceTimeout", "permissionsService.timeout");
     // TODO Test
-    bind(OgelRegistrationServiceClient.class).to(TestOgelRegistrationServiceClientImpl.class);
+    bind(LicenceClient.class).to(TestLicenceClientImpl.class);
     // OgelServiceClient
     bindConstant("ogelServiceAddress", "ogelService.address");
     bindConstant("ogelServiceTimeout", "ogelService.timeout");

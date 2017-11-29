@@ -2,12 +2,11 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
-import components.client.OgelRegistrationServiceClient;
+import components.client.LicenceClient;
 import components.client.OgelServiceClient;
 import components.util.EnumUtil;
 import components.util.LicenceUtil;
 import components.util.TimeUtil;
-import models.enums.OgelStatus;
 import models.view.OgelItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
@@ -21,27 +20,27 @@ import java.util.stream.Collectors;
 
 public class OgelItemViewServiceImpl implements OgelItemViewService {
 
-  private final OgelRegistrationServiceClient ogelRegistrationServiceClient;
+  private final LicenceClient licenceClient;
   private final CustomerServiceClient customerServiceClient;
   private final OgelServiceClient ogelServiceClient;
 
   @Inject
-  public OgelItemViewServiceImpl(OgelRegistrationServiceClient ogelRegistrationServiceClient,
+  public OgelItemViewServiceImpl(LicenceClient licenceClient,
                                  CustomerServiceClient customerServiceClient,
                                  OgelServiceClient ogelServiceClient) {
-    this.ogelRegistrationServiceClient = ogelRegistrationServiceClient;
+    this.licenceClient = licenceClient;
     this.customerServiceClient = customerServiceClient;
     this.ogelServiceClient = ogelServiceClient;
   }
 
   @Override
   public boolean hasOgelItemViews(String userId) {
-    return !ogelRegistrationServiceClient.getOgelRegistrations(userId).isEmpty();
+    return !licenceClient.getOgelRegistrations(userId).isEmpty();
   }
 
   @Override
   public List<OgelItemView> getOgelItemViews(String userId) {
-    List<OgelRegistrationView> ogelRegistrationViews = ogelRegistrationServiceClient.getOgelRegistrations(userId);
+    List<OgelRegistrationView> ogelRegistrationViews = licenceClient.getOgelRegistrations(userId);
     Map<String, SiteView> sites = getSites(ogelRegistrationViews);
     Map<String, CustomerView> customers = getCustomers(ogelRegistrationViews);
     Map<String, OgelFullView> ogels = getOgels(ogelRegistrationViews);
@@ -83,8 +82,8 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
   private OgelItemView getOgelItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView, SiteView siteView, OgelFullView ogelFullView) {
     long registrationTimestamp = TimeUtil.parseOgelRegistrationDate(ogelRegistrationView.getRegistrationDate());
     String registrationDate = TimeUtil.formatDate(registrationTimestamp);
-    OgelStatus ogelStatus = EnumUtil.parse(ogelRegistrationView.getStatus().toString(), OgelStatus.class, OgelStatus.UNKNOWN);
-    String ogelStatusName = LicenceUtil.getOgelStatusName(ogelStatus);
+    OgelRegistrationView.Status status = EnumUtil.parse(ogelRegistrationView.getStatus().toString(), OgelRegistrationView.Status.class, OgelRegistrationView.Status.UNKNOWN);
+    String ogelStatusName = LicenceUtil.getOgelStatusName(status);
     return new OgelItemView(ogelRegistrationView.getRegistrationReference(),
         ogelFullView.getName(),
         customerView.getCompanyName(),

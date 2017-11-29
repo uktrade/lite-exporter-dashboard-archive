@@ -4,13 +4,13 @@ import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
-import components.client.OgelRegistrationServiceClient;
+import components.client.LicenceClient;
 import components.client.OgelServiceClient;
 import components.service.OgelItemViewServiceImpl;
 import components.util.LicenceUtil;
 import components.util.TimeUtil;
-import models.enums.OgelStatus;
 import models.view.OgelItemView;
+import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +18,10 @@ import java.util.List;
 public class TestOgelItemViewServiceImpl extends OgelItemViewServiceImpl {
 
   @Inject
-  public TestOgelItemViewServiceImpl(OgelRegistrationServiceClient ogelRegistrationServiceClient,
+  public TestOgelItemViewServiceImpl(LicenceClient licenceClient,
                                      CustomerServiceClient customerServiceClient,
                                      OgelServiceClient ogelServiceClient) {
-    super(ogelRegistrationServiceClient, customerServiceClient, ogelServiceClient);
+    super(licenceClient, customerServiceClient, ogelServiceClient);
   }
 
   @Override
@@ -40,8 +40,8 @@ public class TestOgelItemViewServiceImpl extends OgelItemViewServiceImpl {
       String add = i % 2 == 0 ? "_A" : "_B";
       long registrationTimestamp = time(2017, 2, 2 + i, 16, 20 + i);
       String registrationDate = TimeUtil.formatDate(registrationTimestamp);
-      OgelStatus ogelStatus = OgelStatus.values()[i % (OgelStatus.values().length - 1)];
-      String ogelStatusName = LicenceUtil.getOgelStatusName(ogelStatus);
+      OgelRegistrationView.Status status = OgelRegistrationView.Status.values()[i % (OgelRegistrationView.Status.values().length - 1)];
+      String ogelStatusName = LicenceUtil.getOgelStatusName(status);
       OgelItemView ogelItemView = new OgelItemView(base.getRegistrationReference(),
           base.getDescription(),
           base.getLicensee() + add,

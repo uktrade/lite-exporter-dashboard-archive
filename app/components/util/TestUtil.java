@@ -2,14 +2,6 @@ package components.util;
 
 public class TestUtil {
 
-  public static String wrapSiteId(String userId, String siteId) {
-    return userId + "_" + siteId;
-  }
-
-  public static String unwrapSiteId(String siteId) {
-    return removeUserId(siteId);
-  }
-
   public static String wrapCustomerId(String userId, String customerId) {
     return userId + "_" + customerId;
   }

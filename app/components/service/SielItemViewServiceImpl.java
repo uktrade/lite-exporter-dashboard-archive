@@ -2,57 +2,55 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
-import components.dao.SielDao;
-import components.util.LicenceUtil;
+import components.client.LicenceClient;
 import components.util.TimeUtil;
+import models.view.SielItemView;
+import org.apache.commons.lang3.StringUtils;
+import uk.gov.bis.lite.customer.api.view.CustomerView;
+import uk.gov.bis.lite.permissions.api.view.LicenceView;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import models.Siel;
-import models.view.SielItemView;
-import uk.gov.bis.lite.customer.api.view.CustomerView;
 
 public class SielItemViewServiceImpl implements SielItemViewService {
 
   private final UserPermissionService userPermissionService;
   private final CustomerServiceClient customerServiceClient;
-  private final SielDao sielDao;
+  private final LicenceClient licenceClient;
 
   @Inject
   public SielItemViewServiceImpl(UserPermissionService userPermissionService,
                                  CustomerServiceClient customerServiceClient,
-                                 SielDao sielDao) {
+                                 LicenceClient licenceClient) {
     this.userPermissionService = userPermissionService;
     this.customerServiceClient = customerServiceClient;
-    this.sielDao = sielDao;
+    this.licenceClient = licenceClient;
   }
 
   @Override
   public List<SielItemView> getSielItemViews(String userId) {
     List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
-
     Map<String, String> customerIdToCompanyName = customerIds.stream()
         .map(customerServiceClient::getCustomer)
         .collect(Collectors.toMap(CustomerView::getCustomerId, CustomerView::getCompanyName));
 
-    List<Siel> siels = sielDao.getSiels(customerIds);
-
-    return siels.stream()
-        .map(siel -> createSielItemView(siel, customerIdToCompanyName))
+    return licenceClient.getLicences(userId).stream()
+        .map(licenceView -> createSielItemView(licenceView, customerIdToCompanyName))
         .collect(Collectors.toList());
+  }
+
+  private SielItemView createSielItemView(LicenceView licenceView, Map<String, String> customerIdToCompanyName) {
+    long expiryTimestamp = TimeUtil.toMillis(licenceView.getExpiryDate());
+    String expiryDate = TimeUtil.formatDate(expiryTimestamp);
+    String licensee = customerIdToCompanyName.get(licenceView.getCustomerId());
+    String sielStatus = StringUtils.capitalize(licenceView.getStatus().toString().toLowerCase());
+    return new SielItemView(licenceView.getLicenceRef(), licenceView.getOriginalExporterRef(), licensee, expiryDate, expiryTimestamp, sielStatus);
   }
 
   @Override
   public boolean hasSielItemViews(String userId) {
-    List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
-    return !sielDao.getSiels(customerIds).isEmpty();
-  }
-
-  private SielItemView createSielItemView(Siel siel, Map<String, String> customerIdToCompanyName) {
-    String expiryDate = TimeUtil.formatDate(siel.getExpiryTimestamp());
-    String licensee = customerIdToCompanyName.get(siel.getCustomerId());
-    String sielStatus = LicenceUtil.getSielStatusName(siel.getSielStatus());
-    return new SielItemView(siel.getCaseReference(), siel.getApplicantReference(), licensee, expiryDate, siel.getExpiryTimestamp(), sielStatus);
+    return !licenceClient.getLicences(userId).isEmpty();
   }
 
 }
