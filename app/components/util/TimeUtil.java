@@ -3,6 +3,7 @@ package components.util;
 import com.google.common.collect.ImmutableMap;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -45,6 +46,14 @@ public class TimeUtil {
 
   public static long daysBetweenWithStartBeforeEnd(long start, long end) {
     return ChronoUnit.DAYS.between(Instant.ofEpochMilli(start), Instant.ofEpochMilli(end));
+  }
+
+  public static long toMillis(LocalDate localDate) {
+    return localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+  }
+
+  public static LocalDate toLocalDate(long millis) {
+    return Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate();
   }
 
 }

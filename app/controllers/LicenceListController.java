@@ -11,9 +11,6 @@ import components.service.UserService;
 import components.util.EnumUtil;
 import components.util.PageUtil;
 import components.util.SortUtil;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
 import models.LicenceListState;
 import models.Page;
 import models.enums.LicenceListTab;
@@ -28,6 +25,10 @@ import play.mvc.Result;
 import views.html.licenceList;
 import views.html.ogelDetails;
 import views.html.sielDetails;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
 
 public class LicenceListController extends SamlController {
 

@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "com.rabbitmq" % "amqp-client" % "4.2.0"
 )
 
-libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.3"
+libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.4"
 libraryDependencies += "uk.gov.bis.lite" % "lite-customer-service-api" % "1.1"
 libraryDependencies += "uk.gov.bis.lite" % "lite-ogel-service-api" % "1.0"
 libraryDependencies += "uk.gov.bis.lite" % "lite-spire-relay-api" % "1.4-SNAPSHOT"

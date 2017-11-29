@@ -5,16 +5,17 @@ import com.google.inject.name.Named;
 import components.client.UserServiceClient;
 import components.service.UserPermissionServiceImpl;
 import components.util.TestUtil;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 import uk.gov.bis.lite.user.api.view.CustomerView;
 import uk.gov.bis.lite.user.api.view.Role;
 import uk.gov.bis.lite.user.api.view.SiteView;
 import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class TestUserPermissionServiceImpl extends UserPermissionServiceImpl {
-  
+
   @Inject
   public TestUserPermissionServiceImpl(@Named("userServiceCacheExpiryMinutes") Long cacheExpireMinutes,
                                        UserServiceClient userServiceClient) {
@@ -41,7 +42,7 @@ public class TestUserPermissionServiceImpl extends UserPermissionServiceImpl {
 
     SiteView siteView = new SiteView();
     siteView.setRole(Role.ADMIN);
-    siteView.setSiteId(TestUtil.wrapSiteId(userId, TestDataServiceImpl.SITE_ID));
+    siteView.setSiteId(TestDataServiceImpl.SITE_ID);
     userPrivilegesView.setSites(Collections.singletonList(siteView));
 
     return userPrivilegesView;

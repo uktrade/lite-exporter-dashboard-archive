@@ -78,7 +78,7 @@
             </td>
           }
           <td>
-          @if(applicationItemView.getCaseReference != null) {
+          @if(applicationItemView.getApplicationProgress != ApplicationProgress.DRAFT) {
             <a href="@routes.StatusTabController.showStatusTab(applicationItemView.getAppId)" class="bold">
             @applicationItemView.getCaseReference
             </a>

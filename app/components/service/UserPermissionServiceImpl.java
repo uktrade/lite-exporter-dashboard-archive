@@ -8,6 +8,14 @@ import com.google.inject.name.Named;
 import components.client.UserServiceClient;
 import components.exceptions.UnexpectedStateException;
 import components.util.ApplicationUtil;
+import models.AppData;
+import models.Application;
+import models.CaseData;
+import models.Rfi;
+import uk.gov.bis.lite.user.api.view.CustomerView;
+import uk.gov.bis.lite.user.api.view.Role;
+import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -16,14 +24,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 import javax.annotation.Nonnull;
-import models.AppData;
-import models.Application;
-import models.CaseData;
-import models.Rfi;
-import uk.gov.bis.lite.user.api.view.CustomerView;
-import uk.gov.bis.lite.user.api.view.Role;
-import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
 
 public class UserPermissionServiceImpl implements UserPermissionService {
 

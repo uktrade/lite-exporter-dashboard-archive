@@ -1,39 +1,40 @@
 package components.util;
 
-import models.enums.OgelStatus;
-import models.enums.SielStatus;
+import uk.gov.bis.lite.permissions.api.view.LicenceView;
+import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 public class LicenceUtil {
 
-  private static final Map<SielStatus, String> SIEL_STATUS_NAME_MAP;
+  private static final Map<LicenceView.Status, String> SIEL_STATUS_NAME_MAP;
 
-  private static final Map<OgelStatus, String> OGEL_STATUS_NAME_MAP;
-
-  static {
-    OGEL_STATUS_NAME_MAP = new EnumMap<>(OgelStatus.class);
-    OGEL_STATUS_NAME_MAP.put(OgelStatus.EXTANT, "Active");
-    OGEL_STATUS_NAME_MAP.put(OgelStatus.SURRENDERED, "Surrendered");
-    OGEL_STATUS_NAME_MAP.put(OgelStatus.DEREGISTERED, "De-registered");
-    OGEL_STATUS_NAME_MAP.put(OgelStatus.UNKNOWN, "Unknown");
-  }
+  private static final Map<OgelRegistrationView.Status, String> OGEL_STATUS_NAME_MAP;
 
   static {
-    SIEL_STATUS_NAME_MAP = new EnumMap<>(SielStatus.class);
-    SIEL_STATUS_NAME_MAP.put(SielStatus.ACTIVE, "Active");
-    SIEL_STATUS_NAME_MAP.put(SielStatus.REVOKED, "Revoked");
-    SIEL_STATUS_NAME_MAP.put(SielStatus.SURRENDERED, "Surrendered");
-    SIEL_STATUS_NAME_MAP.put(SielStatus.EXPIRED, "Expired");
+    OGEL_STATUS_NAME_MAP = new EnumMap<>(OgelRegistrationView.Status.class);
+    OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.EXTANT, "Active");
+    OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.SURRENDERED, "Surrendered");
+    OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.DEREGISTERED, "De-registered");
+    OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.UNKNOWN, "Unknown");
   }
 
-  public static String getOgelStatusName(OgelStatus ogelStatus) {
-    return OGEL_STATUS_NAME_MAP.get(ogelStatus);
+  static {
+    SIEL_STATUS_NAME_MAP = new EnumMap<>(LicenceView.Status.class);
+    SIEL_STATUS_NAME_MAP.put(LicenceView.Status.ACTIVE, "Active");
+    SIEL_STATUS_NAME_MAP.put(LicenceView.Status.EXHAUSTED, "Exhausted");
+    SIEL_STATUS_NAME_MAP.put(LicenceView.Status.EXPIRED, "Expired");
+    SIEL_STATUS_NAME_MAP.put(LicenceView.Status.REVOKED, "Revoked");
+    SIEL_STATUS_NAME_MAP.put(LicenceView.Status.SURRENDERED, "Surrendered");
   }
 
-  public static String getSielStatusName(SielStatus sielStatus) {
-    return SIEL_STATUS_NAME_MAP.get(sielStatus);
+  public static String getOgelStatusName(OgelRegistrationView.Status status) {
+    return OGEL_STATUS_NAME_MAP.get(status);
+  }
+
+  public static String getSielStatusName(LicenceView.Status status) {
+    return SIEL_STATUS_NAME_MAP.get(status);
   }
 
 }

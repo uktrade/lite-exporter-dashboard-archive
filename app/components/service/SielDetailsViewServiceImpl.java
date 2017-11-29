@@ -2,62 +2,57 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
-import components.dao.SielDao;
+import components.client.LicenceClient;
+import components.exceptions.ServiceException;
 import components.util.ApplicationUtil;
 import components.util.LicenceUtil;
 import components.util.TimeUtil;
-import java.util.List;
-import java.util.Optional;
-import models.Siel;
 import models.view.SielDetailsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.bis.lite.permissions.api.view.LicenceView;
+
+import java.util.Optional;
 
 public class SielDetailsViewServiceImpl implements SielDetailsViewService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SielDetailsViewServiceImpl.class);
 
-  private final SielDao sielDao;
-  private final UserPermissionService userPermissionService;
   private final CustomerServiceClient customerServiceClient;
+  private final LicenceClient licenceClient;
 
   @Inject
-  public SielDetailsViewServiceImpl(SielDao sielDao,
-                                    UserPermissionService userPermissionService,
-                                    CustomerServiceClient customerServiceClient) {
-    this.sielDao = sielDao;
-    this.userPermissionService = userPermissionService;
+  public SielDetailsViewServiceImpl(CustomerServiceClient customerServiceClient,
+                                    LicenceClient licenceClient) {
     this.customerServiceClient = customerServiceClient;
+    this.licenceClient = licenceClient;
   }
 
   @Override
-  public Optional<SielDetailsView> getSielDetailsView(String userId, String caseReference) {
-    List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
-    Optional<Siel> sielOptional = sielDao.getSiels(customerIds).stream()
-        .filter(siel -> siel.getCaseReference().equals(caseReference))
-        .findAny();
-    if (sielOptional.isPresent()) {
-      Siel siel = sielOptional.get();
-      String sielStatusName = LicenceUtil.getSielStatusName(siel.getSielStatus());
-      String issueDate = TimeUtil.formatDate(siel.getIssueTimestamp());
-      String expiryDate = TimeUtil.formatDate(siel.getExpiryTimestamp());
-      String exportDestinations = ApplicationUtil.getSielDestinations(siel);
-      String site = customerServiceClient.getSite(siel.getSiteId()).getSiteName();
-      String licensee = customerServiceClient.getCustomer(siel.getCustomerId()).getCompanyName();
-      SielDetailsView sielDetailsView = new SielDetailsView(siel.getCaseReference(),
-          siel.getApplicantReference(),
-          "SIEL Permanent",
-          sielStatusName,
-          issueDate,
-          expiryDate,
-          exportDestinations,
-          site,
-          licensee);
-      return Optional.of(sielDetailsView);
-    } else {
-      LOGGER.error("Unable to find siel licence with case reference {} for user {}", caseReference, userId);
+  public Optional<SielDetailsView> getSielDetailsView(String userId, String reference) {
+    LicenceView licenceView;
+    try {
+      licenceView = licenceClient.getLicence(userId, reference);
+    } catch (ServiceException serviceException) {
+      LOGGER.error("Unable to find siel licence with reference {} for user {}", reference, userId);
       return Optional.empty();
     }
+    String sielStatusName = LicenceUtil.getSielStatusName(licenceView.getStatus());
+    String issueDate = TimeUtil.formatDate(TimeUtil.toMillis(licenceView.getIssueDate()));
+    String expiryDate = TimeUtil.formatDate(TimeUtil.toMillis(licenceView.getExpiryDate()));
+    String exportDestinations = ApplicationUtil.getSielDestinations(licenceView);
+    String site = customerServiceClient.getSite(licenceView.getSiteId()).getSiteName();
+    String licensee = customerServiceClient.getCustomer(licenceView.getCustomerId()).getCompanyName();
+    SielDetailsView sielDetailsView = new SielDetailsView(licenceView.getLicenceRef(),
+        licenceView.getOriginalExporterRef(),
+        "SIEL Permanent",
+        sielStatusName,
+        issueDate,
+        expiryDate,
+        exportDestinations,
+        site,
+        licensee);
+    return Optional.of(sielDetailsView);
   }
 
 }
