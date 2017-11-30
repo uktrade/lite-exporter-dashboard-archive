@@ -97,7 +97,7 @@
         background: $panel-colour;
         width: 100%;
         box-sizing: border-box;
-        padding: 0.8em 1em 0.5em 1em
+        padding: 0.7em 0.5em 0.6em 0.5em
       }
 
       &.active a {
@@ -111,4 +111,13 @@
       padding-right: 2.5em;
     }
   }
+}
+
+.new-indicator {
+  @include core-14;
+  border-radius: 100px;
+  background: $red;
+  color: $white;
+  padding: 0.2em 0.5em 0 0.5em;
+  display: inline-block;
 }
