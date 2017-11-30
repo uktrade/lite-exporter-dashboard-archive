@@ -3,22 +3,20 @@
 @import views.html.common.page._
 @(applyLink: String)
 
-@twoThirdsColumn {
-  @partNavigation("Licence management navigation") {
-    <li>
-      @if(!request.path().startsWith("/applications")) {
-        <a href="/applications">Applications</a>
-      } else {
-        Applications
-      }
-    </li>
-    <li>
-      @if(!request.path().startsWith("/licences")) {
-        <a href="/licences">Licences</a>
-      } else {
-        Licences
-      }
-    </li>
-    <li><a href="@applyLink" target="_blank">Apply for a standard licence</a></li>
-  }
+@partNavigation("Licence management navigation") {
+  <li>
+    @if(!request.path().startsWith("/applications")) {
+      <a href="/applications">Applications</a>
+    } else {
+      Applications
+    }
+  </li>
+  <li>
+    @if(!request.path().startsWith("/licences")) {
+      <a href="/licences">Licences</a>
+    } else {
+      Licences
+    }
+  </li>
+  <li><a href="@applyLink" target="_blank">Apply for a standard licence</a></li>
 }
