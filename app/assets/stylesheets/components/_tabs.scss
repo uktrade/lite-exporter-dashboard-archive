@@ -11,10 +11,14 @@
     @include link-underline-on-hover;
 
     a {
-      padding: 1em;
+      padding: 1em $gutter-half;
       background: $panel-colour;
       display: block;
       border-top: 1px solid $border-colour;
+
+      @include media(tablet) {
+        padding: 1em $gutter;
+      }
 
       &:hover {
         background: $border-colour;
@@ -44,7 +48,12 @@
 
 @include media(tablet) {
   .tabs-float-container {
-    @extend %contain-floats;
+    margin: 0 -#{$gutter} $gutter -#{$gutter};
+  }
+}
+
+@include media(desktop) {
+  .tabs-float-container {
     margin: 0 0 $gutter 0;
   }
 
@@ -114,7 +123,7 @@
 }
 
 .new-indicator {
-  @include core-14;
+  @include core-16;
   border-radius: 100px;
   background: $red;
   color: $white;
