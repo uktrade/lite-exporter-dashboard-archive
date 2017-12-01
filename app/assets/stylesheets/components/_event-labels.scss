@@ -1,16 +1,22 @@
 .event-label {
-  background: $highlight-colour;
-  padding: 0.5em 1em 0.5em 2.5em;
+  padding: 0.25em 0 0.25em 0;
   display: inline-block;
+  white-space: nowrap;
 
   &.with-top-margin {
-    margin-top: $gutter-half;
+    margin-top: $gutter-one-third;
   }
 
-  @include link-underline-on-hover;
+  &.has-icon {
+    padding-left: 1.7em;
+  }
 
   a {
     white-space: nowrap;
+
+    @include media(mobile) {
+      white-space: normal;
+    }
   }
 
   *[class$="-icon"] {
@@ -23,17 +29,14 @@
   }
 }
 
-$total-icon-count: 7;
-
-@mixin event-label-icon($index) {
+.rfi-icon {
   width: 22px;
   height: 22px;
   display: inline-block;
   vertical-align: middle;
   margin-right: 0.3em;
   position: relative;
-  background-image: url(../images/status-label-icons.svg);
-  background-position-x: (100% / ($total-icon-count - 1)) * $index;
+  background-image: url(../images/icon-rfi.svg);
   background-size: cover;
   vertical-align: -0.2em;
 
@@ -52,32 +55,4 @@ $total-icon-count: 7;
       height: 22px;
     }
   }
-}
-
-.rfi-icon {
-  @include event-label-icon(0);
-}
-
-.stopped-icon {
-  @include event-label-icon(1);
-}
-
-.withdrawal-rejected-icon {
-  @include event-label-icon(2);
-}
-
-.inform-issued-icon {
-  @include event-label-icon(3);
-}
-
-.delayed-icon {
-  @include event-label-icon(4);
-}
-
-.decision-icon {
-  @include event-label-icon(5);
-}
-
-.amendment-requested-icon {
-  @include event-label-icon(6);
 }
