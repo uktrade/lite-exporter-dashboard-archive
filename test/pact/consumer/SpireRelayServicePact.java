@@ -14,6 +14,7 @@ import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.model.v3.messaging.MessagePact;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Envelope;
+import components.dao.ApplicationDao;
 import components.dao.CaseDetailsDao;
 import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
@@ -24,7 +25,6 @@ import components.dao.WithdrawalRejectionDao;
 import components.message.ConsumerRoutingKey;
 import components.message.MessageConsumer;
 import components.message.MessageConsumerImpl;
-import java.io.IOException;
 import models.CaseDetails;
 import models.Document;
 import models.Notification;
@@ -40,6 +40,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.io.IOException;
+
 public class SpireRelayServicePact {
 
   private final static String PROVIDER = "lite-spire-relay-service";
@@ -52,6 +54,7 @@ public class SpireRelayServicePact {
   private final OutcomeDao outcomeDao = mock(OutcomeDao.class);
   private final WithdrawalRejectionDao withdrawalRejectionDao = mock(WithdrawalRejectionDao.class);
   private final CaseDetailsDao caseDetailsDao = mock(CaseDetailsDao.class);
+  private final ApplicationDao applicationDao = mock(ApplicationDao.class);
   private final Channel channel = mock(Channel.class);
   private final MessageConsumer messageConsumer = new MessageConsumerImpl(channel,
       rfiDao,
@@ -60,7 +63,8 @@ public class SpireRelayServicePact {
       rfiWithdrawalDao,
       outcomeDao,
       withdrawalRejectionDao,
-      caseDetailsDao);
+      caseDetailsDao,
+      applicationDao);
 
   @Rule
   public MessagePactProviderRule mockProvider = new MessagePactProviderRule(PROVIDER, this);
@@ -185,7 +189,7 @@ public class SpireRelayServicePact {
         .stringType("id", "documentId")
         .stringType("documentType", "LICENCE_DOCUMENT")
         .stringType("licenceRef", "licenceRef")
-        .stringType("licenceExpiry","2018-01-04")
+        .stringType("licenceExpiry", "2018-01-04")
         .stringType("filename", "filename")
         .stringType("url", "url")
         .closeObject()
@@ -211,7 +215,7 @@ public class SpireRelayServicePact {
         .stringType("id", "documentId")
         .stringType("documentType", "LICENCE_DOCUMENT")
         .stringType("licenceRef", "licenceRef")
-        .stringType("licenceExpiry","2018-01-04")
+        .stringType("licenceExpiry", "2018-01-04")
         .stringType("filename", "filename")
         .stringType("url", "url")
         .closeObject()
@@ -416,7 +420,6 @@ public class SpireRelayServicePact {
     assertThat(withdrawalRejection.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(withdrawalRejection.getMessage()).isEqualTo("This is a withdrawal rejection.");
   }
-
 
   @Test
   @PactVerification(value = PROVIDER, fragment = "createCase")

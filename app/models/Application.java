@@ -1,5 +1,7 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class Application {
@@ -15,16 +17,16 @@ public class Application {
   private final String caseOfficerId;
   private final String siteId;
 
-  public Application(String id,
-                     String customerId,
-                     String createdByUserId,
-                     Long createdTimestamp,
-                     Long submittedTimestamp,
-                     List<String> consigneeCountries,
-                     List<String> endUserCountries,
-                     String applicantReference,
-                     String caseOfficerId,
-                     String siteId) {
+  public Application(@JsonProperty("id") String id,
+                     @JsonProperty("customerId") String customerId,
+                     @JsonProperty("createdByUserId") String createdByUserId,
+                     @JsonProperty("createdTimestamp") Long createdTimestamp,
+                     @JsonProperty("submittedTimestamp") Long submittedTimestamp,
+                     @JsonProperty("consigneeCountries") List<String> consigneeCountries,
+                     @JsonProperty("endUserCountries") List<String> endUserCountries,
+                     @JsonProperty("applicantReference") String applicantReference,
+                     @JsonProperty("caseOfficerId") String caseOfficerId,
+                     @JsonProperty("siteId") String siteId) {
     this.id = id;
     this.customerId = customerId;
     this.createdByUserId = createdByUserId;
