@@ -1,7 +1,5 @@
-@(id: String, label: String)(data: Html)
-<div class="heading-small" id="@id">
-  @label
-</div>
-<div aria-labelledby="@id">
-  @data
+@(label: String)(data: Html)
+<div>
+  <dt>@label</dt>
+  <dd>@data</dd>
 </div>

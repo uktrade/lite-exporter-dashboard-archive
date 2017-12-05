@@ -9,46 +9,43 @@
 
     <div class="application-summary-panel">
 
-      <div class="heading-medium" id="summary-panel-app-ref">
-        <abbr title="Open General Export Licence">OGEL</abbr> reference
-      </div>
-      <div class="font-medium" aria-labelledby="summary-panel-app-ref">
-        @ogelDetailsView.getRegistrationReference <br>
-      @ogelDetailsView.getName
-      </div>
+      <h2 class="heading-medium">
+        <abbr title="Open General Export Licence">OGEL</abbr>
+      </h2>
 
-      <div class="grid-row">
-        <div class="column-full">
-        @summaryElement("registration-confirmation-letter", "Registration confirmation letter") {
+      <dl class="summary-list no-wrap-keys form-group">
+        @summaryElement("Reference") {
+          @ogelDetailsView.getRegistrationReference<br>
+          @ogelDetailsView.getName
+        }
+
+        @summaryElement("Registration letter") {
           <a href="#">Download letter (PDF)</a>
         }
-        </div>
-      </div>
+      </dl>
 
-      <div class="grid-row">
-        <div class="column-full">
-          Read the <a href="@ogelDetailsView.getLink">full licence</a>
-          for more information on how to use it, what you can export and permitted export destinations
-        </div>
-      </div>
+      <p>
+        Read the <a href="@ogelDetailsView.getLink">full licence</a>
+        for more information on how to use it, what you can export and permitted export destinations.
+      </p>
 
     </div>
 
-    <div class="heading-medium">What you can do</div>
+    <h3 class="heading-medium">What you can do</h3>
     <ul class="list list-bullet">
     @for(canItem <- ogelDetailsView.getOgelConditionSummary.getCanList) {
       <li>@canItem</li>
     }
     </ul>
 
-    <div class="heading-medium">What you can't do</div>
+    <h3 class="heading-medium">What you can't do</h3>
     <ul class="list list-bullet">
     @for(cantItem <- ogelDetailsView.getOgelConditionSummary.getCantList) {
       <li>@cantItem</li>
     }
     </ul>
 
-    <div class="heading-medium">What you must do</div>
+    <h3 class="heading-medium">What you must do</h3>
     <ul class="list list-bullet">
     @for(mustItem <- ogelDetailsView.getOgelConditionSummary.getMustList) {
       <li>@mustItem</li>

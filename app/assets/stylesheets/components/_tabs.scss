@@ -11,10 +11,14 @@
     @include link-underline-on-hover;
 
     a {
-      padding: 1em;
+      padding: 1em $gutter-half;
       background: $panel-colour;
       display: block;
       border-top: 1px solid $border-colour;
+
+      @include media(tablet) {
+        padding: 1em $gutter;
+      }
 
       &:hover {
         background: $border-colour;
@@ -44,7 +48,12 @@
 
 @include media(tablet) {
   .tabs-float-container {
-    @extend %contain-floats;
+    margin: 0 -#{$gutter} $gutter -#{$gutter};
+  }
+}
+
+@include media(desktop) {
+  .tabs-float-container {
     margin: 0 0 $gutter 0;
   }
 
@@ -97,7 +106,7 @@
         background: $panel-colour;
         width: 100%;
         box-sizing: border-box;
-        padding: 0.8em 1em 0.5em 1em
+        padding: 0.7em 0.5em 0.6em 0.5em
       }
 
       &.active a {
@@ -107,8 +116,17 @@
     }
 
     &.wide-tabs li a {
-      padding-left: 4em;
-      padding-right: 4em;
+      padding-left: 2.5em;
+      padding-right: 2.5em;
     }
   }
+}
+
+.new-indicator {
+  @include core-16;
+  border-radius: 100px;
+  background: $red;
+  color: $white;
+  padding: 0.2em 0.5em 0 0.5em;
+  display: inline-block;
 }

@@ -3,46 +3,35 @@
 
 @(applicationSummaryView: ApplicationSummaryView)
 
-<h2 class="visually-hidden">Application summary</h2>
 <header class="application-summary-panel">
 
   <a href="#" class="view-application-link">View application<span class="visually-hidden"> (Opens in a new tab)</span></a>
 
-  <div class="heading-medium" id="summary-panel-app-ref">
-    Application reference
-  </div>
-  <div class="font-medium" aria-labelledby="summary-panel-app-ref">
-    @applicationSummaryView.getCaseReference
-  <br>
-  @applicationSummaryView.getApplicantReference
-  </div>
+  <h2 class="heading-medium">
+    Application details
+  </h2>
 
-  <div class="grid-row">
+  <dl class="summary-list">
+    @summaryElement("Reference") {
+      @applicationSummaryView.getCaseReference<br>
+      @applicationSummaryView.getApplicantReference
+    }
 
-    <div class="column-one-quarter">
-    @summaryElement("summary-panel-destination", "Destination") {
+    @summaryElement("Destination") {
       @applicationSummaryView.getDestination
     }
-    </div>
 
-    <div class="column-one-quarter">
-    @summaryElement("submitted-date", "Date submitted") {
+    @summaryElement("Date submitted") {
       @applicationSummaryView.getDateSubmitted
     }
-    </div>
 
-    <div class="column-one-quarter">
-    @summaryElement("summary-panel-status", "Status") {
+    @summaryElement("Status") {
       @applicationSummaryView.getStatus
     }
-    </div>
 
-    <div class="column-one-quarter">
-    @summaryElement("summary-panel-case-officer", "Case officer") {
+    @summaryElement("Case officer") {
       @applicationSummaryView.getCaseOfficer
     }
-    </div>
-
-  </div>
+  </dl>
 
 </header>

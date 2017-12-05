@@ -1,18 +1,67 @@
 .application-summary-panel {
-  background: $grey-4;
-  margin: $gutter-two-thirds 0 $gutter*2 0;
-  padding: $gutter $gutter-two-thirds $gutter+$gutter-half $gutter-two-thirds;
-  
+
+  @include media(desktop) {
+    border-bottom: 1px solid $border-colour;
+    padding-bottom: $gutter;
+    margin-bottom: $gutter * 1.5;
+  }
+
+  padding-bottom: $gutter-half;
+
   .view-application-link {
     float: right;
   }
 
-  .heading-medium {
-    margin-top: 0;
-    margin-bottom: 0.5em;
+  h2 {
+    margin-top: -$gutter-half;
+  }
+}
+
+.summary-list {
+
+  @include media(desktop) {
+    display: table;
+
+    &.no-wrap-keys dt {
+      white-space: nowrap;
+    }
   }
 
-  .grid-row {
-    margin-top: 1em;
+  > * {
+    position: relative;
+
+    @include media(desktop) {
+      display: table-row;
+    }
+
+    > * {
+      display: block;
+
+      @include media(desktop) {
+        display: table-cell;
+        padding: em(4, 19) em(60, 19) em(4, 19) 0;
+        margin: 0;
+      }
+    }
+
+    @include media(desktop) {
+      &:first-child > * {
+        padding-top: 0;
+      }
+    }
+  }
+
+  dt {
+    font-weight: bold;
+    margin: em(12, 19) 0 em(4,19) 0;
+  }
+
+  > *:first-child dt {
+    margin-top: 0;
+  }
+
+  dd {
+    padding-bottom: em(9, 19);
+    padding-right: 0;
   }
 }

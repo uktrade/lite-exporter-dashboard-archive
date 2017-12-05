@@ -4,7 +4,7 @@
 @(statusItemView: StatusItemView)
 <tr>
   <td class="status-table-stage">
-    <div class="bold-medium">@statusItemView.getStatus</div>
+    <div class="bold-small">@statusItemView.getStatus</div>
     @if(statusItemView.getStatusExplanation != "") {
       <p>@statusItemView.getStatusExplanation</p>
     }
@@ -41,7 +41,7 @@
         @statusLabel(default, "neutral")
       }
     }
-    @if(statusItemView.getProcessLabel != null) {
+    @if(statusItemView.getProcessDescription.length > 0) {
       <p class="secondary-text">@Html(statusItemView.getProcessDescription)</p>
     }
   </td>
