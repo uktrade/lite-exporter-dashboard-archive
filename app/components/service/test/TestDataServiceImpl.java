@@ -54,7 +54,6 @@ import models.WithdrawalRequest;
 import models.enums.DocumentType;
 import models.enums.DraftType;
 import models.enums.StatusType;
-import org.apache.commons.lang3.RandomUtils;
 import uk.gov.bis.lite.permissions.api.view.LicenceView;
 import uk.gov.bis.lite.permissions.api.view.LicenceView.Type;
 
@@ -273,11 +272,11 @@ public class TestDataServiceImpl implements TestDataService {
         OFFICER_ID,
         SITE_ID);
     CaseDetails caseDetails = new CaseDetails(application.getId(),
-        getCaseReference(),
+        RandomIdUtil.caseReference(),
         OFFICER_ID,
         application.getCreatedTimestamp());
-    applicationDao.insert(application);
     caseDetailsDao.insert(caseDetails);
+    applicationDao.update(application);
   }
 
   private void createDraftApplications(String userId) {
@@ -293,7 +292,7 @@ public class TestDataServiceImpl implements TestDataService {
           getApplicantReference(),
           OFFICER_ID,
           SITE_ID);
-      applicationDao.insert(app);
+      applicationDao.update(app);
     }
   }
 
@@ -301,7 +300,7 @@ public class TestDataServiceImpl implements TestDataService {
     for (int i = 0; i < 20; i++) {
       String appId = appId();
       Long submittedTimestamp = time(2017, 4, 6 + i, i, i);
-      String caseReference = getCaseReference();
+      String caseReference = RandomIdUtil.caseReference();
       Application app = new Application(appId,
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           userId,
@@ -312,12 +311,12 @@ public class TestDataServiceImpl implements TestDataService {
           getApplicantReference(),
           OFFICER_ID,
           SITE_ID);
-      applicationDao.insert(app);
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
           app.getCreatedTimestamp());
       caseDetailsDao.insert(caseDetails);
+      applicationDao.update(app);
       StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
           app.getId(),
           StatusType.INITIAL_CHECKS,
@@ -388,16 +387,16 @@ public class TestDataServiceImpl implements TestDataService {
           getApplicantReference(),
           OFFICER_ID,
           SITE_ID);
-      applicationDao.insert(app);
       CaseDetails caseDetails = new CaseDetails(appId,
-          getCaseReference(),
+          RandomIdUtil.caseReference(),
           OFFICER_ID,
           app.getCreatedTimestamp());
       caseDetailsDao.insert(caseDetails);
+      applicationDao.update(app);
     }
     // Create application with inform notice
     String appId = appId();
-    String caseReference = getCaseReference();
+    String caseReference = RandomIdUtil.caseReference();
     Application application = new Application(appId,
         TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
         OTHER_APPLICANT_ID,
@@ -408,12 +407,12 @@ public class TestDataServiceImpl implements TestDataService {
         getApplicantReference(),
         OFFICER_ID,
         SITE_ID);
-    applicationDao.insert(application);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
         application.getCreatedTimestamp());
     caseDetailsDao.insert(caseDetails);
+    applicationDao.update(application);
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         application.getId(),
         StatusType.INITIAL_CHECKS,
@@ -432,7 +431,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private String getApplicantReference() {
-    String cas = "Purchase order: " + randomNumber("GB") + " ";
+    String cas = "Purchase order: " + RandomIdUtil.randomNumber("GB") + " ";
     if (Math.random() < 0.33) {
       cas = cas + "Thingyma for Deep Blue Holland";
     } else if (Math.random() < 0.66) {
@@ -443,21 +442,9 @@ public class TestDataServiceImpl implements TestDataService {
     return cas;
   }
 
-  private String getCaseReference() {
-    return randomNumber("ECO");
-  }
-
-  private static String randomNumber(String prefix) {
-    StringBuilder stringBuilder = new StringBuilder();
-    for (int i = 0; i < 12; i++) {
-      stringBuilder.append(RandomUtils.nextInt(0, 9));
-    }
-    return prefix + stringBuilder.toString();
-  }
-
   private void createWithdrawnOrStoppedApplication(String userId, boolean stopped) {
     String appId = appId();
-    String caseReference = getCaseReference();
+    String caseReference = RandomIdUtil.caseReference();
     List<String> consigneeCountries;
     List<String> endUserCountries;
     if (stopped) {
@@ -477,12 +464,12 @@ public class TestDataServiceImpl implements TestDataService {
         getApplicantReference(),
         OFFICER_ID,
         SITE_ID);
-    applicationDao.insert(application);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
         application.getCreatedTimestamp());
     caseDetailsDao.insert(caseDetails);
+    applicationDao.update(application);
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.INITIAL_CHECKS,
@@ -559,7 +546,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   private void createAdvancedApplication(String userId) {
     String appId = appId();
-    String caseReference = getCaseReference();
+    String caseReference = RandomIdUtil.caseReference();
     String rfiId = rfiId();
     Application application = new Application(appId,
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
@@ -571,12 +558,12 @@ public class TestDataServiceImpl implements TestDataService {
         getApplicantReference(),
         OFFICER_ID,
         SITE_ID);
-    applicationDao.insert(application);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
         application.getCreatedTimestamp());
     caseDetailsDao.insert(caseDetails);
+    applicationDao.update(application);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(caseReference, rfiId).forEach(rfiDao::insertRfi);
     rfiReplyDao.insertRfiReply(createRfiReplyTestData(userId, rfiId));
@@ -667,12 +654,12 @@ public class TestDataServiceImpl implements TestDataService {
         getApplicantReference(),
         null,
         SITE_ID);
-    applicationDao.insert(application);
     CaseDetails caseDetails = new CaseDetails(appId,
-        getCaseReference(),
+        RandomIdUtil.caseReference(),
         OFFICER_ID,
         application.getCreatedTimestamp());
     caseDetailsDao.insert(caseDetails);
+    applicationDao.update(application);
     StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.INITIAL_CHECKS,
@@ -683,7 +670,7 @@ public class TestDataServiceImpl implements TestDataService {
   private void createCompletedApplications(String userId) {
     for (int k = 0; k < 10; k++) {
       String appId = appId();
-      String caseReference = getCaseReference();
+      String caseReference = RandomIdUtil.caseReference();
       List<String> consigneeCountries;
       List<String> endUserCountries;
       if (k == 0) {
@@ -703,12 +690,12 @@ public class TestDataServiceImpl implements TestDataService {
           getApplicantReference(),
           OFFICER_ID,
           SITE_ID);
-      applicationDao.insert(application);
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
           application.getCreatedTimestamp());
       caseDetailsDao.insert(caseDetails);
+      applicationDao.update(application);
       List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
           StatusType.TECHNICAL_ASSESSMENT,
           StatusType.LU_PROCESSING,
@@ -760,7 +747,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   private void insertCompletedCase(String appId) {
     long createdTimestamp = time(2016, 12, 20, 20, 20);
-    String caseReference = getCaseReference();
+    String caseReference = RandomIdUtil.caseReference();
     CaseDetails caseDetails = new CaseDetails(appId, caseReference, OFFICER_ID, createdTimestamp);
     caseDetailsDao.insert(caseDetails);
     List<Document> documents = new ArrayList<>();
@@ -780,7 +767,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   private void insertCase(String appId, boolean hasOutcome, boolean hasRfi, boolean hasInformLetter, boolean isStopped) {
     long createdTimestamp = time(2017, 2, 2, 2, 2);
-    String caseReference = getCaseReference();
+    String caseReference = RandomIdUtil.caseReference();
     CaseDetails caseDetails = new CaseDetails(appId, caseReference, OFFICER_ID, createdTimestamp);
     caseDetailsDao.insert(caseDetails);
     if (hasRfi) {
@@ -841,9 +828,9 @@ public class TestDataServiceImpl implements TestDataService {
         Long issueTimestamp = time(2015, 3, 1 + i, 15, 10);
         Long expiryTimestamp = status == LicenceView.Status.ACTIVE ? time(2019, 3, 1 + i, 15, 10) : time(2016, 3, 1 + i, 15, 10);
         LicenceView licenceView = new LicenceView();
-        licenceView.setLicenceRef(randomNumber("REF-"));
-        licenceView.setOriginalAppId(randomNumber("APP"));
-        licenceView.setOriginalExporterRef(randomNumber("EREF-"));
+        licenceView.setLicenceRef(RandomIdUtil.randomNumber("REF-"));
+        licenceView.setOriginalAppId(RandomIdUtil.randomNumber("APP"));
+        licenceView.setOriginalExporterRef(RandomIdUtil.randomNumber("EREF-"));
         licenceView.setCustomerId(customerId);
         licenceView.setSiteId(SITE_ID);
         licenceView.setType(Type.SIEL);

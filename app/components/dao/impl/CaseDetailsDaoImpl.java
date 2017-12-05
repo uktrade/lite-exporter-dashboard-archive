@@ -1,29 +1,54 @@
 package components.dao.impl;
 
 import components.dao.CaseDetailsDao;
+import components.dao.jdbi.ApplicationJDBIDao;
 import components.dao.jdbi.CaseDetailsJDBIDao;
+import components.util.JsonUtil;
+import models.Application;
+import models.CaseDetails;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.inject.Inject;
-import models.CaseDetails;
-import org.skife.jdbi.v2.DBI;
 
 public class CaseDetailsDaoImpl implements CaseDetailsDao {
 
-  private final CaseDetailsJDBIDao caseDetailsJDBIDao;
+  private final DBI dbi;
 
   @Inject
   public CaseDetailsDaoImpl(DBI dbi) {
-    this.caseDetailsJDBIDao = dbi.onDemand(CaseDetailsJDBIDao.class);
+    this.dbi = dbi;
   }
 
   @Override
   public void insert(CaseDetails caseDetails) {
-    caseDetailsJDBIDao.insert(caseDetails.getAppId(),
-        caseDetails.getCaseReference(),
-        caseDetails.getCreatedByUserId(),
-        caseDetails.getCreatedTimestamp());
+    try (Handle handle = dbi.open()) {
+      CaseDetailsJDBIDao caseDetailsJDBIDao = handle.attach(CaseDetailsJDBIDao.class);
+      ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
+      handle.useTransaction((conn, status) -> {
+        Application application = applicationJDBIDao.getApplication(caseDetails.getAppId());
+        if (application == null) {
+          applicationJDBIDao.insert(caseDetails.getAppId(),
+              null,
+              null,
+              caseDetails.getCreatedTimestamp(),
+              null,
+              JsonUtil.convertListToJson(new ArrayList<>()),
+              JsonUtil.convertListToJson(new ArrayList<>()),
+              null,
+              null,
+              null);
+        }
+        caseDetailsJDBIDao.insert(caseDetails.getAppId(),
+            caseDetails.getCaseReference(),
+            caseDetails.getCreatedByUserId(),
+            caseDetails.getCreatedTimestamp());
+      });
+    }
   }
 
   @Override
@@ -36,18 +61,27 @@ public class CaseDetailsDaoImpl implements CaseDetailsDao {
     if (appIds.isEmpty()) {
       return new ArrayList<>();
     } else {
-      return caseDetailsJDBIDao.getCaseDetailsListByAppIds(appIds);
+      try (Handle handle = dbi.open()) {
+        CaseDetailsJDBIDao caseDetailsJDBIDao = handle.attach(CaseDetailsJDBIDao.class);
+        return caseDetailsJDBIDao.getCaseDetailsListByAppIds(appIds);
+      }
     }
   }
 
   @Override
   public void deleteAllCaseDetails() {
-    caseDetailsJDBIDao.truncateTable();
+    try (Handle handle = dbi.open()) {
+      CaseDetailsJDBIDao caseDetailsJDBIDao = handle.attach(CaseDetailsJDBIDao.class);
+      caseDetailsJDBIDao.truncateTable();
+    }
   }
 
   @Override
   public void deleteCaseDetails(String caseReference) {
-    caseDetailsJDBIDao.deleteCaseDetails(caseReference);
+    try (Handle handle = dbi.open()) {
+      CaseDetailsJDBIDao caseDetailsJDBIDao = handle.attach(CaseDetailsJDBIDao.class);
+      caseDetailsJDBIDao.deleteCaseDetails(caseReference);
+    }
   }
 
 }

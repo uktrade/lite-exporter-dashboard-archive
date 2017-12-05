@@ -4,10 +4,11 @@ import com.google.inject.Inject;
 import components.dao.ApplicationDao;
 import components.dao.jdbi.ApplicationJDBIDao;
 import components.util.JsonUtil;
-import java.util.ArrayList;
-import java.util.List;
 import models.Application;
 import org.skife.jdbi.v2.DBI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ApplicationDaoImpl implements ApplicationDao {
 
@@ -29,11 +30,6 @@ public class ApplicationDaoImpl implements ApplicationDao {
   }
 
   @Override
-  public List<Application> getApplications(String id) {
-    return applicationJDBIDao.getApplications(id);
-  }
-
-  @Override
   public List<Application> getApplicationsByCustomerIds(List<String> customerIds) {
     if (customerIds.isEmpty()) {
       return new ArrayList<>();
@@ -43,8 +39,8 @@ public class ApplicationDaoImpl implements ApplicationDao {
   }
 
   @Override
-  public void insert(Application application) {
-    applicationJDBIDao.insert(application.getId(),
+  public void update(Application application) {
+    applicationJDBIDao.update(application.getId(),
         application.getCustomerId(),
         application.getCreatedByUserId(),
         application.getCreatedTimestamp(),

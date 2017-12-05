@@ -1,5 +1,7 @@
 package components.util;
 
+import org.apache.commons.lang3.RandomUtils;
+
 import java.util.UUID;
 
 public class RandomIdUtil {
@@ -80,4 +82,15 @@ public class RandomIdUtil {
     return prefix.toLowerCase() + "_" + UUID.randomUUID().toString().replace("-", "");
   }
 
+  public static String caseReference() {
+    return randomNumber("ECO");
+  }
+
+  public static String randomNumber(String prefix) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (int i = 0; i < 12; i++) {
+      stringBuilder.append(RandomUtils.nextInt(0, 9));
+    }
+    return prefix + stringBuilder.toString();
+  }
 }

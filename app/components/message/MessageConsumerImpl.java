@@ -6,6 +6,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import components.dao.ApplicationDao;
 import components.dao.CaseDetailsDao;
 import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
@@ -16,14 +17,7 @@ import components.dao.WithdrawalRejectionDao;
 import components.exceptions.ValidationException;
 import components.util.EnumUtil;
 import components.util.RandomIdUtil;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import models.Application;
 import models.CaseDetails;
 import models.Document;
 import models.File;
@@ -52,6 +46,16 @@ import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiCrea
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiWithdrawalCreate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardWithdrawalReject;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 public class MessageConsumerImpl extends DefaultConsumer implements MessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageConsumerImpl.class);
@@ -65,6 +69,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   private final OutcomeDao outcomeDao;
   private final WithdrawalRejectionDao withdrawalRejectionDao;
   private final CaseDetailsDao caseDetailsDao;
+  private final ApplicationDao applicationDao;
 
   @Inject
   public MessageConsumerImpl(
@@ -75,7 +80,8 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
       RfiWithdrawalDao rfiWithdrawalDao,
       OutcomeDao outcomeDao,
       WithdrawalRejectionDao withdrawalRejectionDao,
-      CaseDetailsDao caseDetailsDao) {
+      CaseDetailsDao caseDetailsDao,
+      ApplicationDao applicationDao) {
     super(channel);
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
@@ -84,6 +90,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     this.outcomeDao = outcomeDao;
     this.withdrawalRejectionDao = withdrawalRejectionDao;
     this.caseDetailsDao = caseDetailsDao;
+    this.applicationDao = applicationDao;
   }
 
   @Override
@@ -96,6 +103,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
       reject(envelope);
       return;
     }
+    LOGGER.info("received queue message " + consumerRoutingKey.toString() + " " + message);
     try {
       switch (consumerRoutingKey) {
         case RFI:
@@ -127,6 +135,9 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
           break;
         case CASE_CREATE:
           insertCaseCreate(message);
+          break;
+        case SIEL_SUBMIT:
+          insertSielSubmit(message);
           break;
         default:
           throw new ValidationException("Unknown routing key " + consumerRoutingKey);
@@ -298,6 +309,12 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     caseDetailsDao.insert(caseDetails);
   }
 
+  private void insertSielSubmit(String message) {
+    Application application = parse(message, Application.class);
+    validate(application);
+    applicationDao.update(application);
+  }
+
   private void reject(Envelope envelope) throws IOException {
     getChannel().basicReject(envelope.getDeliveryTag(), false);
   }
@@ -315,7 +332,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
         return object;
       }
     } catch (IOException ioe) {
-      throw new ValidationException("Unable to parse message into class " + clazz.getSimpleName());
+      throw new ValidationException("Unable to parse message into class " + clazz.getSimpleName(), ioe);
     }
   }
 
