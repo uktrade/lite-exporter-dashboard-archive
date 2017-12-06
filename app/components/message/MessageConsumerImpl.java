@@ -13,6 +13,7 @@ import components.dao.OutcomeDao;
 import components.dao.RfiDao;
 import components.dao.RfiWithdrawalDao;
 import components.dao.StatusUpdateDao;
+import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.exceptions.ValidationException;
 import components.util.EnumUtil;
@@ -27,6 +28,7 @@ import models.Outcome;
 import models.Rfi;
 import models.RfiWithdrawal;
 import models.StatusUpdate;
+import models.WithdrawalApproval;
 import models.WithdrawalRejection;
 import models.enums.DocumentType;
 import models.enums.StatusType;
@@ -44,10 +46,10 @@ import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcome
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeIssue;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiCreate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiWithdrawalCreate;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardWithdrawalAccept;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardWithdrawalReject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -68,6 +70,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   private final RfiWithdrawalDao rfiWithdrawalDao;
   private final OutcomeDao outcomeDao;
   private final WithdrawalRejectionDao withdrawalRejectionDao;
+  private final WithdrawalApprovalDao withdrawalApprovalDao;
   private final CaseDetailsDao caseDetailsDao;
   private final ApplicationDao applicationDao;
 
@@ -80,6 +83,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
       RfiWithdrawalDao rfiWithdrawalDao,
       OutcomeDao outcomeDao,
       WithdrawalRejectionDao withdrawalRejectionDao,
+      WithdrawalApprovalDao withdrawalApprovalDao,
       CaseDetailsDao caseDetailsDao,
       ApplicationDao applicationDao) {
     super(channel);
@@ -89,6 +93,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     this.rfiWithdrawalDao = rfiWithdrawalDao;
     this.outcomeDao = outcomeDao;
     this.withdrawalRejectionDao = withdrawalRejectionDao;
+    this.withdrawalApprovalDao = withdrawalApprovalDao;
     this.caseDetailsDao = caseDetailsDao;
     this.applicationDao = applicationDao;
   }
@@ -132,6 +137,9 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
           break;
         case WITHDRAWAL_REJECTION:
           insertWithdrawalRejection(message);
+          break;
+        case WITHDRAWAL_ACCEPT:
+          insertWithdrawalAccept(message);
           break;
         case CASE_CREATE:
           insertCaseCreate(message);
@@ -293,10 +301,22 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
         dashboardWithdrawalReject.getAppId(),
         dashboardWithdrawalReject.getCreatedByUserId(),
         System.currentTimeMillis(),
-        new ArrayList<>(),
+        dashboardWithdrawalReject.getRecipientUserIds(),
         dashboardWithdrawalReject.getMessage());
     validate(withdrawalRejection);
     withdrawalRejectionDao.insertWithdrawalRejection(withdrawalRejection);
+  }
+
+  private void insertWithdrawalAccept(String message) {
+    DashboardWithdrawalAccept dashboardWithdrawalAccept = parse(message, DashboardWithdrawalAccept.class);
+    WithdrawalApproval withdrawalApproval = new WithdrawalApproval(dashboardWithdrawalAccept.getId(),
+        dashboardWithdrawalAccept.getAppId(),
+        dashboardWithdrawalAccept.getCreatedByUserId(),
+        dashboardWithdrawalAccept.getCreatedTimestamp(),
+        dashboardWithdrawalAccept.getRecipientUserIds(),
+        dashboardWithdrawalAccept.getMessage());
+    validate(withdrawalApproval);
+    withdrawalApprovalDao.insertWithdrawalApproval(withdrawalApproval);
   }
 
   private void insertCaseCreate(String message) {

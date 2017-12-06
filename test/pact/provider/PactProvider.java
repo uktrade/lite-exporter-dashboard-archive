@@ -9,8 +9,6 @@ import au.com.dius.pact.provider.junit.target.Target;
 import au.com.dius.pact.provider.junit.target.TestTarget;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.List;
 import org.junit.runner.RunWith;
 import uk.gov.bis.lite.exporterdashboard.api.AmendmentMessage;
 import uk.gov.bis.lite.exporterdashboard.api.DashboardDocument;
@@ -20,6 +18,9 @@ import uk.gov.bis.lite.exporterdashboard.api.RfiReplyMessage;
 import uk.gov.bis.lite.exporterdashboard.api.RfiWithdrawalReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestAcceptReadMessage;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestMessage;
+
+import java.util.Collections;
+import java.util.List;
 
 @RunWith(PactRunner.class)
 @Provider("lite-exporter-dashboard")
