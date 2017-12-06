@@ -2,7 +2,11 @@
   background: $grey-4;
   border: 1px solid $border-colour;
   max-width: 700px;
-  margin-bottom: $gutter;
+  margin-bottom: $gutter * 1.5;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   & > header {
     padding: $gutter-two-thirds $gutter;
@@ -92,6 +96,7 @@
 .message-reply-panel {
   background: $white;
   margin-left: 7%;
+  margin-top: -$gutter;
 
   @include media(mobile) {
     margin-left: 0;
