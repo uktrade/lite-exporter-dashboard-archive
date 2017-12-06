@@ -11,6 +11,16 @@
     @include media(mobile) {
       padding: $gutter-two-thirds;
     }
+
+    .new-indicator {
+      margin-left: $gutter-one-third;
+    }
+
+    @include media(tablet) {
+      .new-indicator {
+        float: right;
+      }
+    }
   }
 
   & > article {
@@ -26,8 +36,12 @@
   }
 
   & > footer {
-    padding: $gutter-two-thirds $gutter;
+    padding: $gutter;
     border-top: 1px solid $border-colour;
+
+    @include media(mobile) {
+      padding: $gutter-two-thirds;
+    }
   }
 
   h3 {
@@ -99,9 +113,4 @@
 .icon-reply {
   @include icon(icon-reply, 32, 25, "../images");
   display: inline-block;
-}
-
-.gray-out {
-  opacity: 0.5; /* Real browsers */
-  filter: alpha(opacity=50); /* MSIE */
 }

@@ -93,6 +93,10 @@ button.file-upload-button {
 .file-upload-status {
   position: relative;
 
+  @include media(tablet) {
+    width: 50%;
+  }
+
   .status-label {
     position: relative;
     z-index: 10;
