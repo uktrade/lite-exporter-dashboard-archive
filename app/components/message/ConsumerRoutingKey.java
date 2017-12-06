@@ -11,6 +11,7 @@ public enum ConsumerRoutingKey {
   OUTCOME_ISSUE("outcome.issue"),
   OUTCOME_AMEND("outcome.amend"),
   WITHDRAWAL_REJECTION("withdrawalrequest.reject"),
+  WITHDRAWAL_ACCEPT("withdrawalrequest.accept"),
   CASE_CREATE("case.create"),
   SIEL_SUBMIT("siel.submit");
 

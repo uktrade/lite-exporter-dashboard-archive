@@ -21,6 +21,7 @@ import components.dao.OutcomeDao;
 import components.dao.RfiDao;
 import components.dao.RfiWithdrawalDao;
 import components.dao.StatusUpdateDao;
+import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.message.ConsumerRoutingKey;
 import components.message.MessageConsumer;
@@ -33,6 +34,7 @@ import models.Outcome;
 import models.Rfi;
 import models.RfiWithdrawal;
 import models.StatusUpdate;
+import models.WithdrawalApproval;
 import models.WithdrawalRejection;
 import models.enums.DocumentType;
 import models.enums.StatusType;
@@ -55,6 +57,7 @@ public class SpireRelayServicePact {
   private final WithdrawalRejectionDao withdrawalRejectionDao = mock(WithdrawalRejectionDao.class);
   private final CaseDetailsDao caseDetailsDao = mock(CaseDetailsDao.class);
   private final ApplicationDao applicationDao = mock(ApplicationDao.class);
+  private final WithdrawalApprovalDao withdrawalApprovalDao = mock(WithdrawalApprovalDao.class);
   private final Channel channel = mock(Channel.class);
   private final MessageConsumer messageConsumer = new MessageConsumerImpl(channel,
       rfiDao,
@@ -63,6 +66,7 @@ public class SpireRelayServicePact {
       rfiWithdrawalDao,
       outcomeDao,
       withdrawalRejectionDao,
+      withdrawalApprovalDao,
       caseDetailsDao,
       applicationDao);
 
@@ -226,11 +230,31 @@ public class SpireRelayServicePact {
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
+  public MessagePact createWithdrawalAcceptance(MessagePactBuilder builder) {
+    DslPart dslPart = new PactDslJsonBody()
+        .stringType("id", "withdrawalAcceptId")
+        .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
+        .integerType("createdTimestamp", 123456789L)
+        .stringType("createdByUserId", "createdByUserId")
+        .stringType("message", "This is a withdrawal acceptance.")
+        .array("recipientUserIds")
+        .stringType("recipient")
+        .closeArray();
+    return builder.expectsToReceive("a withdrawal acceptance")
+        .withContent(dslPart)
+        .toPact();
+  }
+
+  @Pact(provider = PROVIDER, consumer = CONSUMER)
   public MessagePact createWithdrawalRejection(MessagePactBuilder builder) {
     DslPart dslPart = new PactDslJsonBody()
         .stringType("appId", "appId")
         .stringType("createdByUserId", "createdByUserId")
-        .stringType("message", "This is a withdrawal rejection.");
+        .stringType("message", "This is a withdrawal rejection.")
+        .array("recipientUserIds")
+        .stringType("recipient")
+        .closeArray();
     return builder.expectsToReceive("a withdrawal rejection")
         .withContent(dslPart)
         .toPact();
@@ -407,6 +431,24 @@ public class SpireRelayServicePact {
   }
 
   @Test
+  @PactVerification(value = PROVIDER, fragment = "createWithdrawalAcceptance")
+  public void receiveWithdrawalAcceptance() throws Exception {
+    handleDelivery(ConsumerRoutingKey.WITHDRAWAL_ACCEPT);
+    verify(channel).basicAck(0, false);
+    ArgumentCaptor<WithdrawalApproval> captor = ArgumentCaptor.forClass(WithdrawalApproval.class);
+    verify(withdrawalApprovalDao).insertWithdrawalApproval(captor.capture());
+
+    WithdrawalApproval withdrawalApproval = captor.getValue();
+    assertThat(withdrawalApproval.getId()).isEqualTo("withdrawalAcceptId");
+    assertThat(withdrawalApproval.getAppId()).isEqualTo("appId");
+    assertThat(withdrawalApproval.getCreatedByUserId()).isEqualTo("createdByUserId");
+    assertThat(withdrawalApproval.getCreatedTimestamp()).isEqualTo(123456789L);
+    assertThat(withdrawalApproval.getRecipientUserIds()).containsExactly("recipient");
+    assertThat(withdrawalApproval.getMessage()).isEqualTo("This is a withdrawal acceptance.");
+
+  }
+
+  @Test
   @PactVerification(value = PROVIDER, fragment = "createWithdrawalRejection")
   public void receiveWithdrawalRejection() throws Exception {
     handleDelivery(ConsumerRoutingKey.WITHDRAWAL_REJECTION);
@@ -419,6 +461,7 @@ public class SpireRelayServicePact {
     assertThat(withdrawalRejection.getAppId()).isEqualTo("appId");
     assertThat(withdrawalRejection.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(withdrawalRejection.getMessage()).isEqualTo("This is a withdrawal rejection.");
+    assertThat(withdrawalRejection.getRecipientUserIds()).containsExactly("recipient");
   }
 
   @Test

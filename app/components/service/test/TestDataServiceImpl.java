@@ -539,7 +539,7 @@ public class TestDataServiceImpl implements TestDataService {
           OFFICER_ID,
           time(2017, 1, 5, 13, 10),
           RECIPIENTS,
-          "");
+          null);
       withdrawalApprovalDao.insertWithdrawalApproval(withdrawalApproval);
     }
   }
