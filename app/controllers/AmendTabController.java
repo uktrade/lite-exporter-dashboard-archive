@@ -132,11 +132,13 @@ public class AmendTabController extends SamlController {
       String message = amendApplicationForm.get().message;
       if (action == Action.AMEND) {
         amendmentService.insertAmendment(userId, appId, message, uploadFiles);
-        flash("success", "Your amendment request has been sent<br>A case officer will deal with it shortly");
+        flash("message", "Your amendment request has been sent");
+        flash("detail", "A case officer will deal with it shortly");
       } else if (action == Action.WITHDRAW) {
         withdrawalRequestService.insertWithdrawalRequest(userId, appId, message, uploadFiles);
-        flash("success", "Your withdrawal request has been sent<br>A case officer will deal with it shortly. "
-            + "You cannot make any further withdrawal or amendment requests while this one is pending.");
+        flash("message", "Your withdrawl request has been sent");
+        flash("detail", "A case officer will deal with it shortly. You cannot make any further withdrawl or amendment " +
+                "requests while this one is pending");
       }
       return redirect(routes.AmendTabController.showAmendTab(appId));
     }

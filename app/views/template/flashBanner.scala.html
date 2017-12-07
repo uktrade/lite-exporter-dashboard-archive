@@ -1,4 +1,9 @@
-@(flashType: String = "")(message: Html)
+@(flashType: String = "")(message: Html)(detail: Html = Html(""))
 <div class="flash @if(flashType != ""){ @flashType-flash }" role="alert">
-  @message
+  <span class="flash-heading">@message</span>
+  @if(detail.toString.trim.length > 0) {
+    <div class="flash-detail">
+      @detail
+    </div>
+  }
 </div>

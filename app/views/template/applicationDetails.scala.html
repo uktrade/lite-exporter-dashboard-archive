@@ -10,9 +10,13 @@
       @errorSummary(form)
     }
 
-    @if(flash.containsKey("success")) {
+    @if(flash.containsKey("message")) {
       @flashBanner("success") {
-        @Html(flash.get("success"))
+        @Html(flash.get("message"))
+      } {
+        @if(flash.containsKey("detail")) {
+          @Html(flash.get("detail"))
+        }
       }
     }
 
