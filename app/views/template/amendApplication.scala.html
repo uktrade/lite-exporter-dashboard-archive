@@ -15,7 +15,7 @@
 
       @views.html.helper.CSRF.formField
 
-      @formRadioGroup(form("action"), amendmentView.getSelectOptions) {
+      @formRadioGroup(form("action"), amendmentView.getSelectOptions, inline = true) {
         What sort of change do you want to request?
       }
 
