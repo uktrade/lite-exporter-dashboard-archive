@@ -59,6 +59,11 @@ th {
     }
   }
 
+  tfoot td {
+    border-bottom: none;
+    color: $secondary-text-colour;
+  }
+
 }
 
 .sort-arrow {
