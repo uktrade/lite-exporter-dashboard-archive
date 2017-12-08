@@ -1,41 +1,26 @@
 @import models.view.OfficerView
 @import template._
 
-@(appId: String, officerView: OfficerView)
+@(caseReference: String, officerView: OfficerView)
 
 @if(officerView != null) {
   <hr>
 
   <p>For general enquiries related to this application, please contact your case officer.</p>
 
-  <div class="grid-row">
-
-    <div class="column-one-quarter">
-      <div class="heading-small" id="case-officer-name">
-        Case Officer
-      </div>
-      <div aria-labelledby="case-officer-name">
+  <dl class="summary-list">
+    @summaryElement("Case officer") {
       @officerView.getName
-      </div>
-    </div>
+      }
 
-    <div class="column-one-quarter">
-      <div class="heading-small" id="case-officer-telephone">
-        Telephone
-      </div>
-      <div aria-labelledby="case-officer-telephone">
+    @summaryElement("Telephone") {
       @telephoneLink(officerView.getTelephone)
-      </div>
-    </div>
+    }
 
-    <div class="column-one-quarter">
-      <div class="heading-small" id="case-officer-email">
-        Email
-      </div>
-      <div aria-labelledby="case-officer-email">
-        <a href="mailto:j.mcguire@@trade.gov.uk?subject=@appId - applicant enquiry">@officerView.getEmail</a>
-      </div>
-    </div>
+    @summaryElement("Email") {
+      <a href="mailto:@officerView.getEmail?subject=@caseReference - applicant enquiry">@officerView.getEmail</a>
+    }
+  </dl>
 
-  </div>
+  <hr>
 }
