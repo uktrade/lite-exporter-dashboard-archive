@@ -1,53 +1,54 @@
-@import models.enums.Action
-@import models.view.{ApplicationSummaryView, AmendmentView, ApplicationTabsView, PreviousRequestItemView}
+@import models.view.{ApplicationSummaryView, AmendmentView, ApplicationTabsView}
+@import views.html.common.page.twoThirdsColumn
 @import template._
 
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, amendmentView: AmendmentView, form: play.data.Form[_])
 
 @applicationDetails(applyLink, applicationSummaryView, "amend", applicationTabsView, form) {
   @if(!amendmentView.getPreviousRequestItemViews.isEmpty) {
-    <div class="heading-medium">
-      Previous requests
-    </div>
-    <div class="scrollable-table">
-      <table class="table-align-top">
-        <thead>
-          <tr>
-            <th role="columnheader">
-              Date
-            </th>
-            <th role="columnheader">
-              Type
-            </th>
-            <th role="columnheader">
-              Details
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-        @for(previousRequestItemView <- amendmentView.getPreviousRequestItemViews) {
-          <tr>
-            <td class="no-wrap">
+    @twoThirdsColumn {
+      <h2 class="heading-medium">
+        Previous requests
+      </h2>
+      <div class="scrollable-table">
+        <table class="table-align-top">
+          <thead>
+            <tr>
+              <th>
+                Date
+              </th>
+              <th>
+                Type
+              </th>
+              <th>
+                <span class="visually-hidden">Details</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+          @for(previousRequestItemView <- amendmentView.getPreviousRequestItemViews) {
+            <tr>
+              <td class="no-wrap">
               @previousRequestItemView.getDate
-            </td>
-            <td>
-              @previousRequestItemView.getType
-              @if(previousRequestItemView.getIndicator!=null) {
-                (@previousRequestItemView.getIndicator)
-              }
-            </td>
-            <td>
-              <a href="@previousRequestItemView.getLink">View</a>
-            </td>
-          </tr>
-        }
-        </tbody>
-      </table>
-    </div>
-    <p></p>
-    <div class="heading-medium">
+              </td>
+              <td>
+                @previousRequestItemView.getType
+                @if(previousRequestItemView.getIndicator != null) {
+                  (@previousRequestItemView.getIndicator)
+                }
+              </td>
+              <td>
+                <a href="@previousRequestItemView.getLink">View<span class="visually-hidden"> details of this @previousRequestItemView.getType request</span></a>
+              </td>
+            </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+    }
+    <h2 class="heading-medium">
       Make another request
-    </div>
+    </h2>
   }
   @if(amendmentView.isHasCreatorOrAdminPermission) {
     @if(amendmentView.isApplicationInProgress) {
