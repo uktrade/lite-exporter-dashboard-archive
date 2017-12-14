@@ -1,5 +1,5 @@
 @(text: String, href: String, current: Boolean = false, newInformation: Boolean = false)
 
 <li @if(current){class="active" }>
-  <a href="@href" role="tab" aria-selected="@current">@text @if(newInformation){<span class="new-indicator">New</span>}</a>
+  <a href="@href" role="tab" aria-selected="@current">@text @if(newInformation){@newIndicator()}</a>
 </li>

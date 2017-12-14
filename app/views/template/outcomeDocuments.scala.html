@@ -1,5 +1,7 @@
 @import models.view.{InformLetterSectionView, OutcomeView}
 @import views.html.common.page.{detailPanel, twoThirdsColumn}
+@import template.newIndicator
+
 @(outcomeViews: java.util.List[OutcomeView], informLetterSectionView: InformLetterSectionView)
 
 @twoThirdsColumn {
@@ -11,7 +13,7 @@
     <br>
     <h3 class="heading-small" id="outcome-documents">Outcome documents
       @if(outcomeViews.get(0).isShowNewIndicator) {
-        (new)
+        @newIndicator()
       }
     </h3>
     <ul class="outcome-documents-list">

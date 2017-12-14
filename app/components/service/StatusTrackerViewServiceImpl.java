@@ -32,6 +32,7 @@ import models.enums.StatusType;
 import models.view.NotificationView;
 import models.view.StatusItemView;
 import models.view.StatusTrackerView;
+import utils.common.ViewUtil;
 
 public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 
@@ -342,11 +343,11 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
       if (createdTimestamp != null) {
         if (finishedTimestamp != null) {
           long duration = TimeUtil.daysBetweenWithStartBeforeEnd(createdTimestamp, finishedTimestamp);
-          return "Processed in " + duration + " working days";
+          return "Processed in " + ViewUtil.pluraliseWithCount(duration, "working day") + "*";
         } else {
           String started = TimeUtil.formatDate(createdTimestamp);
           long duration = TimeUtil.daysBetweenWithStartBeforeEnd(createdTimestamp, Instant.now().toEpochMilli());
-          return String.format("Started on %s<br>(%d days ago)", started, duration);
+          return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
         }
       } else {
         return "";

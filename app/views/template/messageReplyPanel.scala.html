@@ -1,4 +1,5 @@
 @import models.view.MessageReplyView
+@import template.newIndicator
 
 @(messageReplyView: MessageReplyView)
 
@@ -7,7 +8,7 @@
     <h3 class="heading-small">
       @messageReplyView.getTitle
       @if(messageReplyView.isShowNewIndicator) {
-      (new)
+        @newIndicator()
       }
     </h3>
 

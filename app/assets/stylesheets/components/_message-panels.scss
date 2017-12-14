@@ -2,7 +2,11 @@
   background: $grey-4;
   border: 1px solid $border-colour;
   max-width: 700px;
-  margin-bottom: $gutter;
+  margin-bottom: $gutter * 1.5;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   & > header {
     padding: $gutter-two-thirds $gutter;
@@ -10,6 +14,16 @@
 
     @include media(mobile) {
       padding: $gutter-two-thirds;
+    }
+
+    .new-indicator {
+      margin-left: $gutter-one-third;
+    }
+
+    @include media(tablet) {
+      .new-indicator {
+        float: right;
+      }
     }
   }
 
@@ -26,8 +40,12 @@
   }
 
   & > footer {
-    padding: $gutter-two-thirds $gutter;
+    padding: $gutter;
     border-top: 1px solid $border-colour;
+
+    @include media(mobile) {
+      padding: $gutter-two-thirds;
+    }
   }
 
   h3 {
@@ -78,6 +96,7 @@
 .message-reply-panel {
   background: $white;
   margin-left: 7%;
+  margin-top: -$gutter;
 
   @include media(mobile) {
     margin-left: 0;
@@ -99,9 +118,4 @@
 .icon-reply {
   @include icon(icon-reply, 32, 25, "../images");
   display: inline-block;
-}
-
-.gray-out {
-  opacity: 0.5; /* Real browsers */
-  filter: alpha(opacity=50); /* MSIE */
 }

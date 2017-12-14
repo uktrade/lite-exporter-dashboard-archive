@@ -11,7 +11,6 @@
   </header>
 
   <article>
-    <h4 class="heading-small">Message</h4>
     <div>
 
       <form action="@routes.RfiTabController.submitReply(appId)" method="POST" enctype="multipart/form-data">
@@ -19,7 +18,7 @@
         @views.html.helper.CSRF.formField
 
         @formTextarea(rfiReplyForm("replyMessage"), rows = "4", cssClass = "form-control-wide") {
-
+          <span class="heading-small">Message</span>
         }
         <input type="hidden" name="rfiId" value="@rfiReplyForm("rfiId").value" >
 

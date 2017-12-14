@@ -1,33 +1,25 @@
-@import models.enums.Action
 @import models.enums.DraftType
 @import models.view.AmendmentView
-@import play.data.Form
-@import utils.common.SelectOption
+@import views.html.common.page.twoThirdsColumn
 @import views.html.common.form._
 
 @(appId: String, form: play.data.Form[_], amendmentView: AmendmentView)
 
-<article>
+@twoThirdsColumn {
+  <form action="@routes.AmendTabController.showAmendTab(appId)" method="POST" enctype="multipart/form-data">
 
-  <div>
+    @views.html.helper.CSRF.formField
 
-    <form action="@routes.AmendTabController.showAmendTab(appId)" method="POST" enctype="multipart/form-data">
+    @formRadioGroup(form("action"), amendmentView.getSelectOptions, "heading-small", true){
+      What sort of change do you want to request?
+    }
 
-      @views.html.helper.CSRF.formField
+    @formTextarea(form("message"), rows = "4", cssClass = "form-control-wide") {
+      <span class="heading-small">Please provide details of your request</span>
+    }
 
-      @formRadioGroup(form("action"), amendmentView.getSelectOptions) {
-        What sort of change do you want to request?
-      }
-
-      <h4 class="heading-small">Please provide details of your request</h4>
-      @formTextarea(form("message"), rows = "4", cssClass = "form-control-wide") {
-
-      }
-
-      <h4 class="heading-small">Optionally attach files to support your request</h4>
-      @fileUpload(appId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL, amendmentView.getFileViews)
-      <button class="button">Send</button>
-    </form>
-
-  </div>
-</article>
+    <h4 class="heading-small">Optionally attach files to support your request</h4>
+    @fileUpload(appId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL, amendmentView.getFileViews)
+    <button class="button">Send</button>
+  </form>
+}

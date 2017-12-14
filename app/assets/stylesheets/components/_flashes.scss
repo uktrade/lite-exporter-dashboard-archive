@@ -1,36 +1,27 @@
 .flash {
-  @include bold-24;
-  background: $govuk-blue;
-  color: white;
+  border:  5px solid $light-blue;
+  background: $light-blue-25;
   margin-top: $gutter;
-  padding: $gutter-two-thirds $gutter;
+  padding: $gutter-half $gutter-two-thirds;
   display: inline-block;
   position: relative;
   box-sizing: border-box;
 
   @include media(mobile) {
     width: 100%;
+    padding: $gutter-one-third $gutter-half;
+  }
+
+  .flash-heading {
+    @include bold-24;
+  }
+
+  .flash-detail {
+    margin-top: $gutter-one-third;
   }
 }
 
 .success-flash {
-  background: $turquoise;
-  padding-left: $gutter + 40px;
-
-  &:before {
-    content: "";
-    border: solid;
-    border-width: 0 0 5px 5px;
-    background: transparent;
-    width: 17px;
-    height: 7px;
-    position: absolute;
-    top: $gutter - 6px;
-    left: $gutter;
-    -moz-transform: rotate(-45deg); // Firefox 15 compatibility
-    -o-transform: rotate(-45deg); // Opera 12.0 compatibility
-    -webkit-transform: rotate(-45deg); // Safari 8 compatibility
-    -ms-transform: rotate(-45deg); // IE9 compatibility
-    transform: rotate(-45deg);
-  }
+  border-color: $green;
+  background: $green-25;
 }

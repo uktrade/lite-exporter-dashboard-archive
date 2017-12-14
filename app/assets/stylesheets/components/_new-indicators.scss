@@ -1,0 +1,8 @@
+.new-indicator {
+  @include core-16;
+  border-radius: 100px;
+  background: $red;
+  color: $white;
+  padding: 0.2em 0.5em 0 0.5em;
+  display: inline-block;
+}

@@ -8,7 +8,7 @@
       <span class="rfi-icon large-icon"></span>
       Request for information
       @if(rfiView.isShowNewIndicator) {
-      (new)
+        @newIndicator()
       }
     </h3>
 
@@ -50,12 +50,10 @@
   </header>
 
   <article>
-    <div @if(rfiView.getWithdrawnDate != null) {
-      class="gray-out"}>
-      <h4 class="heading-small">Message</h4>
-      <div>
-      @Html(rfiView.getMessage)
-      </div>
+
+    <h4 class="heading-small">Message</h4>
+    <div>
+    @Html(rfiView.getMessage)
     </div>
 
     @if(rfiView.isAllowReply) {

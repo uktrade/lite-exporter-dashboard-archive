@@ -1,11 +1,13 @@
 @import models.view.InformLetterSectionView
+@import template.newIndicator
+
 @(informLetterSectionView: InformLetterSectionView)
 
 @if(!informLetterSectionView.getInformLetterViews.isEmpty) {
   <br>
   <h3 id="inform-letters" class="heading-small">Inform letters
   @if(informLetterSectionView.isShowNewIndicator) {
-    <span class="new-indicator">New</span>
+    @newIndicator()
   }
   </h3>
   <ul class="outcome-documents-list">
