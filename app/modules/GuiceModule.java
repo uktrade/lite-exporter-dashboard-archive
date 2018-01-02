@@ -108,7 +108,6 @@ import play.db.Database;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 
 public class GuiceModule extends AbstractModule {
 
@@ -245,10 +244,10 @@ public class GuiceModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public DBI provideDataSourceDbi(Database database) {
-    Properties properties = new Properties();
-    properties.setProperty("foreign_keys", "true");
-    return new DBI(database.getUrl(), properties);
+  public DBI provideDataSourceDbi(Configuration configuration, Database database) {
+    return new DBI(database.getUrl(),
+        configuration.getString("db.default.username"),
+        configuration.getString("db.default.password"));
   }
 
 }

@@ -25,7 +25,7 @@ libraryDependencies ++= Seq(
   javaWs,
   filters,
   "org.flywaydb" %% "flyway-play" % "3.2.0",
-  "org.xerial" % "sqlite-jdbc" % "3.19.3",
+  "org.postgresql" % "postgresql" % "42.1.4",
   "org.jdbi" % "jdbi" % "2.78",
   "com.rabbitmq" % "amqp-client" % "4.2.0"
 )
