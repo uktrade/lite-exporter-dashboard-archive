@@ -13,7 +13,8 @@ public enum ConsumerRoutingKey {
   WITHDRAWAL_REJECTION("withdrawalrequest.reject"),
   WITHDRAWAL_ACCEPT("withdrawalrequest.accept"),
   CASE_CREATE("case.create"),
-  SIEL_SUBMIT("siel.submit");
+  SIEL_SUBMIT("siel.submit"),
+  OFFICER_UPDATE("officer.update");
 
   private final String text;
 

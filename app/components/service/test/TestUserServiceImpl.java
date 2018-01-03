@@ -22,8 +22,21 @@ public class TestUserServiceImpl implements UserService {
   }
 
   static {
-    users.put(TestDataServiceImpl.OTHER_APPLICANT_ID, new User("2", "Christoph", "Mueller", null, null));
-    users.put(TestDataServiceImpl.OFFICER_ID, new User("3", "Jerry", "McGuire", "j.mcguire@trade.gov.uk", "01234 567890"));
+    users.put(TestDataServiceImpl.OTHER_APPLICANT_ID, new User(TestDataServiceImpl.OTHER_APPLICANT_ID,
+        "Christoph",
+        "Mueller",
+        null,
+        null));
+    users.put(TestDataServiceImpl.OFFICER_ID, new User(TestDataServiceImpl.OFFICER_ID,
+        "Jerry",
+        "McGuire",
+        "j.mcguire@trade.gov.uk",
+        "01234 567890"));
+    users.put(TestDataServiceImpl.OTHER_OFFICER_ID, new User(TestDataServiceImpl.OTHER_OFFICER_ID,
+        "Tom",
+        "Baker",
+        "t.baker@trade.gov.uk",
+        "+44987654321"));
   }
 
   @Override
