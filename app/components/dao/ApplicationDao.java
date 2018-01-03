@@ -12,6 +12,8 @@ public interface ApplicationDao {
 
   List<Application> getApplicationsByCustomerIds(List<String> customerIds);
 
+  void updateCaseOfficerId(String id, String caseOfficerId);
+
   void update(Application application);
 
   void deleteAllApplications();

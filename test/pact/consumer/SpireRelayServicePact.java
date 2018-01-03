@@ -273,6 +273,19 @@ public class SpireRelayServicePact {
         .toPact();
   }
 
+  @Pact(provider = PROVIDER, consumer = CONSUMER)
+  public MessagePact createCaseOfficerUpdate(MessagePactBuilder builder) {
+    DslPart dslPart = new PactDslJsonBody()
+        .stringType("appId", "appId")
+        .stringType("caseRef", "caseRef")
+        .stringType("caseOfficerId", "caseOfficerId")
+        .integerType("createdTimestamp", 123456789L);
+
+    return builder.expectsToReceive("case officer update")
+        .withContent(dslPart)
+        .toPact();
+  }
+
   @Test
   @PactVerification(value = PROVIDER, fragment = "createStatusUpdate")
   public void receiveStatusUpdate() throws Exception {
@@ -477,6 +490,14 @@ public class SpireRelayServicePact {
     assertThat(caseDetails.getCaseReference()).isEqualTo("caseRef");
     assertThat(caseDetails.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(caseDetails.getCreatedTimestamp()).isEqualTo(123456789L);
+  }
+
+  @Test
+  @PactVerification(value = PROVIDER, fragment = "createCaseOfficerUpdate")
+  public void receiveCaseOfficerUpdate() throws IOException {
+    handleDelivery(ConsumerRoutingKey.OFFICER_UPDATE);
+    verify(channel).basicAck(0, false);
+    verify(applicationDao).updateCaseOfficerId("appId", "caseOfficerId");
   }
 
   private void handleDelivery(ConsumerRoutingKey consumerRoutingKey) throws IOException {

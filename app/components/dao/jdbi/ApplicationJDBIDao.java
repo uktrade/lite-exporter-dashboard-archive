@@ -25,10 +25,14 @@ public interface ApplicationJDBIDao {
   @SqlQuery("SELECT COUNT(*) FROM APPLICATION")
   long getApplicationCount();
 
+  @SqlUpdate("UPDATE APPLICATION SET CASE_OFFICER_ID = :caseOfficerId WHERE ID = :id")
+  void updateCaseOfficerId(@Bind("id") String id,
+                           @Bind("caseOfficerId") String caseOfficerId);
+
   @SqlUpdate("UPDATE APPLICATION SET CUSTOMER_ID = :customerId, CREATED_BY_USER_ID = :createdByUserId, " +
       "CREATED_TIMESTAMP = :createdTimestamp, SUBMITTED_TIMESTAMP = :submittedTimestamp, " +
       "CONSIGNEE_COUNTRIES = :consigneeCountries, END_USER_COUNTRIES = :endUserCountries," +
-      "APPLICANT_REFERENCE = :applicantReference, CASE_OFFICER_ID = :caseOfficerId, SITE_ID = :siteId WHERE id = :id")
+      "APPLICANT_REFERENCE = :applicantReference, CASE_OFFICER_ID = :caseOfficerId, SITE_ID = :siteId WHERE ID = :id")
   void update(@Bind("id") String id,
               @Bind("customerId") String customerId,
               @Bind("createdByUserId") String createdByUserId,

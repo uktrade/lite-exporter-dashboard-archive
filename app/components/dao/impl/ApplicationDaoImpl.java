@@ -39,6 +39,11 @@ public class ApplicationDaoImpl implements ApplicationDao {
   }
 
   @Override
+  public void updateCaseOfficerId(String id, String caseOfficerId) {
+    applicationJDBIDao.updateCaseOfficerId(id, caseOfficerId);
+  }
+
+  @Override
   public void update(Application application) {
     applicationJDBIDao.update(application.getId(),
         application.getCustomerId(),

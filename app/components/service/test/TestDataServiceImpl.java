@@ -77,6 +77,7 @@ public class TestDataServiceImpl implements TestDataService {
 
   public static final String OTHER_APPLICANT_ID = "2";
   public static final String OFFICER_ID = "3";
+  public static final String OTHER_OFFICER_ID = "300";
 
   private static final String APP_QUEUE_ID = "app_queue";
 

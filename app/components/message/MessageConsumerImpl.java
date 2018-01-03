@@ -41,6 +41,7 @@ import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardMessage
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardNotificationDelay;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardNotificationInform;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardNotificationStop;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOfficerUpdate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeAmend;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeDocument;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeIssue;
@@ -146,6 +147,9 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
           break;
         case SIEL_SUBMIT:
           insertSielSubmit(message);
+          break;
+        case OFFICER_UPDATE:
+          insertCaseOfficerUpdate(message);
           break;
         default:
           throw new ValidationException("Unknown routing key " + consumerRoutingKey);
@@ -333,6 +337,12 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     Application application = parse(message, Application.class);
     validate(application);
     applicationDao.update(application);
+  }
+
+  private void insertCaseOfficerUpdate(String message) {
+    DashboardOfficerUpdate dashboardOfficerUpdate = parse(message, DashboardOfficerUpdate.class);
+    validate(dashboardOfficerUpdate);
+    applicationDao.updateCaseOfficerId(dashboardOfficerUpdate.getAppId(), dashboardOfficerUpdate.getCaseOfficerId());
   }
 
   private void reject(Envelope envelope) throws IOException {
