@@ -19,9 +19,6 @@ import components.upload.UploadMultipartParser;
 import components.util.ApplicationUtil;
 import components.util.EnumUtil;
 import components.util.FileUtil;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import models.AppData;
 import models.File;
 import models.ReadData;
@@ -43,6 +40,10 @@ import play.mvc.Result;
 import play.mvc.With;
 import utils.common.SelectOption;
 import views.html.amendApplicationTab;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @With(AppGuardAction.class)
 public class AmendTabController extends SamlController {
@@ -136,9 +137,9 @@ public class AmendTabController extends SamlController {
         flash("detail", "A case officer will deal with it shortly");
       } else if (action == Action.WITHDRAW) {
         withdrawalRequestService.insertWithdrawalRequest(userId, appId, message, uploadFiles);
-        flash("message", "Your withdrawl request has been sent");
-        flash("detail", "A case officer will deal with it shortly. You cannot make any further withdrawl or amendment " +
-                "requests while this one is pending");
+        flash("message", "Your withdrawal request has been sent");
+        flash("detail", "A case officer will deal with it shortly. You cannot make any further withdrawal or amendment " +
+            "requests while this one is pending");
       }
       return redirect(routes.AmendTabController.showAmendTab(appId));
     }

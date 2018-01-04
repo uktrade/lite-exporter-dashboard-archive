@@ -15,7 +15,6 @@ import components.service.UserService;
 import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.FileUtil;
-import java.util.List;
 import models.AppData;
 import models.ReadData;
 import models.enums.DraftType;
@@ -32,6 +31,8 @@ import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.With;
 import views.html.rfiListTab;
+
+import java.util.List;
 
 @With(AppGuardAction.class)
 public class RfiTabController extends SamlController {
@@ -111,7 +112,7 @@ public class RfiTabController extends SamlController {
     } else {
       String message = rfiReplyForm.get().replyMessage;
       rfiReplyService.insertRfiReply(userId, appId, rfiId, message, uploadFiles);
-      flash("success", "Your message has been sent.");
+      flash("message", "Your message has been sent");
       return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
     }
   }
