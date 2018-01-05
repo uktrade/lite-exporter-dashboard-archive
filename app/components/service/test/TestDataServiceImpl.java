@@ -21,7 +21,7 @@ import com.google.inject.Inject;
 import components.dao.AmendmentRequestDao;
 import components.dao.ApplicationDao;
 import components.dao.CaseDetailsDao;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.dao.NotificationDao;
 import components.dao.OutcomeDao;
 import components.dao.ReadDao;
@@ -134,7 +134,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final ApplicationDao applicationDao;
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final AmendmentRequestDao amendmentRequestDao;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
   private final OutcomeDao outcomeDao;
   private final NotificationDao notificationDao;
   private final WithdrawalRejectionDao withdrawalRejectionDao;
@@ -151,7 +151,7 @@ public class TestDataServiceImpl implements TestDataService {
                              ApplicationDao applicationDao,
                              WithdrawalRequestDao withdrawalRequestDao,
                              AmendmentRequestDao amendmentRequestDao,
-                             DraftDao draftDao,
+                             DraftFileDao draftFileDao,
                              OutcomeDao outcomeDao,
                              NotificationDao notificationDao,
                              WithdrawalRejectionDao withdrawalRejectionDao,
@@ -166,7 +166,7 @@ public class TestDataServiceImpl implements TestDataService {
     this.applicationDao = applicationDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.amendmentRequestDao = amendmentRequestDao;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
     this.outcomeDao = outcomeDao;
     this.notificationDao = notificationDao;
     this.withdrawalRejectionDao = withdrawalRejectionDao;
@@ -234,8 +234,8 @@ public class TestDataServiceImpl implements TestDataService {
         .collect(Collectors.toList());
     rfiIds.forEach(rfiReplyDao::deleteRfiRepliesByRfiId);
     rfiIds.forEach(rfiWithdrawalDao::deleteRfiWithdrawalByRfiId);
-    rfiIds.forEach(rfiId -> draftDao.deleteDraft(rfiId, DraftType.RFI_REPLY));
-    appIds.forEach(appId -> draftDao.deleteDraft(appId, DraftType.AMENDMENT_OR_WITHDRAWAL));
+    rfiIds.forEach(rfiId -> draftFileDao.deleteDraftFiles(rfiId, DraftType.RFI_REPLY));
+    appIds.forEach(appId -> draftFileDao.deleteDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL));
     caseReferences.forEach(notificationDao::deleteNotifications);
     readDao.deleteAllReadDataByUserId(userId);
     caseReferences.forEach(rfiDao::deleteRfiByCaseReference);
@@ -251,7 +251,7 @@ public class TestDataServiceImpl implements TestDataService {
     withdrawalRejectionDao.deleteAllWithdrawalRejections();
     withdrawalApprovalDao.deleteAllWithdrawalApprovals();
     amendmentRequestDao.deleteAllAmendmentRequests();
-    draftDao.deleteAllDrafts();
+    draftFileDao.deleteAllDraftFiles();
     outcomeDao.deleteAllOutcomes();
     notificationDao.deleteAllNotifications();
     rfiWithdrawalDao.deleteAllRfiWithdrawals();

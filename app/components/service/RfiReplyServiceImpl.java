@@ -3,7 +3,7 @@ package components.service;
 import static components.util.RandomIdUtil.rfiReplyId;
 
 import com.google.inject.Inject;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.dao.RfiReplyDao;
 import components.message.MessagePublisher;
 import components.upload.UploadFile;
@@ -20,13 +20,13 @@ import uk.gov.bis.lite.exporterdashboard.api.RfiReplyMessage;
 public class RfiReplyServiceImpl implements RfiReplyService {
 
   private final RfiReplyDao rfiReplyDao;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
   private final MessagePublisher messagePublisher;
 
   @Inject
-  public RfiReplyServiceImpl(RfiReplyDao rfiReplyDao, DraftDao draftDao, MessagePublisher messagePublisher) {
+  public RfiReplyServiceImpl(RfiReplyDao rfiReplyDao, DraftFileDao draftFileDao, MessagePublisher messagePublisher) {
     this.rfiReplyDao = rfiReplyDao;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
     this.messagePublisher = messagePublisher;
   }
 
@@ -43,13 +43,13 @@ public class RfiReplyServiceImpl implements RfiReplyService {
     rfiReply.setAttachments(attachments);
 
     rfiReplyDao.insertRfiReply(rfiReply);
-    draftDao.deleteDraft(rfiId, DraftType.RFI_REPLY);
+    draftFileDao.deleteDraftFiles(rfiId, DraftType.RFI_REPLY);
     messagePublisher.sendMessage(RoutingKey.RFI_REPLY, getRfiReplyMessage(appId, rfiReply));
   }
 
   private List<File> getAttachments(String rfiId, List<UploadFile> uploadFiles) {
     List<File> files = FileUtil.toFiles(uploadFiles);
-    List<File> draftAttachments = draftDao.getDraftAttachments(rfiId, DraftType.RFI_REPLY);
+    List<File> draftAttachments = draftFileDao.getDraftFiles(rfiId, DraftType.RFI_REPLY);
     files.addAll(draftAttachments);
     return files;
   }

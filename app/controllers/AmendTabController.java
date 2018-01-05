@@ -2,7 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.exceptions.DatabaseException;
 import components.service.AmendmentService;
 import components.service.AppDataService;
@@ -56,7 +56,7 @@ public class AmendTabController extends SamlController {
   private final OfficerViewService officerViewService;
   private final AmendmentService amendmentService;
   private final WithdrawalRequestService withdrawalRequestService;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
   private final UserService userService;
   private final AppDataService appDataService;
   private final ApplicationTabsViewService applicationTabsViewService;
@@ -71,7 +71,7 @@ public class AmendTabController extends SamlController {
                             OfficerViewService officerViewService,
                             AmendmentService amendmentService,
                             WithdrawalRequestService withdrawalRequestService,
-                            DraftDao draftDao,
+                            DraftFileDao draftFileDao,
                             UserService userService,
                             AppDataService appDataService,
                             ApplicationTabsViewService applicationTabsViewService,
@@ -84,7 +84,7 @@ public class AmendTabController extends SamlController {
     this.officerViewService = officerViewService;
     this.amendmentService = amendmentService;
     this.withdrawalRequestService = withdrawalRequestService;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
     this.userService = userService;
     this.appDataService = appDataService;
     this.applicationTabsViewService = applicationTabsViewService;
@@ -102,7 +102,7 @@ public class AmendTabController extends SamlController {
       return showAmendTab(appId);
     } else {
       try {
-        draftDao.deleteFile(appId, fileId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+        draftFileDao.deleteDraftFile(fileId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
       } catch (DatabaseException databaseException) {
         // Since this error could occur if the user refreshes the page, we do not return a bad request.
         LOGGER.warn("Unable to delete file.", databaseException);
@@ -179,7 +179,7 @@ public class AmendTabController extends SamlController {
   }
 
   private List<FileView> createFileViews(String appId) {
-    List<File> files = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+    List<File> files = draftFileDao.getDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     return files.stream()
         .map(file -> createFileView(appId, file))
         .collect(Collectors.toList());

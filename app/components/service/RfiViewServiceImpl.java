@@ -1,7 +1,7 @@
 package components.service;
 
 import com.google.inject.Inject;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.FileUtil;
@@ -25,13 +25,13 @@ import models.view.RfiView;
 public class RfiViewServiceImpl implements RfiViewService {
 
   private final UserService userService;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
   private final UserPermissionService userPermissionService;
 
   @Inject
-  public RfiViewServiceImpl(UserService userService, DraftDao draftDao, UserPermissionService userPermissionService) {
+  public RfiViewServiceImpl(UserService userService, DraftFileDao draftFileDao, UserPermissionService userPermissionService) {
     this.userService = userService;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
     this.userPermissionService = userPermissionService;
   }
 
@@ -64,7 +64,7 @@ public class RfiViewServiceImpl implements RfiViewService {
 
   @Override
   public AddRfiReplyView getAddRfiReplyView(String appId, String rfiId) {
-    List<File> draftAttachments = draftDao.getDraftAttachments(rfiId, DraftType.RFI_REPLY);
+    List<File> draftAttachments = draftFileDao.getDraftFiles(rfiId, DraftType.RFI_REPLY);
     List<FileView> fileViews = createFileViews(appId, rfiId, draftAttachments);
     return new AddRfiReplyView(rfiId, fileViews);
   }

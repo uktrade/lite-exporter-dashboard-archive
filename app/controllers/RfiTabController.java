@@ -2,7 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.exceptions.DatabaseException;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
@@ -44,7 +44,7 @@ public class RfiTabController extends SamlController {
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final RfiViewService rfiViewService;
   private final RfiReplyService rfiReplyService;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
   private final UserService userService;
   private final AppDataService appDataService;
   private final ApplicationTabsViewService applicationTabsViewService;
@@ -57,7 +57,7 @@ public class RfiTabController extends SamlController {
                           ApplicationSummaryViewService applicationSummaryViewService,
                           RfiViewService rfiViewService,
                           RfiReplyService rfiReplyService,
-                          DraftDao draftDao,
+                          DraftFileDao draftFileDao,
                           UserService userService,
                           AppDataService appDataService,
                           ApplicationTabsViewService applicationTabsViewService,
@@ -68,7 +68,7 @@ public class RfiTabController extends SamlController {
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.rfiViewService = rfiViewService;
     this.rfiReplyService = rfiReplyService;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
     this.userService = userService;
     this.appDataService = appDataService;
     this.applicationTabsViewService = applicationTabsViewService;
@@ -86,7 +86,7 @@ public class RfiTabController extends SamlController {
       return showRfiTab(appId);
     } else {
       try {
-        draftDao.deleteFile(rfiId, fileId, DraftType.RFI_REPLY);
+        draftFileDao.deleteDraftFile(fileId, rfiId, DraftType.RFI_REPLY);
       } catch (DatabaseException databaseException) {
         // Since this error could occur if the user refreshes the page, we do not return a bad request.
         LOGGER.warn("Unable to delete file.", databaseException);

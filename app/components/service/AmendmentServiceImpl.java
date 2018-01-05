@@ -4,7 +4,7 @@ import static components.util.RandomIdUtil.amendmentId;
 
 import com.google.inject.Inject;
 import components.dao.AmendmentRequestDao;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.message.MessagePublisher;
 import components.upload.UploadFile;
 import components.util.FileUtil;
@@ -21,13 +21,13 @@ public class AmendmentServiceImpl implements AmendmentService {
 
   private final AmendmentRequestDao amendmentRequestDao;
   private final MessagePublisher messagePublisher;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
 
   @Inject
-  public AmendmentServiceImpl(AmendmentRequestDao amendmentRequestDao, MessagePublisher messagePublisher, DraftDao draftDao) {
+  public AmendmentServiceImpl(AmendmentRequestDao amendmentRequestDao, MessagePublisher messagePublisher, DraftFileDao draftFileDao) {
     this.amendmentRequestDao = amendmentRequestDao;
     this.messagePublisher = messagePublisher;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
   }
 
   @Override
@@ -43,13 +43,13 @@ public class AmendmentServiceImpl implements AmendmentService {
     amendmentRequest.setAttachments(attachments);
 
     amendmentRequestDao.insertAmendmentRequest(amendmentRequest);
-    draftDao.deleteDraft(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+    draftFileDao.deleteDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     messagePublisher.sendMessage(RoutingKey.AMENDMENT_CREATE, getAmendmentMessage(amendmentRequest));
   }
 
   private List<File> getAttachments(String appId, List<UploadFile> uploadFiles) {
     List<File> files = FileUtil.toFiles(uploadFiles);
-    List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+    List<File> draftAttachments = draftFileDao.getDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     files.addAll(draftAttachments);
     return files;
   }
