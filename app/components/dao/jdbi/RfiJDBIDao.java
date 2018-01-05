@@ -1,7 +1,6 @@
 package components.dao.jdbi;
 
 import components.dao.mapper.RfiRSMapper;
-import java.util.List;
 import models.Rfi;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -9,6 +8,8 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
 import org.skife.jdbi.v2.unstable.BindIn;
+
+import java.util.List;
 
 @UseStringTemplate3StatementLocator
 public interface RfiJDBIDao {
@@ -26,6 +27,10 @@ public interface RfiJDBIDao {
               @Bind("createdByUserId") String createdByUserId,
               @Bind("recipientUserIds") String recipientUserIds,
               @Bind("message") String message);
+
+  @SqlUpdate("UPDATE RFI SET DUE_TIMESTAMP = :dueTimestamp WHERE ID = :id")
+  void updateDeadline(@Bind("id") String id,
+                      @Bind("dueTimestamp") Long dueTimestamp);
 
   @SqlUpdate("DELETE FROM RFI")
   void truncateTable();

@@ -9,6 +9,8 @@ public interface RfiDao {
 
   void insertRfi(Rfi rfi);
 
+  void updateDeadline(String id, Long deadline);
+
   void deleteAllRfiData();
 
   void deleteRfiByCaseReference(String caseReference);

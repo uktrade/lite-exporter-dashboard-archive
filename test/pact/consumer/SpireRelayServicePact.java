@@ -286,6 +286,19 @@ public class SpireRelayServicePact {
         .toPact();
   }
 
+  @Pact(provider = PROVIDER, consumer = CONSUMER)
+  public MessagePact createRfiDeadlineUpdate(MessagePactBuilder builder) {
+    DslPart dslPart = new PactDslJsonBody()
+        .stringType("appId", "appId")
+        .stringType("rfiId", "rfiId")
+        .stringType("createdByUserId", "createdByUserId")
+        .integerType("updatedDeadlineTimestamp", 123456789L);
+
+    return builder.expectsToReceive("an rfi deadline update")
+        .withContent(dslPart)
+        .toPact();
+  }
+
   @Test
   @PactVerification(value = PROVIDER, fragment = "createStatusUpdate")
   public void receiveStatusUpdate() throws Exception {
@@ -498,6 +511,14 @@ public class SpireRelayServicePact {
     handleDelivery(ConsumerRoutingKey.OFFICER_UPDATE);
     verify(channel).basicAck(0, false);
     verify(applicationDao).updateCaseOfficerId("appId", "caseOfficerId");
+  }
+
+  @Test
+  @PactVerification(value = PROVIDER, fragment = "createRfiDeadlineUpdate")
+  public void receiveRfiDeadlineUpdate() throws IOException {
+    handleDelivery(ConsumerRoutingKey.RFI_DEADLINE_UPDATE);
+    verify(channel).basicAck(0, false);
+    verify(rfiDao).updateDeadline("rfiId", 123456789L);
   }
 
   private void handleDelivery(ConsumerRoutingKey consumerRoutingKey) throws IOException {
