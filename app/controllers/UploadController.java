@@ -1,10 +1,9 @@
 package controllers;
 
-import static components.util.RandomIdUtil.fileId;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.exceptions.DatabaseException;
 import components.service.AppDataService;
 import components.service.UserPermissionService;
@@ -13,12 +12,7 @@ import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
 import components.util.EnumUtil;
 import components.util.FileUtil;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 import models.AppData;
-import models.File;
 import models.FileUploadResponse;
 import models.FileUploadResponseItem;
 import models.enums.DraftType;
@@ -29,6 +23,11 @@ import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.With;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+
 @With(AppGuardAction.class)
 public class UploadController extends SamlController {
 
@@ -36,14 +35,14 @@ public class UploadController extends SamlController {
 
   private final AppDataService appDataService;
   private final UserService userService;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
   private final UserPermissionService userPermissionService;
 
   @Inject
-  public UploadController(AppDataService appDataService, UserService userService, DraftDao draftDao, UserPermissionService userPermissionService) {
+  public UploadController(AppDataService appDataService, UserService userService, DraftFileDao draftFileDao, UserPermissionService userPermissionService) {
     this.appDataService = appDataService;
     this.userService = userService;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
     this.userPermissionService = userPermissionService;
   }
 
@@ -75,7 +74,7 @@ public class UploadController extends SamlController {
       return completedFuture(notFound("Unknown relatedId " + relatedId));
     } else {
       try {
-        draftDao.deleteFile(relatedId, fileId, DraftType.valueOf(fileType));
+        draftFileDao.deleteDraftFile(fileId, relatedId, DraftType.valueOf(fileType));
       } catch (DatabaseException databaseException) {
         LOGGER.error("Unable to delete file", databaseException);
         return completedFuture(badRequest());
@@ -123,9 +122,7 @@ public class UploadController extends SamlController {
   }
 
   private String createNewFile(String relatedId, UploadFile uploadFile, DraftType draftType) {
-    File file = new File(fileId(), uploadFile.getOriginalFilename(), uploadFile.getDestinationPath());
-    draftDao.addFile(relatedId, file, draftType);
-    return file.getId();
+    return draftFileDao.addDraftFile(uploadFile.getOriginalFilename(), uploadFile.getDestinationPath(), relatedId, draftType);
   }
 
 }

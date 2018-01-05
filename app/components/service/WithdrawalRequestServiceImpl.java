@@ -3,7 +3,7 @@ package components.service;
 import static components.util.RandomIdUtil.withdrawalRequestId;
 
 import com.google.inject.Inject;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.dao.WithdrawalRequestDao;
 import components.message.MessagePublisher;
 import components.upload.UploadFile;
@@ -21,13 +21,13 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final MessagePublisher messagePublisher;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
 
   @Inject
-  public WithdrawalRequestServiceImpl(WithdrawalRequestDao withdrawalRequestDao, MessagePublisher messagePublisher, DraftDao draftDao) {
+  public WithdrawalRequestServiceImpl(WithdrawalRequestDao withdrawalRequestDao, MessagePublisher messagePublisher, DraftFileDao draftFileDao) {
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.messagePublisher = messagePublisher;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
   }
 
   @Override
@@ -43,13 +43,13 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     withdrawalRequest.setAttachments(attachments);
 
     withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
-    draftDao.deleteDraft(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+    draftFileDao.deleteDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     messagePublisher.sendMessage(RoutingKey.WITHDRAWAL_REQUEST_CREATE, getWithdrawalRequestMessage(withdrawalRequest));
   }
 
   private List<File> getAttachments(String appId, List<UploadFile> uploadFiles) {
     List<File> files = FileUtil.toFiles(uploadFiles);
-    List<File> draftAttachments = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+    List<File> draftAttachments = draftFileDao.getDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
     files.addAll(draftAttachments);
     return files;
   }

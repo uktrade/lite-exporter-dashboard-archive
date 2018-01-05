@@ -27,27 +27,25 @@ public class CaseDetailsDaoImpl implements CaseDetailsDao {
   @Override
   public void insert(CaseDetails caseDetails) {
     try (Handle handle = dbi.open()) {
-      CaseDetailsJDBIDao caseDetailsJDBIDao = handle.attach(CaseDetailsJDBIDao.class);
       ApplicationJDBIDao applicationJDBIDao = handle.attach(ApplicationJDBIDao.class);
-      handle.useTransaction((conn, status) -> {
-        Application application = applicationJDBIDao.getApplication(caseDetails.getAppId());
-        if (application == null) {
-          applicationJDBIDao.insert(caseDetails.getAppId(),
-              null,
-              null,
-              caseDetails.getCreatedTimestamp(),
-              null,
-              JsonUtil.convertListToJson(new ArrayList<>()),
-              JsonUtil.convertListToJson(new ArrayList<>()),
-              null,
-              null,
-              null);
-        }
-        caseDetailsJDBIDao.insert(caseDetails.getAppId(),
-            caseDetails.getCaseReference(),
-            caseDetails.getCreatedByUserId(),
-            caseDetails.getCreatedTimestamp());
-      });
+      Application application = applicationJDBIDao.getApplication(caseDetails.getAppId());
+      if (application == null) {
+        applicationJDBIDao.insert(caseDetails.getAppId(),
+            null,
+            null,
+            caseDetails.getCreatedTimestamp(),
+            null,
+            JsonUtil.convertListToJson(new ArrayList<>()),
+            JsonUtil.convertListToJson(new ArrayList<>()),
+            null,
+            null,
+            null);
+      }
+      CaseDetailsJDBIDao caseDetailsJDBIDao = handle.attach(CaseDetailsJDBIDao.class);
+      caseDetailsJDBIDao.insert(caseDetails.getAppId(),
+          caseDetails.getCaseReference(),
+          caseDetails.getCreatedByUserId(),
+          caseDetails.getCreatedTimestamp());
     }
   }
 

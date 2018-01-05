@@ -2,7 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import components.dao.AmendmentRequestDao;
-import components.dao.DraftDao;
+import components.dao.DraftFileDao;
 import components.dao.WithdrawalRequestDao;
 import components.service.AppDataService;
 import components.service.UserPermissionService;
@@ -26,7 +26,7 @@ public class DownloadController extends SamlController {
 
   private final UserService userService;
   private final AppDataService appDataService;
-  private final DraftDao draftDao;
+  private final DraftFileDao draftFileDao;
   private final AmendmentRequestDao amendmentRequestDao;
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final UserPermissionService userPermissionService;
@@ -34,13 +34,13 @@ public class DownloadController extends SamlController {
   @Inject
   public DownloadController(UserService userService,
                             AppDataService appDataService,
-                            DraftDao draftDao,
+                            DraftFileDao draftFileDao,
                             AmendmentRequestDao amendmentRequestDao,
                             WithdrawalRequestDao withdrawalRequestDao,
                             UserPermissionService userPermissionService) {
     this.userService = userService;
     this.appDataService = appDataService;
-    this.draftDao = draftDao;
+    this.draftFileDao = draftFileDao;
     this.amendmentRequestDao = amendmentRequestDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.userPermissionService = userPermissionService;
@@ -55,7 +55,7 @@ public class DownloadController extends SamlController {
     if (rfiReply.isPresent() && containsFile(rfiReply.get().getAttachments(), fileId)) {
       return getFile(rfiReply.get().getAttachments(), fileId);
     } else {
-      List<File> draftFiles = draftDao.getDraftAttachments(rfiId, DraftType.RFI_REPLY);
+      List<File> draftFiles = draftFileDao.getDraftFiles(rfiId, DraftType.RFI_REPLY);
       if (containsFile(draftFiles, fileId) && userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
         return getFile(draftFiles, fileId);
       }
@@ -78,7 +78,7 @@ public class DownloadController extends SamlController {
     } else {
       String userId = userService.getCurrentUserId();
       AppData appData = appDataService.getAppData(appId);
-      List<File> draftFiles = draftDao.getDraftAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+      List<File> draftFiles = draftFileDao.getDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
       if (containsFile(draftFiles, fileId) && userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
         return getFile(draftFiles, fileId);
       }
