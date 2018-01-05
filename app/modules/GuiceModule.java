@@ -208,6 +208,7 @@ public class GuiceModule extends AbstractModule {
     // OgelServiceClient
     bindConstant("ogelServiceAddress", "ogelService.address");
     bindConstant("ogelServiceTimeout", "ogelService.timeout");
+    bindConstant("ogelServiceCredentials", "ogelService.credentials");
     bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
     // UserServiceClient
     bindConstant("userServiceAddress", "userService.address");
