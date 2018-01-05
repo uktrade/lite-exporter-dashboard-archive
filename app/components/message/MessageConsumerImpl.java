@@ -46,6 +46,7 @@ import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcome
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeDocument;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardOutcomeIssue;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiCreate;
+import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiDeadlineUpdate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardRfiWithdrawalCreate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardWithdrawalAccept;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardWithdrawalReject;
@@ -150,6 +151,9 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
           break;
         case OFFICER_UPDATE:
           insertCaseOfficerUpdate(message);
+          break;
+        case RFI_DEADLINE_UPDATE:
+          insertRfiDeadlineUpdate(message);
           break;
         default:
           throw new ValidationException("Unknown routing key " + consumerRoutingKey);
@@ -343,6 +347,12 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     DashboardOfficerUpdate dashboardOfficerUpdate = parse(message, DashboardOfficerUpdate.class);
     validate(dashboardOfficerUpdate);
     applicationDao.updateCaseOfficerId(dashboardOfficerUpdate.getAppId(), dashboardOfficerUpdate.getCaseOfficerId());
+  }
+
+  private void insertRfiDeadlineUpdate(String message) {
+    DashboardRfiDeadlineUpdate dashboardRfiDeadlineUpdate = parse(message, DashboardRfiDeadlineUpdate.class);
+    validate(dashboardRfiDeadlineUpdate);
+    rfiDao.updateDeadline(dashboardRfiDeadlineUpdate.getRfiId(), dashboardRfiDeadlineUpdate.getUpdatedDeadlineTimestamp());
   }
 
   private void reject(Envelope envelope) throws IOException {

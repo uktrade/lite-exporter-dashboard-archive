@@ -14,7 +14,8 @@ public enum ConsumerRoutingKey {
   WITHDRAWAL_ACCEPT("withdrawalrequest.accept"),
   CASE_CREATE("case.create"),
   SIEL_SUBMIT("siel.submit"),
-  OFFICER_UPDATE("officer.update");
+  OFFICER_UPDATE("officer.update"),
+  RFI_DEADLINE_UPDATE("rfi.deadline.update");
 
   private final String text;
 

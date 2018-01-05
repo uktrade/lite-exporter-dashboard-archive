@@ -4,10 +4,11 @@ import com.google.inject.Inject;
 import components.dao.RfiDao;
 import components.dao.jdbi.RfiJDBIDao;
 import components.util.JsonUtil;
-import java.util.ArrayList;
-import java.util.List;
 import models.Rfi;
 import org.skife.jdbi.v2.DBI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RfiDaoImpl implements RfiDao {
 
@@ -36,6 +37,11 @@ public class RfiDaoImpl implements RfiDao {
         rfi.getCreatedByUserId(),
         JsonUtil.convertListToJson(rfi.getRecipientUserIds()),
         rfi.getMessage());
+  }
+
+  @Override
+  public void updateDeadline(String id, Long deadline) {
+    rfiJDBIDao.updateDeadline(id, deadline);
   }
 
   @Override
