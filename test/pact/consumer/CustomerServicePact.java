@@ -87,7 +87,7 @@ public class CustomerServicePact {
   }
 
 
-  @Pact(provider = "lite-customer-service", consumer = "lite-ogel-registration")
+  @Pact(provider = PROVIDER, consumer = CONSUMER)
   public PactFragment missingCustomer(PactDslWithProvider builder) {
     return builder
         .given("provided customer ID does not exist")
