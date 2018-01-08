@@ -4,7 +4,14 @@ import models.enums.LicenceListTab;
 import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 public class LicenceRoute implements Route {
+
+  private static final Set<LicenceSortType> TEXT_SORT_TYPES = EnumSet.of(LicenceSortType.STATUS,
+      LicenceSortType.REFERENCE,
+      LicenceSortType.LICENSEE);
 
   private LicenceListTab licenceListTab;
   private LicenceSortType licenceSortType;
@@ -23,10 +30,10 @@ public class LicenceRoute implements Route {
       nextSortDirection();
     } else {
       licenceSortType = sortType;
-      if (licenceSortType == LicenceSortType.REGISTRATION_DATE || licenceSortType == LicenceSortType.EXPIRY_DATE) {
-        sortDirection = SortDirection.DESC;
-      } else {
+      if (TEXT_SORT_TYPES.contains(licenceSortType)) {
         sortDirection = SortDirection.ASC;
+      } else {
+        sortDirection = SortDirection.DESC;
       }
     }
     return this;

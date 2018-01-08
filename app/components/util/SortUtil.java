@@ -4,12 +4,6 @@ import components.comparator.ApplicationReferenceComparator;
 import components.comparator.ApplicationStatusComparator;
 import components.comparator.DestinationComparator;
 import components.comparator.EventTypeComparator;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import models.Document;
 import models.enums.ApplicationSortType;
 import models.enums.DocumentType;
@@ -18,6 +12,14 @@ import models.enums.SortDirection;
 import models.view.ApplicationItemView;
 import models.view.OgelItemView;
 import models.view.SielItemView;
+import org.apache.commons.collections.comparators.ComparatorChain;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public class SortUtil {
 
@@ -49,19 +51,43 @@ public class SortUtil {
 
   static {
     OGEL_COMPARATORS = new EnumMap<>(LicenceSortType.class);
-    OGEL_COMPARATORS.put(LicenceSortType.STATUS, createStringComparators(OgelItemView::getOgelStatus));
+    OGEL_COMPARATORS.put(LicenceSortType.STATUS, createOgelComparators(Comparator.comparing(OgelItemView::getOgelStatus, String.CASE_INSENSITIVE_ORDER)));
     OGEL_COMPARATORS.put(LicenceSortType.REFERENCE, createStringComparators(OgelItemView::getRegistrationReference));
-    OGEL_COMPARATORS.put(LicenceSortType.LICENSEE, createStringComparators(OgelItemView::getLicensee));
-    OGEL_COMPARATORS.put(LicenceSortType.SITE, createStringComparators(OgelItemView::getSite));
-    OGEL_COMPARATORS.put(LicenceSortType.REGISTRATION_DATE, createLongComparators(OgelItemView::getRegistrationTimestamp));
+    OGEL_COMPARATORS.put(LicenceSortType.LICENSEE, createOgelComparators((l, r) -> (l.getLicensee() + l.getSite()).compareToIgnoreCase(r.getLicensee() + r.getSite())));
+    OGEL_COMPARATORS.put(LicenceSortType.REGISTRATION_DATE, createOgelComparators(Comparator.comparing(OgelItemView::getRegistrationTimestamp)));
+    OGEL_COMPARATORS.put(LicenceSortType.LAST_UPDATED, createOgelComparators(Comparator.comparing(OgelItemView::getUpdatedTimestamp)));
   }
 
   static {
     SIEL_COMPARATORS = new EnumMap<>(LicenceSortType.class);
-    SIEL_COMPARATORS.put(LicenceSortType.STATUS, createStringComparators(SielItemView::getSielStatus));
+    SIEL_COMPARATORS.put(LicenceSortType.STATUS, createSielComparators(Comparator.comparing(SielItemView::getSielStatus, String.CASE_INSENSITIVE_ORDER)));
     SIEL_COMPARATORS.put(LicenceSortType.REFERENCE, createStringComparators(SielItemView::getRegistrationReference));
-    SIEL_COMPARATORS.put(LicenceSortType.LICENSEE, createStringComparators(SielItemView::getLicensee));
-    SIEL_COMPARATORS.put(LicenceSortType.EXPIRY_DATE, createLongComparators(SielItemView::getExpiryTimestamp));
+    SIEL_COMPARATORS.put(LicenceSortType.LICENSEE, createSielComparators((l, r) -> (l.getLicensee() + l.getSite()).compareToIgnoreCase(r.getLicensee() + r.getSite())));
+    SIEL_COMPARATORS.put(LicenceSortType.EXPIRY_DATE, createSielComparators(Comparator.comparing(SielItemView::getExpiryTimestamp)));
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<SortDirection, Comparator<SielItemView>> createSielComparators(Comparator<SielItemView> comparator) {
+    Comparator<SielItemView> registrationReferenceComparator = Comparator.comparing(SielItemView::getRegistrationReference, String.CASE_INSENSITIVE_ORDER);
+    ComparatorChain ascending = new ComparatorChain(Arrays.asList(comparator, registrationReferenceComparator));
+    ComparatorChain descending = new ComparatorChain(Arrays.asList(comparator.reversed(), registrationReferenceComparator));
+
+    Map<SortDirection, Comparator<SielItemView>> comparators = new EnumMap<>(SortDirection.class);
+    comparators.put(SortDirection.ASC, ascending);
+    comparators.put(SortDirection.DESC, descending);
+    return comparators;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<SortDirection, Comparator<OgelItemView>> createOgelComparators(Comparator<OgelItemView> comparator) {
+    Comparator<OgelItemView> registrationReferenceComparator = Comparator.comparing(OgelItemView::getRegistrationReference, String.CASE_INSENSITIVE_ORDER);
+    ComparatorChain ascending = new ComparatorChain(Arrays.asList(comparator, registrationReferenceComparator));
+    ComparatorChain descending = new ComparatorChain(Arrays.asList(comparator.reversed(), registrationReferenceComparator));
+
+    Map<SortDirection, Comparator<OgelItemView>> comparators = new EnumMap<>(SortDirection.class);
+    comparators.put(SortDirection.ASC, ascending);
+    comparators.put(SortDirection.DESC, descending);
+    return comparators;
   }
 
   private static <T> Map<SortDirection, Comparator<T>> createLongComparators(Function<T, Long> function) {

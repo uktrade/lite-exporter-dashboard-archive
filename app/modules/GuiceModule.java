@@ -73,7 +73,6 @@ import components.service.MessageViewServiceImpl;
 import components.service.OfficerViewService;
 import components.service.OfficerViewServiceImpl;
 import components.service.OgelDetailsViewService;
-import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelItemViewService;
 import components.service.PreviousRequestItemViewService;
 import components.service.PreviousRequestItemViewServiceImpl;
@@ -97,6 +96,7 @@ import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
+import components.service.test.TestOgelDetailsViewServiceImpl;
 import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
@@ -142,7 +142,8 @@ public class GuiceModule extends AbstractModule {
     bind(ApplicationSummaryViewService.class).to(ApplicationSummaryViewServiceImpl.class);
     // TODO Test
     bind(OgelItemViewService.class).to(TestOgelItemViewServiceImpl.class);
-    bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
+    // TODO Test
+    bind(OgelDetailsViewService.class).to(TestOgelDetailsViewServiceImpl.class);
     bind(SielDetailsViewService.class).to(SielDetailsViewServiceImpl.class);
     bind(OfficerViewService.class).to(OfficerViewServiceImpl.class);
     bind(AmendmentService.class).to(AmendmentServiceImpl.class);

@@ -2,7 +2,7 @@ package models.enums;
 
 public enum LicenceSortType {
 
-  STATUS("status"), REFERENCE("reference"), LICENSEE("licensee"), SITE("site"), REGISTRATION_DATE("registration"), EXPIRY_DATE("expiry");
+  STATUS("status"), REFERENCE("reference"), LICENSEE("licensee"), REGISTRATION_DATE("registration"), EXPIRY_DATE("expiry"), LAST_UPDATED("updated");
 
   private final String text;
 

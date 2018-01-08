@@ -32,7 +32,7 @@ import java.util.Optional;
 
 public class LicenceListController extends SamlController {
 
-  private static final EnumSet<LicenceSortType> OGEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.REGISTRATION_DATE, LicenceSortType.SITE);
+  private static final EnumSet<LicenceSortType> OGEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.REGISTRATION_DATE, LicenceSortType.LAST_UPDATED);
   private static final EnumSet<LicenceSortType> SIEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.EXPIRY_DATE);
 
   private final String licenceApplicationAddress;
@@ -76,7 +76,7 @@ public class LicenceListController extends SamlController {
 
     if ((licenceListTab == LicenceListTab.SIELS && OGEL_ONLY_SORT_TYPES.contains(licenceSortType)) ||
         (licenceListTab == LicenceListTab.OGELS && SIEL_ONLY_SORT_TYPES.contains(licenceSortType))) {
-      licenceSortType = LicenceSortType.STATUS;
+      licenceSortType = LicenceSortType.REFERENCE;
       sortDirection = SortDirection.ASC;
     }
 

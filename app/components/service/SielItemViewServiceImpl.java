@@ -7,6 +7,7 @@ import components.util.TimeUtil;
 import models.view.SielItemView;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
+import uk.gov.bis.lite.customer.api.view.SiteView;
 import uk.gov.bis.lite.permissions.api.view.LicenceView;
 
 import java.util.List;
@@ -29,28 +30,49 @@ public class SielItemViewServiceImpl implements SielItemViewService {
   }
 
   @Override
+  public boolean hasSielItemViews(String userId) {
+    return !licenceClient.getLicences(userId).isEmpty();
+  }
+
+  @Override
   public List<SielItemView> getSielItemViews(String userId) {
     List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
     Map<String, String> customerIdToCompanyName = customerIds.stream()
         .map(customerServiceClient::getCustomer)
         .collect(Collectors.toMap(CustomerView::getCustomerId, CustomerView::getCompanyName));
 
+    List<LicenceView> licenceViews = licenceClient.getLicences(userId);
+
+    Map<String, String> siteIdToNameMap = getSiteIdToNameMap(licenceViews);
+
     return licenceClient.getLicences(userId).stream()
-        .map(licenceView -> createSielItemView(licenceView, customerIdToCompanyName))
+        .map(licenceView -> {
+          String companyName = customerIdToCompanyName.get(licenceView.getCustomerId());
+          String siteName = siteIdToNameMap.get(licenceView.getSiteId());
+          return createSielItemView(licenceView, companyName, siteName);
+        })
         .collect(Collectors.toList());
   }
 
-  private SielItemView createSielItemView(LicenceView licenceView, Map<String, String> customerIdToCompanyName) {
+  private SielItemView createSielItemView(LicenceView licenceView, String companyName, String siteName) {
     long expiryTimestamp = TimeUtil.toMillis(licenceView.getExpiryDate());
     String expiryDate = TimeUtil.formatDate(expiryTimestamp);
-    String licensee = customerIdToCompanyName.get(licenceView.getCustomerId());
     String sielStatus = StringUtils.capitalize(licenceView.getStatus().toString().toLowerCase());
-    return new SielItemView(licenceView.getLicenceRef(), licenceView.getOriginalExporterRef(), licensee, expiryDate, expiryTimestamp, sielStatus);
+    return new SielItemView(licenceView.getLicenceRef(),
+        licenceView.getOriginalExporterRef(),
+        companyName,
+        siteName,
+        expiryDate,
+        expiryTimestamp,
+        sielStatus);
   }
 
-  @Override
-  public boolean hasSielItemViews(String userId) {
-    return !licenceClient.getLicences(userId).isEmpty();
+  private Map<String, String> getSiteIdToNameMap(List<LicenceView> licenceViews) {
+    return licenceViews.stream()
+        .map(LicenceView::getSiteId)
+        .distinct()
+        .map(customerServiceClient::getSite)
+        .collect(Collectors.toMap(SiteView::getSiteId, SiteView::getSiteName));
   }
 
 }
