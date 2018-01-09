@@ -42,7 +42,7 @@ public class TestLicenceClientImpl extends LicenceClientImpl {
 
   @Override
   public List<LicenceView> getLicences(String userId) {
-    if (TestDataServiceImpl.ADMIN.equals(userId) || TestDataServiceImpl.APPLICANT_THREE_ID.equals(userId)) {
+    if (TestDataServiceImpl.ADMIN.equals(userId)) {
       return new ArrayList<>();
     } else {
       List<LicenceView> additionalLicenceViews = TestDataServiceImpl.getLicenceViews(userId);
@@ -57,7 +57,7 @@ public class TestLicenceClientImpl extends LicenceClientImpl {
   // Admin: N N
   // Applicant11: Y N
   // Applicant2: Y Y
-  // Applicant3: N Y
+  // Applicant3: Y Y
   @Override
   public List<OgelRegistrationView> getOgelRegistrations(String userId) {
     if (TestDataServiceImpl.ADMIN.equals(userId) || TestDataServiceImpl.APPLICANT_ID.equals(userId)) {

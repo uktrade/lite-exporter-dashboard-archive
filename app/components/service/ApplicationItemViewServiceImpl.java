@@ -6,11 +6,6 @@ import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
 import components.util.TimeUtil;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import models.AppData;
 import models.Application;
 import models.AttentionTabNotificationViews;
@@ -32,6 +27,12 @@ import models.view.ApplicationItemView;
 import models.view.NotificationView;
 import org.apache.commons.collections4.CollectionUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
 
@@ -161,7 +162,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
       } else if (appData.getStopNotification() != null) {
         return new DateColumnInfo(ApplicationUtil.COMPLETED, appData.getStopNotification().getCreatedTimestamp());
       } else if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
-        return new DateColumnInfo(ApplicationUtil.SUBMITTED, maxStatusUpdate.getCreatedTimestamp());
+        return new DateColumnInfo(ApplicationUtil.COMPLETED, maxStatusUpdate.getCreatedTimestamp());
       } else if (appData.getApplication().getSubmittedTimestamp() != null) {
         return new DateColumnInfo(ApplicationUtil.SUBMITTED, appData.getApplication().getSubmittedTimestamp());
       } else {

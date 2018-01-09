@@ -12,6 +12,8 @@ public interface TestDataService {
 
   void deleteAllUsers();
 
+  void insertUserTestingApplicant(String userId);
+
   void insertOtherUserApplications(String userId);
 
 }

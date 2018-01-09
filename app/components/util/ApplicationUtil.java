@@ -200,7 +200,11 @@ public class ApplicationUtil {
       } else if (appData.getStopNotification() != null) {
         return new StatusColumnInfo("On", appData.getStopNotification().getCreatedTimestamp(), STOPPED);
       } else if (maxStatusUpdate != null) {
-        return new StatusColumnInfo("Since", maxStatusUpdate.getCreatedTimestamp(), getStatusName(maxStatusUpdate.getStatusType()));
+        if (maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
+          return new StatusColumnInfo("On", maxStatusUpdate.getCreatedTimestamp(), getStatusName(StatusType.COMPLETE));
+        } else {
+          return new StatusColumnInfo("Since", maxStatusUpdate.getCreatedTimestamp(), getStatusName(maxStatusUpdate.getStatusType()));
+        }
       } else if (appData.getApplication().getSubmittedTimestamp() != null) {
         return new StatusColumnInfo("On", appData.getApplication().getSubmittedTimestamp(), SUBMITTED);
       } else {

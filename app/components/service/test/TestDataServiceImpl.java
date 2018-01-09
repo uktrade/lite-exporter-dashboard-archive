@@ -111,6 +111,11 @@ public class TestDataServiceImpl implements TestDataService {
       DocumentType.ISSUE_REFUSE_DOCUMENT,
       DocumentType.ISSUE_NLR_DOCUMENT,
       DocumentType.ISSUE_AMENDMENT_LETTER);
+  private static final List<String> ISSUE_DOCUMENT_FILE_NAMES = Arrays.asList("CoverLetter.pdf",
+      "LicenceDocument.pdf",
+      "RefuseDocument.pdf",
+      "NlrDocument.pdf",
+      "AmendmentLetter.pdf");
 
   private static final List<DocumentType> AMEND_DOCUMENT_TYPES = Arrays.asList(DocumentType.AMENDMENT_COVER_LETTER,
       DocumentType.AMENDMENT_LICENCE_DOCUMENT,
@@ -182,7 +187,7 @@ public class TestDataServiceImpl implements TestDataService {
     deleteAllUsers();
     insertOneCompany(TestDataServiceImpl.APPLICANT_ID);
     insertTwoCompanies(TestDataServiceImpl.APPLICANT_TWO_ID);
-    insertOtherUserApplications(TestDataServiceImpl.APPLICANT_THREE_ID);
+    insertUserTestingApplicant(TestDataServiceImpl.APPLICANT_THREE_ID);
   }
 
   @Override
@@ -197,10 +202,166 @@ public class TestDataServiceImpl implements TestDataService {
 
   @Override
   public void insertTwoCompanies(String userId) {
-    createDraftApplications(userId);
     createApplications(userId);
     createSecondUserApplications(userId);
     createAdvancedApplication(userId);
+  }
+
+  @Override
+  public void insertUserTestingApplicant(String userId) {
+    // Draft application, not submitted
+    for (int i = 0; i < 1; i++) {
+      String appId = appId();
+      Application app = new Application(appId,
+          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
+          userId,
+          time(2017, 1, 3, 10, 20),
+          null,
+          CONSIGNEE_COUNTRIES,
+          END_USER_COUNTRIES,
+          getApplicantReference(),
+          OFFICER_ID,
+          SITE_ID);
+      CaseDetails caseDetails = new CaseDetails(appId,
+          RandomIdUtil.caseReference(),
+          OFFICER_ID,
+          app.getCreatedTimestamp());
+      caseDetailsDao.insert(caseDetails);
+      applicationDao.update(app);
+    }
+    // Submitted application, in progress, with RFI and message “apologies for the delay”
+    for (int i = 0; i < 1; i++) {
+      String appId = appId();
+      Long submittedTimestamp = time(2017, 11, 6, 10, 20);
+      String caseReference = RandomIdUtil.caseReference();
+      Application app = new Application(appId,
+          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
+          userId,
+          time(2017, 11, 3, 10, 20),
+          submittedTimestamp,
+          CONSIGNEE_COUNTRIES,
+          END_USER_COUNTRIES,
+          getApplicantReference(),
+          OFFICER_ID,
+          SITE_ID);
+      CaseDetails caseDetails = new CaseDetails(appId,
+          caseReference,
+          OFFICER_ID,
+          app.getCreatedTimestamp());
+      caseDetailsDao.insert(caseDetails);
+      applicationDao.update(app);
+      StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
+          app.getId(),
+          StatusType.INITIAL_CHECKS,
+          time(2017, 11, 10, 10, 20));
+      statusUpdateDao.insertStatusUpdate(initialChecks);
+      StatusUpdate technicalAssessment = new StatusUpdate(statusUpdateId(),
+          app.getId(),
+          StatusType.TECHNICAL_ASSESSMENT,
+          time(2017, 12, 15, 10, 20));
+      statusUpdateDao.insertStatusUpdate(technicalAssessment);
+      Notification delayNotification = new Notification(
+          delayNotificationId(),
+          caseReference,
+          NotificationType.DELAY,
+          null,
+          time(2017, 12, 9, 13, 20),
+          RECIPIENTS,
+          "We're sorry to inform you that your application has been delayed.",
+          null);
+      notificationDao.insertNotification(delayNotification);
+      String rfiId = rfiId();
+      Rfi rfi = new Rfi(rfiId,
+          caseReference,
+          time(2017, 12, 20, 10, 20),
+          time(2018, 1, 22, 10, 20),
+          OFFICER_ID,
+          RECIPIENTS,
+          "Please answer this rfi.");
+      rfiDao.insertRfi(rfi);
+    }
+    // Submitted application, completed, with outcome documents
+    // Application amended after submission, (amendments in progress)
+    // Application amended after submission, (amendments in stopped)
+    for (int k = 0; k < 3; k++) {
+      String appId = appId();
+      String caseReference = RandomIdUtil.caseReference();
+      String createdByUserId = k == 2 ? OTHER_APPLICANT_ID : userId;
+      Application application = new Application(appId,
+          TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
+          createdByUserId,
+          time(2016, 4, 3, 3 + k, 3),
+          time(2016, 5, 3, 3, 3),
+          CONSIGNEE_COUNTRIES_FOUR,
+          END_USER_COUNTRIES_FOUR,
+          getApplicantReference(),
+          OFFICER_ID,
+          SITE_ID);
+      CaseDetails caseDetails = new CaseDetails(appId,
+          caseReference,
+          OFFICER_ID,
+          application.getCreatedTimestamp());
+      caseDetailsDao.insert(caseDetails);
+      applicationDao.update(application);
+      List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
+          StatusType.TECHNICAL_ASSESSMENT,
+          StatusType.LU_PROCESSING,
+          StatusType.WITH_OGD,
+          StatusType.FINAL_ASSESSMENT,
+          StatusType.COMPLETE);
+      for (int i = 0; i < statusTypes.size(); i++) {
+        StatusType statusType = statusTypes.get(i);
+        Long createdTimestamp = time(2016, 5, 3 + 2 * i, 3 + i, 3 + i);
+        StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(), appId, statusType, createdTimestamp);
+        statusUpdateDao.insertStatusUpdate(statusUpdate);
+      }
+      long outcomeCreatedTimestamp = time(2016, 5, 13, 13, 17);
+      List<Document> issueDocuments = new ArrayList<>();
+      for (int j = 0; j < 4; j++) {
+        DocumentType documentType = ISSUE_DOCUMENT_TYPES.get(j);
+        Document document = new Document(documentId(),
+            documentType,
+            LICENCE_REFERENCES.get(j),
+            ISSUE_DOCUMENT_FILE_NAMES.get(j),
+            "#");
+        issueDocuments.add(document);
+      }
+      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, issueDocuments);
+      outcomeDao.insertOutcome(outcome);
+      if (k == 0) {
+        long informCreatedTimestamp = time(2016, 5, 13, 13, 17);
+        File document = new File(fileId(), "Licence required inform", "#");
+        Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
+        notificationDao.insertNotification(notification);
+      } else if (k == 1) {
+        long createdTimestamp = time(2017, 12, 2, 2, 2);
+        String caseReference2 = RandomIdUtil.caseReference();
+        CaseDetails caseDetails2 = new CaseDetails(appId, caseReference2, OFFICER_ID, createdTimestamp);
+        caseDetailsDao.insert(caseDetails2);
+        Rfi rfi = new Rfi(RandomIdUtil.rfiId(),
+            caseReference2,
+            time(2017, 12, 15, 2, 2),
+            time(2018, 1, 15, 2, 2),
+            OFFICER_ID,
+            RECIPIENTS,
+            "Please answer this rfi");
+        rfiDao.insertRfi(rfi);
+      } else {
+        long createdTimestamp = time(2017, 2, 2, 2, 2);
+        String caseReference2 = RandomIdUtil.caseReference();
+        CaseDetails caseDetails2 = new CaseDetails(appId, caseReference2, OFFICER_ID, createdTimestamp);
+        caseDetailsDao.insert(caseDetails2);
+        Notification stopNotification = new Notification(stopNotificationId(),
+            caseReference2,
+            NotificationType.STOP,
+            TestDataServiceImpl.OFFICER_ID,
+            time(2017, 3, 1, 14, 30),
+            RECIPIENTS,
+            "We have had to stop your amendment.",
+            null);
+        notificationDao.insertNotification(stopNotification);
+      }
+    }
   }
 
   @Override
@@ -278,23 +439,6 @@ public class TestDataServiceImpl implements TestDataService {
         application.getCreatedTimestamp());
     caseDetailsDao.insert(caseDetails);
     applicationDao.update(application);
-  }
-
-  private void createDraftApplications(String userId) {
-    for (int i = 0; i < 4; i++) {
-      String appId = appId();
-      Application app = new Application(appId,
-          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
-          userId,
-          time(2017, 3, 1 + i, 0, 0),
-          null,
-          CONSIGNEE_COUNTRIES,
-          END_USER_COUNTRIES,
-          getApplicantReference(),
-          OFFICER_ID,
-          SITE_ID);
-      applicationDao.update(app);
-    }
   }
 
   private void createApplications(String userId) {
@@ -796,7 +940,7 @@ public class TestDataServiceImpl implements TestDataService {
           TestDataServiceImpl.OFFICER_ID,
           time(2017, 5, 1, 14, 30),
           RECIPIENTS,
-          "We have had to stop your application.",
+          "We have had to stop your amendment.",
           null);
       notificationDao.insertNotification(stopNotification);
     }
@@ -807,7 +951,7 @@ public class TestDataServiceImpl implements TestDataService {
         Document document = new Document(documentId(),
             documentType,
             LICENCE_REFERENCES.get(j),
-            UUID.randomUUID().toString() + ".pdf",
+            ISSUE_DOCUMENT_FILE_NAMES.get(j),
             "#");
         documents.add(document);
       }
