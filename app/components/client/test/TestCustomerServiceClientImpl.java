@@ -37,6 +37,11 @@ public class TestCustomerServiceClientImpl extends CustomerServiceClientImpl {
     CustomerView customerView = super.getCustomer(unwrapCustomerId);
     String wrapCustomerId = TestUtil.wrapCustomerId(userService.getCurrentUserId(), customerView.getCustomerId());
     customerView.setCustomerId(wrapCustomerId);
+    if ("COMPANY1".equals(customerView.getCompanyName())) {
+      customerView.setCompanyName("Acme Aerospace");
+    } else if ("COMPANY2".equals(customerView.getCompanyName())) {
+      customerView.setCompanyName("Acme Marine");
+    }
     return customerView;
   }
 

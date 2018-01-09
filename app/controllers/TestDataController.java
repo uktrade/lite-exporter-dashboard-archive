@@ -33,6 +33,9 @@ public class TestDataController extends SamlController {
       case TWO:
         testDataService.insertTwoCompanies(userId);
         break;
+      case THREE:
+        testDataService.insertUserTestingApplicant(userId);
+        break;
       case OTHER:
         testDataService.insertOtherUserApplications(userId);
         break;
