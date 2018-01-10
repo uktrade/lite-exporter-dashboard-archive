@@ -2,7 +2,6 @@ package components.auth;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import components.common.auth.SamlUtil;
@@ -12,7 +11,6 @@ import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.play.ApplicationLogoutController;
 import org.pac4j.play.PlayWebContext;
 import org.pac4j.play.store.PlayCacheStore;
-import play.Application;
 import play.Configuration;
 import play.api.cache.CacheApi;
 
@@ -37,10 +35,8 @@ public class SamlModule extends AbstractModule {
   @Provides
   public Config provideConfig(SessionStore<PlayWebContext> playCacheStore,
                               SamlAuthorizer samlAuthorizer,
-                              SpireAuthManager authManager,
-                              Provider<Application> application) {
-    return SamlUtil.buildConfig(application,
-        configuration,
+                              SpireAuthManager authManager) {
+    return SamlUtil.buildConfig(configuration,
         authManager,
         playCacheStore,
         new SamlHttpActionAdaptor(),
