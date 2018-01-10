@@ -15,11 +15,6 @@
   <table class="table-font-xsmall table-align-top">
     <thead>
       <tr>
-        <th role="columnheader" @ariaSortAttr(LicenceSortType.STATUS)>
-          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.STATUS).toString">
-            Status
-          </a>
-        </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.REFERENCE)>
           <a href="@licenceListView.getRoute.nextSort(LicenceSortType.REFERENCE).toString">
             Reference
@@ -27,7 +22,7 @@
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.LICENSEE)>
           <a href="@licenceListView.getRoute.nextSort(LicenceSortType.LICENSEE).toString">
-            Licensee
+            Licensee (site)
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.EXPIRY_DATE)>
@@ -35,24 +30,31 @@
             Expiry date
           </a>
         </th>
+        <th role="columnheader" @ariaSortAttr(LicenceSortType.STATUS)>
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.STATUS).toString">
+            Status
+          </a>
+        </th>
       </tr>
     </thead>
     <tbody>
     @for(sielItemView <- licenceListView.getSielPage.getItems) {
       <tr>
-        <td >
-          @sielItemView.getSielStatus
-        </td>
         <td scope="row">
           <a href="@routes.LicenceListController.sielDetails(sielItemView.getRegistrationReference)" class="bold">@sielItemView.getRegistrationReference</a>
           <br>
           @sielItemView.getDescription
         </td>
         <td>
-        @sielItemView.getLicensee
+          @sielItemView.getLicensee
+          <br>
+          (@sielItemView.getSite)
         </td>
-        <td class="bold">
-        @sielItemView.getExpiryDate
+        <td>
+          @sielItemView.getExpiryDate
+        </td>
+        <td>
+          @sielItemView.getSielStatus
         </td>
       </tr>
     }

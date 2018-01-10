@@ -16,11 +16,6 @@
   <table class="table-font-xsmall table-align-top">
     <thead>
       <tr>
-        <th role="columnheader" @ariaSortAttr(LicenceSortType.STATUS)>
-          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.STATUS).toString">
-            Status
-          </a>
-        </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.REFERENCE)>
           <a href="@licenceListView.getRoute.nextSort(LicenceSortType.REFERENCE).toString">
             Reference
@@ -28,12 +23,7 @@
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.LICENSEE)>
           <a href="@licenceListView.getRoute.nextSort(LicenceSortType.LICENSEE).toString">
-            Licensee
-          </a>
-        </th>
-        <th role="columnheader" @ariaSortAttr(LicenceSortType.SITE)>
-          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.SITE).toString">
-            Site
+            Licensee (site)
           </a>
         </th>
         <th role="columnheader" @ariaSortAttr(LicenceSortType.REGISTRATION_DATE)>
@@ -41,28 +31,40 @@
             Registration date
           </a>
         </th>
+        <th role="columnheader" @ariaSortAttr(LicenceSortType.STATUS)>
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.STATUS).toString">
+            Status
+          </a>
+        </th>
+        <th role="columnheader" @ariaSortAttr(LicenceSortType.LAST_UPDATED)>
+          <a href="@licenceListView.getRoute.nextSort(LicenceSortType.LAST_UPDATED).toString">
+            Last updated
+          </a>
+        </th>
       </tr>
     </thead>
     <tbody>
     @for(ogelItemView <- licenceListView.getOgelPage.getItems) {
       <tr>
+        <td scope="row">
+          <a href="@routes.LicenceListController.ogelDetails(ogelItemView.getRegistrationReference)" class="bold">@ogelItemView.getRegistrationReference</a>
+          <div class="row-header-secondary-info">
+            @ogelItemView.getDescription
+          </div>
+        </td>
+        <td>
+          @ogelItemView.getLicensee
+          <br>
+          (@ogelItemView.getSite)
+        </td>
+        <td class="bold">
+          @ogelItemView.getRegistrationDate
+        </td>
         <td>
         @ogelItemView.getOgelStatus
         </td>
-        <th scope="row">
-          <a href="@routes.LicenceListController.ogelDetails(ogelItemView.getRegistrationReference)" class="bold">@ogelItemView.getRegistrationReference</a>
-          <div class="row-header-secondary-info">
-          @ogelItemView.getDescription
-          </div>
-        </th>
         <td>
-        @ogelItemView.getLicensee
-        </td>
-        <td>
-        @ogelItemView.getSite
-        </td>
-        <td class="bold">
-        @ogelItemView.getRegistrationDate
+          @ogelItemView.getUpdatedDate
         </td>
       </tr>
     }

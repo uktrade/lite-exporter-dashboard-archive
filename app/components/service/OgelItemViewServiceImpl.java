@@ -82,6 +82,15 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
   private OgelItemView getOgelItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView, SiteView siteView, OgelFullView ogelFullView) {
     long registrationTimestamp = TimeUtil.parseOgelRegistrationDate(ogelRegistrationView.getRegistrationDate());
     String registrationDate = TimeUtil.formatDate(registrationTimestamp);
+    long updatedTimestamp;
+    String updatedDate;
+    if (ogelFullView.getLastUpdatedDate() != null) {
+      updatedTimestamp = TimeUtil.toMillis(ogelFullView.getLastUpdatedDate());
+      updatedDate = TimeUtil.formatDate(updatedTimestamp);
+    } else {
+      updatedTimestamp = 0;
+      updatedDate = "-";
+    }
     OgelRegistrationView.Status status = EnumUtil.parse(ogelRegistrationView.getStatus().toString(), OgelRegistrationView.Status.class, OgelRegistrationView.Status.UNKNOWN);
     String ogelStatusName = LicenceUtil.getOgelStatusName(status);
     return new OgelItemView(ogelRegistrationView.getRegistrationReference(),
@@ -90,6 +99,8 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
         siteView.getSiteName(),
         registrationDate,
         registrationTimestamp,
+        updatedDate,
+        updatedTimestamp,
         ogelStatusName);
   }
 

@@ -2,6 +2,7 @@ package components.service.test;
 
 import static components.util.TimeUtil.time;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.client.LicenceClient;
@@ -40,13 +41,31 @@ public class TestOgelItemViewServiceImpl extends OgelItemViewServiceImpl {
       String add = i % 2 == 0 ? "_A" : "_B";
       long registrationTimestamp = time(2017, 2, 2 + i, 16, 20 + i);
       String registrationDate = TimeUtil.formatDate(registrationTimestamp);
+      long updatedTimestamp;
+      String updatedDate;
+      if (i % 4 == 0) {
+        updatedTimestamp = 0;
+        updatedDate = "-";
+      } else {
+        updatedTimestamp = time(2017, 3, 3 + i, 16, 20 + i);
+        updatedDate = TimeUtil.formatDate(updatedTimestamp);
+      }
       OgelRegistrationView.Status status = OgelRegistrationView.Status.values()[i % (OgelRegistrationView.Status.values().length - 1)];
       String ogelStatusName = LicenceUtil.getOgelStatusName(status);
-      OgelItemView ogelItemView = new OgelItemView(base.getRegistrationReference(),
+      String registrationReference;
+      if (base.getRegistrationReference().startsWith("GBOGE2017/12345")) {
+        registrationReference = base.getRegistrationReference() + Strings.padStart("" + i, 2, '0');
+      } else {
+        registrationReference = base.getRegistrationReference();
+      }
+      OgelItemView ogelItemView = new OgelItemView(registrationReference,
           base.getDescription(),
           base.getLicensee() + add,
           base.getSite() + add,
-          registrationDate, registrationTimestamp,
+          registrationDate,
+          registrationTimestamp,
+          updatedDate,
+          updatedTimestamp,
           ogelStatusName);
       recycledViews.add(ogelItemView);
     }
