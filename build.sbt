@@ -1,6 +1,6 @@
 name := "lite-exporter-dashboard"
 
-version := scala.util.Properties.envOrElse("BUILD_VERSION", formatDateAsVersion() + "-SNAPSHOT")
+version := "1.0"
 
 def formatDateAsVersion(): String = {
   val sdf = new java.text.SimpleDateFormat("YYYYMMdd.HHmmss")
