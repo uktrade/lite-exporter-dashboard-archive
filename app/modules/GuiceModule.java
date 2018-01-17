@@ -1,11 +1,16 @@
 package modules;
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import com.rabbitmq.client.Channel;
 import components.auth.SamlModule;
 import components.client.CustomerServiceClient;
 import components.client.LicenceClient;
@@ -48,14 +53,12 @@ import components.dao.impl.StatusUpdateDaoImpl;
 import components.dao.impl.WithdrawalApprovalDaoImpl;
 import components.dao.impl.WithdrawalRejectionDaoImpl;
 import components.dao.impl.WithdrawalRequestDaoImpl;
-import components.message.ConnectionManager;
-import components.message.ConnectionManagerImpl;
-import components.message.MessageConsumer;
-import components.message.MessageConsumerImpl;
+import components.message.MessageHandler;
+import components.message.MessageHandlerImpl;
 import components.message.MessagePublisher;
 import components.message.MessagePublisherImpl;
-import components.message.QueueManager;
-import components.message.QueueManagerImpl;
+import components.message.SqsPoller;
+import components.message.SqsPollerImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
 import components.service.AmendmentService;
@@ -176,21 +179,28 @@ public class GuiceModule extends AbstractModule {
     bind(TestDataService.class).to(TestDataServiceImpl.class);
     // Start up
     bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();
-    // Queue
-    boolean enabled = configuration.getBoolean("spireRelayService.enabled", false);
-    if (enabled) {
-      bindConstant("consumerExchangeName", "spireRelayService.consumerExchangeName");
-      bindConstant("publisherExchangeName", "spireRelayService.publisherExchangeName");
-      bindConstant("rabbitMqUrl", "spireRelayService.rabbitMqUrl");
-      bindConstant("consumerQueueName", "spireRelayService.consumerQueueName");
-      bindConstant("publisherQueueName", "spireRelayService.publisherQueueName");
-      bind(ConnectionManager.class).to(ConnectionManagerImpl.class).asEagerSingleton();
-      bind(QueueManager.class).to(QueueManagerImpl.class).asEagerSingleton();
-      bind(MessageConsumer.class).to(MessageConsumerImpl.class).asEagerSingleton();
+    // Sqs
+    boolean sqsEnabled = configuration.getBoolean("aws.enabled");
+    if (sqsEnabled) {
+      bindConstant("awsSnsTopicArn", "aws.snsTopicArn");
+      bindConstant("awsSqsWaitTimeSeconds", "aws.sqsWaitTimeSeconds");
+      bindConstant("awsSqsQueueUrl", "aws.sqsQueueUrl");
+      String profileName = configuration.getString("aws.credentialsProfileName");
+      AmazonSQS amazonSQS = AmazonSQSClientBuilder.standard()
+          .withRegion(Regions.EU_WEST_2)
+          .withCredentials(new ProfileCredentialsProvider(profileName))
+          .build();
+      bind(AmazonSQS.class).toInstance(amazonSQS);
+      AmazonSNS amazonSNS = AmazonSNSClientBuilder.standard()
+          .withRegion(Regions.EU_WEST_2)
+          .withCredentials(new ProfileCredentialsProvider(profileName))
+          .build();
+      bind(AmazonSNS.class).toInstance(amazonSNS);
+      bind(SqsPoller.class).to(SqsPollerImpl.class).asEagerSingleton();
+      bind(MessageHandler.class).to(MessageHandlerImpl.class);
       bind(MessagePublisher.class).to(MessagePublisherImpl.class);
     } else {
-      bind(ConnectionManager.class).toInstance(() -> null);
-      bind(MessagePublisher.class).toInstance((routingKey, object) -> {
+      bind(MessagePublisher.class).toInstance((routingKey, exporterDashboardMessage) -> {
       });
     }
   }
@@ -225,12 +235,6 @@ public class GuiceModule extends AbstractModule {
   @Provides
   public JwtRequestFilterConfig provideJwtRequestFilterConfig(@Named("jwtSharedSecret") String key) {
     return new JwtRequestFilterConfig(key, ISSUER);
-  }
-
-  @Provides
-  @Singleton
-  public Channel channel(ConnectionManager connectionManager) {
-    return connectionManager.createChannel();
   }
 
   @Provides

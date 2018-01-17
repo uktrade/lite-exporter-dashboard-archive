@@ -2,10 +2,6 @@ package components.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
 import components.dao.ApplicationDao;
 import components.dao.CaseDetailsDao;
 import components.dao.NotificationDao;
@@ -60,9 +56,9 @@ import java.util.stream.Stream;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-public class MessageConsumerImpl extends DefaultConsumer implements MessageConsumer {
+public class MessageHandlerImpl implements MessageHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MessageConsumerImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MessageHandlerImpl.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
   private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -77,8 +73,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   private final ApplicationDao applicationDao;
 
   @Inject
-  public MessageConsumerImpl(
-      Channel channel,
+  public MessageHandlerImpl(
       RfiDao rfiDao,
       StatusUpdateDao statusUpdateDao,
       NotificationDao notificationDao,
@@ -88,7 +83,6 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
       WithdrawalApprovalDao withdrawalApprovalDao,
       CaseDetailsDao caseDetailsDao,
       ApplicationDao applicationDao) {
-    super(channel);
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.notificationDao = notificationDao;
@@ -101,14 +95,11 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   }
 
   @Override
-  public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-      throws IOException {
-    String message = new String(body, "UTF-8");
-    ConsumerRoutingKey consumerRoutingKey = EnumUtil.parse(envelope.getRoutingKey(), ConsumerRoutingKey.class);
+  public boolean handleMessage(String type, String message) {
+    ConsumerRoutingKey consumerRoutingKey = EnumUtil.parse(type, ConsumerRoutingKey.class);
     if (consumerRoutingKey == null) {
       LOGGER.error("Routing key cannot be null.");
-      reject(envelope);
-      return;
+      return false;
     }
     LOGGER.info("received queue message " + consumerRoutingKey.toString() + " " + message);
     try {
@@ -161,10 +152,9 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     } catch (Exception exception) {
       String errorMessage = String.format("Unable to handle delivery of message %s with routing key %s", message, consumerRoutingKey);
       LOGGER.error(errorMessage, exception);
-      reject(envelope);
-      return;
+      return false;
     }
-    acknowledge(envelope);
+    return true;
   }
 
   private void insertRfi(String message) {
@@ -353,14 +343,6 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     DashboardRfiDeadlineUpdate dashboardRfiDeadlineUpdate = parse(message, DashboardRfiDeadlineUpdate.class);
     validate(dashboardRfiDeadlineUpdate);
     rfiDao.updateDeadline(dashboardRfiDeadlineUpdate.getRfiId(), dashboardRfiDeadlineUpdate.getUpdatedDeadlineTimestamp());
-  }
-
-  private void reject(Envelope envelope) throws IOException {
-    getChannel().basicReject(envelope.getDeliveryTag(), false);
-  }
-
-  private void acknowledge(Envelope envelope) throws IOException {
-    getChannel().basicAck(envelope.getDeliveryTag(), false);
   }
 
   private <T> T parse(String message, Class<T> clazz) {
