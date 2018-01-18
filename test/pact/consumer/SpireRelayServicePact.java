@@ -1,9 +1,9 @@
 package pact.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import au.com.dius.pact.consumer.MessagePactBuilder;
 import au.com.dius.pact.consumer.MessagePactProviderRule;
@@ -12,8 +12,6 @@ import au.com.dius.pact.consumer.PactVerification;
 import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.model.v3.messaging.MessagePact;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Envelope;
 import components.dao.ApplicationDao;
 import components.dao.CaseDetailsDao;
 import components.dao.NotificationDao;
@@ -24,8 +22,8 @@ import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.message.ConsumerRoutingKey;
-import components.message.MessageConsumer;
-import components.message.MessageConsumerImpl;
+import components.message.MessageHandler;
+import components.message.MessageHandlerImpl;
 import models.CaseDetails;
 import models.Document;
 import models.Notification;
@@ -58,9 +56,7 @@ public class SpireRelayServicePact {
   private final CaseDetailsDao caseDetailsDao = mock(CaseDetailsDao.class);
   private final ApplicationDao applicationDao = mock(ApplicationDao.class);
   private final WithdrawalApprovalDao withdrawalApprovalDao = mock(WithdrawalApprovalDao.class);
-  private final Channel channel = mock(Channel.class);
-  private final MessageConsumer messageConsumer = new MessageConsumerImpl(channel,
-      rfiDao,
+  private final MessageHandler messageHandler = new MessageHandlerImpl(rfiDao,
       statusUpdateDao,
       notificationDao,
       rfiWithdrawalDao,
@@ -302,8 +298,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createStatusUpdate")
   public void receiveStatusUpdate() throws Exception {
-    handleDelivery(ConsumerRoutingKey.STATUS_UPDATE);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.STATUS_UPDATE);
+    assertTrue(success);
+
     ArgumentCaptor<StatusUpdate> captor = ArgumentCaptor.forClass(StatusUpdate.class);
     verify(statusUpdateDao).insertStatusUpdate(captor.capture());
 
@@ -318,8 +315,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createRfi")
   public void receiveRfi() throws Exception {
-    handleDelivery(ConsumerRoutingKey.RFI);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.RFI);
+    assertTrue(success);
+
     ArgumentCaptor<Rfi> captor = ArgumentCaptor.forClass(Rfi.class);
     verify(rfiDao).insertRfi(captor.capture());
 
@@ -336,8 +334,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createDelayNotification")
   public void receiveDelayNotification() throws IOException {
-    handleDelivery(ConsumerRoutingKey.DELAY_NOTIFICATION);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.DELAY_NOTIFICATION);
+    assertTrue(success);
+
     ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
     verify(notificationDao).insertNotification(captor.capture());
 
@@ -355,8 +354,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createStopNotification")
   public void receiveStopNotification() throws IOException {
-    handleDelivery(ConsumerRoutingKey.STOP_NOTIFICATION);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.STOP_NOTIFICATION);
+    assertTrue(success);
+
     ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
     verify(notificationDao).insertNotification(captor.capture());
 
@@ -374,8 +374,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createInformNotification")
   public void receiveInformNotification() throws IOException {
-    handleDelivery(ConsumerRoutingKey.INFORM_NOTIFICATION);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.INFORM_NOTIFICATION);
+    assertTrue(success);
+
     ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
     verify(notificationDao).insertNotification(captor.capture());
 
@@ -395,8 +396,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createRfiWithdrawal")
   public void receiveRfiWithdrawal() throws Exception {
-    handleDelivery(ConsumerRoutingKey.RFI_WITHDRAWAL);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.RFI_WITHDRAWAL);
+    assertTrue(success);
+
     ArgumentCaptor<RfiWithdrawal> captor = ArgumentCaptor.forClass(RfiWithdrawal.class);
     verify(rfiWithdrawalDao).insertRfiWithdrawal(captor.capture());
 
@@ -413,8 +415,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createOutcomeIssueLicence")
   public void receiveOutcomeIssueLicence() throws Exception {
-    handleDelivery(ConsumerRoutingKey.OUTCOME_ISSUE);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.OUTCOME_ISSUE);
+    assertTrue(success);
+
     ArgumentCaptor<Outcome> captor = ArgumentCaptor.forClass(Outcome.class);
     verify(outcomeDao).insertOutcome(captor.capture());
 
@@ -436,8 +439,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createOutcomeAmendLicence")
   public void receiveOutcomeAmendLicence() throws Exception {
-    handleDelivery(ConsumerRoutingKey.OUTCOME_AMEND);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.OUTCOME_AMEND);
+    assertTrue(success);
+
     ArgumentCaptor<Outcome> captor = ArgumentCaptor.forClass(Outcome.class);
     verify(outcomeDao).insertOutcome(captor.capture());
 
@@ -459,8 +463,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createWithdrawalAcceptance")
   public void receiveWithdrawalAcceptance() throws Exception {
-    handleDelivery(ConsumerRoutingKey.WITHDRAWAL_ACCEPT);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.WITHDRAWAL_ACCEPT);
+    assertTrue(success);
+
     ArgumentCaptor<WithdrawalApproval> captor = ArgumentCaptor.forClass(WithdrawalApproval.class);
     verify(withdrawalApprovalDao).insertWithdrawalApproval(captor.capture());
 
@@ -477,8 +482,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createWithdrawalRejection")
   public void receiveWithdrawalRejection() throws Exception {
-    handleDelivery(ConsumerRoutingKey.WITHDRAWAL_REJECTION);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.WITHDRAWAL_REJECTION);
+    assertTrue(success);
+
     ArgumentCaptor<WithdrawalRejection> captor = ArgumentCaptor.forClass(WithdrawalRejection.class);
     verify(withdrawalRejectionDao).insertWithdrawalRejection(captor.capture());
 
@@ -493,8 +499,9 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createCase")
   public void receiveCaseCreate() throws Exception {
-    handleDelivery(ConsumerRoutingKey.CASE_CREATE);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.CASE_CREATE);
+    assertTrue(success);
+
     ArgumentCaptor<CaseDetails> captor = ArgumentCaptor.forClass(CaseDetails.class);
     verify(caseDetailsDao).insert(captor.capture());
 
@@ -508,23 +515,23 @@ public class SpireRelayServicePact {
   @Test
   @PactVerification(value = PROVIDER, fragment = "createCaseOfficerUpdate")
   public void receiveCaseOfficerUpdate() throws IOException {
-    handleDelivery(ConsumerRoutingKey.OFFICER_UPDATE);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.OFFICER_UPDATE);
+    assertTrue(success);
+
     verify(applicationDao).updateCaseOfficerId("appId", "caseOfficerId");
   }
 
   @Test
   @PactVerification(value = PROVIDER, fragment = "createRfiDeadlineUpdate")
   public void receiveRfiDeadlineUpdate() throws IOException {
-    handleDelivery(ConsumerRoutingKey.RFI_DEADLINE_UPDATE);
-    verify(channel).basicAck(0, false);
+    boolean success = handleDelivery(ConsumerRoutingKey.RFI_DEADLINE_UPDATE);
+    assertTrue(success);
+
     verify(rfiDao).updateDeadline("rfiId", 123456789L);
   }
 
-  private void handleDelivery(ConsumerRoutingKey consumerRoutingKey) throws IOException {
-    Envelope envelope = mock(Envelope.class);
-    when(envelope.getRoutingKey()).thenReturn(consumerRoutingKey.toString());
-    messageConsumer.handleDelivery(null, envelope, null, mockProvider.getMessage());
+  private boolean handleDelivery(ConsumerRoutingKey consumerRoutingKey) throws IOException {
+    return messageHandler.handleMessage(consumerRoutingKey.toString(), new String(mockProvider.getMessage()));
   }
 
 }

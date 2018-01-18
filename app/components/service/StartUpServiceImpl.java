@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 public class StartUpServiceImpl implements StartUpService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StartUpServiceImpl.class);
-
   private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
 
   private final ApplicationDao applicationDao;
