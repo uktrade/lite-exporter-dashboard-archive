@@ -18,14 +18,6 @@ import components.dao.WithdrawalRequestDao;
 import components.exceptions.UnexpectedStateException;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import models.AmendmentRequest;
 import models.AppData;
 import models.Application;
@@ -40,6 +32,15 @@ import models.StatusUpdate;
 import models.WithdrawalApproval;
 import models.WithdrawalRejection;
 import models.WithdrawalRequest;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class AppDataServiceImpl implements AppDataService {
 

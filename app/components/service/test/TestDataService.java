@@ -10,7 +10,7 @@ public interface TestDataService {
 
   void deleteCurrentUser(String userId);
 
-  void deleteAllUsers();
+  void deleteAllData();
 
   void insertUserTestingApplicant(String userId);
 
