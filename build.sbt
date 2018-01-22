@@ -1,12 +1,6 @@
 name := "lite-exporter-dashboard"
 
-version := "1.0"
-
-def formatDateAsVersion(): String = {
-  val sdf = new java.text.SimpleDateFormat("YYYYMMdd.HHmmss")
-  sdf.setTimeZone(new java.util.SimpleTimeZone(java.util.SimpleTimeZone.UTC_TIME, "UTC"))
-  sdf.format(new java.util.Date())
-}
+version := scala.util.Properties.envOrElse("BUILD_VERSION", "1.0-SNAPSHOT")
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayJava)
@@ -44,8 +38,8 @@ libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
 
 libraryDependencies += "org.apache.commons" % "commons-collections4" % "4.1"
 
-resolvers += "Lite Lib Releases " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
-resolvers += "Snapshots " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-snapshots/"
+resolvers += "Lite Lib Releases " at "https://nexus.ci.uktrade.io/repository/maven-releases/"
+resolvers += "Snapshots " at "https://nexus.ci.uktrade.io/repository/maven-snapshots/"
 
 // Contains all files and libraries shared across other projects
 lazy val `zzz-common` = project.in(file("subprojects/lite-play-common")).enablePlugins(PlayJava)

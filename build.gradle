@@ -16,19 +16,26 @@ dependencies {
     compile "org.hibernate:hibernate-validator:5.2.4.Final"
 }
 
+def nexusUsername = project.hasProperty('nexusUsername') ? project.nexusUsername : ''
+def nexusPassword = project.hasProperty('nexusPassword') ? project.nexusPassword : ''
+
 publishing {
     repositories {
         maven {
             name "snapshots"
-            url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-snapshots/"
+            url "https://nexus.ci.uktrade.io/repository/maven-snapshots/"
+            credentials {
+                username nexusUsername
+                password nexusPassword
+            }
         }
         maven {
             name "releases"
-            url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
-        }
-        maven {
-            name "lite-builds"
-            url "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/lite-builds/"
+            url "https://nexus.ci.uktrade.io/repository/maven-releases/"
+            credentials {
+                username nexusUsername
+                password nexusPassword
+            }
         }
     }
 }
@@ -53,7 +60,7 @@ task apiJarWithSources(type: org.gradle.api.tasks.bundling.Jar) {
 pact {
     publish {
         pactDirectory = 'target/pacts'
-        pactBrokerUrl = 'http://pact-broker.mgmt.licensing.service.trade.gov.uk.test/'
+        pactBrokerUrl = 'https://pact-broker.ci.uktrade.io/'
         version = '1.0.0'
     }
 }

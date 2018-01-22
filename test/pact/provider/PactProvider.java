@@ -24,7 +24,7 @@ import java.util.List;
 
 @RunWith(PactRunner.class)
 @Provider("lite-exporter-dashboard")
-@PactBroker(host = "pact-broker.mgmt.licensing.service.trade.gov.uk.test", port = "80")
+@PactBroker(host = "pact-broker.ci.uktrade.io", port = "80")
 public class PactProvider {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
