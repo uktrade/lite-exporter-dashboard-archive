@@ -4,10 +4,11 @@ import com.google.inject.Inject;
 import components.dao.OutcomeDao;
 import components.dao.jdbi.OutcomeJDBIDao;
 import components.util.JsonUtil;
-import java.util.ArrayList;
-import java.util.List;
 import models.Outcome;
 import org.skife.jdbi.v2.DBI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OutcomeDaoImpl implements OutcomeDao {
 
@@ -34,7 +35,7 @@ public class OutcomeDaoImpl implements OutcomeDao {
         outcome.getCreatedByUserId(),
         JsonUtil.convertListToJson(outcome.getRecipientUserIds()),
         outcome.getCreatedTimestamp(),
-        JsonUtil.convertListToJson(outcome.getDocuments()));
+        JsonUtil.convertListToJson(outcome.getOutcomeDocuments()));
   }
 
   @Override

@@ -1,26 +1,28 @@
 package controllers;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.dao.DraftFileDao;
-import components.exceptions.DatabaseException;
 import components.service.AmendmentService;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationTabsViewService;
+import components.service.FileService;
 import components.service.OfficerViewService;
 import components.service.PreviousRequestItemViewService;
 import components.service.ReadDataService;
 import components.service.UserPermissionService;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
-import components.upload.UploadFile;
 import components.upload.UploadMultipartParser;
+import components.upload.UploadResult;
 import components.util.ApplicationUtil;
 import components.util.EnumUtil;
 import components.util.FileUtil;
 import models.AppData;
-import models.File;
+import models.Attachment;
 import models.ReadData;
 import models.enums.Action;
 import models.enums.DraftType;
@@ -35,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.With;
@@ -43,6 +46,7 @@ import views.html.amendApplicationTab;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 @With(AppGuardAction.class)
@@ -63,6 +67,8 @@ public class AmendTabController extends SamlController {
   private final ReadDataService readDataService;
   private final UserPermissionService userPermissionService;
   private final PreviousRequestItemViewService previousRequestItemViewService;
+  private final FileService fileService;
+  private final HttpExecutionContext context;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -77,7 +83,9 @@ public class AmendTabController extends SamlController {
                             ApplicationTabsViewService applicationTabsViewService,
                             ReadDataService readDataService,
                             UserPermissionService userPermissionService,
-                            PreviousRequestItemViewService previousRequestItemViewService) {
+                            PreviousRequestItemViewService previousRequestItemViewService,
+                            FileService fileService,
+                            HttpExecutionContext httpExecutionContext) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -91,6 +99,8 @@ public class AmendTabController extends SamlController {
     this.readDataService = readDataService;
     this.userPermissionService = userPermissionService;
     this.previousRequestItemViewService = previousRequestItemViewService;
+    this.fileService = fileService;
+    this.context = httpExecutionContext;
   }
 
   public Result deleteFileById(String appId, String fileId) {
@@ -101,47 +111,49 @@ public class AmendTabController extends SamlController {
       LOGGER.error("Unable to delete file with id {} since amending application with id {} not allowed.", fileId, appId);
       return showAmendTab(appId);
     } else {
-      try {
-        draftFileDao.deleteDraftFile(fileId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
-      } catch (DatabaseException databaseException) {
-        // Since this error could occur if the user refreshes the page, we do not return a bad request.
-        LOGGER.warn("Unable to delete file.", databaseException);
-      }
+      fileService.deleteDraftFile(fileId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
       amendApplicationForm.discardErrors();
       return showAmendTab(appId, amendApplicationForm);
     }
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
-  public Result submitAmendment(String appId) {
+  public CompletionStage<Result> submitAmendment(String appId) {
     String userId = userService.getCurrentUserId();
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
     String actionParam = amendApplicationForm.data().get("action");
     Action action = EnumUtil.parse(actionParam, Action.class);
     AppData appData = appDataService.getAppData(appId);
-    List<UploadFile> uploadFiles = FileUtil.getUploadFiles(request());
-    FileUtil.processErrors(amendApplicationForm, uploadFiles);
     if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since amendment not allowed.", appId, action);
-      return showAmendTab(appId);
-    } else if (amendApplicationForm.hasErrors()) {
-      return showAmendTab(appId, amendApplicationForm);
+      return completedFuture(showAmendTab(appId));
     } else if (action == null) {
       LOGGER.error("Amending application with appId {} and action {} not possible", appId, actionParam);
-      return showAmendTab(appId);
+      return completedFuture(showAmendTab(appId));
     } else {
-      String message = amendApplicationForm.get().message;
-      if (action == Action.AMEND) {
-        amendmentService.insertAmendment(userId, appId, message, uploadFiles);
-        flash("message", "Your amendment request has been sent");
-        flash("detail", "A case officer will deal with it shortly");
-      } else if (action == Action.WITHDRAW) {
-        withdrawalRequestService.insertWithdrawalRequest(userId, appId, message, uploadFiles);
-        flash("message", "Your withdrawal request has been sent");
-        flash("detail", "A case officer will deal with it shortly. You cannot make any further withdrawal or amendment " +
-            "requests while this one is pending");
-      }
-      return redirect(routes.AmendTabController.showAmendTab(appId));
+      return fileService.processUpload(appId, request())
+          .thenApplyAsync(uploadResults -> {
+            FileUtil.addUploadErrorsToForm(amendApplicationForm, uploadResults);
+            uploadResults.stream()
+                .filter(UploadResult::isValid)
+                .forEach(uploadResult -> draftFileDao.addDraftFile(uploadResult, appId, DraftType.AMENDMENT_OR_WITHDRAWAL));
+            if (amendApplicationForm.hasErrors()) {
+              return showAmendTab(appId, amendApplicationForm);
+            } else {
+              String message = amendApplicationForm.get().message;
+              if (action == Action.AMEND) {
+                amendmentService.insertAmendment(userId, appId, message);
+                flash("message", "Your amendment request has been sent");
+                flash("detail", "A case officer will deal with it shortly");
+              } else if (action == Action.WITHDRAW) {
+                withdrawalRequestService.insertWithdrawalRequest(userId, appId, message);
+                flash("message", "Your withdrawal request has been sent");
+                flash("detail", "A case officer will deal with it shortly. You cannot make any further withdrawal or amendment " +
+                    "requests while this one is pending");
+              }
+              return redirect(routes.AmendTabController.showAmendTab(appId));
+            }
+          }, context.current());
     }
   }
 
@@ -179,16 +191,17 @@ public class AmendTabController extends SamlController {
   }
 
   private List<FileView> createFileViews(String appId) {
-    List<File> files = draftFileDao.getDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
-    return files.stream()
-        .map(file -> createFileView(appId, file))
+    List<Attachment> attachments = draftFileDao.getAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+    return attachments.stream()
+        .map(attachment -> createFileView(appId, attachment))
         .collect(Collectors.toList());
   }
 
-  private FileView createFileView(String appId, File file) {
-    String link = routes.DownloadController.getAmendmentOrWithdrawalFile(appId, file.getId()).toString();
-    String deleteLink = routes.AmendTabController.deleteFileById(appId, file.getId()).toString();
-    return new FileView(file.getId(), appId, appId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
+  private FileView createFileView(String appId, Attachment attachment) {
+    String link = routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
+    String deleteLink = routes.AmendTabController.deleteFileById(appId, attachment.getId()).toString();
+    String size = FileUtil.getReadableFileSize(attachment.getSize());
+    return new FileView(attachment.getId(), appId, appId, attachment.getFilename(), link, deleteLink, size);
   }
 
   private List<SelectOption> getSelectOptions() {

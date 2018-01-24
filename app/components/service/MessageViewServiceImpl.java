@@ -6,13 +6,9 @@ import components.util.Comparators;
 import components.util.FileUtil;
 import components.util.LinkUtil;
 import components.util.TimeUtil;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import models.AmendmentRequest;
 import models.AppData;
-import models.File;
+import models.Attachment;
 import models.Notification;
 import models.ReadData;
 import models.WithdrawalApproval;
@@ -23,6 +19,11 @@ import models.enums.MessageType;
 import models.view.FileView;
 import models.view.MessageReplyView;
 import models.view.MessageView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MessageViewServiceImpl implements MessageViewService {
 
@@ -132,10 +133,10 @@ public class MessageViewServiceImpl implements MessageViewService {
         false);
   }
 
-  private FileView getFileView(String appId, String relatedId, File file) {
-    String size = FileUtil.getReadableFileSize(file.getUrl());
-    String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalFile(appId, file.getId()).toString();
-    return new FileView(file.getId(), appId, relatedId, file.getFilename(), link, null, size);
+  private FileView getFileView(String appId, String relatedId, Attachment attachment) {
+    String size = FileUtil.getReadableFileSize(attachment.getSize());
+    String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
+    return new FileView(attachment.getId(), appId, relatedId, attachment.getFilename(), link, null, size);
   }
 
   private List<MessageView> getStopMessageViews(AppData appData, ReadData readData) {

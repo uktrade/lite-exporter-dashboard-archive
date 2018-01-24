@@ -3,7 +3,7 @@ package components.dao.mapper;
 import components.dao.helper.LongMapper;
 import components.util.JsonUtil;
 import models.AmendmentRequest;
-import models.File;
+import models.Attachment;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -21,7 +21,7 @@ public class AmendmentRequestRSMapper implements ResultSetMapper<AmendmentReques
     Long createdTimestamp = LongMapper.getLong(r, "created_timestamp");
     String message = r.getString("message");
     String attachmentsJson = r.getString("attachments");
-    List<File> attachments = JsonUtil.convertJsonToFiles(attachmentsJson);
+    List<Attachment> attachments = JsonUtil.convertJsonToAttachments(attachmentsJson);
 
     AmendmentRequest amendmentRequest = new AmendmentRequest();
     amendmentRequest.setId(id);

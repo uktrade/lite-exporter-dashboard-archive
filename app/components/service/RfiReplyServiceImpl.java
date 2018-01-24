@@ -6,16 +6,17 @@ import com.google.inject.Inject;
 import components.dao.DraftFileDao;
 import components.dao.RfiReplyDao;
 import components.message.MessagePublisher;
-import components.upload.UploadFile;
-import components.util.FileUtil;
-import components.util.MessageUtil;
-import java.time.Instant;
-import java.util.List;
-import models.File;
+import controllers.routes;
+import models.Attachment;
 import models.RfiReply;
 import models.enums.DraftType;
-import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
+import uk.gov.bis.lite.exporterdashboard.api.DashboardDocument;
 import uk.gov.bis.lite.exporterdashboard.api.RfiReplyMessage;
+import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class RfiReplyServiceImpl implements RfiReplyService {
 
@@ -24,15 +25,15 @@ public class RfiReplyServiceImpl implements RfiReplyService {
   private final MessagePublisher messagePublisher;
 
   @Inject
-  public RfiReplyServiceImpl(RfiReplyDao rfiReplyDao, DraftFileDao draftFileDao, MessagePublisher messagePublisher) {
+  public RfiReplyServiceImpl(RfiReplyDao rfiReplyDao, DraftFileDao draftFileDao, MessagePublisher messagePublisher, FileService fileService) {
     this.rfiReplyDao = rfiReplyDao;
     this.draftFileDao = draftFileDao;
     this.messagePublisher = messagePublisher;
   }
 
   @Override
-  public void insertRfiReply(String createdByUserId, String appId, String rfiId, String message, List<UploadFile> files) {
-    List<File> attachments = getAttachments(rfiId, files);
+  public void insertRfiReply(String createdByUserId, String appId, String rfiId, String message) {
+    List<Attachment> attachments = draftFileDao.getAttachments(rfiId, DraftType.RFI_REPLY);
 
     RfiReply rfiReply = new RfiReply();
     rfiReply.setId(rfiReplyId());
@@ -47,13 +48,6 @@ public class RfiReplyServiceImpl implements RfiReplyService {
     messagePublisher.sendMessage(RoutingKey.RFI_REPLY, getRfiReplyMessage(appId, rfiReply));
   }
 
-  private List<File> getAttachments(String rfiId, List<UploadFile> uploadFiles) {
-    List<File> files = FileUtil.toFiles(uploadFiles);
-    List<File> draftAttachments = draftFileDao.getDraftFiles(rfiId, DraftType.RFI_REPLY);
-    files.addAll(draftAttachments);
-    return files;
-  }
-
   private RfiReplyMessage getRfiReplyMessage(String appId, RfiReply rfiReply) {
     RfiReplyMessage rfiReplyMessage = new RfiReplyMessage();
     rfiReplyMessage.setId(rfiReply.getId());
@@ -62,8 +56,20 @@ public class RfiReplyServiceImpl implements RfiReplyService {
     rfiReplyMessage.setCreatedByUserId(rfiReply.getCreatedByUserId());
     rfiReplyMessage.setCreatedTimestamp(rfiReply.getCreatedTimestamp());
     rfiReplyMessage.setMessage(rfiReply.getMessage());
-    rfiReplyMessage.setAttachments(MessageUtil.getDashboardDocuments(rfiReply.getAttachments()));
+    rfiReplyMessage.setAttachments(getDashboardDocuments(appId, rfiReply.getRfiId(), rfiReply.getAttachments()));
     return rfiReplyMessage;
+  }
+
+  private List<DashboardDocument> getDashboardDocuments(String appId, String rfiId, List<Attachment> attachments) {
+    return attachments.stream()
+        .map(attachment -> {
+          String url = routes.DownloadController.getRfiReplyAttachment(appId, rfiId, attachment.getId()).toString();
+          DashboardDocument dashboardDocument = new DashboardDocument();
+          dashboardDocument.setId(attachment.getId());
+          dashboardDocument.setFilename(attachment.getFilename());
+          dashboardDocument.setUrl(url);
+          return dashboardDocument;
+        }).collect(Collectors.toList());
   }
 
 }

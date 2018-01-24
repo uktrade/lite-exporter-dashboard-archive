@@ -4,7 +4,7 @@ import components.comparator.ApplicationReferenceComparator;
 import components.comparator.ApplicationStatusComparator;
 import components.comparator.DestinationComparator;
 import components.comparator.EventTypeComparator;
-import models.Document;
+import models.OutcomeDocument;
 import models.enums.ApplicationSortType;
 import models.enums.DocumentType;
 import models.enums.LicenceSortType;
@@ -117,8 +117,8 @@ public class SortUtil {
     sielItemViews.sort(SIEL_COMPARATORS.get(licenceSortType).get(sortDirection));
   }
 
-  public static void sortDocuments(List<Document> documents) {
-    documents.sort(Comparator.comparingInt(document -> DOCUMENT_TYPES.indexOf(document.getDocumentType())));
+  public static void sortOutcomeDocuments(List<OutcomeDocument> outcomeDocuments) {
+    outcomeDocuments.sort(Comparator.comparingInt(outcomeDocument -> DOCUMENT_TYPES.indexOf(outcomeDocument.getDocumentType())));
   }
 
 }

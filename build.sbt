@@ -27,7 +27,10 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.264",
   "com.amazonaws" % "aws-java-sdk-sns" % "1.11.257",
   // We need this dependency to use JDBI @BindIn annotation
-  "org.antlr" % "stringtemplate" % "3.2.1"
+  "org.antlr" % "stringtemplate" % "3.2.1",
+  "com.amazonaws" % "aws-java-sdk-core" % "1.11.269",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.269",
+  "com.spotify" % "completable-futures" % "0.3.2"
 )
 
 libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.4"
@@ -41,6 +44,8 @@ libraryDependencies += "au.com.dius" % "pact-jvm-provider-junit_2.11" % "3.3.10"
 libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
 libraryDependencies += "ru.yandex.qatools.embed" % "postgresql-embedded" % "2.6" % "test"
 
+resolvers += "Lite Lib Releases " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
+resolvers += "Snapshots " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-snapshots/"
 resolvers += "Lite Lib Releases " at "https://nexus.ci.uktrade.io/repository/maven-releases/"
 resolvers += "Snapshots " at "https://nexus.ci.uktrade.io/repository/maven-snapshots/"
 

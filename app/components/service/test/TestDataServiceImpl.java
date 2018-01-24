@@ -41,10 +41,10 @@ import models.AmendmentRequest;
 import models.Application;
 import models.CaseDetails;
 import models.Document;
-import models.File;
 import models.Notification;
 import models.NotificationType;
 import models.Outcome;
+import models.OutcomeDocument;
 import models.Rfi;
 import models.RfiReply;
 import models.RfiWithdrawal;
@@ -320,21 +320,21 @@ public class TestDataServiceImpl implements TestDataService {
         statusUpdateDao.insertStatusUpdate(statusUpdate);
       }
       long outcomeCreatedTimestamp = time(2016, 5, 13, 13, 17);
-      List<Document> issueDocuments = new ArrayList<>();
+      List<OutcomeDocument> issueOutcomeDocuments = new ArrayList<>();
       for (int j = 0; j < 4; j++) {
         DocumentType documentType = ISSUE_DOCUMENT_TYPES.get(j);
-        Document document = new Document(documentId(),
+        OutcomeDocument outcomeDocument = new OutcomeDocument(documentId(),
             documentType,
             LICENCE_REFERENCES.get(j),
             ISSUE_DOCUMENT_FILE_NAMES.get(j),
             "#");
-        issueDocuments.add(document);
+        issueOutcomeDocuments.add(outcomeDocument);
       }
-      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, issueDocuments);
+      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, issueOutcomeDocuments);
       outcomeDao.insertOutcome(outcome);
       if (k == 0) {
         long informCreatedTimestamp = time(2016, 5, 13, 13, 17);
-        File document = new File(fileId(), "Licence required inform", "#");
+        Document document = new Document(fileId(), "Licence required inform", "#");
         Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
         notificationDao.insertNotification(notification);
       } else if (k == 1) {
@@ -509,7 +509,7 @@ public class TestDataServiceImpl implements TestDataService {
 
       }
       if (i % 3 == 0) {
-        File document = new File(fileId(), "Inform letter", "#");
+        Document document = new Document(fileId(), "Inform letter", "#");
         Notification notification = new Notification(informNotificationId(),
             caseReference,
             NotificationType.INFORM,
@@ -568,7 +568,7 @@ public class TestDataServiceImpl implements TestDataService {
         StatusType.INITIAL_CHECKS,
         time(2017, 8, 3, 0, 0));
     statusUpdateDao.insertStatusUpdate(initialChecks);
-    File document = new File(fileId(), "Inform letter", "#");
+    Document document = new Document(fileId(), "Inform letter", "#");
     Notification notification = new Notification(informNotificationId(),
         caseReference,
         NotificationType.INFORM,
@@ -860,17 +860,17 @@ public class TestDataServiceImpl implements TestDataService {
       }
 
       long outcomeCreatedTimestamp = time(2016, 7, 10, 13, 17);
-      List<Document> issueDocuments = new ArrayList<>();
+      List<OutcomeDocument> issueOutcomeDocuments = new ArrayList<>();
       for (int j = 0; j < 4; j++) {
         DocumentType documentType = ISSUE_DOCUMENT_TYPES.get(j);
-        Document document = new Document(documentId(),
+        OutcomeDocument outcomeDocument = new OutcomeDocument(documentId(),
             documentType,
             LICENCE_REFERENCES.get(j),
             UUID.randomUUID().toString() + ".pdf",
             "#");
-        issueDocuments.add(document);
+        issueOutcomeDocuments.add(outcomeDocument);
       }
-      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, issueDocuments);
+      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, issueOutcomeDocuments);
       outcomeDao.insertOutcome(outcome);
 
       if (k > 4) {
@@ -888,7 +888,7 @@ public class TestDataServiceImpl implements TestDataService {
 
       for (int i = 0; i < 3; i++) {
         long informCreatedTimestamp = time(2016, 8 + i, 3 + i, 3 + i, 3 + i);
-        File document = new File(fileId(), "Licence required inform letter number " + (i + 1), "#");
+        Document document = new Document(fileId(), "Licence required inform letter number " + (i + 1), "#");
         Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
         notificationDao.insertNotification(notification);
       }
@@ -900,18 +900,18 @@ public class TestDataServiceImpl implements TestDataService {
     String caseReference = RandomIdUtil.caseReference();
     CaseDetails caseDetails = new CaseDetails(appId, caseReference, OFFICER_ID, createdTimestamp);
     caseDetailsDao.insert(caseDetails);
-    List<Document> documents = new ArrayList<>();
+    List<OutcomeDocument> outcomeDocuments = new ArrayList<>();
     for (int j = 0; j < 4; j++) {
       DocumentType documentType = AMEND_DOCUMENT_TYPES.get(j);
-      Document document = new Document(documentId(),
+      OutcomeDocument outcomeDocument = new OutcomeDocument(documentId(),
           documentType,
           LICENCE_REFERENCES.get(j),
           UUID.randomUUID().toString() + ".pdf",
           "#");
-      documents.add(document);
+      outcomeDocuments.add(outcomeDocument);
     }
     long outcomeCreatedTimestamp = time(2016, 12, 22, 13, 17);
-    Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, documents);
+    Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, outcomeDocuments);
     outcomeDao.insertOutcome(amendOutcome);
   }
 
@@ -934,7 +934,7 @@ public class TestDataServiceImpl implements TestDataService {
     }
     if (hasInformLetter) {
       long informCreatedTimestamp = time(2017, 4, 4, 4, 4);
-      File document = new File(fileId(), "Licence required inform letter number 4", "#");
+      Document document = new Document(fileId(), "Licence required inform letter number 4", "#");
       Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
       notificationDao.insertNotification(notification);
     }
@@ -950,18 +950,18 @@ public class TestDataServiceImpl implements TestDataService {
       notificationDao.insertNotification(stopNotification);
     }
     if (hasOutcome) {
-      List<Document> documents = new ArrayList<>();
+      List<OutcomeDocument> outcomeDocuments = new ArrayList<>();
       for (int j = 0; j < 4; j++) {
         DocumentType documentType = AMEND_DOCUMENT_TYPES.get(j);
-        Document document = new Document(documentId(),
+        OutcomeDocument outcomeDocument = new OutcomeDocument(documentId(),
             documentType,
             LICENCE_REFERENCES.get(j),
             ISSUE_DOCUMENT_FILE_NAMES.get(j),
             "#");
-        documents.add(document);
+        outcomeDocuments.add(outcomeDocument);
       }
       long outcomeCreatedTimestamp = time(2017, 3, 10, 13, 17);
-      Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, documents);
+      Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, outcomeDocuments);
       outcomeDao.insertOutcome(amendOutcome);
     }
   }

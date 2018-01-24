@@ -3,8 +3,8 @@ package components.dao.impl;
 import com.google.inject.Inject;
 import components.dao.DraftFileDao;
 import components.dao.jdbi.DraftFileJDBIDao;
-import components.util.RandomIdUtil;
-import models.File;
+import components.upload.UploadResult;
+import models.Attachment;
 import models.enums.DraftType;
 import org.skife.jdbi.v2.DBI;
 
@@ -21,9 +21,13 @@ public class DraftFileDaoImpl implements DraftFileDao {
   }
 
   @Override
-  public List<File> getDraftFiles(String relatedId, DraftType draftType) {
+  public List<Attachment> getAttachments(String relatedId, DraftType draftType) {
     return draftFileJDBIDao.getDraftFiles(relatedId, draftType).stream()
-        .map(draftFile -> new File(draftFile.getId(), draftFile.getFilename(), draftFile.getUrl()))
+        .map(draftFile -> new Attachment(draftFile.getId(),
+            draftFile.getFilename(),
+            draftFile.getBucket(),
+            draftFile.getFolder(),
+            draftFile.getSize()))
         .collect(Collectors.toList());
   }
 
@@ -33,10 +37,14 @@ public class DraftFileDaoImpl implements DraftFileDao {
   }
 
   @Override
-  public String addDraftFile(String filename, String url, String relatedId, DraftType draftType) {
-    String fileId = RandomIdUtil.fileId();
-    draftFileJDBIDao.insertDraftFile(fileId, filename, url, relatedId, draftType);
-    return fileId;
+  public void addDraftFile(UploadResult uploadResult, String relatedId, DraftType draftType) {
+    draftFileJDBIDao.insertDraftFile(uploadResult.getId(),
+        uploadResult.getFilename(),
+        uploadResult.getBucket(),
+        uploadResult.getFolder(),
+        uploadResult.getSize(),
+        relatedId,
+        draftType);
   }
 
   @Override

@@ -1,50 +1,30 @@
 package components.util;
 
-import static components.util.RandomIdUtil.fileId;
+import components.upload.UploadResult;
+import play.data.Form;
 
-import components.upload.UploadFile;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import models.File;
-import play.data.Form;
-import play.mvc.Http;
 
 public class FileUtil {
 
-  public static String getReadableFileSize(String path) {
-    long size = new java.io.File(path).length();
+  private static final String[] UNITS = new String[]{" bytes", "KB", "MB", "GB", "TB"};
+
+  public static String getReadableFileSize(long size) {
     if (size <= 0) {
       return "0";
+    } else {
+      int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+      return new DecimalFormat("#,##0").format(size / Math.pow(1024, digitGroups)) + UNITS[digitGroups];
     }
-    String[] units = new String[]{" bytes", "KB", "MB", "GB", "TB"};
-    int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
-    return new DecimalFormat("#,##0").format(size / Math.pow(1024, digitGroups)) + units[digitGroups];
   }
 
-  /**
-   * Null check on 'uploadFile' is workaround for bug https://github.com/playframework/playframework/issues/6203
-   */
-  public static List<UploadFile> getUploadFiles(Http.Request request) {
-    Http.MultipartFormData<UploadFile> body = request.body().asMultipartFormData();
-    return body.getFiles().stream()
-        .map(Http.MultipartFormData.FilePart::getFile)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
+  public static void addUploadErrorsToForm(Form form, List<UploadResult> uploadResults) {
+    uploadResults.stream()
+        .filter(uploadResult -> !uploadResult.isValid())
+        .forEach(uploadResult -> {
+          form.reject("fileupload",
+              "Error for file " + uploadResult.getFilename() + ": " + uploadResult.getError());
+        });
   }
-
-  public static List<File> toFiles(List<UploadFile> uploadFiles) {
-    return uploadFiles.stream()
-        .map(uploadFile -> new File(fileId(), uploadFile.getOriginalFilename(), uploadFile.getDestinationPath()))
-        .collect(Collectors.toList());
-  }
-
-  public static void processErrors(Form form, List<UploadFile> uploadFiles) {
-    uploadFiles.stream()
-        .map(UploadFile::getProcessErrorInfo)
-        .filter(Objects::nonNull)
-        .forEach(form::reject);
-  }
-
 }

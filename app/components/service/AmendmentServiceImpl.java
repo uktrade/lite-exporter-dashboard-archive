@@ -6,16 +6,17 @@ import com.google.inject.Inject;
 import components.dao.AmendmentRequestDao;
 import components.dao.DraftFileDao;
 import components.message.MessagePublisher;
-import components.upload.UploadFile;
-import components.util.FileUtil;
-import components.util.MessageUtil;
-import java.time.Instant;
-import java.util.List;
+import controllers.routes;
 import models.AmendmentRequest;
-import models.File;
+import models.Attachment;
 import models.enums.DraftType;
 import uk.gov.bis.lite.exporterdashboard.api.AmendmentMessage;
+import uk.gov.bis.lite.exporterdashboard.api.DashboardDocument;
 import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AmendmentServiceImpl implements AmendmentService {
 
@@ -31,8 +32,8 @@ public class AmendmentServiceImpl implements AmendmentService {
   }
 
   @Override
-  public void insertAmendment(String createdByUserId, String appId, String message, List<UploadFile> files) {
-    List<File> attachments = getAttachments(appId, files);
+  public void insertAmendment(String createdByUserId, String appId, String message) {
+    List<Attachment> attachments = draftFileDao.getAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
 
     AmendmentRequest amendmentRequest = new AmendmentRequest();
     amendmentRequest.setId(amendmentId());
@@ -47,13 +48,6 @@ public class AmendmentServiceImpl implements AmendmentService {
     messagePublisher.sendMessage(RoutingKey.AMENDMENT_CREATE, getAmendmentMessage(amendmentRequest));
   }
 
-  private List<File> getAttachments(String appId, List<UploadFile> uploadFiles) {
-    List<File> files = FileUtil.toFiles(uploadFiles);
-    List<File> draftAttachments = draftFileDao.getDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
-    files.addAll(draftAttachments);
-    return files;
-  }
-
   private AmendmentMessage getAmendmentMessage(AmendmentRequest amendmentRequest) {
     AmendmentMessage amendmentMessage = new AmendmentMessage();
     amendmentMessage.setId(amendmentRequest.getId());
@@ -61,8 +55,20 @@ public class AmendmentServiceImpl implements AmendmentService {
     amendmentMessage.setCreatedByUserId(amendmentRequest.getCreatedByUserId());
     amendmentMessage.setCreatedTimestamp(amendmentRequest.getCreatedTimestamp());
     amendmentMessage.setMessage(amendmentRequest.getMessage());
-    amendmentMessage.setAttachments(MessageUtil.getDashboardDocuments(amendmentRequest.getAttachments()));
+    amendmentMessage.setAttachments(getDashboardDocuments(amendmentRequest.getAppId(), amendmentRequest.getAttachments()));
     return amendmentMessage;
+  }
+
+  private List<DashboardDocument> getDashboardDocuments(String appId, List<Attachment> attachments) {
+    return attachments.stream()
+        .map(attachment -> {
+          String url = routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
+          DashboardDocument dashboardDocument = new DashboardDocument();
+          dashboardDocument.setId(attachment.getId());
+          dashboardDocument.setFilename(attachment.getFilename());
+          dashboardDocument.setUrl(url);
+          return dashboardDocument;
+        }).collect(Collectors.toList());
   }
 
 }

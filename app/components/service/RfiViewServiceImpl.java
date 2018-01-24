@@ -6,13 +6,8 @@ import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.FileUtil;
 import components.util.TimeUtil;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import models.AppData;
-import models.File;
+import models.Attachment;
 import models.Rfi;
 import models.RfiReply;
 import models.RfiWithdrawal;
@@ -22,17 +17,25 @@ import models.view.FileView;
 import models.view.RfiReplyView;
 import models.view.RfiView;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 public class RfiViewServiceImpl implements RfiViewService {
 
   private final UserService userService;
   private final DraftFileDao draftFileDao;
   private final UserPermissionService userPermissionService;
+  private final FileService fileService;
 
   @Inject
-  public RfiViewServiceImpl(UserService userService, DraftFileDao draftFileDao, UserPermissionService userPermissionService) {
+  public RfiViewServiceImpl(UserService userService, DraftFileDao draftFileDao, UserPermissionService userPermissionService, FileService fileService) {
     this.userService = userService;
     this.draftFileDao = draftFileDao;
     this.userPermissionService = userPermissionService;
+    this.fileService = fileService;
   }
 
   @Override
@@ -64,21 +67,22 @@ public class RfiViewServiceImpl implements RfiViewService {
 
   @Override
   public AddRfiReplyView getAddRfiReplyView(String appId, String rfiId) {
-    List<File> draftAttachments = draftFileDao.getDraftFiles(rfiId, DraftType.RFI_REPLY);
+    List<Attachment> draftAttachments = draftFileDao.getAttachments(rfiId, DraftType.RFI_REPLY);
     List<FileView> fileViews = createFileViews(appId, rfiId, draftAttachments);
     return new AddRfiReplyView(rfiId, fileViews);
   }
 
-  private List<FileView> createFileViews(String appId, String rfiId, List<File> files) {
-    return files.stream()
-        .map(file -> createFileView(appId, rfiId, file))
+  private List<FileView> createFileViews(String appId, String rfiId, List<Attachment> attachments) {
+    return attachments.stream()
+        .map(attachment -> createFileView(appId, rfiId, attachment))
         .collect(Collectors.toList());
   }
 
-  private FileView createFileView(String appId, String rfiId, File file) {
-    String link = controllers.routes.DownloadController.getRfiReplyFile(appId, rfiId, file.getId()).toString();
-    String deleteLink = controllers.routes.RfiTabController.deleteFileById(appId, file.getId()).toString();
-    return new FileView(file.getId(), appId, rfiId, file.getFilename(), link, deleteLink, FileUtil.getReadableFileSize(file.getUrl()));
+  private FileView createFileView(String appId, String rfiId, Attachment attachment) {
+    String link = controllers.routes.DownloadController.getRfiReplyAttachment(appId, rfiId, attachment.getId()).toString();
+    String deleteLink = controllers.routes.RfiTabController.deleteFileById(appId, attachment.getId()).toString();
+    String size = FileUtil.getReadableFileSize(attachment.getSize());
+    return new FileView(attachment.getId(), appId, rfiId, attachment.getFilename(), link, deleteLink, size);
   }
 
   private RfiView getRfiView(String appId, Rfi rfi, RfiReply rfiReply, RfiWithdrawal rfiWithdrawal, boolean isReplyAllowed) {
