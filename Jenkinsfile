@@ -11,19 +11,7 @@ pipeline {
       steps {
         script {
           deleteDir()
-          checkout([
-              $class: 'GitSCM',
-              branches: [[name: "*/${env.BRANCH_NAME}"]],
-              userRemoteConfigs: [[url: "git@github.com:uktrade/${projectName}.git"]],
-              credentialsId: env.SCM_CREDENTIAL,
-              extensions: [[$class: 'SubmoduleOption',
-                            disableSubmodules: false,
-                            parentCredentials: true,
-                            recursiveSubmodules: true,
-                            reference: '',
-                            trackingSubmodules: false
-                           ]]
-          ])
+          checkout scm
           deployer = docker.image("ukti/lite-image-builder")
           deployer.pull()
           env.BUILD_VERSION = ''
@@ -36,7 +24,7 @@ pipeline {
         script {
           deployer.inside {
             try {
-              sh 'sbt test'
+              sh 'sbt -no-colors test'
             }
             finally {
               step([$class: 'JUnitResultArchiver', testResults: 'target/test-reports/**/*.xml'])
