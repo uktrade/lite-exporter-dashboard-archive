@@ -79,6 +79,11 @@
       li {
         display: table-cell;
         float: none;
+
+        a {
+          padding-left: 0.3em;
+          padding-right: 0.3em;
+        }
       }
     }
 
