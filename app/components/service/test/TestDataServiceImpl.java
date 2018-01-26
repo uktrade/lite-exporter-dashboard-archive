@@ -20,6 +20,7 @@ import static components.util.TimeUtil.time;
 import com.google.inject.Inject;
 import components.dao.AmendmentRequestDao;
 import components.dao.ApplicationDao;
+import components.dao.BacklogDao;
 import components.dao.CaseDetailsDao;
 import components.dao.DraftFileDao;
 import components.dao.NotificationDao;
@@ -148,6 +149,7 @@ public class TestDataServiceImpl implements TestDataService {
   private final ReadDao readDao;
   private final UserPermissionService userPermissionService;
   private final CaseDetailsDao caseDetailsDao;
+  private final BacklogDao backlogDao;
 
   @Inject
   public TestDataServiceImpl(RfiDao rfiDao,
@@ -164,7 +166,8 @@ public class TestDataServiceImpl implements TestDataService {
                              RfiWithdrawalDao rfiWithdrawalDao,
                              ReadDao readDao,
                              UserPermissionService userPermissionService,
-                             CaseDetailsDao caseDetailsDao) {
+                             CaseDetailsDao caseDetailsDao,
+                             BacklogDao backlogDao) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiReplyDao = rfiReplyDao;
@@ -180,11 +183,12 @@ public class TestDataServiceImpl implements TestDataService {
     this.readDao = readDao;
     this.userPermissionService = userPermissionService;
     this.caseDetailsDao = caseDetailsDao;
+    this.backlogDao = backlogDao;
   }
 
   @Override
   public void deleteAllUsersAndInsertStartData() {
-    deleteAllUsers();
+    deleteAllData();
     insertOneCompany(TestDataServiceImpl.APPLICANT_ID);
     insertTwoCompanies(TestDataServiceImpl.APPLICANT_TWO_ID);
     insertUserTestingApplicant(TestDataServiceImpl.APPLICANT_THREE_ID);
@@ -405,7 +409,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   @Override
-  public void deleteAllUsers() {
+  public void deleteAllData() {
     statusUpdateDao.deleteAllStatusUpdates();
     rfiReplyDao.deleteAllRfiReplies();
     withdrawalRequestDao.deleteAllWithdrawalRequests();
@@ -420,6 +424,7 @@ public class TestDataServiceImpl implements TestDataService {
     rfiDao.deleteAllRfiData();
     caseDetailsDao.deleteAllCaseDetails();
     applicationDao.deleteAllApplications();
+    backlogDao.deleteAllBacklogMessages();
   }
 
   private void createEmptyQueueApplication(String userId) {
