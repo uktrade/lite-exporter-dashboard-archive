@@ -1,9 +1,9 @@
 package components.service;
 
 import com.google.inject.Inject;
+import components.common.upload.FileUtil;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
-import components.util.FileUtil;
 import components.util.LinkUtil;
 import components.util.TimeUtil;
 import models.AmendmentRequest;

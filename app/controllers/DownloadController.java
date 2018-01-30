@@ -1,11 +1,11 @@
 package controllers;
 
 import com.google.inject.Inject;
+import components.common.upload.FileService;
 import components.dao.AmendmentRequestDao;
 import components.dao.DraftFileDao;
 import components.dao.WithdrawalRequestDao;
 import components.service.AppDataService;
-import components.service.FileService;
 import components.service.UserPermissionService;
 import components.service.UserService;
 import components.util.ApplicationUtil;

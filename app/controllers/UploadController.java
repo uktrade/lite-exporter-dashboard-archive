@@ -3,15 +3,16 @@ package controllers;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
+import components.common.upload.FileService;
+import components.common.upload.FileUtil;
+import components.common.upload.UploadMultipartParser;
+import components.common.upload.UploadResult;
 import components.dao.DraftFileDao;
 import components.service.AppDataService;
-import components.service.FileService;
+import components.service.DraftFileService;
 import components.service.UserPermissionService;
 import components.service.UserService;
-import components.upload.UploadMultipartParser;
-import components.upload.UploadResult;
 import components.util.EnumUtil;
-import components.util.FileUtil;
 import models.AppData;
 import models.FileUploadResponse;
 import models.FileUploadResponseItem;
@@ -35,6 +36,7 @@ public class UploadController extends SamlController {
   private final DraftFileDao draftFileDao;
   private final UserPermissionService userPermissionService;
   private final FileService fileService;
+  private final DraftFileService draftFileService;
   private final HttpExecutionContext context;
 
   @Inject
@@ -43,12 +45,14 @@ public class UploadController extends SamlController {
                           DraftFileDao draftFileDao,
                           UserPermissionService userPermissionService,
                           FileService fileService,
+                          DraftFileService draftFileService,
                           HttpExecutionContext httpExecutionContext1) {
     this.appDataService = appDataService;
     this.userService = userService;
     this.draftFileDao = draftFileDao;
     this.userPermissionService = userPermissionService;
     this.fileService = fileService;
+    this.draftFileService = draftFileService;
     this.context = httpExecutionContext1;
   }
 
@@ -79,7 +83,7 @@ public class UploadController extends SamlController {
     } else if (!canAddOrDeleteFile(userId, appId, draftType, relatedId)) {
       return completedFuture(notFound("Unknown relatedId " + relatedId));
     } else {
-      fileService.deleteDraftFile(fileId, relatedId, draftType);
+      draftFileService.deleteDraftFile(fileId, relatedId, draftType);
       return completedFuture(ok());
     }
   }

@@ -4,8 +4,6 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
@@ -22,8 +20,6 @@ import components.client.OgelServiceClient;
 import components.client.OgelServiceClientImpl;
 import components.client.UserServiceClient;
 import components.client.UserServiceClientImpl;
-import components.client.VirusCheckerClient;
-import components.client.VirusCheckerClientImpl;
 import components.client.test.TestCustomerServiceClientImpl;
 import components.client.test.TestLicenceClientImpl;
 import components.common.journey.JourneyContextParamProvider;
@@ -31,6 +27,7 @@ import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
 import components.common.state.ContextParamManager;
 import components.common.transaction.TransactionContextParamProvider;
+import components.common.upload.UploadGuiceModule;
 import components.dao.AmendmentRequestDao;
 import components.dao.ApplicationDao;
 import components.dao.BacklogDao;
@@ -79,8 +76,8 @@ import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationSummaryViewServiceImpl;
 import components.service.ApplicationTabsViewService;
 import components.service.ApplicationTabsViewServiceImpl;
-import components.service.FileService;
-import components.service.FileServiceImpl;
+import components.service.DraftFileService;
+import components.service.DraftFileServiceImpl;
 import components.service.MessageViewService;
 import components.service.MessageViewServiceImpl;
 import components.service.OfficerViewService;
@@ -169,7 +166,7 @@ public class GuiceModule extends AbstractModule {
     bind(ApplicationTabsViewService.class).to(ApplicationTabsViewServiceImpl.class);
     bind(PreviousRequestItemViewService.class).to(PreviousRequestItemViewServiceImpl.class);
     bind(UserPermissionService.class).to(TestUserPermissionServiceImpl.class).asEagerSingleton();
-    bind(FileService.class).to(FileServiceImpl.class);
+    bind(DraftFileService.class).to(DraftFileServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -192,10 +189,12 @@ public class GuiceModule extends AbstractModule {
     // Start up
     bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();
     // Amazon
-    bindAmazonServices();
+    bindSnsAndSqsServices();
+    // Upload
+    install(new UploadGuiceModule(configuration));
   }
 
-  private void bindAmazonServices() {
+  private void bindSnsAndSqsServices() {
     String region = configuration.getString("aws.region");
     AWSCredentialsProvider awsCredentialsProvider = getAwsCredentials();
     // Sqs and Sns
@@ -215,13 +214,6 @@ public class GuiceModule extends AbstractModule {
     bind(SqsPoller.class).to(SqsPollerImpl.class).asEagerSingleton();
     bind(MessagePublisher.class).to(MessagePublisherImpl.class);
     bind(MessageHandler.class).to(MessageHandlerImpl.class);
-    // S3
-    AmazonS3 amazonS3 = AmazonS3ClientBuilder.standard()
-        .withCredentials(awsCredentialsProvider)
-        .withRegion(region)
-        .build();
-    bind(AmazonS3.class).toInstance(amazonS3);
-    bindConstant("awsBucketName", "aws.bucketName");
   }
 
   private AWSCredentialsProvider getAwsCredentials() {
@@ -258,11 +250,6 @@ public class GuiceModule extends AbstractModule {
     bindConstant("userServiceTimeout", "userService.timeout");
     bindConstant("userServiceCacheExpiryMinutes", "userService.cacheExpiryMinutes");
     bind(UserServiceClient.class).to(UserServiceClientImpl.class);
-    // VirusCheckerClient
-    bindConstant("virusServiceAddress", "virusService.address");
-    bindConstant("virusServiceTimeout", "virusService.timeout");
-    bindConstant("virusServiceCredentials", "virusService.credentials");
-    bind(VirusCheckerClient.class).to(VirusCheckerClientImpl.class);
   }
 
   private void bindConstant(String name, String configKey) {
