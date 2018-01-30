@@ -4,23 +4,24 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import components.common.upload.FileService;
+import components.common.upload.FileUtil;
+import components.common.upload.UploadMultipartParser;
+import components.common.upload.UploadResult;
 import components.dao.DraftFileDao;
 import components.service.AmendmentService;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationTabsViewService;
-import components.service.FileService;
+import components.service.DraftFileService;
 import components.service.OfficerViewService;
 import components.service.PreviousRequestItemViewService;
 import components.service.ReadDataService;
 import components.service.UserPermissionService;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
-import components.upload.UploadMultipartParser;
-import components.upload.UploadResult;
 import components.util.ApplicationUtil;
 import components.util.EnumUtil;
-import components.util.FileUtil;
 import models.AppData;
 import models.Attachment;
 import models.ReadData;
@@ -68,6 +69,7 @@ public class AmendTabController extends SamlController {
   private final UserPermissionService userPermissionService;
   private final PreviousRequestItemViewService previousRequestItemViewService;
   private final FileService fileService;
+  private final DraftFileService draftFileService;
   private final HttpExecutionContext context;
 
   @Inject
@@ -85,6 +87,7 @@ public class AmendTabController extends SamlController {
                             UserPermissionService userPermissionService,
                             PreviousRequestItemViewService previousRequestItemViewService,
                             FileService fileService,
+                            DraftFileService draftFileService,
                             HttpExecutionContext httpExecutionContext) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
@@ -100,6 +103,7 @@ public class AmendTabController extends SamlController {
     this.userPermissionService = userPermissionService;
     this.previousRequestItemViewService = previousRequestItemViewService;
     this.fileService = fileService;
+    this.draftFileService = draftFileService;
     this.context = httpExecutionContext;
   }
 
@@ -111,7 +115,7 @@ public class AmendTabController extends SamlController {
       LOGGER.error("Unable to delete file with id {} since amending application with id {} not allowed.", fileId, appId);
       return showAmendTab(appId);
     } else {
-      fileService.deleteDraftFile(fileId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+      draftFileService.deleteDraftFile(fileId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
       amendApplicationForm.discardErrors();
       return showAmendTab(appId, amendApplicationForm);
     }

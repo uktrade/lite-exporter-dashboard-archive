@@ -1,6 +1,6 @@
 package components.dao;
 
-import components.upload.UploadResult;
+import components.common.upload.UploadResult;
 import models.Attachment;
 import models.enums.DraftType;
 

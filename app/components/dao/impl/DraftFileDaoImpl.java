@@ -3,7 +3,7 @@ package components.dao.impl;
 import com.google.inject.Inject;
 import components.dao.DraftFileDao;
 import components.dao.jdbi.DraftFileJDBIDao;
-import components.upload.UploadResult;
+import components.common.upload.UploadResult;
 import models.Attachment;
 import models.enums.DraftType;
 import org.skife.jdbi.v2.DBI;

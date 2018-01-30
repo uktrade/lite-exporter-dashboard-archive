@@ -27,10 +27,7 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.264",
   "com.amazonaws" % "aws-java-sdk-sns" % "1.11.257",
   // We need this dependency to use JDBI @BindIn annotation
-  "org.antlr" % "stringtemplate" % "3.2.1",
-  "com.amazonaws" % "aws-java-sdk-core" % "1.11.269",
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.269",
-  "com.spotify" % "completable-futures" % "0.3.2"
+  "org.antlr" % "stringtemplate" % "3.2.1"
 )
 
 libraryDependencies += "uk.gov.bis.lite" % "lite-permissions-service-api" % "1.4"

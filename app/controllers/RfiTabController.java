@@ -4,19 +4,20 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import components.common.upload.FileService;
+import components.common.upload.FileUtil;
+import components.common.upload.UploadMultipartParser;
+import components.common.upload.UploadResult;
 import components.dao.DraftFileDao;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationTabsViewService;
-import components.service.FileService;
+import components.service.DraftFileService;
 import components.service.ReadDataService;
 import components.service.RfiReplyService;
 import components.service.RfiViewService;
 import components.service.UserPermissionService;
 import components.service.UserService;
-import components.upload.UploadMultipartParser;
-import components.upload.UploadResult;
-import components.util.FileUtil;
 import models.AppData;
 import models.ReadData;
 import models.enums.DraftType;
@@ -55,6 +56,7 @@ public class RfiTabController extends SamlController {
   private final UserPermissionService userPermissionService;
   private final FileService fileService;
   private final DraftFileDao draftFileDao;
+  private final DraftFileService draftFileService;
   private final HttpExecutionContext context;
 
   @Inject
@@ -70,6 +72,7 @@ public class RfiTabController extends SamlController {
                           UserPermissionService userPermissionService,
                           FileService fileService,
                           DraftFileDao draftFileDao,
+                          DraftFileService draftFileService,
                           HttpExecutionContext httpExecutionContext) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
@@ -83,6 +86,7 @@ public class RfiTabController extends SamlController {
     this.userPermissionService = userPermissionService;
     this.fileService = fileService;
     this.draftFileDao = draftFileDao;
+    this.draftFileService = draftFileService;
     this.context = httpExecutionContext;
   }
 
@@ -95,7 +99,7 @@ public class RfiTabController extends SamlController {
       LOGGER.error("Unable to delete fileId {} since reply to rfiId {} and appId {} not allowed", fileId, rfiId, appId);
       return showRfiTab(appId);
     } else {
-      fileService.deleteDraftFile(fileId, rfiId, DraftType.RFI_REPLY);
+      draftFileService.deleteDraftFile(fileId, rfiId, DraftType.RFI_REPLY);
       rfiReplyForm.discardErrors();
       return showReplyForm(appId, rfiId, rfiReplyForm);
     }

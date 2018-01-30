@@ -25,7 +25,7 @@ public class RfiReplyServiceImpl implements RfiReplyService {
   private final MessagePublisher messagePublisher;
 
   @Inject
-  public RfiReplyServiceImpl(RfiReplyDao rfiReplyDao, DraftFileDao draftFileDao, MessagePublisher messagePublisher, FileService fileService) {
+  public RfiReplyServiceImpl(RfiReplyDao rfiReplyDao, DraftFileDao draftFileDao, MessagePublisher messagePublisher) {
     this.rfiReplyDao = rfiReplyDao;
     this.draftFileDao = draftFileDao;
     this.messagePublisher = messagePublisher;

@@ -1,10 +1,10 @@
 package components.service;
 
 import com.google.inject.Inject;
+import components.common.upload.FileUtil;
 import components.dao.DraftFileDao;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
-import components.util.FileUtil;
 import components.util.TimeUtil;
 import models.AppData;
 import models.Attachment;
@@ -28,14 +28,12 @@ public class RfiViewServiceImpl implements RfiViewService {
   private final UserService userService;
   private final DraftFileDao draftFileDao;
   private final UserPermissionService userPermissionService;
-  private final FileService fileService;
 
   @Inject
-  public RfiViewServiceImpl(UserService userService, DraftFileDao draftFileDao, UserPermissionService userPermissionService, FileService fileService) {
+  public RfiViewServiceImpl(UserService userService, DraftFileDao draftFileDao, UserPermissionService userPermissionService) {
     this.userService = userService;
     this.draftFileDao = draftFileDao;
     this.userPermissionService = userPermissionService;
-    this.fileService = fileService;
   }
 
   @Override
