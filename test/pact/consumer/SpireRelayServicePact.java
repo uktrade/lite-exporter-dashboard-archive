@@ -25,10 +25,10 @@ import components.message.ConsumerRoutingKey;
 import components.message.MessageHandler;
 import components.message.MessageHandlerImpl;
 import models.CaseDetails;
-import models.Document;
 import models.Notification;
 import models.NotificationType;
 import models.Outcome;
+import models.OutcomeDocument;
 import models.Rfi;
 import models.RfiWithdrawal;
 import models.StatusUpdate;
@@ -427,13 +427,13 @@ public class SpireRelayServicePact {
     assertThat(outcome.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(outcome.getRecipientUserIds()).containsExactly("recipient");
     assertThat(outcome.getCreatedTimestamp()).isEqualTo(123456789L);
-    assertThat(outcome.getDocuments()).hasSize(1);
-    Document document = outcome.getDocuments().get(0);
-    assertThat(document.getId()).isEqualTo("documentId");
-    assertThat(document.getDocumentType()).isEqualTo(DocumentType.ISSUE_LICENCE_DOCUMENT);
-    assertThat(document.getLicenceRef()).isEqualTo("licenceRef");
-    assertThat(document.getFilename()).isEqualTo("filename");
-    assertThat(document.getUrl()).isEqualTo("url");
+    assertThat(outcome.getOutcomeDocuments()).hasSize(1);
+    OutcomeDocument outcomeDocument = outcome.getOutcomeDocuments().get(0);
+    assertThat(outcomeDocument.getId()).isEqualTo("documentId");
+    assertThat(outcomeDocument.getDocumentType()).isEqualTo(DocumentType.ISSUE_LICENCE_DOCUMENT);
+    assertThat(outcomeDocument.getLicenceRef()).isEqualTo("licenceRef");
+    assertThat(outcomeDocument.getFilename()).isEqualTo("filename");
+    assertThat(outcomeDocument.getUrl()).isEqualTo("url");
   }
 
   @Test
@@ -451,13 +451,13 @@ public class SpireRelayServicePact {
     assertThat(outcome.getCreatedByUserId()).isEqualTo("createdByUserId");
     assertThat(outcome.getRecipientUserIds()).containsExactly("recipient");
     assertThat(outcome.getCreatedTimestamp()).isEqualTo(123456789L);
-    assertThat(outcome.getDocuments()).hasSize(1);
-    Document document = outcome.getDocuments().get(0);
-    assertThat(document.getId()).isEqualTo("documentId");
-    assertThat(document.getDocumentType()).isEqualTo(DocumentType.AMENDMENT_LICENCE_DOCUMENT);
-    assertThat(document.getLicenceRef()).isEqualTo("licenceRef");
-    assertThat(document.getFilename()).isEqualTo("filename");
-    assertThat(document.getUrl()).isEqualTo("url");
+    assertThat(outcome.getOutcomeDocuments()).hasSize(1);
+    OutcomeDocument outcomeDocument = outcome.getOutcomeDocuments().get(0);
+    assertThat(outcomeDocument.getId()).isEqualTo("documentId");
+    assertThat(outcomeDocument.getDocumentType()).isEqualTo(DocumentType.AMENDMENT_LICENCE_DOCUMENT);
+    assertThat(outcomeDocument.getLicenceRef()).isEqualTo("licenceRef");
+    assertThat(outcomeDocument.getFilename()).isEqualTo("filename");
+    assertThat(outcomeDocument.getUrl()).isEqualTo("url");
   }
 
   @Test

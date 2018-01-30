@@ -1,8 +1,10 @@
 package models;
 
-import java.util.List;
-import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
+
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 public class WithdrawalRequest {
 
@@ -22,7 +24,7 @@ public class WithdrawalRequest {
   private String message;
 
   @NotNull
-  private List<File> attachments;
+  private List<Attachment> attachments;
 
   public String getId() {
     return id;
@@ -64,11 +66,11 @@ public class WithdrawalRequest {
     this.message = message;
   }
 
-  public List<File> getAttachments() {
+  public List<Attachment> getAttachments() {
     return attachments;
   }
 
-  public void setAttachments(List<File> attachments) {
+  public void setAttachments(List<Attachment> attachments) {
     this.attachments = attachments;
   }
 

@@ -87,7 +87,7 @@ $(function () {
       var url = data.result.files[0].url;
 
       if (error) {
-        data.context.find('.file-upload-status').text('Error:' + error);
+        data.context.find('.file-upload-status').text('Error: ' + error);
       }
       else {
         var doneTimestamp = new Date().getTime();

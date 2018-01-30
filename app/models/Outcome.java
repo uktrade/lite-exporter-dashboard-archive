@@ -1,9 +1,11 @@
 package models;
 
-import java.util.List;
-import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 public class Outcome implements RecipientMessage {
 
@@ -23,15 +25,15 @@ public class Outcome implements RecipientMessage {
   private final Long createdTimestamp;
 
   @NotEmpty
-  private final List<Document> documents;
+  private final List<OutcomeDocument> outcomeDocuments;
 
-  public Outcome(String id, String caseReference, String createdByUserId, List<String> recipientUserIds, Long createdTimestamp, List<Document> documents) {
+  public Outcome(String id, String caseReference, String createdByUserId, List<String> recipientUserIds, Long createdTimestamp, List<OutcomeDocument> outcomeDocuments) {
     this.id = id;
     this.caseReference = caseReference;
     this.createdByUserId = createdByUserId;
     this.recipientUserIds = recipientUserIds;
     this.createdTimestamp = createdTimestamp;
-    this.documents = documents;
+    this.outcomeDocuments = outcomeDocuments;
   }
 
   public String getId() {
@@ -54,8 +56,8 @@ public class Outcome implements RecipientMessage {
     return createdTimestamp;
   }
 
-  public List<Document> getDocuments() {
-    return documents;
+  public List<OutcomeDocument> getOutcomeDocuments() {
+    return outcomeDocuments;
   }
 
 }

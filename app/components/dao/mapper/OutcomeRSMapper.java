@@ -2,13 +2,14 @@ package components.dao.mapper;
 
 import components.dao.helper.LongMapper;
 import components.util.JsonUtil;
+import models.Outcome;
+import models.OutcomeDocument;
+import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.tweak.ResultSetMapper;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import models.Document;
-import models.Outcome;
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 public class OutcomeRSMapper implements ResultSetMapper<Outcome> {
 
@@ -21,13 +22,13 @@ public class OutcomeRSMapper implements ResultSetMapper<Outcome> {
     List<String> recipientUserIds = JsonUtil.convertJsonToList(recipientUserIdsJson);
     Long createdTimestamp = LongMapper.getLong(r, "created_timestamp");
     String documentsJson = r.getString("documents");
-    List<Document> documents = JsonUtil.convertJsonToDocuments(documentsJson);
+    List<OutcomeDocument> outcomeDocuments = JsonUtil.convertJsonToOutcomeDocuments(documentsJson);
     return new Outcome(id,
         caseReference,
         createdByUserId,
         recipientUserIds,
         createdTimestamp,
-        documents);
+        outcomeDocuments);
   }
 
 }

@@ -79,8 +79,8 @@ public class OutcomeTabController extends SamlController {
     for (int i = 0; i < outcomes.size(); i++) {
       Outcome outcome = outcomes.get(i);
       boolean showNewIndicator = readData.getUnreadOutcomeIds().contains(outcome.getId());
-      SortUtil.sortDocuments(outcome.getDocuments());
-      List<OutcomeDocumentView> outcomeDocumentViews = outcome.getDocuments().stream()
+      SortUtil.sortOutcomeDocuments(outcome.getOutcomeDocuments());
+      List<OutcomeDocumentView> outcomeDocumentViews = outcome.getOutcomeDocuments().stream()
           .map(document -> {
             String name;
             if (document.getLicenceRef() != null) {
