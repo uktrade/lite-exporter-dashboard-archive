@@ -60,7 +60,7 @@ task apiJarWithSources(type: org.gradle.api.tasks.bundling.Jar) {
 pact {
     publish {
         pactDirectory = 'target/pacts'
-        pactBrokerUrl = 'https://pact-broker.ci.uktrade.io/'
+        pactBrokerUrl = 'http://pact-broker.ci.uktrade.io/'
         version = '1.0.0'
     }
 }

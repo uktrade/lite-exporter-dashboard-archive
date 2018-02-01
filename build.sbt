@@ -41,8 +41,6 @@ libraryDependencies += "au.com.dius" % "pact-jvm-provider-junit_2.11" % "3.3.10"
 libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
 libraryDependencies += "ru.yandex.qatools.embed" % "postgresql-embedded" % "2.6" % "test"
 
-resolvers += "Lite Lib Releases " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-releases/"
-resolvers += "Snapshots " at "http://nexus.mgmt.licensing.service.trade.gov.uk.test/repository/maven-snapshots/"
 resolvers += "Lite Lib Releases " at "https://nexus.ci.uktrade.io/repository/maven-releases/"
 resolvers += "Snapshots " at "https://nexus.ci.uktrade.io/repository/maven-snapshots/"
 
