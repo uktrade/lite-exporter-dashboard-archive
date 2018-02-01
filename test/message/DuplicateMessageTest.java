@@ -320,7 +320,6 @@ public class DuplicateMessageTest {
         .configure("db.default.url", "jdbc:postgresql://localhost:5432/postgres?currentSchema=test")
         .configure("db.default.username", "postgres")
         .configure("db.default.password", "password")
-        .configure("aws.enabled", false)
         .build();
   }
 
