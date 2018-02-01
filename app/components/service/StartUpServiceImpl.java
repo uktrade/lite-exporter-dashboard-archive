@@ -16,8 +16,7 @@ public class StartUpServiceImpl implements StartUpService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StartUpServiceImpl.class);
 
-  private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
-
+  private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
   private final ApplicationDao applicationDao;
   private final TestDataService testDataService;
 
@@ -26,10 +25,10 @@ public class StartUpServiceImpl implements StartUpService {
     this.applicationDao = applicationDao;
     this.testDataService = testDataService;
     lifecycle.addStopHook(() -> {
-      EXECUTOR.shutdown();
+      executor.shutdown();
       return CompletableFuture.completedFuture(null);
     });
-    EXECUTOR.schedule(this::startUp, 3, TimeUnit.SECONDS);
+    executor.schedule(this::startUp, 3, TimeUnit.SECONDS);
   }
 
   private void startUp() {

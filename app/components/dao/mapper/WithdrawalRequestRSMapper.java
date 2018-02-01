@@ -2,13 +2,14 @@ package components.dao.mapper;
 
 import components.dao.helper.LongMapper;
 import components.util.JsonUtil;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import models.File;
+import models.Attachment;
 import models.WithdrawalRequest;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 public class WithdrawalRequestRSMapper implements ResultSetMapper<WithdrawalRequest> {
 
@@ -20,7 +21,7 @@ public class WithdrawalRequestRSMapper implements ResultSetMapper<WithdrawalRequ
     String createdByUserId = r.getString("created_by_user_id");
     String message = r.getString("message");
     String attachmentsJson = r.getString("attachments");
-    List<File> attachments = JsonUtil.convertJsonToFiles(attachmentsJson);
+    List<Attachment> attachments = JsonUtil.convertJsonToAttachments(attachmentsJson);
 
     WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
     withdrawalRequest.setId(id);

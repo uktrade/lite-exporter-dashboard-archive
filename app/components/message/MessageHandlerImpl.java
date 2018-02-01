@@ -2,10 +2,6 @@ package components.message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
 import components.dao.ApplicationDao;
 import components.dao.CaseDetailsDao;
 import components.dao.NotificationDao;
@@ -21,10 +17,10 @@ import components.util.RandomIdUtil;
 import models.Application;
 import models.CaseDetails;
 import models.Document;
-import models.File;
 import models.Notification;
 import models.NotificationType;
 import models.Outcome;
+import models.OutcomeDocument;
 import models.Rfi;
 import models.RfiWithdrawal;
 import models.StatusUpdate;
@@ -60,9 +56,9 @@ import java.util.stream.Stream;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-public class MessageConsumerImpl extends DefaultConsumer implements MessageConsumer {
+public class MessageHandlerImpl implements MessageHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MessageConsumerImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MessageHandlerImpl.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
   private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -77,8 +73,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   private final ApplicationDao applicationDao;
 
   @Inject
-  public MessageConsumerImpl(
-      Channel channel,
+  public MessageHandlerImpl(
       RfiDao rfiDao,
       StatusUpdateDao statusUpdateDao,
       NotificationDao notificationDao,
@@ -88,7 +83,6 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
       WithdrawalApprovalDao withdrawalApprovalDao,
       CaseDetailsDao caseDetailsDao,
       ApplicationDao applicationDao) {
-    super(channel);
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.notificationDao = notificationDao;
@@ -101,14 +95,11 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
   }
 
   @Override
-  public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-      throws IOException {
-    String message = new String(body, "UTF-8");
-    ConsumerRoutingKey consumerRoutingKey = EnumUtil.parse(envelope.getRoutingKey(), ConsumerRoutingKey.class);
+  public boolean handleMessage(String routingKey, String message) {
+    ConsumerRoutingKey consumerRoutingKey = EnumUtil.parse(routingKey, ConsumerRoutingKey.class);
     if (consumerRoutingKey == null) {
-      LOGGER.error("Routing key cannot be null.");
-      reject(envelope);
-      return;
+      LOGGER.error("Unknown routing key " + routingKey);
+      return false;
     }
     LOGGER.info("received queue message " + consumerRoutingKey.toString() + " " + message);
     try {
@@ -161,10 +152,9 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     } catch (Exception exception) {
       String errorMessage = String.format("Unable to handle delivery of message %s with routing key %s", message, consumerRoutingKey);
       LOGGER.error(errorMessage, exception);
-      reject(envelope);
-      return;
+      return false;
     }
-    acknowledge(envelope);
+    return true;
   }
 
   private void insertRfi(String message) {
@@ -228,8 +218,8 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     if (dashboardMessageDocument == null) {
       throw new ValidationException("Document of DashboardNotificationInform cannot be null.");
     }
-    File file = new File(dashboardMessageDocument.getId(), dashboardMessageDocument.getFilename(), dashboardMessageDocument.getUrl());
-    validate(file);
+    Document document = new Document(dashboardMessageDocument.getId(), dashboardMessageDocument.getFilename(), dashboardMessageDocument.getUrl());
+    validate(document);
     Notification notification = new Notification(dashboardNotificationInform.getId(),
         dashboardNotificationInform.getCaseRef(),
         NotificationType.INFORM,
@@ -237,7 +227,7 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
         dashboardNotificationInform.getCreatedTimestamp(),
         dashboardNotificationInform.getRecipientUserIds(),
         null,
-        file);
+        document);
     validate(notification, "message");
     notificationDao.insertNotification(notification);
   }
@@ -256,51 +246,51 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
 
   private void insertOutcomeIssue(String message) {
     DashboardOutcomeIssue dashboardOutcomeIssue = parse(message, DashboardOutcomeIssue.class);
-    List<Document> documents = parseDocuments(dashboardOutcomeIssue.getDocuments(), "ISSUE_");
+    List<OutcomeDocument> outcomeDocuments = parseOutcomeDocuments(dashboardOutcomeIssue.getDocuments(), "ISSUE_");
     Outcome outcome = new Outcome(dashboardOutcomeIssue.getId(),
         dashboardOutcomeIssue.getCaseRef(),
         dashboardOutcomeIssue.getCreatedByUserId(),
         dashboardOutcomeIssue.getRecipientUserIds(),
         dashboardOutcomeIssue.getCreatedTimestamp(),
-        documents);
+        outcomeDocuments);
     validate(outcome);
     outcomeDao.insertOutcome(outcome);
   }
 
   private void insertOutcomeAmend(String message) {
     DashboardOutcomeAmend dashboardOutcomeAmend = parse(message, DashboardOutcomeAmend.class);
-    List<Document> documents = parseDocuments(dashboardOutcomeAmend.getDocuments(), "AMENDMENT_");
+    List<OutcomeDocument> outcomeDocuments = parseOutcomeDocuments(dashboardOutcomeAmend.getDocuments(), "AMENDMENT_");
     Outcome outcome = new Outcome(dashboardOutcomeAmend.getId(),
         dashboardOutcomeAmend.getCaseRef(),
         dashboardOutcomeAmend.getCreatedByUserId(),
         dashboardOutcomeAmend.getRecipientUserIds(),
         dashboardOutcomeAmend.getCreatedTimestamp(),
-        documents);
+        outcomeDocuments);
     validate(outcome);
     outcomeDao.insertOutcome(outcome);
   }
 
-  private List<Document> parseDocuments(List<DashboardOutcomeDocument> dashboardOutcomeDocuments, String prefix) {
+  private List<OutcomeDocument> parseOutcomeDocuments(List<DashboardOutcomeDocument> dashboardOutcomeDocuments, String prefix) {
     if (CollectionUtils.isEmpty(dashboardOutcomeDocuments) || dashboardOutcomeDocuments.contains(null)) {
       throw new ValidationException("Documents cannot be empty or contain null.");
     }
-    List<Document> documents = dashboardOutcomeDocuments.stream()
+    List<OutcomeDocument> outcomeDocuments = dashboardOutcomeDocuments.stream()
         .map(dashboardOutcomeDocument -> {
           DocumentType documentType = EnumUtil.parse(prefix + dashboardOutcomeDocument.getDocumentType(), DocumentType.class);
-          return new Document(dashboardOutcomeDocument.getId(),
+          return new OutcomeDocument(dashboardOutcomeDocument.getId(),
               documentType,
               dashboardOutcomeDocument.getLicenceRef(),
               dashboardOutcomeDocument.getFilename(),
               dashboardOutcomeDocument.getUrl());
         }).collect(Collectors.toList());
-    documents.forEach(document -> {
-      if (document.getDocumentType() == DocumentType.AMENDMENT_LICENCE_DOCUMENT || document.getDocumentType() == DocumentType.ISSUE_LICENCE_DOCUMENT) {
-        validate(document);
+    outcomeDocuments.forEach(outcomeDocument -> {
+      if (outcomeDocument.getDocumentType() == DocumentType.AMENDMENT_LICENCE_DOCUMENT || outcomeDocument.getDocumentType() == DocumentType.ISSUE_LICENCE_DOCUMENT) {
+        validate(outcomeDocument);
       } else {
-        validate(document, "licenceRef");
+        validate(outcomeDocument, "licenceRef");
       }
     });
-    return documents;
+    return outcomeDocuments;
   }
 
   private void insertWithdrawalRejection(String message) {
@@ -353,14 +343,6 @@ public class MessageConsumerImpl extends DefaultConsumer implements MessageConsu
     DashboardRfiDeadlineUpdate dashboardRfiDeadlineUpdate = parse(message, DashboardRfiDeadlineUpdate.class);
     validate(dashboardRfiDeadlineUpdate);
     rfiDao.updateDeadline(dashboardRfiDeadlineUpdate.getRfiId(), dashboardRfiDeadlineUpdate.getUpdatedDeadlineTimestamp());
-  }
-
-  private void reject(Envelope envelope) throws IOException {
-    getChannel().basicReject(envelope.getDeliveryTag(), false);
-  }
-
-  private void acknowledge(Envelope envelope) throws IOException {
-    getChannel().basicAck(envelope.getDeliveryTag(), false);
   }
 
   private <T> T parse(String message, Class<T> clazz) {

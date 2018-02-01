@@ -40,7 +40,7 @@ public class TestDataController extends SamlController {
         testDataService.insertOtherUserApplications(userId);
         break;
       case DEL_ALL:
-        testDataService.deleteAllUsers();
+        testDataService.deleteAllData();
         break;
       case RESET_ALL:
         testDataService.deleteAllUsersAndInsertStartData();

@@ -1,10 +1,12 @@
 package models;
 
 
-import java.util.List;
-import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 public class Notification implements RecipientMessage {
 
@@ -23,9 +25,9 @@ public class Notification implements RecipientMessage {
   @NotEmpty
   private final String message;
   @NotNull
-  private final File document;
+  private final Document document;
 
-  public Notification(String id, String caseReference, NotificationType notificationType, String createdByUserId, Long createdTimestamp, List<String> recipientUserIds, String message, File document) {
+  public Notification(String id, String caseReference, NotificationType notificationType, String createdByUserId, Long createdTimestamp, List<String> recipientUserIds, String message, Document document) {
     this.id = id;
     this.caseReference = caseReference;
     this.notificationType = notificationType;
@@ -64,7 +66,7 @@ public class Notification implements RecipientMessage {
     return message;
   }
 
-  public File getDocument() {
+  public Document getDocument() {
     return document;
   }
 

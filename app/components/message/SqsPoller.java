@@ -1,5 +1,5 @@
 package components.message;
 
-public interface QueueManager {
+public interface SqsPoller {
 
 }

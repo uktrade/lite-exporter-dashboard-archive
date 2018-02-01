@@ -1,20 +1,23 @@
 package controllers;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import components.common.upload.FileService;
+import components.common.upload.FileUtil;
+import components.common.upload.UploadMultipartParser;
+import components.common.upload.UploadResult;
 import components.dao.DraftFileDao;
-import components.exceptions.DatabaseException;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationTabsViewService;
+import components.service.DraftFileService;
 import components.service.ReadDataService;
 import components.service.RfiReplyService;
 import components.service.RfiViewService;
 import components.service.UserPermissionService;
 import components.service.UserService;
-import components.upload.UploadFile;
-import components.upload.UploadMultipartParser;
-import components.util.FileUtil;
 import models.AppData;
 import models.ReadData;
 import models.enums.DraftType;
@@ -27,12 +30,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.With;
 import views.html.rfiListTab;
 
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 
 @With(AppGuardAction.class)
 public class RfiTabController extends SamlController {
@@ -44,12 +49,15 @@ public class RfiTabController extends SamlController {
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final RfiViewService rfiViewService;
   private final RfiReplyService rfiReplyService;
-  private final DraftFileDao draftFileDao;
   private final UserService userService;
   private final AppDataService appDataService;
   private final ApplicationTabsViewService applicationTabsViewService;
   private final ReadDataService readDataService;
   private final UserPermissionService userPermissionService;
+  private final FileService fileService;
+  private final DraftFileDao draftFileDao;
+  private final DraftFileService draftFileService;
+  private final HttpExecutionContext context;
 
   @Inject
   public RfiTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -57,23 +65,29 @@ public class RfiTabController extends SamlController {
                           ApplicationSummaryViewService applicationSummaryViewService,
                           RfiViewService rfiViewService,
                           RfiReplyService rfiReplyService,
-                          DraftFileDao draftFileDao,
                           UserService userService,
                           AppDataService appDataService,
                           ApplicationTabsViewService applicationTabsViewService,
                           ReadDataService readDataService,
-                          UserPermissionService userPermissionService) {
+                          UserPermissionService userPermissionService,
+                          FileService fileService,
+                          DraftFileDao draftFileDao,
+                          DraftFileService draftFileService,
+                          HttpExecutionContext httpExecutionContext) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.rfiViewService = rfiViewService;
     this.rfiReplyService = rfiReplyService;
-    this.draftFileDao = draftFileDao;
     this.userService = userService;
     this.appDataService = appDataService;
     this.applicationTabsViewService = applicationTabsViewService;
     this.readDataService = readDataService;
     this.userPermissionService = userPermissionService;
+    this.fileService = fileService;
+    this.draftFileDao = draftFileDao;
+    this.draftFileService = draftFileService;
+    this.context = httpExecutionContext;
   }
 
   public Result deleteFileById(String appId, String fileId) {
@@ -85,35 +99,37 @@ public class RfiTabController extends SamlController {
       LOGGER.error("Unable to delete fileId {} since reply to rfiId {} and appId {} not allowed", fileId, rfiId, appId);
       return showRfiTab(appId);
     } else {
-      try {
-        draftFileDao.deleteDraftFile(fileId, rfiId, DraftType.RFI_REPLY);
-      } catch (DatabaseException databaseException) {
-        // Since this error could occur if the user refreshes the page, we do not return a bad request.
-        LOGGER.warn("Unable to delete file.", databaseException);
-      }
+      draftFileService.deleteDraftFile(fileId, rfiId, DraftType.RFI_REPLY);
       rfiReplyForm.discardErrors();
       return showReplyForm(appId, rfiId, rfiReplyForm);
     }
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
-  public Result submitReply(String appId) {
+  public CompletionStage<Result> submitReply(String appId) {
     String userId = userService.getCurrentUserId();
     Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
     String rfiId = rfiReplyForm.data().get("rfiId");
-    List<UploadFile> uploadFiles = FileUtil.getUploadFiles(request());
-    FileUtil.processErrors(rfiReplyForm, uploadFiles);
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
-      return showRfiTab(appId);
-    } else if (rfiReplyForm.hasErrors()) {
-      return showReplyForm(appId, rfiId, rfiReplyForm);
+      return completedFuture(showRfiTab(appId));
     } else {
-      String message = rfiReplyForm.get().replyMessage;
-      rfiReplyService.insertRfiReply(userId, appId, rfiId, message, uploadFiles);
-      flash("message", "Your message has been sent");
-      return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
+      return fileService.processUpload(appId, request())
+          .thenApplyAsync(uploadResults -> {
+            uploadResults.stream()
+                .filter(UploadResult::isValid)
+                .forEach(uploadResult -> draftFileDao.addDraftFile(uploadResult, rfiId, DraftType.RFI_REPLY));
+            FileUtil.addUploadErrorsToForm(rfiReplyForm, uploadResults);
+            if (rfiReplyForm.hasErrors()) {
+              return showReplyForm(appId, rfiId, rfiReplyForm);
+            } else {
+              String message = rfiReplyForm.get().replyMessage;
+              rfiReplyService.insertRfiReply(userId, appId, rfiId, message);
+              flash("message", "Your message has been sent");
+              return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
+            }
+          }, context.current());
     }
   }
 

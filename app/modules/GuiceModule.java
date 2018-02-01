@@ -1,11 +1,18 @@
 package modules;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import com.rabbitmq.client.Channel;
 import components.auth.SamlModule;
 import components.client.CustomerServiceClient;
 import components.client.LicenceClient;
@@ -20,8 +27,10 @@ import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
 import components.common.state.ContextParamManager;
 import components.common.transaction.TransactionContextParamProvider;
+import components.common.upload.UploadGuiceModule;
 import components.dao.AmendmentRequestDao;
 import components.dao.ApplicationDao;
+import components.dao.BacklogDao;
 import components.dao.CaseDetailsDao;
 import components.dao.DraftFileDao;
 import components.dao.NotificationDao;
@@ -36,6 +45,7 @@ import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
 import components.dao.impl.AmendmentRequestDaoImpl;
 import components.dao.impl.ApplicationDaoImpl;
+import components.dao.impl.BacklogDaoImpl;
 import components.dao.impl.CaseDetailsDaoImpl;
 import components.dao.impl.DraftFileDaoImpl;
 import components.dao.impl.NotificationDaoImpl;
@@ -48,14 +58,12 @@ import components.dao.impl.StatusUpdateDaoImpl;
 import components.dao.impl.WithdrawalApprovalDaoImpl;
 import components.dao.impl.WithdrawalRejectionDaoImpl;
 import components.dao.impl.WithdrawalRequestDaoImpl;
-import components.message.ConnectionManager;
-import components.message.ConnectionManagerImpl;
-import components.message.MessageConsumer;
-import components.message.MessageConsumerImpl;
+import components.message.MessageHandler;
+import components.message.MessageHandlerImpl;
 import components.message.MessagePublisher;
 import components.message.MessagePublisherImpl;
-import components.message.QueueManager;
-import components.message.QueueManagerImpl;
+import components.message.SqsPoller;
+import components.message.SqsPollerImpl;
 import components.mock.JourneyDefinitionBuilderMock;
 import components.mock.JourneySerialiserMock;
 import components.service.AmendmentService;
@@ -68,6 +76,8 @@ import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationSummaryViewServiceImpl;
 import components.service.ApplicationTabsViewService;
 import components.service.ApplicationTabsViewServiceImpl;
+import components.service.DraftFileService;
+import components.service.DraftFileServiceImpl;
 import components.service.MessageViewService;
 import components.service.MessageViewServiceImpl;
 import components.service.OfficerViewService;
@@ -101,6 +111,7 @@ import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.skife.jdbi.v2.DBI;
 import play.Configuration;
 import play.Environment;
@@ -108,7 +119,6 @@ import play.db.Database;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 
 public class GuiceModule extends AbstractModule {
 
@@ -156,6 +166,7 @@ public class GuiceModule extends AbstractModule {
     bind(ApplicationTabsViewService.class).to(ApplicationTabsViewServiceImpl.class);
     bind(PreviousRequestItemViewService.class).to(PreviousRequestItemViewServiceImpl.class);
     bind(UserPermissionService.class).to(TestUserPermissionServiceImpl.class).asEagerSingleton();
+    bind(DraftFileService.class).to(DraftFileServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -171,27 +182,50 @@ public class GuiceModule extends AbstractModule {
     bind(RfiWithdrawalDao.class).to(RfiWithdrawalDaoImpl.class);
     bind(ReadDao.class).to(ReadDaoImpl.class);
     bind(CaseDetailsDao.class).to(CaseDetailsDaoImpl.class);
+    bind(BacklogDao.class).to(BacklogDaoImpl.class);
     // Database test data
     // TODO Test
     bind(TestDataService.class).to(TestDataServiceImpl.class);
     // Start up
     bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();
-    // Queue
-    boolean enabled = configuration.getBoolean("spireRelayService.enabled", false);
-    if (enabled) {
-      bindConstant("consumerExchangeName", "spireRelayService.consumerExchangeName");
-      bindConstant("publisherExchangeName", "spireRelayService.publisherExchangeName");
-      bindConstant("rabbitMqUrl", "spireRelayService.rabbitMqUrl");
-      bindConstant("consumerQueueName", "spireRelayService.consumerQueueName");
-      bindConstant("publisherQueueName", "spireRelayService.publisherQueueName");
-      bind(ConnectionManager.class).to(ConnectionManagerImpl.class).asEagerSingleton();
-      bind(QueueManager.class).to(QueueManagerImpl.class).asEagerSingleton();
-      bind(MessageConsumer.class).to(MessageConsumerImpl.class).asEagerSingleton();
-      bind(MessagePublisher.class).to(MessagePublisherImpl.class);
+    // Amazon
+    bindSnsAndSqsServices();
+    // Upload
+    install(new UploadGuiceModule(configuration));
+  }
+
+  private void bindSnsAndSqsServices() {
+    String region = configuration.getString("aws.region");
+    AWSCredentialsProvider awsCredentialsProvider = getAwsCredentials();
+    // Sqs and Sns
+    bindConstant("awsSnsTopicArn", "aws.snsTopicArn");
+    bindConstant("awsSqsWaitTimeSeconds", "aws.sqsWaitTimeSeconds");
+    bindConstant("awsSqsQueueUrl", "aws.sqsQueueUrl");
+    AmazonSQS amazonSQS = AmazonSQSClientBuilder.standard()
+        .withRegion(region)
+        .withCredentials(awsCredentialsProvider)
+        .build();
+    bind(AmazonSQS.class).toInstance(amazonSQS);
+    AmazonSNS amazonSNS = AmazonSNSClientBuilder.standard()
+        .withRegion(region)
+        .withCredentials(awsCredentialsProvider)
+        .build();
+    bind(AmazonSNS.class).toInstance(amazonSNS);
+    bind(SqsPoller.class).to(SqsPollerImpl.class).asEagerSingleton();
+    bind(MessagePublisher.class).to(MessagePublisherImpl.class);
+    bind(MessageHandler.class).to(MessageHandlerImpl.class);
+  }
+
+  private AWSCredentialsProvider getAwsCredentials() {
+    String profileName = configuration.getString("aws.credentials.profileName");
+    String accessKey = configuration.getString("aws.credentials.accessKey");
+    String secretKey = configuration.getString("aws.credentials.secretKey");
+    if (StringUtils.isNoneBlank(profileName)) {
+      return new ProfileCredentialsProvider(profileName);
+    } else if (StringUtils.isBlank(accessKey) || StringUtils.isBlank(secretKey)) {
+      throw new RuntimeException("accessKey and secretKey must both be specified if no profile name is specified");
     } else {
-      bind(ConnectionManager.class).toInstance(() -> null);
-      bind(MessagePublisher.class).toInstance((routingKey, object) -> {
-      });
+      return new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey));
     }
   }
 
@@ -228,12 +262,6 @@ public class GuiceModule extends AbstractModule {
   }
 
   @Provides
-  @Singleton
-  public Channel channel(ConnectionManager connectionManager) {
-    return connectionManager.createChannel();
-  }
-
-  @Provides
   public Collection<JourneyDefinitionBuilder> provideJourneyDefinitionBuilders() {
     return Collections.singletonList(new JourneyDefinitionBuilderMock());
   }
@@ -245,10 +273,10 @@ public class GuiceModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public DBI provideDataSourceDbi(Database database) {
-    Properties properties = new Properties();
-    properties.setProperty("foreign_keys", "true");
-    return new DBI(database.getUrl(), properties);
+  public DBI provideDataSourceDbi(Configuration configuration, Database database) {
+    return new DBI(database.getUrl(),
+        configuration.getString("db.default.username"),
+        configuration.getString("db.default.password"));
   }
 
 }

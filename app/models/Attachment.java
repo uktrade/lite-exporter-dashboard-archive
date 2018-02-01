@@ -1,25 +1,26 @@
 package models;
 
-import models.enums.DraftType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class DraftFile {
+public class Attachment {
 
   private final String id;
   private final String filename;
   private final String bucket;
   private final String folder;
   private final Long size;
-  private final String relatedId;
-  private final DraftType draftType;
 
-  public DraftFile(String id, String filename, String bucket, String folder, Long size, String relatedId, DraftType draftType) {
+  public Attachment(@JsonProperty("id") String id,
+                    @JsonProperty("filename") String filename,
+                    @JsonProperty("bucket") String bucket,
+                    @JsonProperty("folder") String folder,
+                    @JsonProperty("size") Long size) {
     this.id = id;
     this.filename = filename;
     this.bucket = bucket;
     this.folder = folder;
     this.size = size;
-    this.relatedId = relatedId;
-    this.draftType = draftType;
+
   }
 
   public String getId() {
@@ -40,14 +41,6 @@ public class DraftFile {
 
   public Long getSize() {
     return size;
-  }
-
-  public String getRelatedId() {
-    return relatedId;
-  }
-
-  public DraftType getDraftType() {
-    return draftType;
   }
 
 }

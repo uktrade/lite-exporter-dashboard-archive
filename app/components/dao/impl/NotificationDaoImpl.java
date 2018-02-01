@@ -36,7 +36,7 @@ public class NotificationDaoImpl implements NotificationDao {
         notification.getCreatedTimestamp(),
         JsonUtil.convertListToJson(notification.getRecipientUserIds()),
         notification.getMessage(),
-        JsonUtil.convertFileToJson(notification.getDocument()));
+        JsonUtil.convertDocumentToJson(notification.getDocument()));
   }
 
   @Override

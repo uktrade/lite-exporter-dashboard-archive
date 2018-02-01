@@ -3,9 +3,10 @@ package components.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import models.Attachment;
 import models.Document;
+import models.OutcomeDocument;
 import org.apache.commons.collections4.ListUtils;
-import models.File;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,22 +15,17 @@ public class JsonUtil {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  private static final TypeReference<List<String>> STRING_LIST_TYPE_REFERENCE = new TypeReference<List<String>>() {
-  };
+  private static final TypeReference<List<String>> STRING_LIST_TYPE_REFERENCE = new TypeReference<List<String>>() {};
+  private static final TypeReference<List<Attachment>> ATTACHMENT_LIST_TYPE_REFERENCE = new TypeReference<List<Attachment>>() {};
+  private static final TypeReference<List<OutcomeDocument>> OUTCOME_DOCUMENT_LIST_TYPE_REFERENCE = new TypeReference<List<OutcomeDocument>>() {};
 
-  private static final TypeReference<List<File>> FILE_LIST_TYPE_REFERENCE = new TypeReference<List<File>>() {
-  };
-
-  private static final TypeReference<List<Document>> DOCUMENT_LIST_TYPE_REFERENCE = new TypeReference<List<Document>>() {
-  };
-
-  public static String convertFileToJson(File file) {
-    return toJson(file);
+  public static String convertDocumentToJson(Document document) {
+    return toJson(document);
   }
 
-  public static File convertJsonToFile(String json) {
+  public static Document convertJsonToDocument(String json) {
     try {
-      return OBJECT_MAPPER.readValue(json, File.class);
+      return OBJECT_MAPPER.readValue(json, Document.class);
     } catch (IOException ioe) {
       throw new RuntimeException("Failed to convert json to file.", ioe);
     }
@@ -47,19 +43,19 @@ public class JsonUtil {
     }
   }
 
-  public static List<File> convertJsonToFiles(String json) {
+  public static List<Attachment> convertJsonToAttachments(String json) {
     try {
-      return OBJECT_MAPPER.readValue(json, FILE_LIST_TYPE_REFERENCE);
+      return OBJECT_MAPPER.readValue(json, ATTACHMENT_LIST_TYPE_REFERENCE);
     } catch (IOException ioe) {
-      throw new RuntimeException("Failed to convert json to files.", ioe);
+      throw new RuntimeException("Failed to convert json to attachments.", ioe);
     }
   }
 
-  public static List<Document> convertJsonToDocuments(String json) {
+  public static List<OutcomeDocument> convertJsonToOutcomeDocuments(String json) {
     try {
-      return OBJECT_MAPPER.readValue(json, DOCUMENT_LIST_TYPE_REFERENCE);
+      return OBJECT_MAPPER.readValue(json, OUTCOME_DOCUMENT_LIST_TYPE_REFERENCE);
     } catch (IOException ioe) {
-      throw new RuntimeException("Failed to convert json to documents.", ioe);
+      throw new RuntimeException("Failed to convert json to outcome documents.", ioe);
     }
   }
 

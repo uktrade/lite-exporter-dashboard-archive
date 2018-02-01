@@ -3,22 +3,22 @@ package controllers;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
+import components.common.upload.FileService;
+import components.common.upload.FileUtil;
+import components.common.upload.UploadMultipartParser;
+import components.common.upload.UploadResult;
 import components.dao.DraftFileDao;
-import components.exceptions.DatabaseException;
 import components.service.AppDataService;
+import components.service.DraftFileService;
 import components.service.UserPermissionService;
 import components.service.UserService;
-import components.upload.UploadFile;
-import components.upload.UploadMultipartParser;
 import components.util.EnumUtil;
-import components.util.FileUtil;
 import models.AppData;
 import models.FileUploadResponse;
 import models.FileUploadResponseItem;
 import models.enums.DraftType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import play.libs.Json;
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.With;
@@ -31,19 +31,29 @@ import java.util.stream.Collectors;
 @With(AppGuardAction.class)
 public class UploadController extends SamlController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(UploadController.class);
-
   private final AppDataService appDataService;
   private final UserService userService;
   private final DraftFileDao draftFileDao;
   private final UserPermissionService userPermissionService;
+  private final FileService fileService;
+  private final DraftFileService draftFileService;
+  private final HttpExecutionContext context;
 
   @Inject
-  public UploadController(AppDataService appDataService, UserService userService, DraftFileDao draftFileDao, UserPermissionService userPermissionService) {
+  public UploadController(AppDataService appDataService,
+                          UserService userService,
+                          DraftFileDao draftFileDao,
+                          UserPermissionService userPermissionService,
+                          FileService fileService,
+                          DraftFileService draftFileService,
+                          HttpExecutionContext httpExecutionContext1) {
     this.appDataService = appDataService;
     this.userService = userService;
     this.draftFileDao = draftFileDao;
     this.userPermissionService = userPermissionService;
+    this.fileService = fileService;
+    this.draftFileService = draftFileService;
+    this.context = httpExecutionContext1;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
@@ -55,9 +65,9 @@ public class UploadController extends SamlController {
     } else if (!canAddOrDeleteFile(userId, appId, draftType, relatedId)) {
       return completedFuture(notFound("Unknown relatedId " + relatedId));
     } else {
-      List<UploadFile> files = FileUtil.getUploadFiles(request());
-      FileUploadResponse fileUploadResponse = insertDraftAttachments(appId, relatedId, files, draftType);
-      return completedFuture(ok(Json.toJson(fileUploadResponse)));
+      return fileService.processUpload(appId, request())
+          .thenApplyAsync(uploadResults -> createFileUploadResponse(uploadResults, appId, relatedId, draftType), context.current())
+          .thenApply(fileUploadResponse -> ok(Json.toJson(fileUploadResponse)));
     }
   }
 
@@ -73,12 +83,7 @@ public class UploadController extends SamlController {
     } else if (!canAddOrDeleteFile(userId, appId, draftType, relatedId)) {
       return completedFuture(notFound("Unknown relatedId " + relatedId));
     } else {
-      try {
-        draftFileDao.deleteDraftFile(fileId, relatedId, DraftType.valueOf(fileType));
-      } catch (DatabaseException databaseException) {
-        LOGGER.error("Unable to delete file", databaseException);
-        return completedFuture(badRequest());
-      }
+      draftFileService.deleteDraftFile(fileId, relatedId, draftType);
       return completedFuture(ok());
     }
   }
@@ -94,35 +99,30 @@ public class UploadController extends SamlController {
     }
   }
 
-  private FileUploadResponse insertDraftAttachments(String appId, String relatedId, List<UploadFile> uploadFiles, DraftType draftType) {
-    List<FileUploadResponseItem> fileUploadResponseItems = uploadFiles.stream()
-        .map(uploadFile -> createFileUploadResponseItem(appId, relatedId, uploadFile, draftType))
+  private FileUploadResponse createFileUploadResponse(List<UploadResult> uploadResults, String appId, String relatedId, DraftType draftType) {
+    List<FileUploadResponseItem> fileUploadResponseItems = uploadResults.stream()
+        .map(uploadResult -> createFileUploadResponseItem(uploadResult, appId, relatedId, draftType))
         .collect(Collectors.toList());
     return new FileUploadResponse(fileUploadResponseItems);
   }
 
-  private FileUploadResponseItem createFileUploadResponseItem(String appId, String relatedId, UploadFile uploadFile, DraftType draftType) {
-    String name = uploadFile.getOriginalFilename();
-    if (uploadFile.getProcessErrorInfo() != null) {
-      return new FileUploadResponseItem(appId, name, null, uploadFile.getProcessErrorInfo(), null, relatedId, null, draftType.toString());
+  private FileUploadResponseItem createFileUploadResponseItem(UploadResult uploadResult, String appId, String relatedId, DraftType draftType) {
+    if (uploadResult.isValid()) {
+      draftFileDao.addDraftFile(uploadResult, relatedId, draftType);
+      String link = getLink(appId, relatedId, uploadResult.getId(), draftType);
+      String size = FileUtil.getReadableFileSize(uploadResult.getSize());
+      return new FileUploadResponseItem(appId, uploadResult.getFilename(), link, null, size, relatedId, uploadResult.getId(), draftType.toString());
     } else {
-      String size = FileUtil.getReadableFileSize(uploadFile.getDestinationPath());
-      String fileId = createNewFile(relatedId, uploadFile, draftType);
-      String link = getLink(appId, relatedId, fileId, draftType);
-      return new FileUploadResponseItem(appId, name, link, null, size, relatedId, fileId, draftType.toString());
+      return new FileUploadResponseItem(appId, uploadResult.getFilename(), null, uploadResult.getError(), null, relatedId, null, draftType.toString());
     }
   }
 
   private String getLink(String appId, String relatedId, String fileId, DraftType draftType) {
     if (draftType == DraftType.RFI_REPLY) {
-      return routes.DownloadController.getRfiReplyFile(appId, relatedId, fileId).toString();
+      return routes.DownloadController.getRfiReplyAttachment(appId, relatedId, fileId).toString();
     } else {
-      return routes.DownloadController.getAmendmentOrWithdrawalFile(relatedId, fileId).toString();
+      return routes.DownloadController.getAmendmentOrWithdrawalAttachment(relatedId, fileId).toString();
     }
-  }
-
-  private String createNewFile(String relatedId, UploadFile uploadFile, DraftType draftType) {
-    return draftFileDao.addDraftFile(uploadFile.getOriginalFilename(), uploadFile.getDestinationPath(), relatedId, draftType);
   }
 
 }

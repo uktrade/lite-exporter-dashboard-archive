@@ -23,8 +23,8 @@ GET         /application/:appId/outcome-documents                     controller
 POST        /application/:appId/upload/accept/:draftType/:relatedId   controllers.UploadController.submitFiles(appId, draftType, relatedId)
 POST        /application/:appId/upload/delete                         controllers.UploadController.deleteFile(appId)
 
-GET         /application/:appId/download/rfi/:rfiId/files/:fileId     controllers.DownloadController.getRfiReplyFile(appId, rfiId, fileId)
-GET         /application/:appId/download/files/:fileId                controllers.DownloadController.getAmendmentOrWithdrawalFile(appId, fileId)
+GET         /application/:appId/download/rfi/:rfiId/files/:fileId     controllers.DownloadController.getRfiReplyAttachment(appId, rfiId, fileId)
+GET         /application/:appId/download/files/:fileId                controllers.DownloadController.getAmendmentOrWithdrawalAttachment(appId, fileId)
 
 # Licences tabs
 GET         /licences                                                 controllers.LicenceListController.licenceList(tab ?= null, sort ?= null, direction ?=null, page: Integer ?= null)

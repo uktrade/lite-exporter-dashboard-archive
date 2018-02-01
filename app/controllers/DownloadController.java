@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
+import components.common.upload.FileService;
 import components.dao.AmendmentRequestDao;
 import components.dao.DraftFileDao;
 import components.dao.WithdrawalRequestDao;
@@ -8,18 +9,19 @@ import components.service.AppDataService;
 import components.service.UserPermissionService;
 import components.service.UserService;
 import components.util.ApplicationUtil;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import models.AmendmentRequest;
 import models.AppData;
-import models.File;
+import models.Attachment;
 import models.RfiReply;
 import models.WithdrawalRequest;
 import models.enums.DraftType;
 import org.apache.commons.collections4.ListUtils;
 import play.mvc.Result;
 import play.mvc.With;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @With(AppGuardAction.class)
 public class DownloadController extends SamlController {
@@ -30,6 +32,7 @@ public class DownloadController extends SamlController {
   private final AmendmentRequestDao amendmentRequestDao;
   private final WithdrawalRequestDao withdrawalRequestDao;
   private final UserPermissionService userPermissionService;
+  private final FileService fileService;
 
   @Inject
   public DownloadController(UserService userService,
@@ -37,73 +40,76 @@ public class DownloadController extends SamlController {
                             DraftFileDao draftFileDao,
                             AmendmentRequestDao amendmentRequestDao,
                             WithdrawalRequestDao withdrawalRequestDao,
-                            UserPermissionService userPermissionService) {
+                            UserPermissionService userPermissionService,
+                            FileService fileService) {
     this.userService = userService;
     this.appDataService = appDataService;
     this.draftFileDao = draftFileDao;
     this.amendmentRequestDao = amendmentRequestDao;
     this.withdrawalRequestDao = withdrawalRequestDao;
     this.userPermissionService = userPermissionService;
+    this.fileService = fileService;
   }
 
-  public Result getRfiReplyFile(String appId, String rfiId, String fileId) {
+  public Result getRfiReplyAttachment(String appId, String rfiId, String id) {
     String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
     Optional<RfiReply> rfiReply = ApplicationUtil.getAllRfiReplies(appData).stream()
         .filter(reply -> reply.getRfiId().equals(rfiId))
         .findAny();
-    if (rfiReply.isPresent() && containsFile(rfiReply.get().getAttachments(), fileId)) {
-      return getFile(rfiReply.get().getAttachments(), fileId);
+    if (rfiReply.isPresent() && containsAttachment(rfiReply.get().getAttachments(), id)) {
+      return getAttachment(rfiReply.get().getAttachments(), id);
     } else {
-      List<File> draftFiles = draftFileDao.getDraftFiles(rfiId, DraftType.RFI_REPLY);
-      if (containsFile(draftFiles, fileId) && userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
-        return getFile(draftFiles, fileId);
+      List<Attachment> draftAttachments = draftFileDao.getAttachments(rfiId, DraftType.RFI_REPLY);
+      if (containsAttachment(draftAttachments, id) && userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
+        return getAttachment(draftAttachments, id);
       }
     }
-    return unknownFile(fileId);
+    return unknownAttachment(id);
   }
 
-  public Result getAmendmentOrWithdrawalFile(String appId, String fileId) {
-    List<File> amendmentFiles = amendmentRequestDao.getAmendmentRequests(appId).stream()
+  public Result getAmendmentOrWithdrawalAttachment(String appId, String id) {
+    List<Attachment> amendmentAttachments = amendmentRequestDao.getAmendmentRequests(appId).stream()
         .map(AmendmentRequest::getAttachments)
         .flatMap(List::stream)
         .collect(Collectors.toList());
-    List<File> withdrawalFiles = withdrawalRequestDao.getWithdrawalRequestsByAppId(appId).stream()
+    List<Attachment> withdrawalAttachments = withdrawalRequestDao.getWithdrawalRequestsByAppId(appId).stream()
         .map(WithdrawalRequest::getAttachments)
         .flatMap(List::stream)
         .collect(Collectors.toList());
-    List<File> amendmentOrWithdrawalFiles = ListUtils.union(amendmentFiles, withdrawalFiles);
-    if (containsFile(amendmentOrWithdrawalFiles, fileId)) {
-      return getFile(amendmentOrWithdrawalFiles, fileId);
+    List<Attachment> amendmentOrWithdrawalAttachments = ListUtils.union(amendmentAttachments, withdrawalAttachments);
+    if (containsAttachment(amendmentOrWithdrawalAttachments, id)) {
+      return getAttachment(amendmentOrWithdrawalAttachments, id);
     } else {
       String userId = userService.getCurrentUserId();
       AppData appData = appDataService.getAppData(appId);
-      List<File> draftFiles = draftFileDao.getDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
-      if (containsFile(draftFiles, fileId) && userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
-        return getFile(draftFiles, fileId);
+      List<Attachment> draftAttachments = draftFileDao.getAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+      if (containsAttachment(draftAttachments, id) && userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
+        return getAttachment(draftAttachments, id);
       }
     }
-    return unknownFile(fileId);
+    return unknownAttachment(id);
   }
 
-  private boolean containsFile(List<File> files, String fileId) {
-    return files.stream()
-        .anyMatch(file -> file.getId().equals(fileId));
+  private boolean containsAttachment(List<Attachment> attachments, String id) {
+    return attachments.stream()
+        .anyMatch(attachment -> attachment.getId().equals(id));
   }
 
-  private Result getFile(List<File> files, String fileId) {
-    Optional<File> file = files.stream()
-        .filter(f -> f.getId().equals(fileId))
+  private Result getAttachment(List<Attachment> attachments, String id) {
+    Optional<Attachment> attachmentOptional = attachments.stream()
+        .filter(attachment -> attachment.getId().equals(id))
         .findAny();
-    if (file.isPresent()) {
-      return ok(new java.io.File(file.get().getUrl()));
+    if (attachmentOptional.isPresent()) {
+      Attachment attachment = attachmentOptional.get();
+      return ok(fileService.retrieveFile(attachment.getId(), attachment.getBucket(), attachment.getFolder()));
     } else {
-      return unknownFile(fileId);
+      return unknownAttachment(id);
     }
   }
 
-  private Result unknownFile(String fileId) {
-    return notFound("No file found with fileId " + fileId);
+  private Result unknownAttachment(String id) {
+    return notFound("No attachment found with id " + id);
   }
 
 }

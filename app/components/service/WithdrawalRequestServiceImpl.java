@@ -6,16 +6,17 @@ import com.google.inject.Inject;
 import components.dao.DraftFileDao;
 import components.dao.WithdrawalRequestDao;
 import components.message.MessagePublisher;
-import components.upload.UploadFile;
-import components.util.FileUtil;
-import components.util.MessageUtil;
-import java.time.Instant;
-import java.util.List;
-import models.File;
+import controllers.routes;
+import models.Attachment;
 import models.WithdrawalRequest;
 import models.enums.DraftType;
+import uk.gov.bis.lite.exporterdashboard.api.DashboardDocument;
 import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
 import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestMessage;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
@@ -31,8 +32,8 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
   }
 
   @Override
-  public void insertWithdrawalRequest(String createdByUserId, String appId, String message, List<UploadFile> files) {
-    List<File> attachments = getAttachments(appId, files);
+  public void insertWithdrawalRequest(String createdByUserId, String appId, String message) {
+    List<Attachment> attachments = draftFileDao.getAttachments(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
 
     WithdrawalRequest withdrawalRequest = new WithdrawalRequest();
     withdrawalRequest.setId(withdrawalRequestId());
@@ -47,13 +48,6 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     messagePublisher.sendMessage(RoutingKey.WITHDRAWAL_REQUEST_CREATE, getWithdrawalRequestMessage(withdrawalRequest));
   }
 
-  private List<File> getAttachments(String appId, List<UploadFile> uploadFiles) {
-    List<File> files = FileUtil.toFiles(uploadFiles);
-    List<File> draftAttachments = draftFileDao.getDraftFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
-    files.addAll(draftAttachments);
-    return files;
-  }
-
   private WithdrawalRequestMessage getWithdrawalRequestMessage(WithdrawalRequest withdrawalRequest) {
     WithdrawalRequestMessage withdrawalRequestMessage = new WithdrawalRequestMessage();
     withdrawalRequestMessage.setId(withdrawalRequest.getId());
@@ -61,8 +55,20 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     withdrawalRequestMessage.setCreatedByUserId(withdrawalRequest.getCreatedByUserId());
     withdrawalRequestMessage.setCreatedTimestamp(withdrawalRequest.getCreatedTimestamp());
     withdrawalRequestMessage.setMessage(withdrawalRequest.getMessage());
-    withdrawalRequestMessage.setAttachments(MessageUtil.getDashboardDocuments(withdrawalRequest.getAttachments()));
+    withdrawalRequestMessage.setAttachments(getDashboardDocuments(withdrawalRequest.getAppId(), withdrawalRequest.getAttachments()));
     return withdrawalRequestMessage;
+  }
+
+  private List<DashboardDocument> getDashboardDocuments(String appId, List<Attachment> attachments) {
+    return attachments.stream()
+        .map(attachment -> {
+          String url = routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
+          DashboardDocument dashboardDocument = new DashboardDocument();
+          dashboardDocument.setId(attachment.getId());
+          dashboardDocument.setFilename(attachment.getFilename());
+          dashboardDocument.setUrl(url);
+          return dashboardDocument;
+        }).collect(Collectors.toList());
   }
 
 }
