@@ -1,9 +1,0 @@
----
-applications:
-- name: lite-exporter-dashboard-dev
-  buildpack: java_buildpack
-  path: target/universal/lite-exporter-dashboard-1.0.zip
-  memory: 1G
-  instances: 1
-  env:
-    JAVA_OPTS: '-Dconfig.resource=paas-application.conf -Dplay.crypto.secret=abcd1234secret'
