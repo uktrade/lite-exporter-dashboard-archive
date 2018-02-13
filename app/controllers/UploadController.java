@@ -4,6 +4,8 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
 import components.common.upload.FileService;
+import components.common.upload.FileUploadResponse;
+import components.common.upload.FileUploadResponseItem;
 import components.common.upload.FileUtil;
 import components.common.upload.UploadMultipartParser;
 import components.common.upload.UploadResult;
@@ -14,8 +16,6 @@ import components.service.UserPermissionService;
 import components.service.UserService;
 import components.util.EnumUtil;
 import models.AppData;
-import models.FileUploadResponse;
-import models.FileUploadResponseItem;
 import models.enums.DraftType;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
@@ -74,9 +74,9 @@ public class UploadController extends SamlController {
   public CompletionStage<Result> deleteFile(String appId) {
     String userId = userService.getCurrentUserId();
     Map<String, String[]> formFields = request().body().asFormUrlEncoded();
-    String relatedId = formFields.get("relatedId")[0];
-    String fileType = formFields.get("fileType")[0];
-    String fileId = formFields.get("fileId")[0];
+    String fileId = formFields.get("param1")[0];
+    String relatedId = formFields.get("param2")[0];
+    String fileType = formFields.get("param3")[0];
     DraftType draftType = EnumUtil.parse(fileType, DraftType.class, null);
     if (draftType == null) {
       return completedFuture(badRequest("Unknown draftType " + fileType));
@@ -111,9 +111,9 @@ public class UploadController extends SamlController {
       draftFileDao.addDraftFile(uploadResult, relatedId, draftType);
       String link = getLink(appId, relatedId, uploadResult.getId(), draftType);
       String size = FileUtil.getReadableFileSize(uploadResult.getSize());
-      return new FileUploadResponseItem(appId, uploadResult.getFilename(), link, null, size, relatedId, uploadResult.getId(), draftType.toString());
+      return new FileUploadResponseItem(uploadResult.getFilename(), link, null, size, uploadResult.getId(), relatedId, draftType.toString());
     } else {
-      return new FileUploadResponseItem(appId, uploadResult.getFilename(), null, uploadResult.getError(), null, relatedId, null, draftType.toString());
+      return new FileUploadResponseItem(uploadResult.getFilename(), null, uploadResult.getError(), null, null, relatedId, draftType.toString());
     }
   }
 

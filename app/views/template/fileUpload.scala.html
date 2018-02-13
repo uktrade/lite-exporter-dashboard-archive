@@ -3,7 +3,7 @@
 
 @(appId: String, relatedId: String, draftType: DraftType,  fileViews: java.util.List[FileView])
 
-<script src="@routes.Assets.versioned("javascripts/jquery-file-upload/js/jquery.fileupload.js")"></script>
+<script src="@controllers.common.routes.Assets.versioned("template/javascripts/jquery-file-upload/js/jquery.fileupload.js")"></script>
 
 <div class="file-upload-drop-target">
   <div class="file-upload-help-text">Drag and drop your files here <br>or</div>
@@ -27,7 +27,7 @@
       <td class="file-upload-status">@file.getSize</td>
       <td>
         <button class=js-hidden formaction="@file.getDeleteLink">Remove</button>
-        <a href="#" class="file-delete-link" data-app-id="@file.getAppId" data-related-id="@file.getRelatedId" data-file-id="@file.getId" data-file-type="@draftType.toString"><div class="js-only">Remove</div>
+        <a href="#" class="file-delete-link" data-param1="@file.getId" data-param2="@file.getRelatedId" data-param3="@draftType.toString"><div class="js-only">Remove</div>
           <span class="visually-hidden">@file.getName</span>
         </a>
       </td>
@@ -36,4 +36,6 @@
   </tbody>
 </table>
 
-<script src="@routes.Assets.versioned("javascripts/lite-file-upload.js")"></script>
+<input name="delete-url" value = "@routes.UploadController.deleteFile(appId).toString" type="hidden">
+
+<script src="@controllers.common.routes.Assets.versioned("template/javascripts/lite-file-upload.js")"></script>
