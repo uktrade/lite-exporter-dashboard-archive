@@ -16,7 +16,10 @@ import components.service.UserPermissionService;
 import components.service.UserService;
 import components.util.EnumUtil;
 import models.AppData;
+import models.DraftFile;
 import models.enums.DraftType;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
@@ -71,20 +74,21 @@ public class UploadController extends SamlController {
     }
   }
 
-  public CompletionStage<Result> deleteFile(String appId) {
+  public Result deleteFile(String appId) {
     String userId = userService.getCurrentUserId();
     Map<String, String[]> formFields = request().body().asFormUrlEncoded();
-    String fileId = formFields.get("param1")[0];
-    String relatedId = formFields.get("param2")[0];
-    String fileType = formFields.get("param3")[0];
-    DraftType draftType = EnumUtil.parse(fileType, DraftType.class, null);
-    if (draftType == null) {
-      return completedFuture(badRequest("Unknown draftType " + fileType));
-    } else if (!canAddOrDeleteFile(userId, appId, draftType, relatedId)) {
-      return completedFuture(notFound("Unknown relatedId " + relatedId));
+    String[] fileProperties = formFields.get("fileProperties");
+    if (ArrayUtils.getLength(fileProperties) != 1 || StringUtils.isBlank(fileProperties[0])) {
+      return badRequest("Unknown draft file id");
     } else {
-      draftFileService.deleteDraftFile(fileId, relatedId, draftType);
-      return completedFuture(ok());
+      String id = formFields.get("fileProperties")[0];
+      DraftFile draftFile = draftFileDao.getDraftFile(id);
+      if (draftFile == null || !canAddOrDeleteFile(userId, appId, draftFile.getDraftType(), draftFile.getRelatedId())) {
+        return notFound("Unknown draft file id " + id);
+      } else {
+        draftFileService.deleteDraftFile(draftFile.getId(), draftFile.getRelatedId(), draftFile.getDraftType());
+        return ok();
+      }
     }
   }
 
@@ -111,9 +115,9 @@ public class UploadController extends SamlController {
       draftFileDao.addDraftFile(uploadResult, relatedId, draftType);
       String link = getLink(appId, relatedId, uploadResult.getId(), draftType);
       String size = FileUtil.getReadableFileSize(uploadResult.getSize());
-      return new FileUploadResponseItem(uploadResult.getFilename(), link, null, size, uploadResult.getId(), relatedId, draftType.toString());
+      return new FileUploadResponseItem(uploadResult.getFilename(), link, null, size, uploadResult.getId());
     } else {
-      return new FileUploadResponseItem(uploadResult.getFilename(), null, uploadResult.getError(), null, null, relatedId, draftType.toString());
+      return new FileUploadResponseItem(uploadResult.getFilename(), null, uploadResult.getError(), null, null);
     }
   }
 

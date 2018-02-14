@@ -136,7 +136,7 @@ public class MessageViewServiceImpl implements MessageViewService {
   private FileView getFileView(String appId, String relatedId, Attachment attachment) {
     String size = FileUtil.getReadableFileSize(attachment.getSize());
     String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
-    return new FileView(attachment.getId(), appId, relatedId, attachment.getFilename(), link, null, size);
+    return new FileView(attachment.getId(), attachment.getFilename(), link, size, null);
   }
 
   private List<MessageView> getStopMessageViews(AppData appData, ReadData readData) {

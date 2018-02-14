@@ -1,10 +1,11 @@
 package components.dao.impl;
 
 import com.google.inject.Inject;
+import components.common.upload.UploadResult;
 import components.dao.DraftFileDao;
 import components.dao.jdbi.DraftFileJDBIDao;
-import components.common.upload.UploadResult;
 import models.Attachment;
+import models.DraftFile;
 import models.enums.DraftType;
 import org.skife.jdbi.v2.DBI;
 
@@ -29,6 +30,11 @@ public class DraftFileDaoImpl implements DraftFileDao {
             draftFile.getFolder(),
             draftFile.getSize()))
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public DraftFile getDraftFile(String id) {
+    return draftFileJDBIDao.getDraftFile(id);
   }
 
   @Override

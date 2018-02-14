@@ -80,7 +80,7 @@ public class RfiViewServiceImpl implements RfiViewService {
     String link = controllers.routes.DownloadController.getRfiReplyAttachment(appId, rfiId, attachment.getId()).toString();
     String deleteLink = controllers.routes.RfiTabController.deleteFileById(appId, attachment.getId()).toString();
     String size = FileUtil.getReadableFileSize(attachment.getSize());
-    return new FileView(attachment.getId(), appId, rfiId, attachment.getFilename(), link, deleteLink, size);
+    return new FileView(attachment.getId(), attachment.getFilename(), link, size, deleteLink);
   }
 
   private RfiView getRfiView(String appId, Rfi rfi, RfiReply rfiReply, RfiWithdrawal rfiWithdrawal, boolean isReplyAllowed) {

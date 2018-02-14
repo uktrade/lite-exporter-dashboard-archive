@@ -27,7 +27,8 @@
       <td class="file-upload-status">@file.getSize</td>
       <td>
         <button class=js-hidden formaction="@file.getDeleteLink">Remove</button>
-        <a href="#" class="file-delete-link" data-param1="@file.getId" data-param2="@file.getRelatedId" data-param3="@draftType.toString"><div class="js-only">Remove</div>
+        <a href="#" class="file-delete-link" data-file-properties="@file.getId">
+          <div class="js-only">Remove</div>
           <span class="visually-hidden">@file.getName</span>
         </a>
       </td>

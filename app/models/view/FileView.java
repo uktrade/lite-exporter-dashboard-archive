@@ -4,33 +4,21 @@ package models.view;
 public class FileView {
 
   private final String id;
-  private final String appId;
-  private final String relatedId;
   private final String name;
   private final String link;
-  private final String deleteLink;
   private final String size;
+  private final String deleteLink;
 
-  public FileView(String id, String appId, String relatedId, String name, String link, String deleteLink, String size) {
+  public FileView(String id, String name, String link, String size, String deleteLink) {
     this.id = id;
-    this.appId = appId;
-    this.relatedId = relatedId;
     this.name = name;
     this.link = link;
-    this.deleteLink = deleteLink;
     this.size = size;
+    this.deleteLink = deleteLink;
   }
 
   public String getId() {
     return id;
-  }
-
-  public String getAppId() {
-    return appId;
-  }
-
-  public String getRelatedId() {
-    return relatedId;
   }
 
   public String getName() {
@@ -41,12 +29,12 @@ public class FileView {
     return link;
   }
 
-  public String getDeleteLink() {
-    return deleteLink;
-  }
-
   public String getSize() {
     return size;
+  }
+
+  public String getDeleteLink() {
+    return deleteLink;
   }
 
 }
