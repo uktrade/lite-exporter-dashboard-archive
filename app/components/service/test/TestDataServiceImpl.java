@@ -220,18 +220,12 @@ public class TestDataServiceImpl implements TestDataService {
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           userId,
           time(2017, 1, 3, 10, 20),
-          null,
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
           OFFICER_ID,
           SITE_ID);
-      CaseDetails caseDetails = new CaseDetails(appId,
-          RandomIdUtil.caseReference(),
-          OFFICER_ID,
-          app.getCreatedTimestamp());
-      caseDetailsDao.insert(caseDetails);
-      applicationDao.update(app);
+      insert(app);
     }
     // Submitted application, in progress, with RFI and message “apologies for the delay”
     for (int i = 0; i < 1; i++) {
@@ -242,7 +236,6 @@ public class TestDataServiceImpl implements TestDataService {
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           userId,
           time(2017, 11, 3, 10, 20),
-          submittedTimestamp,
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
@@ -251,9 +244,8 @@ public class TestDataServiceImpl implements TestDataService {
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
-          app.getCreatedTimestamp());
-      caseDetailsDao.insert(caseDetails);
-      applicationDao.update(app);
+          submittedTimestamp);
+      insert(app, caseDetails);
       StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
           app.getId(),
           StatusType.INITIAL_CHECKS,
@@ -295,7 +287,6 @@ public class TestDataServiceImpl implements TestDataService {
           TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
           createdByUserId,
           time(2016, 4, 3, 3 + k, 3),
-          time(2016, 5, 3, 3, 3),
           CONSIGNEE_COUNTRIES_FOUR,
           END_USER_COUNTRIES_FOUR,
           getApplicantReference(),
@@ -304,9 +295,8 @@ public class TestDataServiceImpl implements TestDataService {
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
-          application.getCreatedTimestamp());
-      caseDetailsDao.insert(caseDetails);
-      applicationDao.update(application);
+          time(2016, 5, 3, 3, 3));
+      insert(application, caseDetails);
       List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
           StatusType.TECHNICAL_ASSESSMENT,
           StatusType.LU_PROCESSING,
@@ -376,7 +366,7 @@ public class TestDataServiceImpl implements TestDataService {
   @Override
   public void deleteCurrentUser(String userId) {
     List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
-    List<Application> applications = applicationDao.getApplicationsByCustomerIds(customerIds);
+    List<Application> applications = applicationDao.getApplicationsByCustomerIdsAndUserId(customerIds, userId);
 
     List<String> appIds = applications.stream()
         .map(Application::getId)
@@ -432,7 +422,6 @@ public class TestDataServiceImpl implements TestDataService {
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2015, 1, 1, 1, 1),
-        time(2015, 2, 1, 1, 1),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
@@ -441,9 +430,8 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(application.getId(),
         RandomIdUtil.caseReference(),
         OFFICER_ID,
-        application.getCreatedTimestamp());
-    caseDetailsDao.insert(caseDetails);
-    applicationDao.update(application);
+        time(2015, 2, 1, 1, 1));
+    insert(application, caseDetails);
   }
 
   private void createApplications(String userId) {
@@ -455,7 +443,6 @@ public class TestDataServiceImpl implements TestDataService {
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           userId,
           time(2017, 3, 3 + i, i, i),
-          submittedTimestamp,
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
@@ -464,9 +451,8 @@ public class TestDataServiceImpl implements TestDataService {
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
-          app.getCreatedTimestamp());
-      caseDetailsDao.insert(caseDetails);
-      applicationDao.update(app);
+          submittedTimestamp);
+      insert(app, caseDetails);
       StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
           app.getId(),
           StatusType.INITIAL_CHECKS,
@@ -531,7 +517,6 @@ public class TestDataServiceImpl implements TestDataService {
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           OTHER_APPLICANT_ID,
           time(2017, 1, 3 + i, i, i),
-          null,
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
@@ -540,9 +525,8 @@ public class TestDataServiceImpl implements TestDataService {
       CaseDetails caseDetails = new CaseDetails(appId,
           RandomIdUtil.caseReference(),
           OFFICER_ID,
-          app.getCreatedTimestamp());
-      caseDetailsDao.insert(caseDetails);
-      applicationDao.update(app);
+          time(2017, 1, 4 + i, i, i));
+      insert(app, caseDetails);
     }
     // Create application with inform notice
     String appId = appId();
@@ -551,7 +535,6 @@ public class TestDataServiceImpl implements TestDataService {
         TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
         OTHER_APPLICANT_ID,
         time(2017, 1, 7, 1, 1),
-        time(2017, 1, 8, 1, 1),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
@@ -560,9 +543,8 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
-        application.getCreatedTimestamp());
-    caseDetailsDao.insert(caseDetails);
-    applicationDao.update(application);
+        time(2017, 1, 8, 1, 1));
+    insert(application, caseDetails);
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         application.getId(),
         StatusType.INITIAL_CHECKS,
@@ -608,7 +590,6 @@ public class TestDataServiceImpl implements TestDataService {
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2013, 11, 4, 13, 10),
-        time(2013, 11, 4, 14, 10),
         consigneeCountries,
         endUserCountries,
         getApplicantReference(),
@@ -617,9 +598,8 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
-        application.getCreatedTimestamp());
-    caseDetailsDao.insert(caseDetails);
-    applicationDao.update(application);
+        time(2013, 11, 4, 14, 10));
+    insert(application, caseDetails);
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.INITIAL_CHECKS,
@@ -702,7 +682,6 @@ public class TestDataServiceImpl implements TestDataService {
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2016, 11, 4, 13, 10),
-        time(2016, 11, 4, 14, 10),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
@@ -711,9 +690,8 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
-        application.getCreatedTimestamp());
-    caseDetailsDao.insert(caseDetails);
-    applicationDao.update(application);
+        time(2016, 11, 4, 14, 10));
+    insert(application, caseDetails);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(caseReference, rfiId).forEach(rfiDao::insertRfi);
     rfiReplyDao.insertRfiReply(createRfiReplyTestData(userId, rfiId));
@@ -798,7 +776,6 @@ public class TestDataServiceImpl implements TestDataService {
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
         time(2016, 11, 3, 3, 3),
-        time(2016, 12, 4, 3, 3),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
@@ -807,9 +784,8 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(appId,
         RandomIdUtil.caseReference(),
         OFFICER_ID,
-        application.getCreatedTimestamp());
-    caseDetailsDao.insert(caseDetails);
-    applicationDao.update(application);
+        time(2016, 12, 4, 3, 3));
+    insert(application, caseDetails);
     StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.INITIAL_CHECKS,
@@ -834,7 +810,6 @@ public class TestDataServiceImpl implements TestDataService {
           TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
           userId,
           time(2015, 3, 3, 3 + k, 3),
-          time(2015, 4, 3, 3, 3),
           consigneeCountries,
           endUserCountries,
           getApplicantReference(),
@@ -843,9 +818,8 @@ public class TestDataServiceImpl implements TestDataService {
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
-          application.getCreatedTimestamp());
-      caseDetailsDao.insert(caseDetails);
-      applicationDao.update(application);
+          time(2015, 4, 3, 3, 3));
+      insert(application, caseDetails);
       List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
           StatusType.TECHNICAL_ASSESSMENT,
           StatusType.LU_PROCESSING,
@@ -995,6 +969,19 @@ public class TestDataServiceImpl implements TestDataService {
       licenceViewMap.put(userId, licenceViews);
     }
     return licenceViewMap.get(userId);
+  }
+
+  private void insert(Application application, CaseDetails caseDetails) {
+    insert(application);
+    caseDetailsDao.insert(caseDetails);
+  }
+
+  private void insert(Application application) {
+    applicationDao.insert(application.getId(), application.getCreatedByUserId(), application.getCreatedTimestamp());
+    applicationDao.updateApplicantReference(application.getId(), application.getApplicantReference());
+    applicationDao.updateCountries(application.getId(), application.getConsigneeCountries(), application.getEndUserCountries());
+    applicationDao.updateCustomerId(application.getId(), application.getCustomerId());
+    applicationDao.updateSiteId(application.getId(), application.getSiteId());
   }
 
 }

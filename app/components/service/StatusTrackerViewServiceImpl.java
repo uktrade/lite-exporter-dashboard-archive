@@ -10,14 +10,6 @@ import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
 import components.util.TimeUtil;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import models.AppData;
 import models.Application;
 import models.CaseData;
@@ -34,6 +26,15 @@ import models.view.StatusItemView;
 import models.view.StatusTrackerView;
 import utils.common.ViewUtil;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 
   @Inject
@@ -43,7 +44,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   @Override
   public StatusTrackerView getStatusTrackerView(AppData appData) {
     StatusItemView draftStatusItemView = createDraftStatusItemView(appData.getApplication());
-    StatusItemView submittedStatusItemView = createSubmittedStatusItemView(appData.getApplication());
+    StatusItemView submittedStatusItemView = createSubmittedStatusItemView(appData.getSubmittedTimestamp());
     List<StatusItemView> updateStatusItemViews = createUpdateStatusItemViews(appData);
 
     List<StatusItemView> originalStatusItemViews = new ArrayList<>();
@@ -101,17 +102,17 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
 
-  private StatusItemView createSubmittedStatusItemView(Application application) {
+  private StatusItemView createSubmittedStatusItemView(Long submittedTimestamp) {
     String status = ApplicationUtil.SUBMITTED;
     String statusExplanation = "";
     String processingLabel;
     String processingDescription;
-    if (application.getSubmittedTimestamp() == null) {
+    if (submittedTimestamp == null) {
       processingLabel = ApplicationUtil.NOT_STARTED;
       processingDescription = "";
     } else {
       processingLabel = ApplicationUtil.FINISHED;
-      processingDescription = "Submitted on " + TimeUtil.formatDate(application.getSubmittedTimestamp());
+      processingDescription = "Submitted on " + TimeUtil.formatDate(submittedTimestamp);
     }
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }

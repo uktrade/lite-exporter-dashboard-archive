@@ -10,11 +10,19 @@ public interface ApplicationDao {
 
   Application getApplication(String id);
 
-  List<Application> getApplicationsByCustomerIds(List<String> customerIds);
+  List<Application> getApplicationsByCustomerIdsAndUserId(List<String> customerIds, String userId);
 
   void updateCaseOfficerId(String id, String caseOfficerId);
 
-  void update(Application application);
+  void updateApplicantReference(String id, String applicantReference);
+
+  void updateCustomerId(String id, String customerId);
+
+  void updateSiteId(String id, String siteId);
+
+  void updateCountries(String id, List<String> consigneeCountries, List<String> endUserCountries);
+
+  void insert(String id, String createdByUserId, Long createdTimestamp);
 
   void deleteAllApplications();
 

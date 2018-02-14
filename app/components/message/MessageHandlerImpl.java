@@ -14,7 +14,6 @@ import components.dao.WithdrawalRejectionDao;
 import components.exceptions.ValidationException;
 import components.util.EnumUtil;
 import components.util.RandomIdUtil;
-import models.Application;
 import models.CaseDetails;
 import models.Document;
 import models.Notification;
@@ -31,6 +30,12 @@ import models.enums.StatusType;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.bis.lite.sielapp.api.SielApplicantRefUpdate;
+import uk.gov.bis.lite.sielapp.api.SielCreate;
+import uk.gov.bis.lite.sielapp.api.SielDelete;
+import uk.gov.bis.lite.sielapp.api.SielDestinationsUpdate;
+import uk.gov.bis.lite.sielapp.api.SielLicenseeUpdate;
+import uk.gov.bis.lite.sielapp.api.SielSiteUpdate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardCaseCreated;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardCaseStatusUpdate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardMessageDocument;
@@ -48,6 +53,7 @@ import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardWithdra
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardWithdrawalReject;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -137,14 +143,29 @@ public class MessageHandlerImpl implements MessageHandler {
         case CASE_CREATE:
           insertCaseCreate(message);
           break;
-        case SIEL_SUBMIT:
-          insertSielSubmit(message);
-          break;
         case OFFICER_UPDATE:
           insertCaseOfficerUpdate(message);
           break;
         case RFI_DEADLINE_UPDATE:
           insertRfiDeadlineUpdate(message);
+          break;
+        case SIEL_CREATE:
+          insertSielCreate(message);
+          break;
+        case SIEL_UPDATE_APPLICANT_REF:
+          insertSielUpdateApplicantRef(message);
+          break;
+        case SIEL_UPDATE_LICENSEE:
+          insertSielUpdateLicensee(message);
+          break;
+        case SIEL_UPDATE_SITE:
+          insertSielUpdateSite(message);
+          break;
+        case SIEL_UPDATE_DESTINATIONS:
+          insertSielUpdateDestinations(message);
+          break;
+        case SIEL_DELETE:
+          insertSielDelete(message);
           break;
         default:
           throw new ValidationException("Unknown routing key " + consumerRoutingKey);
@@ -327,10 +348,47 @@ public class MessageHandlerImpl implements MessageHandler {
     caseDetailsDao.insert(caseDetails);
   }
 
-  private void insertSielSubmit(String message) {
-    Application application = parse(message, Application.class);
-    validate(application);
-    applicationDao.update(application);
+  private void insertSielCreate(String message) {
+    SielCreate sielCreate = parse(message, SielCreate.class);
+    validate(sielCreate);
+    applicationDao.insert(sielCreate.getAppId(), sielCreate.getCreatedByUserId(), sielCreate.getCreatedTimestamp());
+  }
+
+  private void insertSielUpdateApplicantRef(String message) {
+    SielApplicantRefUpdate sielApplicantRefUpdate = parse(message, SielApplicantRefUpdate.class);
+    validate(sielApplicantRefUpdate);
+    verifyApplicationExists(sielApplicantRefUpdate.getAppId());
+    applicationDao.updateApplicantReference(sielApplicantRefUpdate.getAppId(), sielApplicantRefUpdate.getApplicantRef());
+  }
+
+  private void insertSielUpdateLicensee(String message) {
+    SielLicenseeUpdate sielLicenseeUpdate = parse(message, SielLicenseeUpdate.class);
+    validate(sielLicenseeUpdate);
+    verifyApplicationExists(sielLicenseeUpdate.getAppId());
+    applicationDao.updateCustomerId(sielLicenseeUpdate.getAppId(), sielLicenseeUpdate.getLicenseeId());
+  }
+
+  private void insertSielUpdateSite(String message) {
+    SielSiteUpdate sielSiteUpdate = parse(message, SielSiteUpdate.class);
+    validate(sielSiteUpdate);
+    verifyApplicationExists(sielSiteUpdate.getAppId());
+    applicationDao.updateSiteId(sielSiteUpdate.getAppId(), sielSiteUpdate.getSiteId());
+  }
+
+  private void insertSielUpdateDestinations(String message) {
+    SielDestinationsUpdate sielDestinationsUpdate = parse(message, SielDestinationsUpdate.class);
+    validate(sielDestinationsUpdate);
+    verifyApplicationExists(sielDestinationsUpdate.getAppId());
+    applicationDao.updateCountries(sielDestinationsUpdate.getAppId(),
+        Collections.singletonList(sielDestinationsUpdate.getConsigneeCountry()),
+        sielDestinationsUpdate.getEndUserCountries());
+  }
+
+  private void insertSielDelete(String message) {
+    SielDelete sielDelete = parse(message, SielDelete.class);
+    validate(sielDelete);
+    verifyApplicationExists(sielDelete.getAppId());
+    applicationDao.deleteApplication(sielDelete.getAppId());
   }
 
   private void insertCaseOfficerUpdate(String message) {
@@ -343,6 +401,13 @@ public class MessageHandlerImpl implements MessageHandler {
     DashboardRfiDeadlineUpdate dashboardRfiDeadlineUpdate = parse(message, DashboardRfiDeadlineUpdate.class);
     validate(dashboardRfiDeadlineUpdate);
     rfiDao.updateDeadline(dashboardRfiDeadlineUpdate.getRfiId(), dashboardRfiDeadlineUpdate.getUpdatedDeadlineTimestamp());
+  }
+
+  private void verifyApplicationExists(String appId) {
+    if (applicationDao.getApplication(appId) == null) {
+      String errorMessage = String.format("Unable to insert message with appId %s since no such application exists.", appId);
+      throw new ValidationException(errorMessage);
+    }
   }
 
   private <T> T parse(String message, Class<T> clazz) {

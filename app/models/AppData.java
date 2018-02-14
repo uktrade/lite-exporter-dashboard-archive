@@ -5,6 +5,7 @@ import java.util.List;
 public class AppData {
 
   private final Application application;
+  private final Long submittedTimestamp;
   private final String caseReference;
   private final List<StatusUpdate> statusUpdates;
   private final List<WithdrawalRequest> withdrawalRequests;
@@ -20,8 +21,9 @@ public class AppData {
   private final List<AmendmentRequest> amendmentRequests;
   private final List<CaseData> caseDataList;
 
-  public AppData(Application application, String caseReference, List<StatusUpdate> statusUpdates, List<WithdrawalRequest> withdrawalRequests, List<WithdrawalRejection> withdrawalRejections, WithdrawalApproval withdrawalApproval, List<Rfi> rfiList, List<RfiReply> rfiReplies, List<RfiWithdrawal> rfiWithdrawals, Notification delayNotification, Notification stopNotification, List<Notification> informNotifications, Outcome outcome, List<AmendmentRequest> amendmentRequests, List<CaseData> caseDataList) {
+  public AppData(Application application, Long submittedTimestamp, String caseReference, List<StatusUpdate> statusUpdates, List<WithdrawalRequest> withdrawalRequests, List<WithdrawalRejection> withdrawalRejections, WithdrawalApproval withdrawalApproval, List<Rfi> rfiList, List<RfiReply> rfiReplies, List<RfiWithdrawal> rfiWithdrawals, Notification delayNotification, Notification stopNotification, List<Notification> informNotifications, Outcome outcome, List<AmendmentRequest> amendmentRequests, List<CaseData> caseDataList) {
     this.application = application;
+    this.submittedTimestamp = submittedTimestamp;
     this.caseReference = caseReference;
     this.statusUpdates = statusUpdates;
     this.withdrawalRequests = withdrawalRequests;
@@ -40,6 +42,10 @@ public class AppData {
 
   public Application getApplication() {
     return application;
+  }
+
+  public Long getSubmittedTimestamp() {
+    return submittedTimestamp;
   }
 
   public String getCaseReference() {
