@@ -18,8 +18,6 @@ import components.util.EnumUtil;
 import models.AppData;
 import models.DraftFile;
 import models.enums.DraftType;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
@@ -27,7 +25,6 @@ import play.mvc.Result;
 import play.mvc.With;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -74,21 +71,14 @@ public class UploadController extends SamlController {
     }
   }
 
-  public Result deleteFile(String appId) {
+  public Result deleteFile(String appId, String fileId) {
     String userId = userService.getCurrentUserId();
-    Map<String, String[]> formFields = request().body().asFormUrlEncoded();
-    String[] fileProperties = formFields.get("fileProperties");
-    if (ArrayUtils.getLength(fileProperties) != 1 || StringUtils.isBlank(fileProperties[0])) {
-      return badRequest("Unknown draft file id");
+    DraftFile draftFile = draftFileDao.getDraftFile(fileId);
+    if (draftFile == null || !canAddOrDeleteFile(userId, appId, draftFile.getDraftType(), draftFile.getRelatedId())) {
+      return notFound("Unknown draft file id " + fileId);
     } else {
-      String id = formFields.get("fileProperties")[0];
-      DraftFile draftFile = draftFileDao.getDraftFile(id);
-      if (draftFile == null || !canAddOrDeleteFile(userId, appId, draftFile.getDraftType(), draftFile.getRelatedId())) {
-        return notFound("Unknown draft file id " + id);
-      } else {
-        draftFileService.deleteDraftFile(draftFile.getId(), draftFile.getRelatedId(), draftFile.getDraftType());
-        return ok();
-      }
+      draftFileService.deleteDraftFile(draftFile.getId(), draftFile.getRelatedId(), draftFile.getDraftType());
+      return ok();
     }
   }
 
@@ -115,9 +105,10 @@ public class UploadController extends SamlController {
       draftFileDao.addDraftFile(uploadResult, relatedId, draftType);
       String link = getLink(appId, relatedId, uploadResult.getId(), draftType);
       String size = FileUtil.getReadableFileSize(uploadResult.getSize());
-      return new FileUploadResponseItem(uploadResult.getFilename(), link, null, size, uploadResult.getId());
+      String jsDeleteLink = routes.UploadController.deleteFile(appId, uploadResult.getId()).toString();
+      return new FileUploadResponseItem(uploadResult.getFilename(), link, size, jsDeleteLink, null);
     } else {
-      return new FileUploadResponseItem(uploadResult.getFilename(), null, uploadResult.getError(), null, null);
+      return new FileUploadResponseItem(uploadResult.getFilename(), null, null, null, uploadResult.getError());
     }
   }
 

@@ -26,8 +26,8 @@
       <td class="file-upload-filename"><a href="@file.getLink" target="_blank">@file.getName</a></td>
       <td class="file-upload-status">@file.getSize</td>
       <td>
-        <button class=js-hidden formaction="@file.getDeleteLink">Remove</button>
-        <a href="#" class="file-delete-link" data-file-properties="@file.getId">
+        <button class="js-hidden" formaction="@file.getNonJsDeleteLink">Remove</button>
+        <a href="#" class="file-delete-link" data-js-delete-link="@file.getJsDeleteLink">
           <div class="js-only">Remove</div>
           <span class="visually-hidden">@file.getName</span>
         </a>
@@ -36,7 +36,5 @@
   }
   </tbody>
 </table>
-
-<input name="delete-url" value = "@routes.UploadController.deleteFile(appId).toString" type="hidden">
 
 <script src="@controllers.common.routes.Assets.versioned("template/javascripts/lite-file-upload.js")"></script>

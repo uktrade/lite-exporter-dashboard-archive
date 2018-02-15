@@ -21,7 +21,7 @@ POST        /application/:appId/amend-application/file/:fileId        controller
 GET         /application/:appId/outcome-documents                     controllers.OutcomeTabController.showOutcomeTab(appId)
 
 POST        /application/:appId/upload/accept/:draftType/:relatedId   controllers.UploadController.submitFiles(appId, draftType, relatedId)
-POST        /application/:appId/upload/delete                         controllers.UploadController.deleteFile(appId)
+POST        /application/:appId/upload/delete/:fileId                 controllers.UploadController.deleteFile(appId, fileId)
 
 GET         /application/:appId/download/rfi/:rfiId/files/:fileId     controllers.DownloadController.getRfiReplyAttachment(appId, rfiId, fileId)
 GET         /application/:appId/download/files/:fileId                controllers.DownloadController.getAmendmentOrWithdrawalAttachment(appId, fileId)
