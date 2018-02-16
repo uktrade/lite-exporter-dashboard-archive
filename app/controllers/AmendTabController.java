@@ -203,9 +203,10 @@ public class AmendTabController extends SamlController {
 
   private FileView createFileView(String appId, Attachment attachment) {
     String link = routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
-    String deleteLink = routes.AmendTabController.deleteFileById(appId, attachment.getId()).toString();
+    String jsDeleteLink = routes.UploadController.deleteFile(appId, attachment.getId()).toString();
+    String nonJsDeleteLink = routes.AmendTabController.deleteFileById(appId, attachment.getId()).toString();
     String size = FileUtil.getReadableFileSize(attachment.getSize());
-    return new FileView(attachment.getId(), appId, appId, attachment.getFilename(), link, deleteLink, size);
+    return new FileView(attachment.getFilename(), link, size, jsDeleteLink, nonJsDeleteLink);
   }
 
   private List<SelectOption> getSelectOptions() {

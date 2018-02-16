@@ -3,34 +3,18 @@ package models.view;
 
 public class FileView {
 
-  private final String id;
-  private final String appId;
-  private final String relatedId;
   private final String name;
   private final String link;
-  private final String deleteLink;
   private final String size;
+  private final String jsDeleteLink;
+  private final String nonJsDeleteLink;
 
-  public FileView(String id, String appId, String relatedId, String name, String link, String deleteLink, String size) {
-    this.id = id;
-    this.appId = appId;
-    this.relatedId = relatedId;
+  public FileView(String name, String link, String size, String jsDeleteLink, String nonJsDeleteLink) {
     this.name = name;
     this.link = link;
-    this.deleteLink = deleteLink;
     this.size = size;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public String getAppId() {
-    return appId;
-  }
-
-  public String getRelatedId() {
-    return relatedId;
+    this.jsDeleteLink = jsDeleteLink;
+    this.nonJsDeleteLink = nonJsDeleteLink;
   }
 
   public String getName() {
@@ -41,12 +25,16 @@ public class FileView {
     return link;
   }
 
-  public String getDeleteLink() {
-    return deleteLink;
-  }
-
   public String getSize() {
     return size;
+  }
+
+  public String getJsDeleteLink() {
+    return jsDeleteLink;
+  }
+
+  public String getNonJsDeleteLink() {
+    return nonJsDeleteLink;
   }
 
 }
