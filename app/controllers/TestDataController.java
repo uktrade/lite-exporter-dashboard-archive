@@ -25,18 +25,21 @@ public class TestDataController extends SamlController {
   public Result insertTestData(String testTypeParam) {
     TestType testType = EnumUtil.parse(testTypeParam, TestType.class, TestType.TWO);
     String userId = userService.getCurrentUserId();
-    testDataService.deleteCurrentUser(userId);
     switch (testType) {
       case ONE:
+        testDataService.deleteCurrentUser(userId);
         testDataService.insertOneCompany(userId);
         break;
       case TWO:
+        testDataService.deleteCurrentUser(userId);
         testDataService.insertTwoCompanies(userId);
         break;
       case THREE:
+        testDataService.deleteCurrentUser(userId);
         testDataService.insertUserTestingApplicant(userId);
         break;
       case OTHER:
+        testDataService.deleteCurrentUser(userId);
         testDataService.insertOtherUserApplications(userId);
         break;
       case DEL_ALL:
@@ -46,7 +49,7 @@ public class TestDataController extends SamlController {
         testDataService.deleteAllUsersAndInsertStartData();
         break;
       case DEL:
-        // Do nothing since we have already deleted the current user data
+        testDataService.deleteCurrentUser(userId);
         break;
       default:
         throw new RuntimeException("Unknown testType " + testTypeParam);

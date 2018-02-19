@@ -21,6 +21,8 @@ import org.skife.jdbi.v2.Handle;
 import play.Application;
 import play.inject.guice.GuiceApplicationBuilder;
 import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
+import uk.gov.bis.lite.sielapp.api.SielCreate;
+import uk.gov.bis.lite.sielapp.api.SielDelete;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardCaseCreated;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardCaseStatusUpdate;
 import uk.gov.bis.lite.spirerelay.model.queue.publish.dashboard.DashboardMessageDocument;
@@ -43,12 +45,16 @@ import java.util.Collections;
 public class DuplicateMessageTest {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final String POSTGRES_URL = "localhost";
+  private static final boolean POSTGRES_USE_EMBEDDED = true;
   private static EmbeddedPostgres POSTGRES;
 
   @BeforeClass
   public static void startDatabase() throws IOException {
-    POSTGRES = new EmbeddedPostgres(V9_5);
-    POSTGRES.start("localhost", 5432, "postgres", "postgres", "password");
+    if (POSTGRES_USE_EMBEDDED) {
+      POSTGRES = new EmbeddedPostgres(V9_5);
+      POSTGRES.start(POSTGRES_URL, 5432, "postgres", "postgres", "password");
+    }
   }
 
   @Test
@@ -59,7 +65,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardRfiCreate dashboardRfiCreate = new DashboardRfiCreate();
       dashboardRfiCreate.setAppId("appId");
@@ -84,7 +90,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardCaseStatusUpdate dashboardCaseStatusUpdate = new DashboardCaseStatusUpdate();
       dashboardCaseStatusUpdate.setAppId("appId");
@@ -105,7 +111,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardNotificationDelay dashboardNotificationDelay = new DashboardNotificationDelay();
       dashboardNotificationDelay.setId("id");
@@ -128,7 +134,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardNotificationStop dashboardNotificationStop = new DashboardNotificationStop();
       dashboardNotificationStop.setId("id");
@@ -152,7 +158,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardNotificationInform dashboardNotificationInform = new DashboardNotificationInform();
       dashboardNotificationInform.setId("id");
@@ -180,7 +186,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardRfiCreate dashboardRfiCreate = new DashboardRfiCreate();
       dashboardRfiCreate.setAppId("appId");
@@ -215,7 +221,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardOutcomeIssue dashboardOutcomeIssue = new DashboardOutcomeIssue();
       dashboardOutcomeIssue.setAppId("appId");
@@ -246,7 +252,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardOutcomeAmend dashboardOutcomeAmend = new DashboardOutcomeAmend();
       dashboardOutcomeAmend.setAppId("appId");
@@ -277,7 +283,7 @@ public class DuplicateMessageTest {
       clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
-      insertDashboardCaseCreated(messageHandler);
+      insertApplication(messageHandler);
 
       DashboardWithdrawalAccept dashboardWithdrawalAccept = new DashboardWithdrawalAccept();
       dashboardWithdrawalAccept.setId("id");
@@ -300,16 +306,42 @@ public class DuplicateMessageTest {
     running(application, () -> {
       clean(application);
 
-      DashboardCaseCreated dashboardCaseCreated = new DashboardCaseCreated();
-      dashboardCaseCreated.setAppId("appId");
-      dashboardCaseCreated.setCaseRef("caseRef");
-      dashboardCaseCreated.setCreatedByUserId("createdByUserId");
-      dashboardCaseCreated.setCreatedTimestamp(System.currentTimeMillis());
+      MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
+      insertSielCreate(messageHandler);
+
+      assertTrue(insertDashboardCaseCreated(messageHandler));
+      assertFalse(insertDashboardCaseCreated(messageHandler));
+    });
+  }
+
+  @Test
+  public void duplicateSielCreatedShouldBeRejected() {
+    Application application = buildApplication();
+
+    running(application, () -> {
+      clean(application);
 
       MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
 
-      assertTrue(messageHandler.handleMessage(ConsumerRoutingKey.CASE_CREATE.toString(), toJson(dashboardCaseCreated)));
-      assertFalse(messageHandler.handleMessage(ConsumerRoutingKey.CASE_CREATE.toString(), toJson(dashboardCaseCreated)));
+      assertTrue(insertSielCreate(messageHandler));
+      assertFalse(insertSielCreate(messageHandler));
+    });
+  }
+
+  @Test
+  public void duplicateSielDeleteShouldBeRejected() {
+    Application application = buildApplication();
+
+    running(application, () -> {
+      clean(application);
+
+      MessageHandler messageHandler = application.getWrappedApplication().injector().instanceOf(MessageHandler.class);
+      insertSielCreate(messageHandler);
+
+      SielDelete sielDelete = new SielDelete("appId", "1");
+
+      assertTrue(messageHandler.handleMessage(ConsumerRoutingKey.SIEL_DELETE.toString(), toJson(sielDelete)));
+      assertFalse(messageHandler.handleMessage(ConsumerRoutingKey.SIEL_DELETE.toString(), toJson(sielDelete)));
     });
   }
 
@@ -317,7 +349,7 @@ public class DuplicateMessageTest {
     return new GuiceApplicationBuilder()
         .overrides(bind(SqsPoller.class).toInstance(mock(SqsPoller.class)))
         .overrides(bind(StartUpService.class).toInstance(mock(StartUpService.class)))
-        .configure("db.default.url", "jdbc:postgresql://localhost:5432/postgres?currentSchema=test")
+        .configure("db.default.url", "jdbc:postgresql://" + POSTGRES_URL + ":5432/postgres?currentSchema=test")
         .configure("db.default.username", "postgres")
         .configure("db.default.password", "password")
         .build();
@@ -330,18 +362,33 @@ public class DuplicateMessageTest {
     }
   }
 
-  private void insertDashboardCaseCreated(MessageHandler messageHandler) {
+  private void insertApplication(MessageHandler messageHandler) {
+    insertSielCreate(messageHandler);
+    insertDashboardCaseCreated(messageHandler);
+  }
+
+  private boolean insertDashboardCaseCreated(MessageHandler messageHandler) {
     DashboardCaseCreated dashboardCaseCreated = new DashboardCaseCreated();
     dashboardCaseCreated.setAppId("appId");
     dashboardCaseCreated.setCaseRef("caseRef");
     dashboardCaseCreated.setCreatedByUserId("createdByUserId");
     dashboardCaseCreated.setCreatedTimestamp(System.currentTimeMillis());
-    messageHandler.handleMessage(ConsumerRoutingKey.CASE_CREATE.toString(), toJson(dashboardCaseCreated));
+    return messageHandler.handleMessage(ConsumerRoutingKey.CASE_CREATE.toString(), toJson(dashboardCaseCreated));
+  }
+
+  private boolean insertSielCreate(MessageHandler messageHandler) {
+    SielCreate sielCreate = new SielCreate();
+    sielCreate.setAppId("appId");
+    sielCreate.setCreatedByUserId("createdByUserId");
+    sielCreate.setCreatedTimestamp(System.currentTimeMillis());
+    return messageHandler.handleMessage(ConsumerRoutingKey.SIEL_CREATE.toString(), toJson(sielCreate));
   }
 
   @AfterClass
   public static void stopDatabase() {
-    POSTGRES.stop();
+    if (POSTGRES_USE_EMBEDDED) {
+      POSTGRES.stop();
+    }
   }
 
   private String toJson(Object object) {

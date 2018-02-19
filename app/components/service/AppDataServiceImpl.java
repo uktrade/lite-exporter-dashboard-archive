@@ -85,8 +85,11 @@ public class AppDataServiceImpl implements AppDataService {
   }
 
   @Override
-  public List<AppData> getAppDataList(List<String> customerIds) {
-    List<Application> applications = applicationDao.getApplicationsByCustomerIds(customerIds);
+  public List<AppData> getAppDataList(List<String> customerIds, String userId) {
+    // Applications that do not have an applicant reference will not be displayed
+    List<Application> applications = applicationDao.getApplicationsByCustomerIdsAndUserId(customerIds, userId).stream()
+        .filter(application -> application.getApplicantReference() != null)
+        .collect(Collectors.toList());
     List<AppData> appDataList = getAppDataListFromApplications(applications);
     appDataList.forEach(this::verifyWithdrawalData);
     return appDataList;
@@ -173,11 +176,14 @@ public class AppDataServiceImpl implements AppDataService {
       String appId = application.getId();
       Collection<CaseDetails> allCaseDetails = caseDetailsMultimap.get(appId);
       String applicationCaseReference;
+      Long submittedTimestamp;
       if (!allCaseDetails.isEmpty()) {
         CaseDetails original = Collections.min(allCaseDetails, Comparators.CASE_DETAILS_CREATED);
         applicationCaseReference = original.getCaseReference();
+        submittedTimestamp = original.getCreatedTimestamp();
       } else {
         applicationCaseReference = null;
+        submittedTimestamp = null;
       }
 
       List<CaseData> caseDataList = allCaseDetails.stream()
@@ -197,6 +203,7 @@ public class AppDataServiceImpl implements AppDataService {
           .collect(Collectors.toList());
 
       return new AppData(application,
+          submittedTimestamp,
           applicationCaseReference,
           new ArrayList<>(statusUpdateMultimap.get(appId)),
           new ArrayList<>(withdrawalRequestMultimap.get(appId)),

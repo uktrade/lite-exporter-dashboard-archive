@@ -1,13 +1,14 @@
 package components.dao;
 
-import java.util.List;
 import models.CaseDetails;
+
+import java.util.List;
 
 public interface CaseDetailsDao {
 
   void insert(CaseDetails caseDetails);
 
-  List<CaseDetails> getCaseDetailsListByAppId(String appId);
+  boolean hasCase(String appId);
 
   List<CaseDetails> getCaseDetailsListByAppIds(List<String> appIds);
 

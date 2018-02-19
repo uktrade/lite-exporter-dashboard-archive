@@ -4,10 +4,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
 import components.dao.ApplicationDao;
+import components.dao.CaseDetailsDao;
 import components.service.UserPermissionService;
 import components.service.UserService;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import models.Application;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -15,6 +14,9 @@ import org.slf4j.LoggerFactory;
 import play.mvc.Action;
 import play.mvc.Http.Context;
 import play.mvc.Result;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class AppGuardAction extends Action.Simple {
 
@@ -24,14 +26,17 @@ public class AppGuardAction extends Action.Simple {
   private static final String PATTERN_START = "/application/$appId<[^/]+>/";
 
   private final ApplicationDao applicationDao;
+  private final CaseDetailsDao caseDetailsDao;
   private final UserService userService;
   private final UserPermissionService userPermissionService;
 
   @Inject
   public AppGuardAction(ApplicationDao applicationDao,
+                        CaseDetailsDao caseDetailsDao,
                         UserService userService,
                         UserPermissionService userPermissionService) {
     this.applicationDao = applicationDao;
+    this.caseDetailsDao = caseDetailsDao;
     this.userService = userService;
     this.userPermissionService = userPermissionService;
   }
@@ -53,7 +58,14 @@ public class AppGuardAction extends Action.Simple {
           String currentUserId = userService.getCurrentUserId();
           boolean allowed = userPermissionService.canViewApplication(currentUserId, application);
           if (allowed) {
-            return delegate.call(ctx);
+            boolean hasCase = caseDetailsDao.hasCase(appId);
+            if (hasCase) {
+              return delegate.call(ctx);
+            } else {
+              String errorMessage = String.format("Application %s has no case", appId);
+              LOGGER.error(errorMessage);
+              return error();
+            }
           } else {
             String errorMessage = String.format("User %s has no access to application %s", currentUserId, appId);
             LOGGER.error(errorMessage);

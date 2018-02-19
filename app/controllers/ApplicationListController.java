@@ -11,10 +11,6 @@ import components.util.Comparators;
 import components.util.EnumUtil;
 import components.util.PageUtil;
 import components.util.SortUtil;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import models.ApplicationListState;
 import models.Page;
 import models.enums.ApplicationListTab;
@@ -26,6 +22,11 @@ import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
 import play.mvc.Result;
 import views.html.applicationList;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ApplicationListController extends SamlController {
 
@@ -138,6 +139,7 @@ public class ApplicationListController extends SamlController {
 
   private List<CompanySelectItemView> collectCompanyNames(List<ApplicationItemView> applicationItemViews) {
     return applicationItemViews.stream()
+        .filter(view -> view.getCompanyId() != null)
         .filter(distinctByKey(ApplicationItemView::getCompanyId))
         .map(view -> new CompanySelectItemView(view.getCompanyId(), view.getCompanyName()))
         .sorted(Comparators.COMPANY_NAME)
