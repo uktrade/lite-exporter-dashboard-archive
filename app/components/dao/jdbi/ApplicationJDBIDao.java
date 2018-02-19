@@ -15,12 +15,8 @@ import java.util.List;
 public interface ApplicationJDBIDao {
 
   @Mapper(ApplicationRSMapper.class)
-  @SqlQuery("SELECT * FROM APPLICATION WHERE CREATED_BY_USER_ID = :userId")
-  List<Application> getApplicationsByUserId(@Bind("userId") String userId);
-
-  @Mapper(ApplicationRSMapper.class)
   @SqlQuery("SELECT * FROM APPLICATION WHERE CUSTOMER_ID in (<customerIds>) OR CREATED_BY_USER_ID = :userId")
-  List<Application> getApplicationsByCustomerIdsAndUserId(@BindIn("customerIds") List<String> customerIds,
+  List<Application> getApplicationsByCustomerIdsAndUserId(@BindIn(value = "customerIds", onEmpty = BindIn.EmptyHandling.NULL) List<String> customerIds,
                                                           @Bind("userId") String userId);
 
   @Mapper(ApplicationRSMapper.class)

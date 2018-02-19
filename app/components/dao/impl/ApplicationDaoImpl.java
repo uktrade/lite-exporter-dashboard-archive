@@ -31,13 +31,7 @@ public class ApplicationDaoImpl implements ApplicationDao {
 
   @Override
   public List<Application> getApplicationsByCustomerIdsAndUserId(List<String> customerIds, String userId) {
-    if (userId == null) {
-      return new ArrayList<>();
-    } else if (customerIds.isEmpty()) {
-      return applicationJDBIDao.getApplicationsByUserId(userId);
-    } else {
-      return applicationJDBIDao.getApplicationsByCustomerIdsAndUserId(customerIds, userId);
-    }
+    return applicationJDBIDao.getApplicationsByCustomerIdsAndUserId(customerIds, userId);
   }
 
   @Override
