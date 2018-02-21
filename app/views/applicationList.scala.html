@@ -12,13 +12,13 @@
 
   @if(applicationListView.isHasUserApplications && !applicationListView.isHasOtherUserApplications && !applicationListView.isHasForYourAttentionApplications) {
     <p>
-  <h3 class="heading-small">Created by you</h3>
+      <h3 class="heading-small">Created by you</h3>
     </p>
   }
 
   @if(!applicationListView.isHasUserApplications && applicationListView.isHasOtherUserApplications && !applicationListView.isHasForYourAttentionApplications) {
     <p>
-  <h3 class="heading-small">Created by your company</h3>
+      <h3 class="heading-small">Created by your company</h3>
     </p>
   }
 
@@ -49,9 +49,9 @@
     <p><a href="@applyLink" target="_blank">Apply for a standard licence</a></p>
 
   } else {
-
     @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {
-      @if(applicationListView.getCompanySelectItemViews.size() > 1) {
+      @if(applicationListView.getCompanySelectItemViews.size() > 1 ||
+        (applicationListView.getCompanySelectItemViews.size() == 1 && applicationListView.isHasApplicationWithNoCompanyId)) {
         @companySelect(applicationListView)
       }
       @statusPanel(applicationListView)

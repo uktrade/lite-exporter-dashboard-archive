@@ -2,6 +2,10 @@ package components.util;
 
 public class TestUtil {
 
+  public static boolean isWrappedCustomerId(String customerId) {
+    return customerId.contains("_");
+  }
+
   public static String wrapCustomerId(String userId, String customerId) {
     return userId + "_" + customerId;
   }

@@ -33,16 +33,20 @@ public class TestCustomerServiceClientImpl extends CustomerServiceClientImpl {
 
   @Override
   public CustomerView getCustomer(String customerId) {
-    String unwrapCustomerId = TestUtil.unwrapCustomerId(customerId);
-    CustomerView customerView = super.getCustomer(unwrapCustomerId);
-    String wrapCustomerId = TestUtil.wrapCustomerId(userService.getCurrentUserId(), customerView.getCustomerId());
-    customerView.setCustomerId(wrapCustomerId);
-    if ("COMPANY1".equals(customerView.getCompanyName())) {
-      customerView.setCompanyName("Acme Aerospace");
-    } else if ("COMPANY2".equals(customerView.getCompanyName())) {
-      customerView.setCompanyName("Acme Marine");
+    if (TestUtil.isWrappedCustomerId(customerId)) {
+      String unwrapCustomerId = TestUtil.unwrapCustomerId(customerId);
+      CustomerView customerView = super.getCustomer(unwrapCustomerId);
+      String wrapCustomerId = TestUtil.wrapCustomerId(userService.getCurrentUserId(), customerView.getCustomerId());
+      customerView.setCustomerId(wrapCustomerId);
+      if ("COMPANY1".equals(customerView.getCompanyName())) {
+        customerView.setCompanyName("Acme Aerospace");
+      } else if ("COMPANY2".equals(customerView.getCompanyName())) {
+        customerView.setCompanyName("Acme Marine");
+      }
+      return customerView;
+    } else {
+      return super.getCustomer(customerId);
     }
-    return customerView;
   }
 
   @Override
