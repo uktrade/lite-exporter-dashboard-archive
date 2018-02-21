@@ -37,6 +37,7 @@ import play.mvc.With;
 import views.html.rfiListTab;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 @With(AppGuardAction.class)
@@ -90,46 +91,37 @@ public class RfiTabController extends SamlController {
     this.context = httpExecutionContext;
   }
 
-  public Result deleteFileById(String appId, String fileId) {
-    String userId = userService.getCurrentUserId();
-    AppData appData = appDataService.getAppData(appId);
-    Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
-    String rfiId = rfiReplyForm.data().get("rfiId");
-    if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
-      LOGGER.error("Unable to delete fileId {} since reply to rfiId {} and appId {} not allowed", fileId, rfiId, appId);
-      return showRfiTab(appId);
-    } else {
-      draftFileService.deleteDraftFile(fileId, rfiId, DraftType.RFI_REPLY);
-      rfiReplyForm.discardErrors();
-      return showReplyForm(appId, rfiId, rfiReplyForm);
-    }
-  }
-
   @BodyParser.Of(UploadMultipartParser.class)
   public CompletionStage<Result> submitReply(String appId) {
     String userId = userService.getCurrentUserId();
     Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
     String rfiId = rfiReplyForm.data().get("rfiId");
+    String delete = rfiReplyForm.data().get("delete");
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
       return completedFuture(showRfiTab(appId));
     } else {
-      return fileService.processUpload(appId, request())
-          .thenApplyAsync(uploadResults -> {
-            uploadResults.stream()
-                .filter(UploadResult::isValid)
-                .forEach(uploadResult -> draftFileDao.addDraftFile(uploadResult, rfiId, DraftType.RFI_REPLY));
-            FileUtil.addUploadErrorsToForm(rfiReplyForm, uploadResults);
-            if (rfiReplyForm.hasErrors()) {
-              return showReplyForm(appId, rfiId, rfiReplyForm);
-            } else {
-              String message = rfiReplyForm.get().replyMessage;
-              rfiReplyService.insertRfiReply(userId, appId, rfiId, message);
-              flash("message", "Your message has been sent");
-              return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
-            }
-          }, context.current());
+      if (delete != null) {
+        draftFileService.deleteDraftFile(delete, rfiId, DraftType.RFI_REPLY);
+        return CompletableFuture.completedFuture(showReplyForm(appId, rfiId, rfiReplyForm));
+      } else {
+        return fileService.processUpload(appId, request())
+            .thenApplyAsync(uploadResults -> {
+              uploadResults.stream()
+                  .filter(UploadResult::isValid)
+                  .forEach(uploadResult -> draftFileDao.addDraftFile(uploadResult, rfiId, DraftType.RFI_REPLY));
+              FileUtil.addUploadErrorsToForm(rfiReplyForm, uploadResults);
+              if (rfiReplyForm.hasErrors()) {
+                return showReplyForm(appId, rfiId, rfiReplyForm);
+              } else {
+                String message = rfiReplyForm.get().replyMessage;
+                rfiReplyService.insertRfiReply(userId, appId, rfiId, message);
+                flash("message", "Your message has been sent");
+                return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
+              }
+            }, context.current());
+      }
     }
   }
 

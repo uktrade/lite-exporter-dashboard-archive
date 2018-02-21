@@ -3,6 +3,8 @@
 @import play.data.Form
 @import template._
 @import views.html.common.form._
+@import views.html.common.page._
+
 @(appId: String, rfiReplyForm: Form[_], addRfiReplyView: AddRfiReplyView)
 
 <div class="message-panel message-reply-panel" id="reply" >
@@ -23,7 +25,9 @@
         <input type="hidden" name="rfiId" value="@rfiReplyForm("rfiId").value" >
 
         <h4 class="heading-small">Attach a file</h4>
-        @fileUpload(appId, addRfiReplyView.getRfiId, DraftType.RFI_REPLY, addRfiReplyView.getFileViews)
+
+        @fileUpload(rfiReplyForm, routes.UploadController.submitFiles(appId, DraftType.RFI_REPLY.toString, addRfiReplyView.getRfiId).toString, addRfiReplyView.getFileViews, true) {
+        }
 
         <button class="button">Send</button>
 

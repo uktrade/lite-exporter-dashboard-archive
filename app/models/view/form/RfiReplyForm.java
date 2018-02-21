@@ -4,6 +4,8 @@ import play.data.validation.Constraints;
 
 public class RfiReplyForm {
 
+  public String delete;
+
   public String rfiId;
 
   @Constraints.Required(message = "Please provide a message.")

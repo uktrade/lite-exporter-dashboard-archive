@@ -1,5 +1,7 @@
 package models.view;
 
+import components.common.upload.FileView;
+
 import java.util.List;
 
 public class RfiReplyView {
