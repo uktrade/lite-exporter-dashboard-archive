@@ -2,6 +2,7 @@
 @import models.view.AmendmentView
 @import views.html.common.page.twoThirdsColumn
 @import views.html.common.form._
+@import views.html.common.page._
 
 @(appId: String, form: play.data.Form[_], amendmentView: AmendmentView)
 
@@ -19,7 +20,10 @@
     }
 
     <h4 class="heading-small">Optionally attach files to support your request</h4>
-    @fileUpload(appId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL, amendmentView.getFileViews)
+
+    @fileUpload(form, routes.UploadController.submitFiles(appId, DraftType.AMENDMENT_OR_WITHDRAWAL.toString, appId).toString, amendmentView.getFileViews, true) {
+    }
+
     <button class="button">Send</button>
   </form>
 }

@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.common.upload.FileService;
 import components.common.upload.FileUtil;
+import components.common.upload.FileView;
 import components.common.upload.UploadMultipartParser;
 import components.common.upload.UploadResult;
 import components.dao.DraftFileDao;
@@ -30,7 +31,6 @@ import models.enums.DraftType;
 import models.view.AmendmentView;
 import models.view.ApplicationSummaryView;
 import models.view.ApplicationTabsView;
-import models.view.FileView;
 import models.view.OfficerView;
 import models.view.PreviousRequestItemView;
 import models.view.form.AmendApplicationForm;
@@ -47,6 +47,7 @@ import views.html.amendApplicationTab;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -107,30 +108,20 @@ public class AmendTabController extends SamlController {
     this.context = httpExecutionContext;
   }
 
-  public Result deleteFileById(String appId, String fileId) {
-    String userId = userService.getCurrentUserId();
-    AppData appData = appDataService.getAppData(appId);
-    Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
-    if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
-      LOGGER.error("Unable to delete file with id {} since amending application with id {} not allowed.", fileId, appId);
-      return showAmendTab(appId);
-    } else {
-      draftFileService.deleteDraftFile(fileId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
-      amendApplicationForm.discardErrors();
-      return showAmendTab(appId, amendApplicationForm);
-    }
-  }
-
   @BodyParser.Of(UploadMultipartParser.class)
   public CompletionStage<Result> submitAmendment(String appId) {
     String userId = userService.getCurrentUserId();
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
+    String delete = amendApplicationForm.data().get("delete");
     String actionParam = amendApplicationForm.data().get("action");
     Action action = EnumUtil.parse(actionParam, Action.class);
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since amendment not allowed.", appId, action);
       return completedFuture(showAmendTab(appId));
+    } else if (delete != null) {
+      draftFileService.deleteDraftFile(delete, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+      return CompletableFuture.completedFuture(showAmendTab(appId, amendApplicationForm));
     } else if (action == null) {
       LOGGER.error("Amending application with appId {} and action {} not possible", appId, actionParam);
       return completedFuture(showAmendTab(appId));
@@ -204,9 +195,8 @@ public class AmendTabController extends SamlController {
   private FileView createFileView(String appId, Attachment attachment) {
     String link = routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
     String jsDeleteLink = routes.UploadController.deleteFile(appId, attachment.getId()).toString();
-    String nonJsDeleteLink = routes.AmendTabController.deleteFileById(appId, attachment.getId()).toString();
     String size = FileUtil.getReadableFileSize(attachment.getSize());
-    return new FileView(attachment.getFilename(), link, size, jsDeleteLink, nonJsDeleteLink);
+    return new FileView(attachment.getId(), attachment.getFilename(), link, size, jsDeleteLink);
   }
 
   private List<SelectOption> getSelectOptions() {

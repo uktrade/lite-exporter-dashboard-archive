@@ -2,6 +2,7 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.common.upload.FileUtil;
+import components.common.upload.FileView;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
@@ -16,7 +17,6 @@ import models.WithdrawalRejection;
 import models.WithdrawalRequest;
 import models.enums.EventLabelType;
 import models.enums.MessageType;
-import models.view.FileView;
 import models.view.MessageReplyView;
 import models.view.MessageView;
 
@@ -137,7 +137,7 @@ public class MessageViewServiceImpl implements MessageViewService {
   private FileView getFileView(String appId, Attachment attachment) {
     String size = FileUtil.getReadableFileSize(attachment.getSize());
     String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
-    return new FileView(attachment.getFilename(), link, size, null, null);
+    return new FileView(attachment.getId(), attachment.getFilename(), link, size, null);
   }
 
   private List<MessageView> getStopMessageViews(AppData appData, ReadData readData) {
