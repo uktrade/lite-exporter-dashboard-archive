@@ -6,8 +6,6 @@ public class RfiReplyForm {
 
   public String delete;
 
-  public String rfiId;
-
   @Constraints.Required(message = "Please provide a message.")
   public String replyMessage;
 

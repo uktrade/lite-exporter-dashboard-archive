@@ -9,6 +9,7 @@ import components.common.upload.FileUtil;
 import components.common.upload.FileView;
 import components.common.upload.UploadMultipartParser;
 import components.common.upload.UploadResult;
+import components.common.upload.UploadValidationConfig;
 import components.dao.DraftFileDao;
 import components.service.AmendmentService;
 import components.service.AppDataService;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
+import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -72,6 +74,7 @@ public class AmendTabController extends SamlController {
   private final FileService fileService;
   private final DraftFileService draftFileService;
   private final HttpExecutionContext context;
+  private final UploadValidationConfig uploadValidationConfig;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -89,7 +92,8 @@ public class AmendTabController extends SamlController {
                             PreviousRequestItemViewService previousRequestItemViewService,
                             FileService fileService,
                             DraftFileService draftFileService,
-                            HttpExecutionContext httpExecutionContext) {
+                            HttpExecutionContext httpExecutionContext,
+                            UploadValidationConfig uploadValidationConfig) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -106,6 +110,7 @@ public class AmendTabController extends SamlController {
     this.fileService = fileService;
     this.draftFileService = draftFileService;
     this.context = httpExecutionContext;
+    this.uploadValidationConfig = uploadValidationConfig;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
@@ -124,7 +129,7 @@ public class AmendTabController extends SamlController {
       return CompletableFuture.completedFuture(showAmendTab(appId, amendApplicationForm));
     } else if (action == null) {
       LOGGER.error("Amending application with appId {} and action {} not possible", appId, actionParam);
-      return completedFuture(showAmendTab(appId));
+      return completedFuture(showAmendTab(appId, amendApplicationForm));
     } else {
       return fileService.processUpload(appId, request())
           .thenApplyAsync(uploadResults -> {
@@ -153,6 +158,7 @@ public class AmendTabController extends SamlController {
   }
 
   public Result showAmendTab(String appId) {
+    FileUtil.addFlash(request(), uploadValidationConfig);
     Form<AmendApplicationForm> form = formFactory.form(AmendApplicationForm.class);
     return showAmendTab(appId, form);
   }
