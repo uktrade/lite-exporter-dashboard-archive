@@ -12,7 +12,7 @@ GET         /applications                                             controller
 GET         /application/:appId/status-tracker                        controllers.StatusTabController.showStatusTab(appId)
 GET         /application/:appId/rfi                                   controllers.RfiTabController.showRfiTab(appId)
 GET         /application/:appId/rfi/:rfiId                            controllers.RfiTabController.showReplyForm(appId, rfiId)
-POST        /application/:appId/rfi                                   controllers.RfiTabController.submitReply(appId)
+POST        /application/:appId/rfi/:rfiId                            controllers.RfiTabController.submitReply(appId, rfiId)
 GET         /application/:appId/messages                              controllers.MessageTabController.showMessages(appId)
 GET         /application/:appId/amend-application                     controllers.AmendTabController.showAmendTab(appId)
 POST        /application/:appId/amend-application                     controllers.AmendTabController.submitAmendment(appId)

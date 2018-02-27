@@ -15,14 +15,13 @@
   <article>
     <div>
 
-      <form action="@routes.RfiTabController.submitReply(appId)" method="POST" enctype="multipart/form-data">
+      <form action="@routes.RfiTabController.submitReply(appId, addRfiReplyView.getRfiId)" method="POST" enctype="multipart/form-data">
 
         @views.html.helper.CSRF.formField
 
         @formTextarea(rfiReplyForm("replyMessage"), rows = "4", cssClass = "form-control-wide") {
           <span class="heading-small">Message</span>
         }
-        <input type="hidden" name="rfiId" value="@rfiReplyForm("rfiId").value" >
 
         <h4 class="heading-small">Attach a file</h4>
 
