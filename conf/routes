@@ -44,3 +44,6 @@ POST        /samlResponse                                             org.pac4j.
 GET         /logout                                                   org.pac4j.play.ApplicationLogoutController.logout()
 GET         /logged-out                                               controllers.AuthorisationController.loggedOut()
 GET         /unauthorised                                             controllers.AuthorisationController.unauthorised()
+
+# Admin
+GET         /admin/build                                              controllers.AdminController.buildInfo
