@@ -6,8 +6,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.common.upload.FileService;
 import components.common.upload.FileUtil;
+import components.common.upload.FileView;
 import components.common.upload.UploadMultipartParser;
 import components.common.upload.UploadResult;
+import components.common.upload.UploadValidationConfig;
 import components.dao.DraftFileDao;
 import components.service.AmendmentService;
 import components.service.AppDataService;
@@ -30,7 +32,6 @@ import models.enums.DraftType;
 import models.view.AmendmentView;
 import models.view.ApplicationSummaryView;
 import models.view.ApplicationTabsView;
-import models.view.FileView;
 import models.view.OfficerView;
 import models.view.PreviousRequestItemView;
 import models.view.form.AmendApplicationForm;
@@ -47,6 +48,7 @@ import views.html.amendApplicationTab;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -71,6 +73,7 @@ public class AmendTabController extends SamlController {
   private final FileService fileService;
   private final DraftFileService draftFileService;
   private final HttpExecutionContext context;
+  private final UploadValidationConfig uploadValidationConfig;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -88,7 +91,8 @@ public class AmendTabController extends SamlController {
                             PreviousRequestItemViewService previousRequestItemViewService,
                             FileService fileService,
                             DraftFileService draftFileService,
-                            HttpExecutionContext httpExecutionContext) {
+                            HttpExecutionContext httpExecutionContext,
+                            UploadValidationConfig uploadValidationConfig) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -105,19 +109,7 @@ public class AmendTabController extends SamlController {
     this.fileService = fileService;
     this.draftFileService = draftFileService;
     this.context = httpExecutionContext;
-  }
-
-  public Result deleteFileById(String appId, String fileId) {
-    String userId = userService.getCurrentUserId();
-    AppData appData = appDataService.getAppData(appId);
-    Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
-    if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
-      LOGGER.error("Unable to delete file with id {} since amending application with id {} not allowed.", fileId, appId);
-      return showAmendTab(appId);
-    } else {
-      draftFileService.deleteDraftFile(fileId, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
-      return showAmendTab(appId, amendApplicationForm.discardingErrors());
-    }
+    this.uploadValidationConfig = uploadValidationConfig;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
@@ -125,14 +117,18 @@ public class AmendTabController extends SamlController {
     String userId = userService.getCurrentUserId();
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
     String actionParam = amendApplicationForm.rawData().get("action");
+    String delete = amendApplicationForm.data().get("delete");
     Action action = EnumUtil.parse(actionParam, Action.class);
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
       LOGGER.error("Amending application with appId {} and action {} not possible since amendment not allowed.", appId, action);
       return completedFuture(showAmendTab(appId));
+    } else if (delete != null) {
+      draftFileService.deleteDraftFile(delete, appId, DraftType.AMENDMENT_OR_WITHDRAWAL);
+      return CompletableFuture.completedFuture(showAmendTab(appId, amendApplicationForm));
     } else if (action == null) {
       LOGGER.error("Amending application with appId {} and action {} not possible", appId, actionParam);
-      return completedFuture(showAmendTab(appId));
+      return completedFuture(showAmendTab(appId, amendApplicationForm));
     } else {
       return fileService.processUpload(appId, request())
           .thenApplyAsync(uploadResults -> {
@@ -161,6 +157,7 @@ public class AmendTabController extends SamlController {
   }
 
   public Result showAmendTab(String appId) {
+    FileUtil.addFlash(request(), uploadValidationConfig);
     Form<AmendApplicationForm> form = formFactory.form(AmendApplicationForm.class);
     return showAmendTab(appId, form);
   }
@@ -202,9 +199,9 @@ public class AmendTabController extends SamlController {
 
   private FileView createFileView(String appId, Attachment attachment) {
     String link = routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
-    String deleteLink = routes.AmendTabController.deleteFileById(appId, attachment.getId()).toString();
+    String jsDeleteLink = routes.UploadController.deleteFile(appId, attachment.getId()).toString();
     String size = FileUtil.getReadableFileSize(attachment.getSize());
-    return new FileView(attachment.getId(), appId, appId, attachment.getFilename(), link, deleteLink, size);
+    return new FileView(attachment.getId(), attachment.getFilename(), link, size, jsDeleteLink);
   }
 
   private List<SelectOption> getSelectOptions() {

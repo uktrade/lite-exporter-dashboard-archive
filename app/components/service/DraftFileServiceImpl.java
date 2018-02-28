@@ -5,10 +5,14 @@ import components.common.upload.FileService;
 import components.dao.DraftFileDao;
 import models.Attachment;
 import models.enums.DraftType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 public class DraftFileServiceImpl implements DraftFileService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DraftFileServiceImpl.class);
 
   private final FileService fileService;
   private final DraftFileDao draftFileDao;
@@ -29,8 +33,7 @@ public class DraftFileServiceImpl implements DraftFileService {
       fileService.deleteFile(attachment.getId(), attachment.getBucket(), attachment.getFolder());
       draftFileDao.deleteDraftFile(fileId, relatedId, draftType);
     } else {
-      String message = String.format("Unable to delete file with fileId %s and relatedId %s and draftType %s", fileId, relatedId, draftType);
-      throw new RuntimeException(message);
+      LOGGER.warn("Unable to delete file with fileId {} and relatedId {} and draftType {}", fileId, relatedId, draftType);
     }
   }
 

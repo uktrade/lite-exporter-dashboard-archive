@@ -130,7 +130,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
   }
 
   private boolean hasCustomerRole(String userId, String customerId, Set<Role> roles) {
-    return getPrivileges(userId).getCustomers().stream()
+    return customerId != null && getPrivileges(userId).getCustomers().stream()
         .anyMatch(view -> view.getCustomerId().equals(customerId) && roles.contains(view.getRole()));
   }
 
@@ -143,7 +143,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
   }
 
   private boolean hasSiteRole(String userId, String siteId, Set<Role> roles) {
-    return getPrivileges(userId).getSites().stream()
+    return siteId != null && getPrivileges(userId).getSites().stream()
         .anyMatch(view -> view.getSiteId().equals(siteId) && roles.contains(view.getRole()));
   }
 

@@ -1,7 +1,5 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 public class Application {
@@ -10,28 +8,25 @@ public class Application {
   private final String customerId;
   private final String createdByUserId;
   private final Long createdTimestamp;
-  private final Long submittedTimestamp;
   private final List<String> consigneeCountries;
   private final List<String> endUserCountries;
   private final String applicantReference;
   private final String caseOfficerId;
   private final String siteId;
 
-  public Application(@JsonProperty("id") String id,
-                     @JsonProperty("customerId") String customerId,
-                     @JsonProperty("createdByUserId") String createdByUserId,
-                     @JsonProperty("createdTimestamp") Long createdTimestamp,
-                     @JsonProperty("submittedTimestamp") Long submittedTimestamp,
-                     @JsonProperty("consigneeCountries") List<String> consigneeCountries,
-                     @JsonProperty("endUserCountries") List<String> endUserCountries,
-                     @JsonProperty("applicantReference") String applicantReference,
-                     @JsonProperty("caseOfficerId") String caseOfficerId,
-                     @JsonProperty("siteId") String siteId) {
+  public Application(String id,
+                     String customerId,
+                     String createdByUserId,
+                     Long createdTimestamp,
+                     List<String> consigneeCountries,
+                     List<String> endUserCountries,
+                     String applicantReference,
+                     String caseOfficerId,
+                     String siteId) {
     this.id = id;
     this.customerId = customerId;
     this.createdByUserId = createdByUserId;
     this.createdTimestamp = createdTimestamp;
-    this.submittedTimestamp = submittedTimestamp;
     this.consigneeCountries = consigneeCountries;
     this.endUserCountries = endUserCountries;
     this.applicantReference = applicantReference;
@@ -53,10 +48,6 @@ public class Application {
 
   public Long getCreatedTimestamp() {
     return createdTimestamp;
-  }
-
-  public Long getSubmittedTimestamp() {
-    return submittedTimestamp;
   }
 
   public List<String> getConsigneeCountries() {

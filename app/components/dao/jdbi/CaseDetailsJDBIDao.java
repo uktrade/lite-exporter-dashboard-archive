@@ -1,7 +1,6 @@
 package components.dao.jdbi;
 
 import components.dao.mapper.CaseDetailsRSMapper;
-import java.util.List;
 import models.CaseDetails;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -10,12 +9,17 @@ import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
 import org.skife.jdbi.v2.sqlobject.stringtemplate.UseStringTemplate3StatementLocator;
 import org.skife.jdbi.v2.unstable.BindIn;
 
+import java.util.List;
+
 @UseStringTemplate3StatementLocator
 public interface CaseDetailsJDBIDao {
 
   @Mapper(CaseDetailsRSMapper.class)
   @SqlQuery("SELECT * FROM CASE_DETAILS WHERE APP_ID in (<appIds>)")
   List<CaseDetails> getCaseDetailsListByAppIds(@BindIn("appIds") List<String> appIds);
+
+  @SqlQuery("SELECT EXISTS ( SELECT 1 FROM CASE_DETAILS WHERE APP_ID = :appId)")
+  boolean hasCase(@Bind("appId") String appId);
 
   @SqlUpdate("INSERT INTO CASE_DETAILS ( APP_ID, CASE_REFERENCE, CREATED_BY_USER_ID, CREATED_TIMESTAMP) "
       + "                       VALUES (:appId, :caseReference, :createdByUserId,   :createdTimestamp)")

@@ -2,6 +2,7 @@ package components.service;
 
 import com.google.inject.Inject;
 import components.common.upload.FileUtil;
+import components.common.upload.FileView;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
@@ -16,7 +17,6 @@ import models.WithdrawalRejection;
 import models.WithdrawalRequest;
 import models.enums.EventLabelType;
 import models.enums.MessageType;
-import models.view.FileView;
 import models.view.MessageReplyView;
 import models.view.MessageView;
 
@@ -69,7 +69,8 @@ public class MessageViewServiceImpl implements MessageViewService {
     String sentOn = TimeUtil.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
     String sender = userService.getUsername(withdrawalRequest.getCreatedByUserId());
     List<FileView> fileViews = withdrawalRequest.getAttachments().stream()
-        .map(file -> getFileView(withdrawalRequest.getAppId(), withdrawalRequest.getId(), file)).collect(Collectors.toList());
+        .map(attachment -> getFileView(withdrawalRequest.getAppId(), attachment))
+        .collect(Collectors.toList());
     MessageReplyView messageReplyView;
     if (withdrawalApproval != null) {
       messageReplyView = getWithdrawalApprovalMessageReplyView(withdrawalApproval, readData);
@@ -118,7 +119,7 @@ public class MessageViewServiceImpl implements MessageViewService {
     String sentOn = TimeUtil.formatDateAndTime(amendmentRequest.getCreatedTimestamp());
     String sender = userService.getUsername(amendmentRequest.getCreatedByUserId());
     List<FileView> fileViews = amendmentRequest.getAttachments().stream()
-        .map(file -> getFileView(amendmentRequest.getAppId(), amendmentRequest.getId(), file))
+        .map(attachment -> getFileView(amendmentRequest.getAppId(), attachment))
         .collect(Collectors.toList());
     return new MessageView(EventLabelType.AMENDMENT_REQUESTED,
         anchor,
@@ -133,10 +134,10 @@ public class MessageViewServiceImpl implements MessageViewService {
         false);
   }
 
-  private FileView getFileView(String appId, String relatedId, Attachment attachment) {
+  private FileView getFileView(String appId, Attachment attachment) {
     String size = FileUtil.getReadableFileSize(attachment.getSize());
     String link = controllers.routes.DownloadController.getAmendmentOrWithdrawalAttachment(appId, attachment.getId()).toString();
-    return new FileView(attachment.getId(), appId, relatedId, attachment.getFilename(), link, null, size);
+    return new FileView(attachment.getId(), attachment.getFilename(), link, size, null);
   }
 
   private List<MessageView> getStopMessageViews(AppData appData, ReadData readData) {

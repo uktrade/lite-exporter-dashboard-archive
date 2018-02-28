@@ -8,6 +8,7 @@ import components.common.upload.FileService;
 import components.common.upload.FileUtil;
 import components.common.upload.UploadMultipartParser;
 import components.common.upload.UploadResult;
+import components.common.upload.UploadValidationConfig;
 import components.dao.DraftFileDao;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
@@ -37,6 +38,7 @@ import play.mvc.With;
 import views.html.rfiListTab;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 @With(AppGuardAction.class)
@@ -58,6 +60,7 @@ public class RfiTabController extends SamlController {
   private final DraftFileDao draftFileDao;
   private final DraftFileService draftFileService;
   private final HttpExecutionContext context;
+  private final UploadValidationConfig uploadValidationConfig;
 
   @Inject
   public RfiTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -73,7 +76,8 @@ public class RfiTabController extends SamlController {
                           FileService fileService,
                           DraftFileDao draftFileDao,
                           DraftFileService draftFileService,
-                          HttpExecutionContext httpExecutionContext) {
+                          HttpExecutionContext httpExecutionContext,
+                          UploadValidationConfig uploadValidationConfig) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -88,31 +92,21 @@ public class RfiTabController extends SamlController {
     this.draftFileDao = draftFileDao;
     this.draftFileService = draftFileService;
     this.context = httpExecutionContext;
-  }
-
-  public Result deleteFileById(String appId, String fileId) {
-    String userId = userService.getCurrentUserId();
-    AppData appData = appDataService.getAppData(appId);
-    Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
-    String rfiId = rfiReplyForm.rawData().get("rfiId");
-    if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
-      LOGGER.error("Unable to delete fileId {} since reply to rfiId {} and appId {} not allowed", fileId, rfiId, appId);
-      return showRfiTab(appId);
-    } else {
-      draftFileService.deleteDraftFile(fileId, rfiId, DraftType.RFI_REPLY);
-      return showReplyForm(appId, rfiId, rfiReplyForm.discardingErrors());
-    }
+    this.uploadValidationConfig = uploadValidationConfig;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
-  public CompletionStage<Result> submitReply(String appId) {
+  public CompletionStage<Result> submitReply(String appId, String rfiId) {
     String userId = userService.getCurrentUserId();
     Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
-    String rfiId = rfiReplyForm.rawData().get("rfiId");
+    String delete = rfiReplyForm.data().get("delete");
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
       return completedFuture(showRfiTab(appId));
+    } else if (delete != null) {
+      draftFileService.deleteDraftFile(delete, rfiId, DraftType.RFI_REPLY);
+      return CompletableFuture.completedFuture(showReplyForm(appId, rfiId, rfiReplyForm));
     } else {
       return fileService.processUpload(appId, request())
           .thenApplyAsync(uploadResults -> {
@@ -133,15 +127,14 @@ public class RfiTabController extends SamlController {
   }
 
   public Result showReplyForm(String appId, String rfiId) {
+    FileUtil.addFlash(request(), uploadValidationConfig);
     String userId = userService.getCurrentUserId();
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
       return showRfiTab(appId);
     } else {
-      RfiReplyForm rfiReplyForm = new RfiReplyForm();
-      rfiReplyForm.rfiId = rfiId;
-      Form<RfiReplyForm> form = formFactory.form(RfiReplyForm.class).fill(rfiReplyForm);
+      Form<RfiReplyForm> form = formFactory.form(RfiReplyForm.class);
       return showReplyForm(appId, rfiId, form);
     }
   }

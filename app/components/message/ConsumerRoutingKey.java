@@ -13,7 +13,12 @@ public enum ConsumerRoutingKey {
   WITHDRAWAL_REJECTION("withdrawalrequest.reject"),
   WITHDRAWAL_ACCEPT("withdrawalrequest.accept"),
   CASE_CREATE("case.create"),
-  SIEL_SUBMIT("siel.submit"),
+  SIEL_CREATE("siel.create"),
+  SIEL_UPDATE_APPLICANT_REF("siel.update.applicantref"),
+  SIEL_UPDATE_LICENSEE("siel.update.licensee"),
+  SIEL_UPDATE_SITE("siel.update.site"),
+  SIEL_UPDATE_DESTINATIONS("siel.update.destinations"),
+  SIEL_DELETE("siel.delete"),
   OFFICER_UPDATE("officer.update"),
   RFI_DEADLINE_UPDATE("rfi.deadline.update");
 

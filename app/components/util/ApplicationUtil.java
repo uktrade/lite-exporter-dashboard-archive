@@ -205,8 +205,8 @@ public class ApplicationUtil {
         } else {
           return new StatusColumnInfo("Since", maxStatusUpdate.getCreatedTimestamp(), getStatusName(maxStatusUpdate.getStatusType()));
         }
-      } else if (appData.getApplication().getSubmittedTimestamp() != null) {
-        return new StatusColumnInfo("On", appData.getApplication().getSubmittedTimestamp(), SUBMITTED);
+      } else if (appData.getSubmittedTimestamp() != null) {
+        return new StatusColumnInfo("On", appData.getSubmittedTimestamp(), SUBMITTED);
       } else {
         return new StatusColumnInfo("Since", appData.getApplication().getCreatedTimestamp(), DRAFT);
       }

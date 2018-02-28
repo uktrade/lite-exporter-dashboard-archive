@@ -44,7 +44,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   @Override
   public StatusTrackerView getStatusTrackerView(AppData appData) {
     StatusItemView draftStatusItemView = createDraftStatusItemView(appData.getApplication());
-    StatusItemView submittedStatusItemView = createSubmittedStatusItemView(appData.getApplication());
+    StatusItemView submittedStatusItemView = createSubmittedStatusItemView(appData.getSubmittedTimestamp());
     List<StatusItemView> updateStatusItemViews = createUpdateStatusItemViews(appData);
 
     List<StatusItemView> originalStatusItemViews = new ArrayList<>();
@@ -102,17 +102,17 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
 
-  private StatusItemView createSubmittedStatusItemView(Application application) {
+  private StatusItemView createSubmittedStatusItemView(Long submittedTimestamp) {
     String status = ApplicationUtil.SUBMITTED;
     String statusExplanation = "";
     String processingLabel;
     String processingDescription;
-    if (application.getSubmittedTimestamp() == null) {
+    if (submittedTimestamp == null) {
       processingLabel = ApplicationUtil.NOT_STARTED;
       processingDescription = "";
     } else {
       processingLabel = ApplicationUtil.FINISHED;
-      processingDescription = "Submitted on " + TimeUtil.formatDate(application.getSubmittedTimestamp());
+      processingDescription = "Submitted on " + TimeUtil.formatDate(submittedTimestamp);
     }
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }

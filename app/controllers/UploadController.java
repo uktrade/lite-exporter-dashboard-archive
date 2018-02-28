@@ -4,6 +4,8 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
 import components.common.upload.FileService;
+import components.common.upload.FileUploadResponse;
+import components.common.upload.FileUploadResponseItem;
 import components.common.upload.FileUtil;
 import components.common.upload.UploadMultipartParser;
 import components.common.upload.UploadResult;
@@ -14,8 +16,7 @@ import components.service.UserPermissionService;
 import components.service.UserService;
 import components.util.EnumUtil;
 import models.AppData;
-import models.FileUploadResponse;
-import models.FileUploadResponseItem;
+import models.DraftFile;
 import models.enums.DraftType;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
@@ -24,7 +25,6 @@ import play.mvc.Result;
 import play.mvc.With;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -71,20 +71,14 @@ public class UploadController extends SamlController {
     }
   }
 
-  public CompletionStage<Result> deleteFile(String appId) {
+  public Result deleteFile(String appId, String fileId) {
     String userId = userService.getCurrentUserId();
-    Map<String, String[]> formFields = request().body().asFormUrlEncoded();
-    String relatedId = formFields.get("relatedId")[0];
-    String fileType = formFields.get("fileType")[0];
-    String fileId = formFields.get("fileId")[0];
-    DraftType draftType = EnumUtil.parse(fileType, DraftType.class, null);
-    if (draftType == null) {
-      return completedFuture(badRequest("Unknown draftType " + fileType));
-    } else if (!canAddOrDeleteFile(userId, appId, draftType, relatedId)) {
-      return completedFuture(notFound("Unknown relatedId " + relatedId));
+    DraftFile draftFile = draftFileDao.getDraftFile(fileId);
+    if (draftFile == null || !canAddOrDeleteFile(userId, appId, draftFile.getDraftType(), draftFile.getRelatedId())) {
+      return notFound("Unknown draft file id " + fileId);
     } else {
-      draftFileService.deleteDraftFile(fileId, relatedId, draftType);
-      return completedFuture(ok());
+      draftFileService.deleteDraftFile(draftFile.getId(), draftFile.getRelatedId(), draftFile.getDraftType());
+      return ok();
     }
   }
 
@@ -111,9 +105,10 @@ public class UploadController extends SamlController {
       draftFileDao.addDraftFile(uploadResult, relatedId, draftType);
       String link = getLink(appId, relatedId, uploadResult.getId(), draftType);
       String size = FileUtil.getReadableFileSize(uploadResult.getSize());
-      return new FileUploadResponseItem(appId, uploadResult.getFilename(), link, null, size, relatedId, uploadResult.getId(), draftType.toString());
+      String jsDeleteLink = routes.UploadController.deleteFile(appId, uploadResult.getId()).toString();
+      return new FileUploadResponseItem(uploadResult.getFilename(), link, size, jsDeleteLink, null);
     } else {
-      return new FileUploadResponseItem(appId, uploadResult.getFilename(), null, uploadResult.getError(), null, relatedId, null, draftType.toString());
+      return new FileUploadResponseItem(uploadResult.getFilename(), null, null, null, uploadResult.getError());
     }
   }
 

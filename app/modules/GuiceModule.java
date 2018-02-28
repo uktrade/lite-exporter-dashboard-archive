@@ -190,6 +190,10 @@ public class GuiceModule extends AbstractModule {
     bindSnsAndSqsServices();
     // Upload
     install(new UploadGuiceModule(config));
+    // Basic auth
+    bindConstant().annotatedWith(Names.named("basicAuthUser")).to(config.getString("basicAuth.user"));
+    bindConstant().annotatedWith(Names.named("basicAuthPassword")).to(config.getString("basicAuth.password"));
+    bindConstant().annotatedWith(Names.named("basicAuthRealm")).to(config.getString("basicAuth.realm"));
   }
 
   private void bindSnsAndSqsServices() {

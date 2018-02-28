@@ -30,12 +30,8 @@ public class ApplicationDaoImpl implements ApplicationDao {
   }
 
   @Override
-  public List<Application> getApplicationsByCustomerIds(List<String> customerIds) {
-    if (customerIds.isEmpty()) {
-      return new ArrayList<>();
-    } else {
-      return applicationJDBIDao.getApplicationsByCustomerIds(customerIds);
-    }
+  public List<Application> getApplicationsByCustomerIdsAndUserId(List<String> customerIds, String userId) {
+    return applicationJDBIDao.getApplicationsByCustomerIdsAndUserId(customerIds, userId);
   }
 
   @Override
@@ -44,17 +40,34 @@ public class ApplicationDaoImpl implements ApplicationDao {
   }
 
   @Override
-  public void update(Application application) {
-    applicationJDBIDao.update(application.getId(),
-        application.getCustomerId(),
-        application.getCreatedByUserId(),
-        application.getCreatedTimestamp(),
-        application.getSubmittedTimestamp(),
-        JsonUtil.convertListToJson(application.getConsigneeCountries()),
-        JsonUtil.convertListToJson(application.getEndUserCountries()),
-        application.getApplicantReference(),
-        application.getCaseOfficerId(),
-        application.getSiteId());
+  public void updateApplicantReference(String id, String applicantReference) {
+    applicationJDBIDao.updateApplicantReference(id, applicantReference);
+  }
+
+  @Override
+  public void updateCustomerId(String id, String customerId) {
+    applicationJDBIDao.updateCustomerId(id, customerId);
+  }
+
+  @Override
+  public void updateSiteId(String id, String siteId) {
+    applicationJDBIDao.updateSiteId(id, siteId);
+  }
+
+  @Override
+  public void updateCountries(String id, List<String> consigneeCountries, List<String> endUserCountries) {
+    applicationJDBIDao.updateCountries(id,
+        JsonUtil.convertListToJson(consigneeCountries),
+        JsonUtil.convertListToJson(endUserCountries));
+  }
+
+  @Override
+  public void insert(String id, String createdByUserId, Long createdTimestamp) {
+    applicationJDBIDao.insert(id,
+        createdByUserId,
+        createdTimestamp,
+        JsonUtil.convertListToJson(new ArrayList<>()),
+        JsonUtil.convertListToJson(new ArrayList<>()));
   }
 
   @Override

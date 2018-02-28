@@ -63,7 +63,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         .map(customerServiceClient::getCustomer)
         .collect(Collectors.toMap(CustomerView::getCustomerId, CustomerView::getCompanyName));
 
-    List<AppData> appDataList = appDataService.getAppDataList(customerIds);
+    List<AppData> appDataList = appDataService.getAppDataList(customerIds, userId);
 
     Map<String, ReadData> readDataMap = readDataService.getReadData(userId, appDataList);
 
@@ -137,7 +137,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
       StatusUpdate maxStatusUpdate = ApplicationUtil.getMaxStatusUpdate(appData.getStatusUpdates());
       if (appData.getWithdrawalApproval() != null || appData.getStopNotification() != null || (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE)) {
         return ApplicationProgress.COMPLETED;
-      } else if (appData.getApplication().getSubmittedTimestamp() != null) {
+      } else if (appData.getSubmittedTimestamp() != null) {
         return ApplicationProgress.CURRENT;
       } else {
         return ApplicationProgress.DRAFT;
@@ -163,8 +163,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         return new DateColumnInfo(ApplicationUtil.COMPLETED, appData.getStopNotification().getCreatedTimestamp());
       } else if (maxStatusUpdate != null && maxStatusUpdate.getStatusType() == StatusType.COMPLETE) {
         return new DateColumnInfo(ApplicationUtil.COMPLETED, maxStatusUpdate.getCreatedTimestamp());
-      } else if (appData.getApplication().getSubmittedTimestamp() != null) {
-        return new DateColumnInfo(ApplicationUtil.SUBMITTED, appData.getApplication().getSubmittedTimestamp());
+      } else if (appData.getSubmittedTimestamp() != null) {
+        return new DateColumnInfo(ApplicationUtil.SUBMITTED, appData.getSubmittedTimestamp());
       } else {
         return new DateColumnInfo(ApplicationUtil.CREATED, appData.getApplication().getCreatedTimestamp());
       }

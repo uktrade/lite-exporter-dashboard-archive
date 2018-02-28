@@ -1,7 +1,9 @@
 package models.view;
 
-import java.util.List;
+import components.common.upload.FileView;
 import models.enums.EventLabelType;
+
+import java.util.List;
 
 public class MessageView {
 

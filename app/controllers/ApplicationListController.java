@@ -11,10 +11,6 @@ import components.util.Comparators;
 import components.util.EnumUtil;
 import components.util.PageUtil;
 import components.util.SortUtil;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import models.ApplicationListState;
 import models.Page;
 import models.enums.ApplicationListTab;
@@ -27,7 +23,14 @@ import models.view.CompanySelectItemView;
 import play.mvc.Result;
 import views.html.applicationList;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class ApplicationListController extends SamlController {
+
+  private static final String COMPANY_ID_ALL = "all";
 
   private static final Set<ApplicationSortType> USER_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS, ApplicationSortType.DESTINATION);
   private static final Set<ApplicationSortType> COMPANY_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS, ApplicationSortType.DESTINATION, ApplicationSortType.CREATED_BY);
@@ -58,7 +61,7 @@ public class ApplicationListController extends SamlController {
     ApplicationSortType applicationSortType = EnumUtil.parse(state.getSort(), ApplicationSortType.class, ApplicationSortType.DATE);
     SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
     ApplicationListTab applicationListTab = EnumUtil.parse(state.getTab(), ApplicationListTab.class, ApplicationListTab.USER);
-    String companyId = state.getCompany();
+    String companyIdParam = state.getCompany();
 
     List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(userId);
 
@@ -83,11 +86,15 @@ public class ApplicationListController extends SamlController {
     }
 
     if (applicationListTab == ApplicationListTab.ATTENTION) {
-      companyId = "all";
       applicationProgress = null;
     }
 
-    List<CompanySelectItemView> companyNames = collectCompanyNames(views);
+    boolean hasApplicationWithNoCompanyId = views.stream()
+        .anyMatch(view -> view.getCompanyId() == null);
+
+    List<CompanySelectItemView> companySelectItemViews = collectCompanyNames(views);
+
+    String companyId = defaultCompanyId(applicationListTab, companyIdParam, companySelectItemViews);
 
     List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, views);
     List<ApplicationItemView> userFilteredViews = filterByUser(userId, applicationListTab, companyFilteredViews);
@@ -105,7 +112,8 @@ public class ApplicationListController extends SamlController {
 
     ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
         companyId,
-        companyNames,
+        companySelectItemViews,
+        hasApplicationWithNoCompanyId,
         hasUserApplications,
         hasOtherUserApplications,
         hasForYourAttentionApplications,
@@ -119,6 +127,15 @@ public class ApplicationListController extends SamlController {
         pageData);
 
     return ok(applicationList.render(licenceApplicationAddress, applicationListView)).withHeader("Cache-Control", "no-store, no-cache");
+  }
+
+  private String defaultCompanyId(ApplicationListTab applicationListTab, String companyId, List<CompanySelectItemView> companySelectItemViews) {
+    if (applicationListTab == ApplicationListTab.ATTENTION || companyId == null || COMPANY_ID_ALL.equals(companyId) ||
+        companySelectItemViews.stream().noneMatch(companySelectItemView -> companySelectItemView.getCompanyId().equals(companyId))) {
+      return COMPANY_ID_ALL;
+    } else {
+      return companyId;
+    }
   }
 
   private ApplicationListTab defaultTab(ApplicationListTab applicationListTab, boolean hasUserApplications, boolean hasOtherUserApplications, boolean hasForYourAttentionApplications) {
@@ -138,6 +155,7 @@ public class ApplicationListController extends SamlController {
 
   private List<CompanySelectItemView> collectCompanyNames(List<ApplicationItemView> applicationItemViews) {
     return applicationItemViews.stream()
+        .filter(view -> view.getCompanyId() != null)
         .filter(distinctByKey(ApplicationItemView::getCompanyId))
         .map(view -> new CompanySelectItemView(view.getCompanyId(), view.getCompanyName()))
         .sorted(Comparators.COMPANY_NAME)
@@ -176,12 +194,12 @@ public class ApplicationListController extends SamlController {
   }
 
   private List<ApplicationItemView> filterByCompanyId(String companyId, List<ApplicationItemView> applicationItemViews) {
-    if (companyId != null && !companyId.equals("all")) {
+    if (COMPANY_ID_ALL.equals(companyId)) {
+      return applicationItemViews;
+    } else {
       return applicationItemViews.stream()
           .filter(view -> companyId.equals(view.getCompanyId()))
           .collect(Collectors.toList());
-    } else {
-      return applicationItemViews;
     }
   }
 

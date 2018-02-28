@@ -1,6 +1,5 @@
 package models.view;
 
-import java.util.List;
 import models.Page;
 import models.enums.ApplicationListTab;
 import models.enums.ApplicationProgress;
@@ -8,11 +7,14 @@ import models.enums.ApplicationSortType;
 import models.enums.SortDirection;
 import models.view.route.ApplicationRoute;
 
+import java.util.List;
+
 public class ApplicationListView implements ListView {
 
   private final ApplicationListTab applicationListTab;
   private final String companyId;
   private final List<CompanySelectItemView> companySelectItemViews;
+  private final boolean hasApplicationWithNoCompanyId;
   private final boolean hasUserApplications;
   private final boolean hasOtherUserApplications;
   private final boolean hasForYourAttentionApplications;
@@ -28,6 +30,7 @@ public class ApplicationListView implements ListView {
   public ApplicationListView(ApplicationListTab applicationListTab,
                              String companyId,
                              List<CompanySelectItemView> companySelectItemViews,
+                             boolean hasApplicationWithNoCompanyId,
                              boolean hasUserApplications,
                              boolean hasOtherUserApplications,
                              boolean hasForYourAttentionApplications,
@@ -42,6 +45,7 @@ public class ApplicationListView implements ListView {
     this.applicationListTab = applicationListTab;
     this.companyId = companyId;
     this.companySelectItemViews = companySelectItemViews;
+    this.hasApplicationWithNoCompanyId = hasApplicationWithNoCompanyId;
     this.hasUserApplications = hasUserApplications;
     this.hasOtherUserApplications = hasOtherUserApplications;
     this.hasForYourAttentionApplications = hasForYourAttentionApplications;
@@ -65,6 +69,10 @@ public class ApplicationListView implements ListView {
 
   public List<CompanySelectItemView> getCompanySelectItemViews() {
     return companySelectItemViews;
+  }
+
+  public boolean isHasApplicationWithNoCompanyId() {
+    return hasApplicationWithNoCompanyId;
   }
 
   public boolean isHasUserApplications() {
