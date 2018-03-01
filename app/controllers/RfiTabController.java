@@ -104,27 +104,25 @@ public class RfiTabController extends SamlController {
     if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
       return completedFuture(showRfiTab(appId));
+    } else if (delete != null) {
+      draftFileService.deleteDraftFile(delete, rfiId, DraftType.RFI_REPLY);
+      return CompletableFuture.completedFuture(showReplyForm(appId, rfiId, rfiReplyForm));
     } else {
-      if (delete != null) {
-        draftFileService.deleteDraftFile(delete, rfiId, DraftType.RFI_REPLY);
-        return CompletableFuture.completedFuture(showReplyForm(appId, rfiId, rfiReplyForm));
-      } else {
-        return fileService.processUpload(appId, request())
-            .thenApplyAsync(uploadResults -> {
-              uploadResults.stream()
-                  .filter(UploadResult::isValid)
-                  .forEach(uploadResult -> draftFileDao.addDraftFile(uploadResult, rfiId, DraftType.RFI_REPLY));
-              FileUtil.addUploadErrorsToForm(rfiReplyForm, uploadResults);
-              if (rfiReplyForm.hasErrors()) {
-                return showReplyForm(appId, rfiId, rfiReplyForm);
-              } else {
-                String message = rfiReplyForm.get().replyMessage;
-                rfiReplyService.insertRfiReply(userId, appId, rfiId, message);
-                flash("message", "Your message has been sent");
-                return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
-              }
-            }, context.current());
-      }
+      return fileService.processUpload(appId, request())
+          .thenApplyAsync(uploadResults -> {
+            uploadResults.stream()
+                .filter(UploadResult::isValid)
+                .forEach(uploadResult -> draftFileDao.addDraftFile(uploadResult, rfiId, DraftType.RFI_REPLY));
+            Form<RfiReplyForm> form = FileUtil.addUploadErrorsToForm(rfiReplyForm, uploadResults);
+            if (form.hasErrors()) {
+              return showReplyForm(appId, rfiId, form);
+            } else {
+              String message = form.get().replyMessage;
+              rfiReplyService.insertRfiReply(userId, appId, rfiId, message);
+              flash("message", "Your message has been sent");
+              return redirect(controllers.routes.RfiTabController.showRfiTab(appId));
+            }
+          }, context.current());
     }
   }
 
@@ -150,7 +148,7 @@ public class RfiTabController extends SamlController {
     List<RfiView> rfiViews = rfiViewService.getRfiViews(userId, appData);
     AddRfiReplyView addRfiReplyView = rfiViewService.getAddRfiReplyView(appId, rfiId);
     readDataService.updateRfiTabReadData(userId, appData, readData);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store");
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
   public Result showRfiTab(String appId) {
@@ -161,7 +159,7 @@ public class RfiTabController extends SamlController {
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(userId, appData);
     readDataService.updateRfiTabReadData(userId, appData, readData);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, null, null)).withHeader("Cache-Control", "no-store");
+    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, null, null)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
 }

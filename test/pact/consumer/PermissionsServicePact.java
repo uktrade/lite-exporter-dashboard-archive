@@ -23,6 +23,7 @@ import org.junit.Test;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WS;
 import play.libs.ws.WSClient;
+import play.test.WSTestClient;
 import uk.gov.bis.lite.permissions.api.view.LicenceView;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
@@ -47,7 +48,7 @@ public class PermissionsServicePact {
 
   @Before
   public void setUp() throws Exception {
-    WSClient ws = WS.newClient(9999);
+    WSClient ws = WSTestClient.newClient(9999);
     JwtRequestFilter jwtRequestFilter = new TestJwtRequestFilter();
     client = new LicenceClientImpl(new HttpExecutionContext(Runnable::run), ws, "http://" + mockProvider.getConfig().getHostname() + ":" + mockProvider.getConfig().getPort(), 10000, jwtRequestFilter);
   }

@@ -13,6 +13,7 @@ import play.libs.ws.WSRequest;
 import uk.gov.bis.lite.permissions.api.view.LicenceView;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -43,10 +44,10 @@ public class LicenceClientImpl implements LicenceClient {
   public LicenceView getLicence(String userId, String reference) {
     String url = String.format("%s/licences/user/%s?licenceReference=%s", address, userId, reference);
     WSRequest req = wsClient.url(url)
-        .withRequestFilter(CorrelationId.requestFilter)
-        .withRequestFilter(ServiceClientLogger.requestFilter("Licence", "GET", httpExecutionContext))
-        .withRequestFilter(jwtRequestFilter)
-        .setRequestTimeout(timeout);
+        .setRequestFilter(CorrelationId.requestFilter)
+        .setRequestFilter(ServiceClientLogger.requestFilter("Licence", "GET", httpExecutionContext))
+        .setRequestFilter(jwtRequestFilter)
+        .setRequestTimeout(Duration.ofMillis(timeout));
     CompletionStage<LicenceView[]> request = req.get().handle((response, error) -> {
       if (error != null) {
         String message = String.format("Unable to get licence with user id %s and reference %s", userId, reference);
@@ -72,10 +73,10 @@ public class LicenceClientImpl implements LicenceClient {
   public List<LicenceView> getLicences(String userId) {
     String url = String.format("%s/licences/user/%s", address, userId);
     WSRequest req = wsClient.url(url)
-        .withRequestFilter(CorrelationId.requestFilter)
-        .withRequestFilter(ServiceClientLogger.requestFilter("Licences", "GET", httpExecutionContext))
-        .withRequestFilter(jwtRequestFilter)
-        .setRequestTimeout(timeout);
+        .setRequestFilter(CorrelationId.requestFilter)
+        .setRequestFilter(ServiceClientLogger.requestFilter("Licences", "GET", httpExecutionContext))
+        .setRequestFilter(jwtRequestFilter)
+        .setRequestTimeout(Duration.ofMillis(timeout));
     CompletionStage<LicenceView[]> request = req.get().handle((response, error) -> {
       if (error != null) {
         String message = String.format("Unable to get licences with user id %s", userId);
@@ -101,10 +102,10 @@ public class LicenceClientImpl implements LicenceClient {
   public OgelRegistrationView getOgelRegistration(String userId, String reference) {
     String url = String.format("%s/ogel-registrations/user/%s?registrationReference=%s", address, userId, reference);
     WSRequest req = wsClient.url(url)
-        .withRequestFilter(CorrelationId.requestFilter)
-        .withRequestFilter(ServiceClientLogger.requestFilter("Ogel Registration", "GET", httpExecutionContext))
-        .withRequestFilter(jwtRequestFilter)
-        .setRequestTimeout(timeout);
+        .setRequestFilter(CorrelationId.requestFilter)
+        .setRequestFilter(ServiceClientLogger.requestFilter("Ogel Registration", "GET", httpExecutionContext))
+        .setRequestFilter(jwtRequestFilter)
+        .setRequestTimeout(Duration.ofMillis(timeout));
     CompletionStage<OgelRegistrationView[]> request = req.get().handle((response, error) -> {
       if (error != null) {
         String message = String.format("Unable to get ogel registrations with user id %s", userId);
@@ -131,10 +132,10 @@ public class LicenceClientImpl implements LicenceClient {
   public List<OgelRegistrationView> getOgelRegistrations(String userId) {
     String url = String.format("%s/ogel-registrations/user/%s", address, userId);
     WSRequest req = wsClient.url(url)
-        .withRequestFilter(CorrelationId.requestFilter)
-        .withRequestFilter(ServiceClientLogger.requestFilter("Ogel Registrations", "GET", httpExecutionContext))
-        .withRequestFilter(jwtRequestFilter)
-        .setRequestTimeout(timeout);
+        .setRequestFilter(CorrelationId.requestFilter)
+        .setRequestFilter(ServiceClientLogger.requestFilter("Ogel Registrations", "GET", httpExecutionContext))
+        .setRequestFilter(jwtRequestFilter)
+        .setRequestTimeout(Duration.ofMillis(timeout));
     CompletionStage<OgelRegistrationView[]> request = req.get().handle((response, error) -> {
       if (error != null) {
         String message = String.format("Unable to get ogel registrations with user id %s", userId);

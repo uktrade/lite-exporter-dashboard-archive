@@ -1,5 +1,4 @@
 @import models.view.MessageView
-@import template.{fileList, messageReplyPanel, newIndicator}
 
 @(messageView: MessageView)
 
@@ -8,7 +7,7 @@
     <h3 class="heading-small">
       @messageView.getTitle
       @if(messageView.isShowNewIndicator) {
-       @newIndicator()
+        @newIndicator()
       }
     </h3>
 
@@ -39,7 +38,7 @@
           <span>
           @messageView.getSender
           </span>
-          }
+        }
       </div>
 
     </div>

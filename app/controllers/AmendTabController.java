@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
-import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -117,8 +116,8 @@ public class AmendTabController extends SamlController {
   public CompletionStage<Result> submitAmendment(String appId) {
     String userId = userService.getCurrentUserId();
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
-    String delete = amendApplicationForm.data().get("delete");
-    String actionParam = amendApplicationForm.data().get("action");
+    String actionParam = amendApplicationForm.rawData().get("action");
+    String delete = amendApplicationForm.rawData().get("delete");
     Action action = EnumUtil.parse(actionParam, Action.class);
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {
@@ -133,14 +132,14 @@ public class AmendTabController extends SamlController {
     } else {
       return fileService.processUpload(appId, request())
           .thenApplyAsync(uploadResults -> {
-            FileUtil.addUploadErrorsToForm(amendApplicationForm, uploadResults);
+            Form<AmendApplicationForm> form = FileUtil.addUploadErrorsToForm(amendApplicationForm, uploadResults);
             uploadResults.stream()
                 .filter(UploadResult::isValid)
                 .forEach(uploadResult -> draftFileDao.addDraftFile(uploadResult, appId, DraftType.AMENDMENT_OR_WITHDRAWAL));
-            if (amendApplicationForm.hasErrors()) {
-              return showAmendTab(appId, amendApplicationForm);
+            if (form.hasErrors()) {
+              return showAmendTab(appId, form);
             } else {
-              String message = amendApplicationForm.get().message;
+              String message = form.get().message;
               if (action == Action.AMEND) {
                 amendmentService.insertAmendment(userId, appId, message);
                 flash("message", "Your amendment request has been sent");
@@ -188,7 +187,7 @@ public class AmendTabController extends SamlController {
         applicationTabsView,
         amendmentView,
         form))
-        .withHeader("Cache-Control", "no-store");
+        .withHeader("Cache-Control", "no-store, no-cache");
   }
 
   private List<FileView> createFileViews(String appId) {

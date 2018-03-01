@@ -5,6 +5,7 @@ import com.google.inject.name.Named;
 import components.common.logging.CorrelationId;
 import components.exceptions.ServiceException;
 import filters.common.JwtRequestFilter;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -36,9 +37,9 @@ public class UserServiceClientImpl implements UserServiceClient {
   public Optional<UserPrivilegesView> getUserPrivilegeView(String userId) {
     String url = address + USER_PRIVILEGES_PATH + userId;
     CompletableFuture<UserPrivilegesView> request = wsClient.url(url)
-        .withRequestFilter(CorrelationId.requestFilter)
-        .withRequestFilter(jwtRequestFilter)
-        .setRequestTimeout(timeout)
+        .setRequestFilter(CorrelationId.requestFilter)
+        .setRequestFilter(jwtRequestFilter)
+        .setRequestTimeout(Duration.ofMillis(timeout))
         .get()
         .handle((response, error) -> {
           if (error != null) {

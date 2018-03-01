@@ -5,10 +5,10 @@ import com.google.inject.name.Named;
 import components.common.logging.CorrelationId;
 import components.common.logging.ServiceClientLogger;
 import components.exceptions.ServiceException;
+import filters.common.JwtRequestFilter;
+import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-
-import filters.common.JwtRequestFilter;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.ws.WSClient;
@@ -41,10 +41,10 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
   public CustomerView getCustomer(String customerId) {
     String url = String.format("%s/customers/%s", address, customerId);
     WSRequest req = wsClient.url(url)
-        .withRequestFilter(CorrelationId.requestFilter)
-        .withRequestFilter(ServiceClientLogger.requestFilter("Customer", "GET", httpExecutionContext))
-        .withRequestFilter(jwtRequestFilter)
-        .setRequestTimeout(timeout);
+        .setRequestFilter(CorrelationId.requestFilter)
+        .setRequestFilter(ServiceClientLogger.requestFilter("Customer", "GET", httpExecutionContext))
+        .setRequestFilter(jwtRequestFilter)
+        .setRequestTimeout(Duration.ofMillis(timeout));
     CompletionStage<CustomerView> request = req.get().handle((response, error) -> {
       if (error != null) {
         String message = String.format("Unable to get customer with id %s", customerId);
@@ -68,10 +68,10 @@ public class CustomerServiceClientImpl implements CustomerServiceClient {
   public SiteView getSite(String siteId) {
     String url = String.format("%s/sites/%s", address, siteId);
     WSRequest req = wsClient.url(url)
-        .withRequestFilter(CorrelationId.requestFilter)
-        .withRequestFilter(ServiceClientLogger.requestFilter("Site", "GET", httpExecutionContext))
-        .withRequestFilter(jwtRequestFilter)
-        .setRequestTimeout(timeout);
+        .setRequestFilter(CorrelationId.requestFilter)
+        .setRequestFilter(ServiceClientLogger.requestFilter("Site", "GET", httpExecutionContext))
+        .setRequestFilter(jwtRequestFilter)
+        .setRequestTimeout(Duration.ofMillis(timeout));
     CompletionStage<SiteView> request = req.get().handle((response, error) -> {
       if (error != null) {
         String message = String.format("Unable to get site with id %s", siteId);

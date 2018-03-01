@@ -1,22 +1,22 @@
 package components.mock;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import components.common.journey.JourneySerialiser;
 
-public class JourneySerialiserMock implements JourneySerialiser{
+public class JourneySerialiserMock implements JourneySerialiser {
 
-    @Inject
-    public JourneySerialiserMock() {
+  @Inject
+  public JourneySerialiserMock() {
 
-    }
+  }
 
-    @Override
-    public String readJourneyString(String journeyName) {
-        return "Dummy string";
-    }
+  @Override
+  public String readJourneyString(String journeyName) {
+    return "Dummy string";
+  }
 
-    @Override
-    public void writeJourneyString(String journeyName, String journeyString) { }
+  @Override
+  public void writeJourneyString(String journeyName, String journeyString) {
+  }
 
 }

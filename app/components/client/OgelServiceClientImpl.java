@@ -11,6 +11,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import uk.gov.bis.lite.ogel.api.view.OgelFullView;
 
+import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
@@ -40,9 +41,9 @@ public class OgelServiceClientImpl implements OgelServiceClient {
     String url = String.format("%s/ogels/%s", address, ogelId);
     WSRequest req = wsClient.url(url)
         .setAuth(credentials)
-        .withRequestFilter(CorrelationId.requestFilter)
-        .withRequestFilter(ServiceClientLogger.requestFilter("Ogel Data", "GET", httpExecutionContext))
-        .setRequestTimeout(timeout);
+        .setRequestFilter(CorrelationId.requestFilter)
+        .setRequestFilter(ServiceClientLogger.requestFilter("Ogel Data", "GET", httpExecutionContext))
+        .setRequestTimeout(Duration.ofMillis(timeout));
     CompletionStage<OgelFullView> request = req.get().handle((response, error) -> {
       if (error != null) {
         String message = String.format("Unable to get ogel with id %s", ogelId);

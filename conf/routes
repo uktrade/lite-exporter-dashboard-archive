@@ -36,14 +36,14 @@ GET         /test                                                     controller
 GET         /test/                                                    controllers.TestDataController.insertDefaultTestData()
 GET         /test/:testType                                           controllers.TestDataController.insertTestData(testType)
 
-# Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                                             controllers.Assets.versioned(path="/public", file: Asset)
-
-# NOCSRF
++ nocsrf
 POST        /samlResponse                                             org.pac4j.play.CallbackController.callback()
-GET         /logout                                                   org.pac4j.play.ApplicationLogoutController.logout()
+GET         /logout                                                   org.pac4j.play.LogoutController.logout()
 GET         /logged-out                                               controllers.AuthorisationController.loggedOut()
 GET         /unauthorised                                             controllers.AuthorisationController.unauthorised()
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file                                             controllers.Assets.versioned(path="/public", file: Asset)
 
 # Admin
 GET         /admin/build                                              controllers.AdminController.buildInfo

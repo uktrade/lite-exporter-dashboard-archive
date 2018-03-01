@@ -15,7 +15,7 @@ public class LongMapper {
    * @param resultSet Result of a database query
    * @param column    Column of the database query
    * @return Long database value of the column in the database query
-   * @throws SQLException
+   * @throws SQLException if a database error occurs
    */
   public static Long getLong(ResultSet resultSet, String column) throws SQLException {
     return Optional.ofNullable(resultSet.getBigDecimal(column))
