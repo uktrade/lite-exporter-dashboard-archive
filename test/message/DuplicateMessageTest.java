@@ -13,6 +13,7 @@ import components.message.ConsumerRoutingKey;
 import components.message.MessageHandler;
 import components.message.SqsPoller;
 import components.service.StartUpService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -348,7 +349,8 @@ public class DuplicateMessageTest {
   private Application buildApplication() {
     return new GuiceApplicationBuilder()
         .overrides(bind(SqsPoller.class).toInstance(mock(SqsPoller.class)))
-        .overrides(bind(StartUpService.class).toInstance(mock(StartUpService.class)))
+        .overrides(bind(StartUpService.class).to(TestStartUpServiceImpl.class).eagerly())
+        .configure("jwtSharedSecret", StringUtils.repeat("#", 64))
         .configure("db.default.url", "jdbc:postgresql://" + POSTGRES_URL + ":5432/postgres?currentSchema=test")
         .configure("db.default.username", "postgres")
         .configure("db.default.password", "password")
