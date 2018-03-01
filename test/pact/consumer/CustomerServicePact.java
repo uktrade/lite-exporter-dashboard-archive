@@ -107,8 +107,8 @@ public class CustomerServicePact {
         .stringType("siteId", "SITE_887")
         .stringType("siteName", "Main Site")
         .object("address")
-        .stringType("plainText", "1 Roadish Avenue, Townston")
-        .stringType("country", "UK")
+          .stringType("plainText", "1 Roadish Avenue, Townston")
+          .stringType("country", "UK")
         .closeObject();
 
     return builder
