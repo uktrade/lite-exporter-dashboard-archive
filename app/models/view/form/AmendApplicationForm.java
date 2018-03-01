@@ -12,28 +12,4 @@ public class AmendApplicationForm {
   @Constraints.Required(message = "Message is required.")
   public String message;
 
-  public String getDelete() {
-    return delete;
-  }
-
-  public void setDelete(String delete) {
-    this.delete = delete;
-  }
-
-  public String getAction() {
-    return action;
-  }
-
-  public void setAction(String action) {
-    this.action = action;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
-  }
-
 }

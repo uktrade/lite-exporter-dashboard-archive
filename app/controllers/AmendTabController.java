@@ -117,7 +117,7 @@ public class AmendTabController extends SamlController {
     String userId = userService.getCurrentUserId();
     Form<AmendApplicationForm> amendApplicationForm = formFactory.form(AmendApplicationForm.class).bindFromRequest();
     String actionParam = amendApplicationForm.rawData().get("action");
-    String delete = amendApplicationForm.data().get("delete");
+    String delete = amendApplicationForm.rawData().get("delete");
     Action action = EnumUtil.parse(actionParam, Action.class);
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddAmendmentOrWithdrawalRequest(userId, appData)) {

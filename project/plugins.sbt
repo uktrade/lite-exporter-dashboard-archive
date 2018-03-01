@@ -19,7 +19,7 @@ addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.11")
 // and rewrites accessors of these fields to use the getters/setters. Remove this
 // plugin if you prefer not to have this feature, or disable on a per project
 // basis using disablePlugins(PlayEnhancer) in your build.sbt
-// addSbtPlugin("com.typesafe.sbt" % "sbt-play-enhancer" % "1.1.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-play-enhancer" % "1.1.0")
 
 // Pact
 addSbtPlugin("uk.gov.bis.lite" % "scalapact-plugin" % "1.0.0")
