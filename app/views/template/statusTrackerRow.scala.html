@@ -1,5 +1,6 @@
 @import models.view.StatusItemView
 @import template._
+@import views.html.common.page._
 
 @(statusItemView: StatusItemView)
 <tr>
@@ -23,22 +24,22 @@
   <td class="status-table-status">
     @statusItemView.getProcessLabel match {
       case "Finished" => {
-        @statusLabel("Finished", "finished")
+        @statusLabel("finished")
       }
       case "In progress" => {
-        @statusLabel("In progress", "progress")
+        @statusLabel("progress")
       }
       case "Not started" => {
-        @statusLabel("Not started", "neutral")
+        @statusLabel()
       }
       case "Withdrawn" => {
-        @statusLabel("Withdrawn", "stopped")
+        @statusLabel("Withdrawn", "cancelled")
       }
       case "Stopped" => {
-        @statusLabel("Stopped", "stopped")
+        @statusLabel("Stopped", "cancelled")
       }
       case default => {
-        @statusLabel(default, "neutral")
+        @statusLabel("neutral", default)
       }
     }
     @if(statusItemView.getProcessDescription.length > 0) {
