@@ -33,10 +33,10 @@
         @statusLabel()
       }
       case "Withdrawn" => {
-        @statusLabel("Withdrawn", "cancelled")
+        @statusLabel("cancelled", "Withdrawn")
       }
       case "Stopped" => {
-        @statusLabel("Stopped", "cancelled")
+        @statusLabel("cancelled")
       }
       case default => {
         @statusLabel("neutral", default)
