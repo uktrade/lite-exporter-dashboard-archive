@@ -38,8 +38,8 @@ libraryDependencies += "uk.gov.bis.lite" % "lite-spire-relay-api" % "1.4-SNAPSHO
 libraryDependencies += "uk.gov.bis.lite" % "lite-user-service-api" % "1.0"
 libraryDependencies += "uk.gov.bis.lite" % "lite-licence-application-api" % "1.8"
 
-libraryDependencies += "au.com.dius" % "pact-jvm-consumer-junit_2.11" % "3.5.8" % "test"
-libraryDependencies += "au.com.dius" % "pact-jvm-provider-junit_2.11" % "3.5.8" % "test"
+libraryDependencies += "au.com.dius" % "pact-jvm-consumer-junit_2.11" % "3.5.13" % "test"
+libraryDependencies += "au.com.dius" % "pact-jvm-provider-junit_2.11" % "3.5.13" % "test"
 
 libraryDependencies += "org.assertj" % "assertj-core" % "3.5.2" % "test"
 libraryDependencies += "ru.yandex.qatools.embed" % "postgresql-embedded" % "2.6" % "test"

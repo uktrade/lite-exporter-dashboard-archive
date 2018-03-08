@@ -3,12 +3,12 @@ package pact.consumer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import au.com.dius.pact.consumer.Pact;
-import au.com.dius.pact.consumer.PactProviderRule;
+import au.com.dius.pact.consumer.PactProviderRuleMk2;
 import au.com.dius.pact.consumer.PactVerification;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslJsonRootValue;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
-import au.com.dius.pact.model.PactFragment;
+import au.com.dius.pact.model.RequestResponsePact;
 import com.google.common.collect.ImmutableMap;
 import components.client.OgelServiceClient;
 import components.client.OgelServiceClientImpl;
@@ -18,13 +18,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import play.libs.concurrent.HttpExecutionContext;
-import play.libs.ws.WS;
 import play.libs.ws.WSClient;
 import play.test.WSTestClient;
 import uk.gov.bis.lite.ogel.api.view.OgelFullView;
 import uk.gov.bis.lite.ogel.api.view.OgelFullView.OgelConditionSummary;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class OgelServiceConsumerPact {
@@ -48,14 +46,14 @@ public class OgelServiceConsumerPact {
   private static final String OGEL_HOW_TO_USE = "how to use";
 
   @Rule
-  public PactProviderRule mockProvider = new PactProviderRule(PROVIDER, this);
+  public PactProviderRuleMk2 mockProvider = new PactProviderRuleMk2(PROVIDER, this);
 
   @Before
   public void setUp() throws Exception {
-    ws = WSTestClient.newClient(mockProvider.getConfig().getPort());
+    ws = WSTestClient.newClient(mockProvider.getPort());
     client = new OgelServiceClientImpl(new HttpExecutionContext(Runnable::run),
         ws,
-        mockProvider.getConfig().url(),
+        mockProvider.getUrl(),
         10000,
         "service:password");
   }
@@ -66,7 +64,7 @@ public class OgelServiceConsumerPact {
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment ogelExists(PactDslWithProvider builder) {
+  public RequestResponsePact ogelExists(PactDslWithProvider builder) {
     PactDslJsonBody body = new PactDslJsonBody()
         .stringType("id", OGEL_ID)
         .stringType("name", OGEL_NAME)
@@ -89,11 +87,11 @@ public class OgelServiceConsumerPact {
           .status(200)
           .headers(CONTENT_TYPE_HEADERS)
           .body(body)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment ogelDoesNotExist(PactDslWithProvider builder) {
+  public RequestResponsePact ogelDoesNotExist(PactDslWithProvider builder) {
     PactDslJsonBody body = new PactDslJsonBody()
         .integerType("code", 404)
         .stringType("message", "No Ogel Found With Given Ogel ID: " + OGEL_ID)
@@ -109,7 +107,7 @@ public class OgelServiceConsumerPact {
           .status(404)
           .headers(CONTENT_TYPE_HEADERS)
           .body(body)
-        .toFragment();
+        .toPact();
   }
 
   @Test
