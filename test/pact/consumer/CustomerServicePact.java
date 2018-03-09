@@ -6,19 +6,17 @@ import static pact.consumer.JwtTestHelper.JWT_AUTHORIZATION_HEADER;
 import static pact.consumer.JwtTestHelper.TestJwtRequestFilter;
 
 import au.com.dius.pact.consumer.Pact;
-import au.com.dius.pact.consumer.PactProviderRule;
+import au.com.dius.pact.consumer.PactProviderRuleMk2;
 import au.com.dius.pact.consumer.PactVerification;
 import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslJsonRootValue;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
-import au.com.dius.pact.model.PactFragment;
+import au.com.dius.pact.model.RequestResponsePact;
 import components.client.CustomerServiceClient;
 import components.client.CustomerServiceClientImpl;
 import components.exceptions.ServiceException;
 import filters.common.JwtRequestFilter;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,6 +25,9 @@ import play.libs.ws.WSClient;
 import play.test.WSTestClient;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CustomerServicePact {
 
@@ -40,13 +41,13 @@ public class CustomerServicePact {
   private CustomerServiceClient client;
 
   @Rule
-  public PactProviderRule mockProvider = new PactProviderRule(PROVIDER, this);
+  public PactProviderRuleMk2 mockProvider = new PactProviderRuleMk2(PROVIDER, this);
 
   @Before
   public void setUp() throws Exception {
-    WSClient ws = WSTestClient.newClient(9999);
+    WSClient ws = WSTestClient.newClient(mockProvider.getPort());
     JwtRequestFilter jwtRequestFilter = new TestJwtRequestFilter();
-    client = new CustomerServiceClientImpl(new HttpExecutionContext(Runnable::run), ws, "http://" + mockProvider.getConfig().getHostname() + ":" + mockProvider.getConfig().getPort(), 10000, jwtRequestFilter);
+    client = new CustomerServiceClientImpl(new HttpExecutionContext(Runnable::run), ws, mockProvider.getUrl(), 10000, jwtRequestFilter);
   }
 
   private static Map<String, String> requestHeaders() {
@@ -62,7 +63,7 @@ public class CustomerServicePact {
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment existingCustomer(PactDslWithProvider builder) {
+  public RequestResponsePact existingCustomer(PactDslWithProvider builder) {
     PactDslJsonBody customer = new PactDslJsonBody()
         .stringType("customerId", CUSTOMER_ID)
         .stringType("companyName", "Acme Ltd")
@@ -83,12 +84,12 @@ public class CustomerServicePact {
           .status(200)
           .headers(RESPONSE_HEADERS)
           .body(customer)
-        .toFragment();
+        .toPact();
   }
 
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment missingCustomer(PactDslWithProvider builder) {
+  public RequestResponsePact missingCustomer(PactDslWithProvider builder) {
     return builder
         .given("provided customer ID does not exist")
         .uponReceiving("request for a customer by ID")
@@ -97,11 +98,11 @@ public class CustomerServicePact {
           .method("GET")
         .willRespondWith()
           .status(404)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment existingSite(PactDslWithProvider builder) {
+  public RequestResponsePact existingSite(PactDslWithProvider builder) {
     DslPart site = new PactDslJsonBody()
         .stringType("customerId", "CUSTOMER_626")
         .stringType("siteId", "SITE_887")
@@ -121,11 +122,11 @@ public class CustomerServicePact {
           .status(200)
           .headers(RESPONSE_HEADERS)
           .body(site)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment missingSite(PactDslWithProvider builder) {
+  public RequestResponsePact missingSite(PactDslWithProvider builder) {
     return builder
         .given("provided site ID does not exist")
         .uponReceiving("request for site by ID")
@@ -134,7 +135,7 @@ public class CustomerServicePact {
           .headers(REQUEST_HEADERS)
         .willRespondWith()
           .status(404)
-        .toFragment();
+        .toPact();
   }
 
   @Test

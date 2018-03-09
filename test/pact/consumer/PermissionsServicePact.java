@@ -6,12 +6,12 @@ import static pact.consumer.JwtTestHelper.JWT_AUTHORIZATION_HEADER;
 import static pact.consumer.JwtTestHelper.TestJwtRequestFilter;
 
 import au.com.dius.pact.consumer.Pact;
-import au.com.dius.pact.consumer.PactProviderRule;
+import au.com.dius.pact.consumer.PactProviderRuleMk2;
 import au.com.dius.pact.consumer.PactVerification;
 import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.dsl.PactDslJsonArray;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
-import au.com.dius.pact.model.PactFragment;
+import au.com.dius.pact.model.RequestResponsePact;
 import com.google.common.collect.ImmutableMap;
 import components.client.LicenceClient;
 import components.client.LicenceClientImpl;
@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import play.libs.concurrent.HttpExecutionContext;
-import play.libs.ws.WS;
 import play.libs.ws.WSClient;
 import play.test.WSTestClient;
 import uk.gov.bis.lite.permissions.api.view.LicenceView;
@@ -44,17 +43,17 @@ public class PermissionsServicePact {
   private LicenceClient client;
 
   @Rule
-  public PactProviderRule mockProvider = new PactProviderRule(PROVIDER, this);
+  public PactProviderRuleMk2 mockProvider = new PactProviderRuleMk2(PROVIDER, this);
 
   @Before
   public void setUp() throws Exception {
-    WSClient ws = WSTestClient.newClient(9999);
+    WSClient ws = WSTestClient.newClient(mockProvider.getPort());
     JwtRequestFilter jwtRequestFilter = new TestJwtRequestFilter();
-    client = new LicenceClientImpl(new HttpExecutionContext(Runnable::run), ws, "http://" + mockProvider.getConfig().getHostname() + ":" + mockProvider.getConfig().getPort(), 10000, jwtRequestFilter);
+    client = new LicenceClientImpl(new HttpExecutionContext(Runnable::run), ws, mockProvider.getUrl(), 10000, jwtRequestFilter);
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment existingLicence(PactDslWithProvider builder) {
+  public RequestResponsePact existingLicence(PactDslWithProvider builder) {
     DslPart licences = PactDslJsonArray.arrayMinLike(1)
         .stringType("licenceRef", LICENCE_REFERENCE)
         .stringType("originalAppId", "originalAppId")
@@ -84,11 +83,11 @@ public class PermissionsServicePact {
         .status(200)
         .headers(RESPONSE_HEADERS)
         .body(licences)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment noLicence(PactDslWithProvider builder) {
+  public RequestResponsePact noLicence(PactDslWithProvider builder) {
     return builder
         .given("no licences exist for provided user")
         .uponReceiving("request to get the licence with the given licence reference for the provided user ID")
@@ -99,11 +98,11 @@ public class PermissionsServicePact {
         .willRespondWith()
         .status(404)
         .headers(RESPONSE_HEADERS)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment existingLicences(PactDslWithProvider builder) {
+  public RequestResponsePact existingLicences(PactDslWithProvider builder) {
 
     DslPart licences = PactDslJsonArray.arrayMinLike(1)
         .stringType("licenceRef", LICENCE_REFERENCE)
@@ -133,11 +132,11 @@ public class PermissionsServicePact {
         .status(200)
         .headers(RESPONSE_HEADERS)
         .body(licences)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment noLicences(PactDslWithProvider builder) {
+  public RequestResponsePact noLicences(PactDslWithProvider builder) {
 
     PactDslJsonArray emptyArrayBody = new PactDslJsonArray();
     return builder
@@ -150,11 +149,11 @@ public class PermissionsServicePact {
         .status(200)
         .headers(RESPONSE_HEADERS)
         .body(emptyArrayBody)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment userNotFoundLicences(PactDslWithProvider builder) {
+  public RequestResponsePact userNotFoundLicences(PactDslWithProvider builder) {
 
     return builder
         .given("provided user does not exist")
@@ -165,11 +164,11 @@ public class PermissionsServicePact {
         .willRespondWith()
         .status(404)
         .headers(RESPONSE_HEADERS)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment existingRegistration(PactDslWithProvider builder) {
+  public RequestResponsePact existingRegistration(PactDslWithProvider builder) {
     DslPart ogelRegistrations = PactDslJsonArray.arrayMinLike(1)
         .stringType("siteId", "SITE_1")
         .stringType("customerId", "CUSTOMER_1")
@@ -190,11 +189,11 @@ public class PermissionsServicePact {
         .status(200)
         .headers(RESPONSE_HEADERS)
         .body(ogelRegistrations)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment noRegistration(PactDslWithProvider builder) {
+  public RequestResponsePact noRegistration(PactDslWithProvider builder) {
     return builder
         .given("no OGEL registrations exist for provided user")
         .uponReceiving("request to get the OGEL registration with the given registration reference for the provided user ID")
@@ -205,11 +204,11 @@ public class PermissionsServicePact {
         .willRespondWith()
         .status(404)
         .headers(RESPONSE_HEADERS)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment existingRegistrations(PactDslWithProvider builder) {
+  public RequestResponsePact existingRegistrations(PactDslWithProvider builder) {
 
     DslPart ogelRegistrations = PactDslJsonArray.arrayMinLike(1)
         .stringType("siteId", "SITE_1")
@@ -230,11 +229,11 @@ public class PermissionsServicePact {
         .status(200)
         .headers(RESPONSE_HEADERS)
         .body(ogelRegistrations)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment noRegistrations(PactDslWithProvider builder) {
+  public RequestResponsePact noRegistrations(PactDslWithProvider builder) {
 
     PactDslJsonArray emptyArrayBody = new PactDslJsonArray();
     return builder
@@ -247,11 +246,11 @@ public class PermissionsServicePact {
         .status(200)
         .headers(RESPONSE_HEADERS)
         .body(emptyArrayBody)
-        .toFragment();
+        .toPact();
   }
 
   @Pact(provider = PROVIDER, consumer = CONSUMER)
-  public PactFragment userNotFound(PactDslWithProvider builder) {
+  public RequestResponsePact userNotFound(PactDslWithProvider builder) {
 
     return builder
         .given("provided user does not exist")
@@ -262,7 +261,7 @@ public class PermissionsServicePact {
         .willRespondWith()
         .status(404)
         .headers(RESPONSE_HEADERS)
-        .toFragment();
+        .toPact();
   }
 
   @Test
