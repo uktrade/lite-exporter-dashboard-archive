@@ -61,6 +61,7 @@ public class RfiTabController extends SamlController {
   private final DraftFileService draftFileService;
   private final HttpExecutionContext context;
   private final UploadValidationConfig uploadValidationConfig;
+  private final rfiListTab rfiListTab;
 
   @Inject
   public RfiTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -77,7 +78,8 @@ public class RfiTabController extends SamlController {
                           DraftFileDao draftFileDao,
                           DraftFileService draftFileService,
                           HttpExecutionContext httpExecutionContext,
-                          UploadValidationConfig uploadValidationConfig) {
+                          UploadValidationConfig uploadValidationConfig,
+                          rfiListTab rfiListTab) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -93,6 +95,7 @@ public class RfiTabController extends SamlController {
     this.draftFileService = draftFileService;
     this.context = httpExecutionContext;
     this.uploadValidationConfig = uploadValidationConfig;
+    this.rfiListTab = rfiListTab;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)

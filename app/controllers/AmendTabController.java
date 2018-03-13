@@ -74,6 +74,7 @@ public class AmendTabController extends SamlController {
   private final DraftFileService draftFileService;
   private final HttpExecutionContext context;
   private final UploadValidationConfig uploadValidationConfig;
+  private final amendApplicationTab amendApplicationTab;
 
   @Inject
   public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
@@ -92,7 +93,8 @@ public class AmendTabController extends SamlController {
                             FileService fileService,
                             DraftFileService draftFileService,
                             HttpExecutionContext httpExecutionContext,
-                            UploadValidationConfig uploadValidationConfig) {
+                            UploadValidationConfig uploadValidationConfig,
+                            amendApplicationTab amendApplicationTab) {
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
@@ -110,6 +112,7 @@ public class AmendTabController extends SamlController {
     this.draftFileService = draftFileService;
     this.context = httpExecutionContext;
     this.uploadValidationConfig = uploadValidationConfig;
+    this.amendApplicationTab = amendApplicationTab;
   }
 
   @BodyParser.Of(UploadMultipartParser.class)
