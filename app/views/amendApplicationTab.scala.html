@@ -2,6 +2,7 @@
 @import views.html.common.page.twoThirdsColumn
 @import template._
 
+@this(amendApplication: amendApplication)
 @(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, amendmentView: AmendmentView, form: play.data.Form[_])
 
 @applicationDetails(applyLink, applicationSummaryView, "amend", applicationTabsView, form) {

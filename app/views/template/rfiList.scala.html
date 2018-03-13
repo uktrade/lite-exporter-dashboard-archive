@@ -2,6 +2,7 @@
 @import play.data.Form
 @import template._
 
+@this(addRfiReplyPanel: addRfiReplyPanel)
 @(rfiViews: java.util.List[RfiView], rfiReplyForm: Form[_], addRfiReplyView: AddRfiReplyView)
 
 @for(rfiView <- rfiViews) {
