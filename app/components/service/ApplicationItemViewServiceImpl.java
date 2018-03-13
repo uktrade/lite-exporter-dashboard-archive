@@ -1,6 +1,7 @@
 package components.service;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import components.client.CustomerServiceClient;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
@@ -41,18 +42,21 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final AppDataService appDataService;
   private final ReadDataService readDataService;
   private final UserPermissionService userPermissionService;
+  private final String licenceApplicationAddress;
 
   @Inject
   public ApplicationItemViewServiceImpl(CustomerServiceClient customerServiceClient,
                                         UserService userService,
                                         AppDataService appDataService,
                                         ReadDataService readDataService,
-                                        UserPermissionService userPermissionService) {
+                                        UserPermissionService userPermissionService,
+                                        @Named("licenceApplicationAddress") String licenceApplicationAddress) {
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
     this.appDataService = appDataService;
     this.readDataService = readDataService;
     this.userPermissionService = userPermissionService;
+    this.licenceApplicationAddress = licenceApplicationAddress;
   }
 
   @Override
@@ -103,6 +107,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
       latestEventDate = null;
     }
 
+    String licenceApplicationLink = licenceApplicationAddress + "/exporter-resume/" + application.getId();
+
     return new ApplicationItemView(application.getId(),
         application.getCustomerId(),
         companyName,
@@ -122,7 +128,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         notificationViews,
         forYourAttentionNotificationViews,
         latestEventTimestamp,
-        latestEventDate);
+        latestEventDate,
+        licenceApplicationLink);
   }
 
   private ApplicationProgress getApplicationProgress(AppData appData) {

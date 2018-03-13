@@ -1,7 +1,8 @@
 package models.view;
 
-import java.util.List;
 import models.enums.ApplicationProgress;
+
+import java.util.List;
 
 public class ApplicationItemView {
 
@@ -25,6 +26,7 @@ public class ApplicationItemView {
   private final List<NotificationView> forYourAttentionNotificationViews;
   private final Long latestEventTimestamp;
   private final String latestEventDate;
+  private final String licenceApplicationLink;
 
   public ApplicationItemView(String appId,
                              String companyId,
@@ -45,7 +47,8 @@ public class ApplicationItemView {
                              List<NotificationView> notificationViews,
                              List<NotificationView> forYourAttentionNotificationViews,
                              Long latestEventTimestamp,
-                             String latestEventDate) {
+                             String latestEventDate,
+                             String licenceApplicationLink) {
     this.appId = appId;
     this.companyId = companyId;
     this.companyName = companyName;
@@ -66,6 +69,7 @@ public class ApplicationItemView {
     this.forYourAttentionNotificationViews = forYourAttentionNotificationViews;
     this.latestEventTimestamp = latestEventTimestamp;
     this.latestEventDate = latestEventDate;
+    this.licenceApplicationLink = licenceApplicationLink;
   }
 
   public String getAppId() {
@@ -91,7 +95,7 @@ public class ApplicationItemView {
   public String getCreatedByLastName() {
     return createdByLastName;
   }
-  
+
   public String getDate() {
     return date;
   }
@@ -146,6 +150,10 @@ public class ApplicationItemView {
 
   public String getLatestEventDate() {
     return latestEventDate;
+  }
+
+  public String getLicenceApplicationLink() {
+    return licenceApplicationLink;
   }
 
 }

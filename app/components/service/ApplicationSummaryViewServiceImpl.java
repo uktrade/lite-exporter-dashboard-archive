@@ -1,6 +1,7 @@
 package components.service;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import components.util.ApplicationUtil;
 import components.util.TimeUtil;
 import models.AppData;
@@ -9,10 +10,13 @@ import models.view.ApplicationSummaryView;
 
 public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryViewService {
 
+  private final String licenceApplicationAddress;
   private final UserService userService;
 
   @Inject
-  public ApplicationSummaryViewServiceImpl(UserService userService) {
+  public ApplicationSummaryViewServiceImpl(@Named("licenceApplicationAddress") String licenceApplicationAddress,
+                                           UserService userService) {
+    this.licenceApplicationAddress = licenceApplicationAddress;
     this.userService = userService;
   }
 
@@ -21,13 +25,15 @@ public class ApplicationSummaryViewServiceImpl implements ApplicationSummaryView
     Application application = appData.getApplication();
     String dateSubmitted = TimeUtil.formatDate(appData.getSubmittedTimestamp());
     String applicationStatus = ApplicationUtil.getStatusInfo(appData).getApplicationStatus();
+    String licenceApplicationLink = licenceApplicationAddress + "/exporter-resume/" + application.getId();
     return new ApplicationSummaryView(application.getId(),
         appData.getCaseReference(),
         application.getApplicantReference(),
         ApplicationUtil.getDestinations(application),
         dateSubmitted,
         applicationStatus,
-        getOfficerName(application));
+        getOfficerName(application),
+        licenceApplicationLink);
   }
 
   private String getOfficerName(Application application) {
