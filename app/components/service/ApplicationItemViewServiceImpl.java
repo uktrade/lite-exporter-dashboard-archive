@@ -43,6 +43,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final ReadDataService readDataService;
   private final UserPermissionService userPermissionService;
   private final String licenceApplicationAddress;
+  private final DestinationService destinationService;
 
   @Inject
   public ApplicationItemViewServiceImpl(CustomerServiceClient customerServiceClient,
@@ -50,13 +51,15 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
                                         AppDataService appDataService,
                                         ReadDataService readDataService,
                                         UserPermissionService userPermissionService,
-                                        @Named("licenceApplicationAddress") String licenceApplicationAddress) {
+                                        @Named("licenceApplicationAddress") String licenceApplicationAddress,
+                                        DestinationService destinationService) {
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
     this.appDataService = appDataService;
     this.readDataService = readDataService;
     this.userPermissionService = userPermissionService;
     this.licenceApplicationAddress = licenceApplicationAddress;
+    this.destinationService = destinationService;
   }
 
   @Override
@@ -91,7 +94,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
 
     String createdById = application.getCreatedByUserId();
     User user = userService.getUser(createdById);
-    String destination = ApplicationUtil.getDestinations(application);
+    String destination = destinationService.getDestination(application);
 
     ApplicationProgress applicationProgress = getApplicationProgress(appData);
 

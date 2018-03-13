@@ -6,7 +6,7 @@ version := scala.util.Properties.envOrElse("BUILD_VERSION", "1.0-SNAPSHOT")
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayJava)
-  .dependsOn(`zzz-common`)
+  .dependsOn(`zzz-common` % "test->test;compile->compile")
   .enablePlugins(BuildInfoPlugin)
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
