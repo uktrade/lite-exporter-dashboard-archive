@@ -3,37 +3,39 @@
 @import template._
 @import views.html.common.page._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, activeTab: String, applicationTabsView: ApplicationTabsView, form: play.data.Form[_])(content: Html)
-  @standardPage(applicationSummaryView.getCaseReference + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
+@this(dashboardTopNav: dashboardTopNav)
+@(applicationSummaryView: ApplicationSummaryView, activeTab: String, applicationTabsView: ApplicationTabsView, form: play.data.Form[_])(content: Html)
 
-    @if(form != null) {
-      @errorSummary(form)
-    }
+@standardPage(applicationSummaryView.getCaseReference + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-    @if(flash.containsKey("message")) {
-      @flashBanner("success") {
-        @Html(flash.get("message"))
-      } {
-        @if(flash.containsKey("detail")) {
-          @Html(flash.get("detail"))
-        }
+  @if(form != null) {
+    @errorSummary(form)
+  }
+
+  @if(flash.containsKey("message")) {
+    @flashBanner("success") {
+      @Html(flash.get("message"))
+    } {
+      @if(flash.containsKey("detail")) {
+        @Html(flash.get("detail"))
       }
     }
-
-  } {
-
-    @dashboardTopNav(applyLink)
-
-    @applicationSummaryPanel(applicationSummaryView)
-
-    @tabs("application-tabs", size = "large", fitToPage = true) {
-      @tab("Status tracker", routes.StatusTabController.showStatusTab(applicationSummaryView.getAppId).toString, activeTab.equals("statusTracker"), false)
-      @tab("Requests for information", routes.RfiTabController.showRfiTab(applicationSummaryView.getAppId).toString, activeTab.equals("rfi"), applicationTabsView.isNewRfi)
-      @tab("Messages", routes.MessageTabController.showMessages(applicationSummaryView.getAppId).toString, activeTab.equals("messages"), applicationTabsView.isNewMessage)
-      @tab("Amend / withdraw", routes.AmendTabController.showAmendTab(applicationSummaryView.getAppId).toString, activeTab.equals("amend"), false)
-      @tab("Outcome documents", routes.OutcomeTabController.showOutcomeTab(applicationSummaryView.getAppId).toString, activeTab.equals("outcomeDocs"), applicationTabsView.isNewDocument)
-    }
-
-    @content
-
   }
+
+} {
+
+  @dashboardTopNav()
+
+  @applicationSummaryPanel(applicationSummaryView)
+
+  @tabs("application-tabs", size = "large", fitToPage = true) {
+    @tab("Status tracker", routes.StatusTabController.showStatusTab(applicationSummaryView.getAppId).toString, activeTab.equals("statusTracker"), false)
+    @tab("Requests for information", routes.RfiTabController.showRfiTab(applicationSummaryView.getAppId).toString, activeTab.equals("rfi"), applicationTabsView.isNewRfi)
+    @tab("Messages", routes.MessageTabController.showMessages(applicationSummaryView.getAppId).toString, activeTab.equals("messages"), applicationTabsView.isNewMessage)
+    @tab("Amend / withdraw", routes.AmendTabController.showAmendTab(applicationSummaryView.getAppId).toString, activeTab.equals("amend"), false)
+    @tab("Outcome documents", routes.OutcomeTabController.showOutcomeTab(applicationSummaryView.getAppId).toString, activeTab.equals("outcomeDocs"), applicationTabsView.isNewDocument)
+  }
+
+  @content
+
+}

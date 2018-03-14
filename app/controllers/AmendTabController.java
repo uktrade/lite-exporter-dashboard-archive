@@ -3,7 +3,6 @@ package controllers;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import components.common.upload.FileService;
 import components.common.upload.FileUtil;
 import components.common.upload.FileView;
@@ -57,7 +56,6 @@ public class AmendTabController extends SamlController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AmendTabController.class);
 
-  private final String licenceApplicationAddress;
   private final FormFactory formFactory;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final OfficerViewService officerViewService;
@@ -77,8 +75,7 @@ public class AmendTabController extends SamlController {
   private final amendApplicationTab amendApplicationTab;
 
   @Inject
-  public AmendTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
-                            FormFactory formFactory,
+  public AmendTabController(FormFactory formFactory,
                             ApplicationSummaryViewService applicationSummaryViewService,
                             OfficerViewService officerViewService,
                             AmendmentService amendmentService,
@@ -95,7 +92,6 @@ public class AmendTabController extends SamlController {
                             HttpExecutionContext httpExecutionContext,
                             UploadValidationConfig uploadValidationConfig,
                             amendApplicationTab amendApplicationTab) {
-    this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.officerViewService = officerViewService;
@@ -185,8 +181,7 @@ public class AmendTabController extends SamlController {
         selectOptions,
         fileViews,
         officerView);
-    return ok(amendApplicationTab.render(licenceApplicationAddress,
-        applicationSummaryView,
+    return ok(amendApplicationTab.render(applicationSummaryView,
         applicationTabsView,
         amendmentView,
         form))

@@ -1,55 +1,58 @@
 @import models.view.OgelDetailsView
 @import template._
-@(applyLink: String, ogelDetailsView: OgelDetailsView)
-  @standardPage(ogelDetailsView.getRegistrationReference + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-  } {
+@this(dashboardTopNav: dashboardTopNav)
+@(ogelDetailsView: OgelDetailsView)
 
-    @dashboardTopNav(applyLink)
+@standardPage(ogelDetailsView.getRegistrationReference + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
-    <div class="application-summary-panel">
+} {
 
-      <h2 class="heading-medium">
-        <abbr title="Open General Export Licence">OGEL</abbr>
-      </h2>
+  @dashboardTopNav()
 
-      <dl class="summary-list no-wrap-keys form-group">
-        @summaryElement("Reference") {
-          @ogelDetailsView.getRegistrationReference<br>
-          @ogelDetailsView.getName
-        }
+  <div class="application-summary-panel">
 
-        @summaryElement("Registration letter") {
-          <a href="#">Download letter (PDF)</a>
-        }
-      </dl>
+    <h2 class="heading-medium">
+      <abbr title="Open General Export Licence">OGEL</abbr>
+    </h2>
 
-      <p>
-        Read the <a href="@ogelDetailsView.getLink">full licence</a>
-        for more information on how to use it, what you can export and permitted export destinations.
-      </p>
+    <dl class="summary-list no-wrap-keys form-group">
+      @summaryElement("Reference") {
+        @ogelDetailsView.getRegistrationReference<br>
+        @ogelDetailsView.getName
+      }
 
-    </div>
+      @summaryElement("Registration letter") {
+        <a href="#">Download letter (PDF)</a>
+      }
+    </dl>
 
-    <h3 class="heading-medium">What you can do</h3>
-    <ul class="list list-bullet">
-    @for(canItem <- ogelDetailsView.getOgelConditionSummary.getCanList) {
-      <li>@canItem</li>
-    }
-    </ul>
+    <p>
+      Read the <a href="@ogelDetailsView.getLink">full licence</a>
+      for more information on how to use it, what you can export and permitted export destinations.
+    </p>
 
-    <h3 class="heading-medium">What you can't do</h3>
-    <ul class="list list-bullet">
-    @for(cantItem <- ogelDetailsView.getOgelConditionSummary.getCantList) {
-      <li>@cantItem</li>
-    }
-    </ul>
+  </div>
 
-    <h3 class="heading-medium">What you must do</h3>
-    <ul class="list list-bullet">
-    @for(mustItem <- ogelDetailsView.getOgelConditionSummary.getMustList) {
-      <li>@mustItem</li>
-    }
-    </ul>
-
+  <h3 class="heading-medium">What you can do</h3>
+  <ul class="list list-bullet">
+  @for(canItem <- ogelDetailsView.getOgelConditionSummary.getCanList) {
+    <li>@canItem</li>
   }
+  </ul>
+
+  <h3 class="heading-medium">What you can't do</h3>
+  <ul class="list list-bullet">
+  @for(cantItem <- ogelDetailsView.getOgelConditionSummary.getCantList) {
+    <li>@cantItem</li>
+  }
+  </ul>
+
+  <h3 class="heading-medium">What you must do</h3>
+  <ul class="list list-bullet">
+  @for(mustItem <- ogelDetailsView.getOgelConditionSummary.getMustList) {
+    <li>@mustItem</li>
+  }
+  </ul>
+
+}

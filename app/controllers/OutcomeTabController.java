@@ -1,7 +1,6 @@
 package controllers;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import components.dao.WithdrawalApprovalDao;
 import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
@@ -12,9 +11,6 @@ import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.SortUtil;
 import components.util.TimeUtil;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import models.AppData;
 import models.Notification;
 import models.Outcome;
@@ -29,32 +25,36 @@ import play.mvc.Result;
 import play.mvc.With;
 import views.html.outcomeDocsTab;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @With(AppGuardAction.class)
 public class OutcomeTabController extends SamlController {
 
-  private final String licenceApplicationAddress;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final WithdrawalApprovalDao withdrawalApprovalDao;
   private final AppDataService appDataService;
   private final ApplicationTabsViewService applicationTabsViewService;
   private final UserService userService;
   private final ReadDataService readDataService;
+  private final outcomeDocsTab outcomeDocsTab;
 
   @Inject
-  public OutcomeTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
-                              ApplicationSummaryViewService applicationSummaryViewService,
+  public OutcomeTabController(ApplicationSummaryViewService applicationSummaryViewService,
                               WithdrawalApprovalDao withdrawalApprovalDao,
                               AppDataService appDataService,
                               ApplicationTabsViewService applicationTabsViewService,
                               UserService userService,
-                              ReadDataService readDataService) {
-    this.licenceApplicationAddress = licenceApplicationAddress;
+                              ReadDataService readDataService,
+                              outcomeDocsTab outcomeDocsTab) {
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.withdrawalApprovalDao = withdrawalApprovalDao;
     this.appDataService = appDataService;
     this.applicationTabsViewService = applicationTabsViewService;
     this.userService = userService;
     this.readDataService = readDataService;
+    this.outcomeDocsTab = outcomeDocsTab;
   }
 
   public Result showOutcomeTab(String appId) {
@@ -69,7 +69,7 @@ public class OutcomeTabController extends SamlController {
     List<OutcomeView> outcomeViews = getOutcomeViews(appData, readData);
     InformLetterSectionView informLetterSectionView = getInformLetterSectionView(appData, readData);
     readDataService.updateDocumentTabReadData(userId, appData, readData);
-    return ok(outcomeDocsTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, isInProgress, isStopped, isWithdrawn, outcomeViews, informLetterSectionView));
+    return ok(outcomeDocsTab.render(applicationSummaryView, applicationTabsView, isInProgress, isStopped, isWithdrawn, outcomeViews, informLetterSectionView));
   }
 
   private List<OutcomeView> getOutcomeViews(AppData appData, ReadData readData) {

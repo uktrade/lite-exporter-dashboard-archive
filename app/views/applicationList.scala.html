@@ -1,12 +1,16 @@
 @import models.enums.ApplicationListTab
 @import models.view.ApplicationListView
 @import template._
-@(applyLink: String, applicationListView: ApplicationListView)
+@import com.google.inject.name.Named
+
+@this(@Named("licenceApplicationAddress") licenceApplicationAddress: String, dashboardTopNav: dashboardTopNav)
+@(applicationListView: ApplicationListView)
+
 @standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
 } {
 
-  @dashboardTopNav(applyLink)
+  @dashboardTopNav()
 
   <div class="heading-medium dashboard-section-heading">Applications</div>
 
@@ -46,7 +50,7 @@
   @if(!applicationListView.isHasUserApplications && !applicationListView.isHasOtherUserApplications) {
 
     You have no applications.
-    <p><a href="@applyLink" target="_blank">Apply for a standard licence</a></p>
+    <p><a href="@licenceApplicationAddress" target="_blank">Apply for a standard licence</a></p>
 
   } else {
     @if(applicationListView.getApplicationListTab == ApplicationListTab.USER || applicationListView.getApplicationListTab == ApplicationListTab.COMPANY) {

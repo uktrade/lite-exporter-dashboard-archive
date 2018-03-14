@@ -1,7 +1,10 @@
 @import util._
 @import template._
 @import views.html.common.page._
-@(applyLink: String)
+@import com.google.inject.name.Named
+
+@this(@Named("licenceApplicationAddress") licenceApplicationAddress: String)
+@()
 
 @partNavigation("Licence management navigation") {
   <li>
@@ -18,5 +21,5 @@
       Licences
     }
   </li>
-  <li><a href="@applyLink" target="_blank">Apply for a standard licence</a></li>
+  <li><a href="@licenceApplicationAddress" target="_blank">Apply for a standard licence</a></li>
 }

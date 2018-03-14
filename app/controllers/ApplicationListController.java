@@ -3,7 +3,6 @@ package controllers;
 import static components.util.StreamUtil.distinctByKey;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import components.cache.SessionCache;
 import components.service.ApplicationItemViewService;
 import components.service.UserService;
@@ -36,17 +35,17 @@ public class ApplicationListController extends SamlController {
   private static final Set<ApplicationSortType> COMPANY_SORT_TYPES = EnumSet.of(ApplicationSortType.DATE, ApplicationSortType.REFERENCE, ApplicationSortType.STATUS, ApplicationSortType.DESTINATION, ApplicationSortType.CREATED_BY);
   private static final Set<ApplicationSortType> ATTENTION_SORT_TYPES = EnumSet.of(ApplicationSortType.REFERENCE, ApplicationSortType.CREATED_BY, ApplicationSortType.EVENT_TYPE, ApplicationSortType.EVENT_DATE);
 
-  private final String licenceApplicationAddress;
   private final ApplicationItemViewService applicationItemViewService;
   private final UserService userService;
+  private final applicationList applicationList;
 
   @Inject
-  public ApplicationListController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
-                                   ApplicationItemViewService applicationItemViewService,
-                                   UserService userService) {
-    this.licenceApplicationAddress = licenceApplicationAddress;
+  public ApplicationListController(ApplicationItemViewService applicationItemViewService,
+                                   UserService userService,
+                                   applicationList applicationList) {
     this.applicationItemViewService = applicationItemViewService;
     this.userService = userService;
+    this.applicationList = applicationList;
   }
 
   public Result index() {
@@ -126,7 +125,7 @@ public class ApplicationListController extends SamlController {
         completedCount,
         pageData);
 
-    return ok(applicationList.render(licenceApplicationAddress, applicationListView)).withHeader("Cache-Control", "no-store, no-cache");
+    return ok(applicationList.render(applicationListView)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
   private String defaultCompanyId(ApplicationListTab applicationListTab, String companyId, List<CompanySelectItemView> companySelectItemViews) {

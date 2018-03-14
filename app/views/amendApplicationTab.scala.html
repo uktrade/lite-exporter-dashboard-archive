@@ -2,10 +2,10 @@
 @import views.html.common.page.twoThirdsColumn
 @import template._
 
-@this(amendApplication: amendApplication)
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, amendmentView: AmendmentView, form: play.data.Form[_])
+@this(applicationDetails: applicationDetails, amendApplication: amendApplication)
+@(applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, amendmentView: AmendmentView, form: play.data.Form[_])
 
-@applicationDetails(applyLink, applicationSummaryView, "amend", applicationTabsView, form) {
+@applicationDetails(applicationSummaryView, "amend", applicationTabsView, form) {
   @if(!amendmentView.getPreviousRequestItemViews.isEmpty) {
     @twoThirdsColumn {
       <h2 class="heading-medium">

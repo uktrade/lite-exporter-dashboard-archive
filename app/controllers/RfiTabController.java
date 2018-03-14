@@ -3,7 +3,6 @@ package controllers;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import components.common.upload.FileService;
 import components.common.upload.FileUtil;
 import components.common.upload.UploadMultipartParser;
@@ -46,7 +45,6 @@ public class RfiTabController extends SamlController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RfiTabController.class);
 
-  private final String licenceApplicationAddress;
   private final FormFactory formFactory;
   private final ApplicationSummaryViewService applicationSummaryViewService;
   private final RfiViewService rfiViewService;
@@ -64,8 +62,7 @@ public class RfiTabController extends SamlController {
   private final rfiListTab rfiListTab;
 
   @Inject
-  public RfiTabController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
-                          FormFactory formFactory,
+  public RfiTabController(FormFactory formFactory,
                           ApplicationSummaryViewService applicationSummaryViewService,
                           RfiViewService rfiViewService,
                           RfiReplyService rfiReplyService,
@@ -80,7 +77,6 @@ public class RfiTabController extends SamlController {
                           HttpExecutionContext httpExecutionContext,
                           UploadValidationConfig uploadValidationConfig,
                           rfiListTab rfiListTab) {
-    this.licenceApplicationAddress = licenceApplicationAddress;
     this.formFactory = formFactory;
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.rfiViewService = rfiViewService;
@@ -151,7 +147,7 @@ public class RfiTabController extends SamlController {
     List<RfiView> rfiViews = rfiViewService.getRfiViews(userId, appData);
     AddRfiReplyView addRfiReplyView = rfiViewService.getAddRfiReplyView(appId, rfiId);
     readDataService.updateRfiTabReadData(userId, appData, readData);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store, no-cache");
+    return ok(rfiListTab.render(applicationSummaryView, applicationTabsView, rfiViews, rfiReplyForm, addRfiReplyView)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
   public Result showRfiTab(String appId) {
@@ -162,7 +158,7 @@ public class RfiTabController extends SamlController {
     ApplicationTabsView applicationTabsView = applicationTabsViewService.getApplicationTabsView(appData, readData);
     List<RfiView> rfiViews = rfiViewService.getRfiViews(userId, appData);
     readDataService.updateRfiTabReadData(userId, appData, readData);
-    return ok(rfiListTab.render(licenceApplicationAddress, applicationSummaryView, applicationTabsView, rfiViews, null, null)).withHeader("Cache-Control", "no-store, no-cache");
+    return ok(rfiListTab.render(applicationSummaryView, applicationTabsView, rfiViews, null, null)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
 }
