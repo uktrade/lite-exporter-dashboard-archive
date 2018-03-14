@@ -1,7 +1,7 @@
 @import models.view.OgelDetailsView
 @import template._
 
-@this(dashboardTopNav: dashboardTopNav)
+@this(standardPage: standardPage, dashboardTopNav: dashboardTopNav)
 @(ogelDetailsView: OgelDetailsView)
 
 @standardPage(ogelDetailsView.getRegistrationReference + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {

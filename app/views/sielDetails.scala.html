@@ -3,7 +3,7 @@
 @import views.html.common.page._
 @import models.view.SielDetailsView
 
-@this(dashboardTopNav: dashboardTopNav)
+@this(standardPage: standardPage, dashboardTopNav: dashboardTopNav)
 @(sielDetailsView: SielDetailsView)
 
 @standardPage(sielDetailsView.getCaseReference + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){

@@ -3,7 +3,7 @@
 @import template._
 @import com.google.inject.name.Named
 
-@this(@Named("licenceApplicationAddress") licenceApplicationAddress: String, dashboardTopNav: dashboardTopNav)
+@this(@Named("licenceApplicationAddress") licenceApplicationAddress: String, standardPage: standardPage, dashboardTopNav: dashboardTopNav)
 @(applicationListView: ApplicationListView)
 
 @standardPage("Export licence application management", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
