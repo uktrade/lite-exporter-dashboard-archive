@@ -1,7 +1,6 @@
 package components.util;
 
 import models.AppData;
-import models.Application;
 import models.CaseData;
 import models.Notification;
 import models.Outcome;
@@ -23,7 +22,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -126,29 +124,6 @@ public class ApplicationUtil {
       return licenceView.getCountryList().get(0);
     } else {
       return String.format("%d destinations", destinationCount);
-    }
-  }
-
-  public static String getDestinations(Application application) {
-    if (application.getConsigneeCountries().size() != 1) {
-      return "";
-    } else {
-      String consigneeCountry = application.getConsigneeCountries().get(0);
-      Set<String> endUserCountries = new HashSet<>(application.getEndUserCountries());
-      Set<String> uniqueEndUserCountries = new HashSet<>(endUserCountries);
-      uniqueEndUserCountries.remove(consigneeCountry);
-      if (uniqueEndUserCountries.isEmpty()) {
-        return consigneeCountry;
-      } else if (uniqueEndUserCountries.size() == 1) {
-        String endUserCountry = uniqueEndUserCountries.iterator().next();
-        if (consigneeCountry.compareToIgnoreCase(endUserCountry) < 0) {
-          return consigneeCountry + "; " + endUserCountry;
-        } else {
-          return endUserCountry + "; " + consigneeCountry;
-        }
-      } else {
-        return consigneeCountry + " + " + endUserCountries.size() + " end user destinations";
-      }
     }
   }
 

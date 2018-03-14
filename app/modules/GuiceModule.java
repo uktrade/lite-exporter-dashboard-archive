@@ -1,5 +1,8 @@
 package modules;
 
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -8,7 +11,9 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -23,6 +28,9 @@ import components.client.UserServiceClient;
 import components.client.UserServiceClientImpl;
 import components.client.test.TestCustomerServiceClientImpl;
 import components.client.test.TestLicenceClientImpl;
+import components.common.cache.CountryProvider;
+import components.common.cache.UpdateCountryCacheActor;
+import components.common.client.CountryServiceClient;
 import components.common.journey.JourneyContextParamProvider;
 import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
@@ -77,6 +85,8 @@ import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationSummaryViewServiceImpl;
 import components.service.ApplicationTabsViewService;
 import components.service.ApplicationTabsViewServiceImpl;
+import components.service.DestinationService;
+import components.service.DestinationServiceImpl;
 import components.service.DraftFileService;
 import components.service.DraftFileServiceImpl;
 import components.service.MessageViewService;
@@ -116,9 +126,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.skife.jdbi.v2.DBI;
 import play.Environment;
 import play.db.Database;
+import play.libs.concurrent.HttpExecutionContext;
+import play.libs.ws.WSClient;
+import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.FiniteDuration;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 public class GuiceModule extends AbstractModule {
 
@@ -165,6 +180,7 @@ public class GuiceModule extends AbstractModule {
     bind(PreviousRequestItemViewService.class).to(PreviousRequestItemViewServiceImpl.class);
     bind(UserPermissionService.class).to(TestUserPermissionServiceImpl.class).asEagerSingleton();
     bind(DraftFileService.class).to(DraftFileServiceImpl.class);
+    bind(DestinationService.class).to(DestinationServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -194,6 +210,8 @@ public class GuiceModule extends AbstractModule {
     bindConstant().annotatedWith(Names.named("basicAuthUser")).to(config.getString("basicAuth.user"));
     bindConstant().annotatedWith(Names.named("basicAuthPassword")).to(config.getString("basicAuth.password"));
     bindConstant().annotatedWith(Names.named("basicAuthRealm")).to(config.getString("basicAuth.realm"));
+    // init scheduler
+    requestInjection(this);
   }
 
   private void bindSnsAndSqsServices() {
@@ -251,8 +269,11 @@ public class GuiceModule extends AbstractModule {
     bindConstant().annotatedWith(Names.named("userServiceAddress")).to(config.getString("userService.address"));
     bindConstant().annotatedWith(Names.named("userServiceTimeout")).to(config.getString("userService.timeout"));
     bindConstant().annotatedWith(Names.named("userServiceCacheExpiryMinutes")).to(config.getString("userService.cacheExpiryMinutes"));
-
     bind(UserServiceClient.class).to(UserServiceClientImpl.class);
+    // CountryServiceClient
+    bindConstant().annotatedWith(Names.named("countryAddress")).to(config.getString("countryService.address"));
+    bindConstant().annotatedWith(Names.named("countryTimeout")).to(config.getString("countryService.timeout"));
+    bindConstant().annotatedWith(Names.named("countryCredentials")).to(config.getString("countryService.credentials"));
   }
 
   @Provides
@@ -276,6 +297,35 @@ public class GuiceModule extends AbstractModule {
     return new DBI(database.getUrl(),
         config.getString("db.default.username"),
         config.getString("db.default.password"));
+  }
+
+  @Provides
+  @Singleton
+  CountryProvider provideCountryProvider(HttpExecutionContext httpContext,
+                                         WSClient wsClient,
+                                         @Named("countryAddress") String address,
+                                         @Named("countryTimeout") int timeout,
+                                         @Named("countryCredentials") String credentials,
+                                         ObjectMapper mapper) {
+    return new CountryProvider(CountryServiceClient.buildCountryServiceAllClient(httpContext,
+        wsClient,
+        timeout,
+        address,
+        credentials,
+        mapper));
+  }
+
+  @Provides
+  @Singleton
+  @Named("countryActorRef")
+  ActorRef provideCountryActorRef(ActorSystem system, CountryProvider countryProvider) {
+    return system.actorOf(Props.create(UpdateCountryCacheActor.class, () -> new UpdateCountryCacheActor(countryProvider)));
+  }
+
+  @Inject
+  public void initCountryActorScheduler(ActorSystem system, @Named("countryActorRef") ActorRef countryActorRef) {
+    FiniteDuration frequency = Duration.create(1, TimeUnit.DAYS);
+    system.scheduler().schedule(Duration.create(0, TimeUnit.SECONDS), frequency, countryActorRef, "country cache", system.dispatcher(), null);
   }
 
 }
