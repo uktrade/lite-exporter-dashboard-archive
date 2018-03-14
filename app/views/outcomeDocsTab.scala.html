@@ -1,8 +1,10 @@
 @import models.view.{ApplicationSummaryView, InformLetterView, OutcomeView, ApplicationTabsView, InformLetterSectionView}
 @import template._
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, isInProgress: Boolean, isStopped: Boolean, isWithdrawn: Boolean, outcomeViews: java.util.List[OutcomeView], informLetterSectionView: InformLetterSectionView)
 
-@applicationDetails(applyLink, applicationSummaryView, "outcomeDocs", applicationTabsView, null) {
+@this(applicationDetails: applicationDetails)
+@(applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, isInProgress: Boolean, isStopped: Boolean, isWithdrawn: Boolean, outcomeViews: java.util.List[OutcomeView], informLetterSectionView: InformLetterSectionView)
+
+@applicationDetails(applicationSummaryView, "outcomeDocs", applicationTabsView, null) {
   @if(isInProgress) {
     Your application is still being processed.
     <p>

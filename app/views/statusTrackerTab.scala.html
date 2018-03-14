@@ -1,8 +1,9 @@
 @import models.view.{ApplicationSummaryView, StatusItemView, ApplicationTabsView, StatusTrackerView}
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, statusTrackerView: StatusTrackerView)
+@this(applicationDetails: applicationDetails)
+@(applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, statusTrackerView: StatusTrackerView)
 
-@applicationDetails(applyLink, applicationSummaryView, "statusTracker", applicationTabsView, null) {
+@applicationDetails(applicationSummaryView, "statusTracker", applicationTabsView, null) {
   @statusTracker(statusTrackerView)
 }

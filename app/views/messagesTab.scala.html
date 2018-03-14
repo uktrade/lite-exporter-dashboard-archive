@@ -1,9 +1,10 @@
 @import models.view.{ApplicationSummaryView, MessageView, ApplicationTabsView}
 @import template._
 
-@(applyLink: String, applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, messageViews: java.util.List[MessageView])
+@this(applicationDetails: applicationDetails)
+@(applicationSummaryView: ApplicationSummaryView, applicationTabsView: ApplicationTabsView, messageViews: java.util.List[MessageView])
 
-@applicationDetails(applyLink, applicationSummaryView, "messages", applicationTabsView, null) {
+@applicationDetails(applicationSummaryView, "messages", applicationTabsView, null) {
   @if(messageViews.isEmpty) {
     <p>You don't have any messages.</p>
   } else {

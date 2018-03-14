@@ -3,12 +3,14 @@
 @import views.html.common.page._
 @import models.view.SielDetailsView
 
-@(applyLink: String, sielDetailsView: SielDetailsView)
+@this(dashboardTopNav: dashboardTopNav)
+@(sielDetailsView: SielDetailsView)
+
 @standardPage(sielDetailsView.getCaseReference + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false){
 
 }{
 
-  @dashboardTopNav(applyLink)
+  @dashboardTopNav()
 
   @sielLicenceDetails(sielDetailsView)
   

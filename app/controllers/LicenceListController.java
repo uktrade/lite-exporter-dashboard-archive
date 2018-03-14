@@ -1,7 +1,6 @@
 package controllers;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import components.cache.SessionCache;
 import components.service.OgelDetailsViewService;
 import components.service.OgelItemViewService;
@@ -35,26 +34,32 @@ public class LicenceListController extends SamlController {
   private static final EnumSet<LicenceSortType> OGEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.REGISTRATION_DATE, LicenceSortType.LAST_UPDATED);
   private static final EnumSet<LicenceSortType> SIEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.EXPIRY_DATE);
 
-  private final String licenceApplicationAddress;
   private final OgelItemViewService ogelItemViewService;
   private final OgelDetailsViewService ogelDetailsViewService;
   private final UserService userService;
   private final SielItemViewService sielItemViewService;
   private final SielDetailsViewService sielDetailsViewService;
+  private final licenceList licenceList;
+  private final ogelDetails ogelDetails;
+  private final sielDetails sielDetails;
 
   @Inject
-  public LicenceListController(@Named("licenceApplicationAddress") String licenceApplicationAddress,
-                               OgelItemViewService ogelItemViewService,
+  public LicenceListController(OgelItemViewService ogelItemViewService,
                                OgelDetailsViewService ogelDetailsViewService,
                                UserService userService,
                                SielItemViewService sielItemViewService,
-                               SielDetailsViewService sielDetailsViewService) {
-    this.licenceApplicationAddress = licenceApplicationAddress;
+                               SielDetailsViewService sielDetailsViewService,
+                               licenceList licenceList,
+                               ogelDetails ogelDetails,
+                               sielDetails sielDetails) {
     this.ogelItemViewService = ogelItemViewService;
     this.ogelDetailsViewService = ogelDetailsViewService;
     this.userService = userService;
     this.sielItemViewService = sielItemViewService;
     this.sielDetailsViewService = sielDetailsViewService;
+    this.licenceList = licenceList;
+    this.ogelDetails = ogelDetails;
+    this.sielDetails = sielDetails;
   }
 
   public Result licenceList(String tab, String sort, String direction, Integer page) {
@@ -97,14 +102,14 @@ public class LicenceListController extends SamlController {
 
     LicenceListView licenceListView = new LicenceListView(hasSiels, hasOgels, licenceListTab, licenceSortType, sortDirection, ogelPage, sielPage, currentPage);
 
-    return ok(licenceList.render(licenceApplicationAddress, licenceListView));
+    return ok(licenceList.render(licenceListView));
   }
 
   public Result ogelDetails(String registrationReference) {
     String userId = userService.getCurrentUserId();
     Optional<OgelDetailsView> ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(userId, registrationReference);
     if (ogelDetailsView.isPresent()) {
-      return ok(ogelDetails.render(licenceApplicationAddress, ogelDetailsView.get()));
+      return ok(ogelDetails.render(ogelDetailsView.get()));
     } else {
       return notFound("Unknown ogel.");
     }
@@ -114,7 +119,7 @@ public class LicenceListController extends SamlController {
     String userId = userService.getCurrentUserId();
     Optional<SielDetailsView> sielDetailsView = sielDetailsViewService.getSielDetailsView(userId, registrationReference);
     if (sielDetailsView.isPresent()) {
-      return ok(sielDetails.render(licenceApplicationAddress, sielDetailsView.get()));
+      return ok(sielDetails.render(sielDetailsView.get()));
     } else {
       return notFound("Unknown siel.");
     }

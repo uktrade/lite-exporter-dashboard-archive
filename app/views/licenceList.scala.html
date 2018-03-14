@@ -2,12 +2,15 @@
 @import models.enums.LicenceListTab
 @import models.view.LicenceListView
 @import template._
-@(applyLink: String, licenceListView: LicenceListView)
+
+@this(dashboardTopNav: dashboardTopNav)
+@(licenceListView: LicenceListView)
+
 @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
 } {
 
-  @dashboardTopNav(applyLink)
+  @dashboardTopNav()
 
   <div class="heading-medium dashboard-section-heading">Licences</div>
 
