@@ -89,6 +89,8 @@ import components.service.DestinationService;
 import components.service.DestinationServiceImpl;
 import components.service.DraftFileService;
 import components.service.DraftFileServiceImpl;
+import components.service.EscapeHtmlService;
+import components.service.EscapeHtmlServiceImpl;
 import components.service.MessageViewService;
 import components.service.MessageViewServiceImpl;
 import components.service.OfficerViewService;
@@ -181,6 +183,7 @@ public class GuiceModule extends AbstractModule {
     bind(UserPermissionService.class).to(TestUserPermissionServiceImpl.class).asEagerSingleton();
     bind(DraftFileService.class).to(DraftFileServiceImpl.class);
     bind(DestinationService.class).to(DestinationServiceImpl.class);
+    bind(EscapeHtmlService.class).to(EscapeHtmlServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);

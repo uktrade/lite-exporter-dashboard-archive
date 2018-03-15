@@ -24,6 +24,7 @@ import components.dao.WithdrawalRejectionDao;
 import components.message.ConsumerRoutingKey;
 import components.message.MessageHandler;
 import components.message.MessageHandlerImpl;
+import components.service.EscapeHtmlServiceImpl;
 import models.CaseDetails;
 import models.Notification;
 import models.NotificationType;
@@ -64,7 +65,8 @@ public class SpireRelayServicePact {
       withdrawalRejectionDao,
       withdrawalApprovalDao,
       caseDetailsDao,
-      applicationDao);
+      applicationDao,
+      new EscapeHtmlServiceImpl());
 
   @Rule
   public MessagePactProviderRule mockProvider = new MessagePactProviderRule(PROVIDER, this);
