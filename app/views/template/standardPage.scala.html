@@ -1,5 +1,6 @@
 @import views.html.common.journey._
 
+@this(govukTemplateDefaults: govukTemplateDefaults)
 @(htmlTitle: String, pageHeading: Option[Html], pageHead: Option[Html] = None, headingCssClass: String = "heading-large", twoThirdsColumn: Boolean = true, hideBackLink: Boolean = false, twoThirdsHeading: Boolean = false)(beforeHeader: Html)(content: Html)
 
   @govukTemplateDefaults(htmlTitle + " - Import & Export Licensing", None, pageHead) {

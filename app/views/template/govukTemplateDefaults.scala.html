@@ -1,6 +1,8 @@
 @import play.twirl.api.HtmlFormat
 @import views.html.common.page.govukTemplate
 @import components.common.auth.SpireAuthManager
+
+@this(spireAuthManager: SpireAuthManager)
 @(htmlTitle: String, propositionHeading: Option[Html] = None, pageHead: Option[Html] = None)(content: Html)
 
 @head = {
@@ -22,8 +24,8 @@
       <nav id="proposition-menu">
         <span id="proposition-name">@propositionHeading.getOrElse("Import / Export Licensing")</span>
         <div class="account-header">
-        @if(SpireAuthManager.currentAuthInfo(ctx()).isAuthenticated) {
-          @SpireAuthManager.currentAuthInfo(ctx()).getFullName | <a href="@org.pac4j.play.routes.LogoutController.logout">Sign out</a>
+        @if(spireAuthManager.getAuthInfoFromContext.isAuthenticated) {
+          @spireAuthManager.getAuthInfoFromContext.getFullName | <a href="@org.pac4j.play.routes.LogoutController.logout">Sign out</a>
         } else {
           <a href="@routes.ApplicationListController.index()">Sign in</a>
         }

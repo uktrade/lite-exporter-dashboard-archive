@@ -3,7 +3,7 @@
 @import models.view.LicenceListView
 @import template._
 
-@this(dashboardTopNav: dashboardTopNav)
+@this(standardPage: standardPage, dashboardTopNav: dashboardTopNav)
 @(licenceListView: LicenceListView)
 
 @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {

@@ -4,6 +4,7 @@ import static play.mvc.Controller.session;
 import static play.mvc.Results.forbidden;
 import static play.mvc.Results.ok;
 
+import com.google.inject.Inject;
 import components.common.CommonContextAction;
 import play.mvc.Result;
 import play.mvc.With;
@@ -12,6 +13,15 @@ import views.html.unauthorised;
 
 @With(CommonContextAction.class)
 public class AuthorisationController {
+
+  private final unauthorised unauthorised;
+  private final loggedOut loggedOut;
+
+  @Inject
+  public AuthorisationController(unauthorised unauthorised, loggedOut loggedOut) {
+    this.unauthorised = unauthorised;
+    this.loggedOut = loggedOut;
+  }
 
   public Result unauthorised() {
     return forbidden(unauthorised.render());

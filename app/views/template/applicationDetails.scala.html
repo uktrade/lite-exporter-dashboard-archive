@@ -3,7 +3,7 @@
 @import template._
 @import views.html.common.page._
 
-@this(dashboardTopNav: dashboardTopNav)
+@this(standardPage: standardPage, dashboardTopNav: dashboardTopNav)
 @(applicationSummaryView: ApplicationSummaryView, activeTab: String, applicationTabsView: ApplicationTabsView, form: play.data.Form[_])(content: Html)
 
 @standardPage(applicationSummaryView.getCaseReference + " - Export licence application", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
