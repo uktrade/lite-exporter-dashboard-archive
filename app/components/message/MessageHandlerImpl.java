@@ -12,6 +12,7 @@ import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.exceptions.ValidationException;
+import components.service.EscapeHtmlService;
 import components.util.EnumUtil;
 import components.util.RandomIdUtil;
 import models.CaseDetails;
@@ -77,6 +78,7 @@ public class MessageHandlerImpl implements MessageHandler {
   private final WithdrawalApprovalDao withdrawalApprovalDao;
   private final CaseDetailsDao caseDetailsDao;
   private final ApplicationDao applicationDao;
+  private final EscapeHtmlService escapeHtmlService;
 
   @Inject
   public MessageHandlerImpl(
@@ -88,7 +90,8 @@ public class MessageHandlerImpl implements MessageHandler {
       WithdrawalRejectionDao withdrawalRejectionDao,
       WithdrawalApprovalDao withdrawalApprovalDao,
       CaseDetailsDao caseDetailsDao,
-      ApplicationDao applicationDao) {
+      ApplicationDao applicationDao,
+      EscapeHtmlService escapeHtmlService) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.notificationDao = notificationDao;
@@ -98,6 +101,7 @@ public class MessageHandlerImpl implements MessageHandler {
     this.withdrawalApprovalDao = withdrawalApprovalDao;
     this.caseDetailsDao = caseDetailsDao;
     this.applicationDao = applicationDao;
+    this.escapeHtmlService = escapeHtmlService;
   }
 
   @Override
@@ -180,13 +184,14 @@ public class MessageHandlerImpl implements MessageHandler {
 
   private void insertRfi(String message) {
     DashboardRfiCreate dashboardRfiCreate = parse(message, DashboardRfiCreate.class);
+    String escaped = escapeHtmlService.escape(dashboardRfiCreate.getMessage());
     Rfi rfi = new Rfi(dashboardRfiCreate.getId(),
         dashboardRfiCreate.getCaseRef(),
         dashboardRfiCreate.getCreatedTimestamp(),
         dashboardRfiCreate.getDeadlineTimestamp(),
         dashboardRfiCreate.getCreatedByUserId(),
         dashboardRfiCreate.getRecipientUserIds(),
-        dashboardRfiCreate.getMessage());
+        escaped);
     validate(rfi);
     rfiDao.insertRfi(rfi);
   }
@@ -207,13 +212,14 @@ public class MessageHandlerImpl implements MessageHandler {
 
   private void insertDelayNotification(String message) {
     DashboardNotificationDelay dashboardNotificationDelay = parse(message, DashboardNotificationDelay.class);
+    String escaped = escapeHtmlService.escape(dashboardNotificationDelay.getMessage());
     Notification notification = new Notification(dashboardNotificationDelay.getId(),
         dashboardNotificationDelay.getCaseRef(),
         NotificationType.DELAY,
         null,
         dashboardNotificationDelay.getCreatedTimestamp(),
         dashboardNotificationDelay.getRecipientUserIds(),
-        dashboardNotificationDelay.getMessage(),
+        escaped,
         null);
     validate(notification, "createdByUserId", "document");
     notificationDao.insertNotification(notification);
@@ -221,13 +227,14 @@ public class MessageHandlerImpl implements MessageHandler {
 
   private void insertStopNotification(String message) {
     DashboardNotificationStop dashboardNotificationStop = parse(message, DashboardNotificationStop.class);
+    String escaped = escapeHtmlService.escape(dashboardNotificationStop.getMessage());
     Notification notification = new Notification(dashboardNotificationStop.getId(),
         dashboardNotificationStop.getCaseRef(),
         NotificationType.STOP,
         dashboardNotificationStop.getCreatedByUserId(),
         dashboardNotificationStop.getCreatedTimestamp(),
         dashboardNotificationStop.getRecipientUserIds(),
-        dashboardNotificationStop.getMessage(),
+        escaped,
         null);
     validate(notification, "document");
     notificationDao.insertNotification(notification);
@@ -291,7 +298,8 @@ public class MessageHandlerImpl implements MessageHandler {
     outcomeDao.insertOutcome(outcome);
   }
 
-  private List<OutcomeDocument> parseOutcomeDocuments(List<DashboardOutcomeDocument> dashboardOutcomeDocuments, String prefix) {
+  private List<OutcomeDocument> parseOutcomeDocuments(List<DashboardOutcomeDocument> dashboardOutcomeDocuments,
+                                                      String prefix) {
     if (CollectionUtils.isEmpty(dashboardOutcomeDocuments) || dashboardOutcomeDocuments.contains(null)) {
       throw new ValidationException("Documents cannot be empty or contain null.");
     }
@@ -316,24 +324,26 @@ public class MessageHandlerImpl implements MessageHandler {
 
   private void insertWithdrawalRejection(String message) {
     DashboardWithdrawalReject dashboardWithdrawalReject = parse(message, DashboardWithdrawalReject.class);
+    String escaped = escapeHtmlService.escape(dashboardWithdrawalReject.getMessage());
     WithdrawalRejection withdrawalRejection = new WithdrawalRejection(RandomIdUtil.withdrawalRejectionId(),
         dashboardWithdrawalReject.getAppId(),
         dashboardWithdrawalReject.getCreatedByUserId(),
         System.currentTimeMillis(),
         dashboardWithdrawalReject.getRecipientUserIds(),
-        dashboardWithdrawalReject.getMessage());
+        escaped);
     validate(withdrawalRejection);
     withdrawalRejectionDao.insertWithdrawalRejection(withdrawalRejection);
   }
 
   private void insertWithdrawalAccept(String message) {
     DashboardWithdrawalAccept dashboardWithdrawalAccept = parse(message, DashboardWithdrawalAccept.class);
+    String escaped = escapeHtmlService.escape(dashboardWithdrawalAccept.getMessage());
     WithdrawalApproval withdrawalApproval = new WithdrawalApproval(dashboardWithdrawalAccept.getId(),
         dashboardWithdrawalAccept.getAppId(),
         dashboardWithdrawalAccept.getCreatedByUserId(),
         dashboardWithdrawalAccept.getCreatedTimestamp(),
         dashboardWithdrawalAccept.getRecipientUserIds(),
-        dashboardWithdrawalAccept.getMessage());
+        escaped);
     validate(withdrawalApproval);
     withdrawalApprovalDao.insertWithdrawalApproval(withdrawalApproval);
   }
