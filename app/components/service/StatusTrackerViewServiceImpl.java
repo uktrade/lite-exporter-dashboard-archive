@@ -37,8 +37,11 @@ import java.util.stream.Collectors;
 
 public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 
+  private final WorkingDayService workingDayService;
+
   @Inject
-  public StatusTrackerViewServiceImpl() {
+  public StatusTrackerViewServiceImpl(WorkingDayService workingDayService) {
+    this.workingDayService = workingDayService;
   }
 
   @Override
@@ -205,7 +208,8 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
         inProgressStatusItemView.getNotificationViews());
   }
 
-  private StatusItemView getWithdrawalApprovalStatusItemView(WithdrawalApproval withdrawalApproval, StatusItemView inProgressStatusItemView) {
+  private StatusItemView getWithdrawalApprovalStatusItemView(WithdrawalApproval withdrawalApproval,
+                                                             StatusItemView inProgressStatusItemView) {
     String processingDescription = "On " + TimeUtil.formatDate(withdrawalApproval.getCreatedTimestamp());
     return new StatusItemView(inProgressStatusItemView.getStatus(),
         inProgressStatusItemView.getStatusExplanation(),
@@ -303,7 +307,8 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     return new NotificationView(EventLabelType.RFI, "Request for information", link, description, rfi.getCreatedTimestamp());
   }
 
-  private StatusItemView getStatusItemView(StatusUpdate statusUpdate, List<NotificationView> notificationViews, Long finishedTimestamp) {
+  private StatusItemView getStatusItemView(StatusUpdate statusUpdate, List<NotificationView> notificationViews,
+                                           Long finishedTimestamp) {
     String status = ApplicationUtil.getStatusName(statusUpdate.getStatusType());
     String statusExplanation = ApplicationUtil.getStatusExplanation(statusUpdate.getStatusType());
     String processingLabel = getProcessingLabel(statusUpdate, finishedTimestamp);
@@ -343,11 +348,11 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
       Long createdTimestamp = statusUpdate.getCreatedTimestamp();
       if (createdTimestamp != null) {
         if (finishedTimestamp != null) {
-          long duration = TimeUtil.daysBetweenWithStartBeforeEnd(createdTimestamp, finishedTimestamp);
+          long duration = workingDayService.calculateWorkingDays(createdTimestamp, finishedTimestamp);
           return "Processed in " + ViewUtil.pluraliseWithCount(duration, "working day") + "*";
         } else {
           String started = TimeUtil.formatDate(createdTimestamp);
-          long duration = TimeUtil.daysBetweenWithStartBeforeEnd(createdTimestamp, Instant.now().toEpochMilli());
+          long duration = workingDayService.calculateWorkingDays(createdTimestamp, Instant.now().toEpochMilli());
           return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
         }
       } else {
@@ -364,8 +369,8 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     } else {
       long createdTimestamp = caseData.getCaseDetails().getCreatedTimestamp();
       String started = TimeUtil.formatDate(createdTimestamp);
-      long duration = TimeUtil.daysBetweenWithStartBeforeEnd(createdTimestamp, Instant.now().toEpochMilli());
-      return String.format("Started on %s<br>(%d days ago)", started, duration);
+      long duration = workingDayService.calculateWorkingDays(createdTimestamp, Instant.now().toEpochMilli());
+      return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
     }
   }
 
