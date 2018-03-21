@@ -86,7 +86,7 @@ public class WorkingDayServiceImpl implements WorkingDayService {
 
   // https://stackoverflow.com/a/325964
   private boolean doOverlap(LocalDateTime startA, LocalDateTime endA, LocalDateTime startB, LocalDateTime endB) {
-    return (startA.isBefore(endB) || startA == endB) && (endA.isAfter(startB) || endA == startB);
+    return (startA.isBefore(endB) || startA.isEqual(endB)) && (endA.isAfter(startB) || endA.isEqual(startB));
   }
 
   private boolean isWeekend(LocalDateTime localDateTime) {
