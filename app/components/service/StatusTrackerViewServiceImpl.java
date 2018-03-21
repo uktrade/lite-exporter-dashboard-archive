@@ -37,8 +37,11 @@ import java.util.stream.Collectors;
 
 public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 
+  private final WorkingDayService workingDayService;
+
   @Inject
-  public StatusTrackerViewServiceImpl() {
+  public StatusTrackerViewServiceImpl(WorkingDayService workingDayService) {
+    this.workingDayService = workingDayService;
   }
 
   @Override
@@ -72,7 +75,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
           StatusItemView amendmentStatusItemView = new StatusItemView(ApplicationUtil.AMENDMENT,
               "",
               getProcessingLabel(caseData),
-              getProcessingDescription(caseData),
+              getProcessingDescription(caseData, appData),
               notificationViews);
           statusItemViews.add(amendmentStatusItemView);
 
@@ -137,7 +140,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     Map<StatusUpdate, Long> finishedTimestamps = getFinishedTimestamps(statusUpdates);
 
     List<StatusItemView> statusItemViews = statusUpdates.stream()
-        .map(statusUpdate -> getStatusItemView(statusUpdate, new ArrayList<>(notificationViewMultimap.get(statusUpdate)), finishedTimestamps.get(statusUpdate)))
+        .map(statusUpdate -> getStatusItemView(statusUpdate, new ArrayList<>(notificationViewMultimap.get(statusUpdate)), finishedTimestamps.get(statusUpdate), appData))
         .collect(Collectors.toList());
 
     if (appData.getWithdrawalApproval() != null || appData.getStopNotification() != null) {
@@ -205,7 +208,8 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
         inProgressStatusItemView.getNotificationViews());
   }
 
-  private StatusItemView getWithdrawalApprovalStatusItemView(WithdrawalApproval withdrawalApproval, StatusItemView inProgressStatusItemView) {
+  private StatusItemView getWithdrawalApprovalStatusItemView(WithdrawalApproval withdrawalApproval,
+                                                             StatusItemView inProgressStatusItemView) {
     String processingDescription = "On " + TimeUtil.formatDate(withdrawalApproval.getCreatedTimestamp());
     return new StatusItemView(inProgressStatusItemView.getStatus(),
         inProgressStatusItemView.getStatusExplanation(),
@@ -303,11 +307,12 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     return new NotificationView(EventLabelType.RFI, "Request for information", link, description, rfi.getCreatedTimestamp());
   }
 
-  private StatusItemView getStatusItemView(StatusUpdate statusUpdate, List<NotificationView> notificationViews, Long finishedTimestamp) {
+  private StatusItemView getStatusItemView(StatusUpdate statusUpdate, List<NotificationView> notificationViews,
+                                           Long finishedTimestamp, AppData appData) {
     String status = ApplicationUtil.getStatusName(statusUpdate.getStatusType());
     String statusExplanation = ApplicationUtil.getStatusExplanation(statusUpdate.getStatusType());
     String processingLabel = getProcessingLabel(statusUpdate, finishedTimestamp);
-    String processingDescription = getProcessingDescription(statusUpdate, finishedTimestamp);
+    String processingDescription = getProcessingDescription(statusUpdate, finishedTimestamp, appData);
     notificationViews.sort(Comparators.NOTIFICATION_VIEW_CREATED);
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, notificationViews);
   }
@@ -332,7 +337,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     }
   }
 
-  private String getProcessingDescription(StatusUpdate statusUpdate, Long finishedTimestamp) {
+  private String getProcessingDescription(StatusUpdate statusUpdate, Long finishedTimestamp, AppData appData) {
     if (statusUpdate.getStatusType() == StatusType.COMPLETE) {
       if (finishedTimestamp != null) {
         return "Completed on " + TimeUtil.formatDate(statusUpdate.getCreatedTimestamp());
@@ -343,11 +348,11 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
       Long createdTimestamp = statusUpdate.getCreatedTimestamp();
       if (createdTimestamp != null) {
         if (finishedTimestamp != null) {
-          long duration = TimeUtil.daysBetweenWithStartBeforeEnd(createdTimestamp, finishedTimestamp);
+          long duration = workingDayService.calculateWorkingDays(createdTimestamp, finishedTimestamp, appData);
           return "Processed in " + ViewUtil.pluraliseWithCount(duration, "working day") + "*";
         } else {
           String started = TimeUtil.formatDate(createdTimestamp);
-          long duration = TimeUtil.daysBetweenWithStartBeforeEnd(createdTimestamp, Instant.now().toEpochMilli());
+          long duration = workingDayService.calculateWorkingDays(createdTimestamp, Instant.now().toEpochMilli(), appData);
           return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
         }
       } else {
@@ -356,7 +361,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     }
   }
 
-  private String getProcessingDescription(CaseData caseData) {
+  private String getProcessingDescription(CaseData caseData, AppData appData) {
     if (caseData.getOutcome() != null) {
       return "Started on " + TimeUtil.formatDate(caseData.getCaseDetails().getCreatedTimestamp());
     } else if (caseData.getStopNotification() != null) {
@@ -364,8 +369,8 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     } else {
       long createdTimestamp = caseData.getCaseDetails().getCreatedTimestamp();
       String started = TimeUtil.formatDate(createdTimestamp);
-      long duration = TimeUtil.daysBetweenWithStartBeforeEnd(createdTimestamp, Instant.now().toEpochMilli());
-      return String.format("Started on %s<br>(%d days ago)", started, duration);
+      long duration = workingDayService.calculateWorkingDays(createdTimestamp, Instant.now().toEpochMilli(), appData);
+      return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
     }
   }
 

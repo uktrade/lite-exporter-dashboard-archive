@@ -79,8 +79,9 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
         .collect(Collectors.toMap(CustomerView::getCustomerId, Function.identity()));
   }
 
-  private OgelItemView getOgelItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView, SiteView siteView, OgelFullView ogelFullView) {
-    long registrationTimestamp = TimeUtil.parseOgelRegistrationDate(ogelRegistrationView.getRegistrationDate());
+  private OgelItemView getOgelItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView,
+                                       SiteView siteView, OgelFullView ogelFullView) {
+    long registrationTimestamp = TimeUtil.toMillis(TimeUtil.parseYearMonthDate(ogelRegistrationView.getRegistrationDate()));
     String registrationDate = TimeUtil.formatDate(registrationTimestamp);
     long updatedTimestamp;
     String updatedDate;

@@ -117,12 +117,15 @@ import components.service.UserPermissionService;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
+import components.service.WorkingDayService;
+import components.service.WorkingDayServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
 import components.service.test.TestOgelDetailsViewServiceImpl;
 import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
+import components.util.HolidayUtil;
 import filters.common.JwtRequestFilterConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.skife.jdbi.v2.DBI;
@@ -133,8 +136,10 @@ import play.libs.ws.WSClient;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class GuiceModule extends AbstractModule {
@@ -184,6 +189,9 @@ public class GuiceModule extends AbstractModule {
     bind(DraftFileService.class).to(DraftFileServiceImpl.class);
     bind(DestinationService.class).to(DestinationServiceImpl.class);
     bind(EscapeHtmlService.class).to(EscapeHtmlServiceImpl.class);
+    // Working day service
+    List<LocalDate> holidays = HolidayUtil.loadHolidaysFromFile("holidays.json");
+    bind(WorkingDayService.class).toInstance(new WorkingDayServiceImpl(holidays));
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);

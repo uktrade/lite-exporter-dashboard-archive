@@ -10,13 +10,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAccessor;
 
 public class TimeUtil {
 
-  private static final DateTimeFormatter ogelDateFormatter = new DateTimeFormatterBuilder()
+  private static final DateTimeFormatter YEAR_MONTH_DAY_FORMATTER = new DateTimeFormatterBuilder()
       .appendPattern("yyyy-MM-dd")
-      .parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter()
+      .toFormatter()
       .withZone(ZoneId.systemDefault());
   private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneId.systemDefault());
   private static final DateTimeFormatter timeFormatter = new DateTimeFormatterBuilder()
@@ -31,9 +30,8 @@ public class TimeUtil {
     return date + " at " + time;
   }
 
-  public static long parseOgelRegistrationDate(String ogelRegistrationDate) {
-    TemporalAccessor temporalAccessor = ogelDateFormatter.parse(ogelRegistrationDate);
-    return Instant.from(temporalAccessor).toEpochMilli();
+  public static LocalDate parseYearMonthDate(String date) {
+    return LocalDate.parse(date, YEAR_MONTH_DAY_FORMATTER);
   }
 
   public static String formatDate(long millis) {
@@ -54,6 +52,10 @@ public class TimeUtil {
 
   public static LocalDate toLocalDate(long millis) {
     return Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate();
+  }
+
+  public static LocalDateTime toLocalDateTime(long millis) {
+    return Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDateTime();
   }
 
 }
