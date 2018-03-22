@@ -102,7 +102,8 @@ public class DownloadController extends SamlController {
         .findAny();
     if (attachmentOptional.isPresent()) {
       Attachment attachment = attachmentOptional.get();
-      return ok(fileService.retrieveFile(attachment.getId(), attachment.getBucket(), attachment.getFolder()));
+      return ok(fileService.retrieveFile(attachment.getId(), attachment.getBucket(), attachment.getFolder()))
+          .withHeader("Content-Disposition", "attachment; filename=" + attachment.getFilename());
     } else {
       return unknownAttachment(id);
     }

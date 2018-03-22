@@ -15,7 +15,7 @@
       <tbody>
       @for(file <- fileViews) {
         <tr>
-          <td class="file-upload-filename"><a href="@file.getLink" target="_blank">@file.getName</a></td>
+          <td class="file-upload-filename"><a href="@file.getLink">@file.getName</a></td>
           <td class="file-upload-status">@file.getSize</td>
         </tr>
       }
