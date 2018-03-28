@@ -9,11 +9,12 @@ import static ru.yandex.qatools.embed.postgresql.distribution.Version.Main.V9_5;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import components.message.ConsumerRoutingKey;
 import components.message.MessageHandler;
 import components.message.SqsPoller;
 import components.service.StartUpService;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -347,13 +348,12 @@ public class DuplicateMessageTest {
   }
 
   private Application buildApplication() {
+    Config config = ConfigFactory.load("conf/test-application.conf");
     return new GuiceApplicationBuilder()
+        .configure(config)
         .overrides(bind(SqsPoller.class).toInstance(mock(SqsPoller.class)))
         .overrides(bind(StartUpService.class).to(TestStartUpServiceImpl.class).eagerly())
-        .configure("jwtSharedSecret", StringUtils.repeat("#", 64))
         .configure("db.default.url", "jdbc:postgresql://" + POSTGRES_URL + ":5432/postgres?currentSchema=test")
-        .configure("db.default.username", "postgres")
-        .configure("db.default.password", "password")
         .build();
   }
 
