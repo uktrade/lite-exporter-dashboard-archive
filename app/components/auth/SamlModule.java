@@ -9,6 +9,7 @@ import components.common.auth.SamlUtil;
 import org.pac4j.play.LogoutController;
 import org.pac4j.play.store.PlayCacheSessionStore;
 import org.pac4j.play.store.PlaySessionStore;
+import play.cache.NamedCache;
 import play.cache.SyncCacheApi;
 
 import java.util.concurrent.TimeUnit;
@@ -30,9 +31,9 @@ public class SamlModule extends AbstractModule {
 
   @Singleton
   @Provides
-  public PlaySessionStore providePlaySessionStore(SyncCacheApi syncCacheApi) {
+  public PlaySessionStore providePlaySessionStore(@NamedCache("pac4j-session-store") SyncCacheApi syncCacheApi) {
     PlayCacheSessionStore playCacheSessionStore = new PlayCacheSessionStore(syncCacheApi);
-    playCacheSessionStore.setTimeout((int) TimeUnit.MINUTES.toSeconds(15));
+    playCacheSessionStore.setTimeout((int) TimeUnit.MINUTES.toSeconds(config.getInt("pac4j.sessionTimeoutMinutes")));
     return playCacheSessionStore;
   }
 
