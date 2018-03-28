@@ -66,5 +66,3 @@ buildInfoKeys ++= Seq[BuildInfoKey](
 buildInfoOptions += BuildInfoOption.BuildTime
 buildInfoOptions += BuildInfoOption.ToJson
 PlayKeys.externalizeResources := false
-
-javaOptions in Test += "-Dconfig.resource=sample-application.conf"
