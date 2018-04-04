@@ -4,8 +4,14 @@ import static components.util.RandomIdUtil.readId;
 
 import com.google.inject.Inject;
 import components.dao.ReadDao;
-import components.message.MessagePublisher;
 import components.util.ApplicationUtil;
+import models.AppData;
+import models.Read;
+import models.ReadData;
+import models.RecipientMessage;
+import models.WithdrawalApproval;
+import models.enums.ReadType;
+
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -15,29 +21,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import models.AppData;
-import models.Outcome;
-import models.Read;
-import models.ReadData;
-import models.RecipientMessage;
-import models.RfiWithdrawal;
-import models.WithdrawalApproval;
-import models.enums.ReadType;
-import uk.gov.bis.lite.exporterdashboard.api.NotificationReadMessage;
-import uk.gov.bis.lite.exporterdashboard.api.OutcomeReadMessage;
-import uk.gov.bis.lite.exporterdashboard.api.RfiWithdrawalReadMessage;
-import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestAcceptReadMessage;
 
 public class ReadDataServiceImpl implements ReadDataService {
 
   private final ReadDao readDao;
-  private final MessagePublisher messagePublisher;
+  private final ReadMessageService readMessageService;
 
   @Inject
-  public ReadDataServiceImpl(ReadDao readDao, MessagePublisher messagePublisher) {
+  public ReadDataServiceImpl(ReadDao readDao, ReadMessageService readMessageService) {
     this.readDao = readDao;
-    this.messagePublisher = messagePublisher;
+    this.readMessageService = readMessageService;
   }
 
   @Override
@@ -74,7 +67,8 @@ public class ReadDataServiceImpl implements ReadDataService {
     }
   }
 
-  private Set<String> getUnreadIds(String userId, List<? extends RecipientMessage> recipientMessages, Set<String> readIds) {
+  private Set<String> getUnreadIds(String userId, List<? extends RecipientMessage> recipientMessages,
+                                   Set<String> readIds) {
     return recipientMessages.stream()
         .map(spireMessage -> getUnreadId(userId, spireMessage, readIds))
         .filter(Objects::nonNull)
@@ -93,7 +87,7 @@ public class ReadDataServiceImpl implements ReadDataService {
         .filter(rfiWithdrawal -> readData.getUnreadRfiWithdrawalIds().contains(rfiWithdrawal.getId()))
         .forEach(rfiWithdrawal -> {
           insertRead(rfiWithdrawal.getId(), ReadType.RFI_WITHDRAWAL, userId);
-          sendRfiWithdrawalReadMessage(userId, appData.getApplication().getId(), rfiWithdrawal);
+          readMessageService.sendRfiWithdrawalReadMessage(userId, appData.getApplication().getId(), rfiWithdrawal.getRfiId());
         });
   }
 
@@ -102,16 +96,16 @@ public class ReadDataServiceImpl implements ReadDataService {
     String appId = appData.getApplication().getId();
     if (readData.getUnreadDelayNotificationId() != null) {
       insertRead(readData.getUnreadDelayNotificationId(), ReadType.NOTIFICATION, userId);
-      sendNotificationReadMessage(userId, appId, readData.getUnreadDelayNotificationId());
+      readMessageService.sendNotificationReadMessage(userId, appId, readData.getUnreadDelayNotificationId());
     }
     readData.getUnreadStopNotificationIds().forEach(notificationId -> {
       insertRead(notificationId, ReadType.NOTIFICATION, userId);
-      sendNotificationReadMessage(userId, appId, notificationId);
+      readMessageService.sendNotificationReadMessage(userId, appId, notificationId);
     });
     if (readData.getUnreadWithdrawalApprovalId() != null) {
       WithdrawalApproval withdrawalApproval = appData.getWithdrawalApproval();
       insertRead(withdrawalApproval.getId(), ReadType.WITHDRAWAL_APPROVAL, userId);
-      sendWithdrawalRequestAcceptReadMessage(userId, withdrawalApproval.getAppId(), withdrawalApproval.getId());
+      readMessageService.sendWithdrawalRequestAcceptReadMessage(userId, withdrawalApproval.getAppId(), withdrawalApproval.getId());
     }
     readData.getUnreadWithdrawalRejectionIds().forEach(withdrawalRejectionId ->
         insertRead(withdrawalRejectionId, ReadType.WITHDRAWAL_REJECTION, userId));
@@ -126,50 +120,18 @@ public class ReadDataServiceImpl implements ReadDataService {
         .filter(outcome -> readData.getUnreadOutcomeIds().contains(outcome.getId()))
         .forEach(outcome -> {
           insertRead(outcome.getId(), ReadType.OUTCOME, userId);
-          sendOutcomeReadMessage(userId, appId, outcome);
+          readMessageService.sendOutcomeReadMessage(userId, appId, outcome.getId());
         });
 
     readData.getUnreadInformNotificationIds().forEach(notificationId -> {
       insertRead(notificationId, ReadType.NOTIFICATION, userId);
-      sendNotificationReadMessage(userId, appId, notificationId);
+      readMessageService.sendNotificationReadMessage(userId, appId, notificationId);
     });
   }
 
   private void insertRead(String relatedId, ReadType readType, String userId) {
     Read read = new Read(readId(), relatedId, readType, userId);
     readDao.insertRead(read);
-  }
-
-  private void sendOutcomeReadMessage(String userId, String appId, Outcome outcome) {
-    OutcomeReadMessage outcomeReadMessage = new OutcomeReadMessage();
-    outcomeReadMessage.setOutcomeId(outcome.getId());
-    outcomeReadMessage.setAppId(appId);
-    outcomeReadMessage.setCreatedByUserId(userId);
-    messagePublisher.sendMessage(RoutingKey.OUTCOME_READ, outcomeReadMessage);
-  }
-
-  private void sendNotificationReadMessage(String userId, String appId, String notificationId) {
-    NotificationReadMessage notificationReadMessage = new NotificationReadMessage();
-    notificationReadMessage.setAppId(appId);
-    notificationReadMessage.setCreatedByUserId(userId);
-    notificationReadMessage.setNotificationId(notificationId);
-    messagePublisher.sendMessage(RoutingKey.NOTIFICATION_READ, notificationReadMessage);
-  }
-
-  private void sendWithdrawalRequestAcceptReadMessage(String userId, String appId, String notificationId) {
-    WithdrawalRequestAcceptReadMessage withdrawalRequestAcceptReadMessage = new WithdrawalRequestAcceptReadMessage();
-    withdrawalRequestAcceptReadMessage.setNotificationId(notificationId);
-    withdrawalRequestAcceptReadMessage.setAppId(appId);
-    withdrawalRequestAcceptReadMessage.setCreatedByUserId(userId);
-    messagePublisher.sendMessage(RoutingKey.WITHDRAWAL_REQUEST_ACCEPT_READ, withdrawalRequestAcceptReadMessage);
-  }
-
-  private void sendRfiWithdrawalReadMessage(String userId, String appId, RfiWithdrawal rfiWithdrawal) {
-    RfiWithdrawalReadMessage rfiWithdrawalReadMessage = new RfiWithdrawalReadMessage();
-    rfiWithdrawalReadMessage.setAppId(appId);
-    rfiWithdrawalReadMessage.setRfiId(rfiWithdrawal.getRfiId());
-    rfiWithdrawalReadMessage.setCreatedByUserId(userId);
-    messagePublisher.sendMessage(RoutingKey.RFI_WITHDRAWAL_READ, rfiWithdrawalReadMessage);
   }
 
 }

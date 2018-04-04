@@ -101,6 +101,8 @@ import components.service.PreviousRequestItemViewService;
 import components.service.PreviousRequestItemViewServiceImpl;
 import components.service.ReadDataService;
 import components.service.ReadDataServiceImpl;
+import components.service.ReadMessageService;
+import components.service.ReadMessageServiceImpl;
 import components.service.RfiReplyService;
 import components.service.RfiReplyServiceImpl;
 import components.service.RfiViewService;
@@ -189,6 +191,7 @@ public class GuiceModule extends AbstractModule {
     bind(DraftFileService.class).to(DraftFileServiceImpl.class);
     bind(DestinationService.class).to(DestinationServiceImpl.class);
     bind(EscapeHtmlService.class).to(EscapeHtmlServiceImpl.class);
+    bind(ReadMessageService.class).to(ReadMessageServiceImpl.class);
     // Working day service
     List<LocalDate> holidays = HolidayUtil.loadHolidaysFromFile("holidays.json");
     bind(WorkingDayService.class).toInstance(new WorkingDayServiceImpl(holidays));
