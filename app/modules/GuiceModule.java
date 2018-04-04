@@ -305,9 +305,7 @@ public class GuiceModule extends AbstractModule {
   @Provides
   @Singleton
   public DBI provideDataSourceDbi(Config config, Database database) {
-    return new DBI(database.getUrl(),
-        config.getString("db.default.username"),
-        config.getString("db.default.password"));
+    return new DBI(database.getUrl());
   }
 
   @Provides
