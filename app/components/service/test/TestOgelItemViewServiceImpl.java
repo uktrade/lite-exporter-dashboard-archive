@@ -1,15 +1,13 @@
 package components.service.test;
 
-import static components.util.TimeUtil.time;
-
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.client.LicenceClient;
 import components.client.OgelServiceClient;
 import components.service.OgelItemViewServiceImpl;
+import components.service.TimeService;
 import components.util.LicenceUtil;
-import components.util.TimeUtil;
 import models.view.OgelItemView;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
@@ -18,11 +16,13 @@ import java.util.List;
 
 public class TestOgelItemViewServiceImpl extends OgelItemViewServiceImpl {
 
+  private final TimeService timeService;
+
   @Inject
-  public TestOgelItemViewServiceImpl(LicenceClient licenceClient,
-                                     CustomerServiceClient customerServiceClient,
-                                     OgelServiceClient ogelServiceClient) {
-    super(licenceClient, customerServiceClient, ogelServiceClient);
+  public TestOgelItemViewServiceImpl(LicenceClient licenceClient, CustomerServiceClient customerServiceClient,
+                                     OgelServiceClient ogelServiceClient, TimeService timeService) {
+    super(licenceClient, customerServiceClient, ogelServiceClient, timeService);
+    this.timeService = timeService;
   }
 
   @Override
@@ -39,16 +39,16 @@ public class TestOgelItemViewServiceImpl extends OgelItemViewServiceImpl {
     List<OgelItemView> recycledViews = new ArrayList<>();
     for (int i = 1; i < 22; i++) {
       String add = i % 2 == 0 ? "_A" : "_B";
-      long registrationTimestamp = time(2017, 2, 2 + i, 16, 20 + i);
-      String registrationDate = TimeUtil.formatDate(registrationTimestamp);
+      long registrationTimestamp = timeService.time(2017, 2, 2 + i, 16, 20 + i);
+      String registrationDate = timeService.formatDate(registrationTimestamp);
       long updatedTimestamp;
       String updatedDate;
       if (i % 4 == 0) {
         updatedTimestamp = 0;
         updatedDate = "-";
       } else {
-        updatedTimestamp = time(2017, 3, 3 + i, 16, 20 + i);
-        updatedDate = TimeUtil.formatDate(updatedTimestamp);
+        updatedTimestamp = timeService.time(2017, 3, 3 + i, 16, 20 + i);
+        updatedDate = timeService.formatDate(updatedTimestamp);
       }
       OgelRegistrationView.Status status = OgelRegistrationView.Status.values()[i % (OgelRegistrationView.Status.values().length - 1)];
       String ogelStatusName = LicenceUtil.getOgelStatusName(status);

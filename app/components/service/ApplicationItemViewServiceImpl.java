@@ -6,7 +6,6 @@ import components.client.CustomerServiceClient;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
-import components.util.TimeUtil;
 import models.AppData;
 import models.Application;
 import models.AttentionTabNotificationViews;
@@ -44,6 +43,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final UserPermissionService userPermissionService;
   private final String licenceApplicationAddress;
   private final DestinationService destinationService;
+  private final TimeService timeService;
 
   @Inject
   public ApplicationItemViewServiceImpl(CustomerServiceClient customerServiceClient,
@@ -52,7 +52,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
                                         ReadDataService readDataService,
                                         UserPermissionService userPermissionService,
                                         @Named("licenceApplicationAddress") String licenceApplicationAddress,
-                                        DestinationService destinationService) {
+                                        DestinationService destinationService,
+                                        TimeService timeService) {
     this.customerServiceClient = customerServiceClient;
     this.userService = userService;
     this.appDataService = appDataService;
@@ -60,6 +61,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     this.userPermissionService = userPermissionService;
     this.licenceApplicationAddress = licenceApplicationAddress;
     this.destinationService = destinationService;
+    this.timeService = timeService;
   }
 
   @Override
@@ -82,15 +84,16 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
         }).collect(Collectors.toList());
   }
 
-  private ApplicationItemView getApplicationItemView(String userId, AppData appData, ReadData readData, String companyName) {
+  private ApplicationItemView getApplicationItemView(String userId, AppData appData, ReadData readData,
+                                                     String companyName) {
 
     Application application = appData.getApplication();
 
     StatusColumnInfo statusColumnInfo = ApplicationUtil.getStatusInfo(appData);
-    String applicationStatusDate = statusColumnInfo.getPrefix() + " " + TimeUtil.formatDate(statusColumnInfo.getApplicationStatusTimestamp());
+    String applicationStatusDate = statusColumnInfo.getPrefix() + " " + timeService.formatDate(statusColumnInfo.getApplicationStatusTimestamp());
 
     DateColumnInfo dateColumnInfo = getDateColumnInfo(appData);
-    String date = TimeUtil.formatDate(dateColumnInfo.getDateTimestamp());
+    String date = timeService.formatDate(dateColumnInfo.getDateTimestamp());
 
     String createdById = application.getCreatedByUserId();
     User user = userService.getUser(createdById);
@@ -105,7 +108,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     Long latestEventTimestamp = getMostRecentEventTimestamp(attentionTabNotificationViews);
     String latestEventDate;
     if (latestEventTimestamp != null) {
-      latestEventDate = TimeUtil.formatDate(latestEventTimestamp);
+      latestEventDate = timeService.formatDate(latestEventTimestamp);
     } else {
       latestEventDate = null;
     }
@@ -181,7 +184,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     }
   }
 
-  private List<NotificationView> getNotificationViews(AppData appData, ReadData readData, ApplicationProgress applicationProgress) {
+  private List<NotificationView> getNotificationViews(AppData appData, ReadData readData,
+                                                      ApplicationProgress applicationProgress) {
     String appId = appData.getApplication().getId();
     List<NotificationView> notificationViews = new ArrayList<>();
     List<Rfi> openRfiList;
@@ -239,7 +243,8 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     return notificationViews;
   }
 
-  private AttentionTabNotificationViews getAttentionTabNotificationViews(String userId, AppData appData, ReadData readData) {
+  private AttentionTabNotificationViews getAttentionTabNotificationViews(String userId, AppData appData,
+                                                                         ReadData readData) {
     String appId = appData.getApplication().getId();
     List<NotificationView> rfiNotificationViews = ApplicationUtil.getAllOpenRfiList(appData).stream()
         .filter(rfi -> rfi.getRecipientUserIds().contains(userId))

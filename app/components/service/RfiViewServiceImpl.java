@@ -6,7 +6,6 @@ import components.common.upload.FileView;
 import components.dao.DraftFileDao;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
-import components.util.TimeUtil;
 import models.AppData;
 import models.Attachment;
 import models.Rfi;
@@ -28,12 +27,15 @@ public class RfiViewServiceImpl implements RfiViewService {
   private final UserService userService;
   private final DraftFileDao draftFileDao;
   private final UserPermissionService userPermissionService;
+  private final TimeService timeService;
 
   @Inject
-  public RfiViewServiceImpl(UserService userService, DraftFileDao draftFileDao, UserPermissionService userPermissionService) {
+  public RfiViewServiceImpl(UserService userService, DraftFileDao draftFileDao,
+                            UserPermissionService userPermissionService, TimeService timeService) {
     this.userService = userService;
     this.draftFileDao = draftFileDao;
     this.userPermissionService = userPermissionService;
+    this.timeService = timeService;
   }
 
   @Override
@@ -83,15 +85,16 @@ public class RfiViewServiceImpl implements RfiViewService {
     return new FileView(attachment.getId(), attachment.getFilename(), link, size, jsDeleteLink);
   }
 
-  private RfiView getRfiView(String appId, Rfi rfi, RfiReply rfiReply, RfiWithdrawal rfiWithdrawal, boolean isReplyAllowed) {
+  private RfiView getRfiView(String appId, Rfi rfi, RfiReply rfiReply, RfiWithdrawal rfiWithdrawal,
+                             boolean isReplyAllowed) {
     boolean showNewIndicator = rfiWithdrawal == null && rfiReply == null;
     String withdrawnDate;
     if (rfiWithdrawal != null) {
-      withdrawnDate = TimeUtil.formatDate(rfiWithdrawal.getCreatedTimestamp());
+      withdrawnDate = timeService.formatDate(rfiWithdrawal.getCreatedTimestamp());
     } else {
       withdrawnDate = null;
     }
-    String receivedDate = TimeUtil.formatDateAndTime(rfi.getCreatedTimestamp());
+    String receivedDate = timeService.formatDateAndTime(rfi.getCreatedTimestamp());
     String replyBy = getReplyBy(rfi);
     String sender = userService.getUsername(rfi.getCreatedByUserId());
     RfiReplyView rfiReplyView = getRfiReplyView(appId, rfi.getId(), rfiReply);
@@ -101,7 +104,7 @@ public class RfiViewServiceImpl implements RfiViewService {
   private RfiReplyView getRfiReplyView(String appId, String rfiId, RfiReply rfiReply) {
     if (rfiReply != null) {
       String sentBy = userService.getUsername(rfiReply.getCreatedByUserId());
-      String sentAt = TimeUtil.formatDateAndTime(rfiReply.getCreatedTimestamp());
+      String sentAt = timeService.formatDateAndTime(rfiReply.getCreatedTimestamp());
       String message = rfiReply.getMessage();
       List<FileView> fileViews = createFileViews(appId, rfiId, rfiReply.getAttachments());
       return new RfiReplyView(sentBy, sentAt, message, fileViews);
@@ -112,8 +115,8 @@ public class RfiViewServiceImpl implements RfiViewService {
 
   private String getReplyBy(Rfi rfi) {
     if (rfi.getDueTimestamp() != null) {
-      Long daysRemaining = TimeUtil.daysBetweenWithStartBeforeEnd(Instant.now().toEpochMilli(), rfi.getDueTimestamp());
-      String dueBy = TimeUtil.formatDate(rfi.getDueTimestamp());
+      Long daysRemaining = timeService.daysBetweenWithStartBeforeEnd(Instant.now().toEpochMilli(), rfi.getDueTimestamp());
+      String dueBy = timeService.formatDate(rfi.getDueTimestamp());
       if (daysRemaining >= 0) {
         return String.format("%s (%d days remaining)", dueBy, daysRemaining);
       } else {

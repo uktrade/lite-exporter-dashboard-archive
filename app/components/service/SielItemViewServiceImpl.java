@@ -3,7 +3,6 @@ package components.service;
 import com.google.inject.Inject;
 import components.client.CustomerServiceClient;
 import components.client.LicenceClient;
-import components.util.TimeUtil;
 import models.view.SielItemView;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
@@ -19,14 +18,16 @@ public class SielItemViewServiceImpl implements SielItemViewService {
   private final UserPermissionService userPermissionService;
   private final CustomerServiceClient customerServiceClient;
   private final LicenceClient licenceClient;
+  private final TimeService timeService;
 
   @Inject
   public SielItemViewServiceImpl(UserPermissionService userPermissionService,
                                  CustomerServiceClient customerServiceClient,
-                                 LicenceClient licenceClient) {
+                                 LicenceClient licenceClient, TimeService timeService) {
     this.userPermissionService = userPermissionService;
     this.customerServiceClient = customerServiceClient;
     this.licenceClient = licenceClient;
+    this.timeService = timeService;
   }
 
   @Override
@@ -55,8 +56,8 @@ public class SielItemViewServiceImpl implements SielItemViewService {
   }
 
   private SielItemView createSielItemView(LicenceView licenceView, String companyName, String siteName) {
-    long expiryTimestamp = TimeUtil.toMillis(licenceView.getExpiryDate());
-    String expiryDate = TimeUtil.formatDate(expiryTimestamp);
+    long expiryTimestamp = timeService.toMillis(licenceView.getExpiryDate());
+    String expiryDate = timeService.formatDate(expiryTimestamp);
     String sielStatus = StringUtils.capitalize(licenceView.getStatus().toString().toLowerCase());
     return new SielItemView(licenceView.getLicenceRef(),
         licenceView.getOriginalExporterRef(),

@@ -6,11 +6,11 @@ import components.service.AppDataService;
 import components.service.ApplicationSummaryViewService;
 import components.service.ApplicationTabsViewService;
 import components.service.ReadDataService;
+import components.service.TimeService;
 import components.service.UserService;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.SortUtil;
-import components.util.TimeUtil;
 import models.AppData;
 import models.Notification;
 import models.Outcome;
@@ -39,15 +39,13 @@ public class OutcomeTabController extends SamlController {
   private final UserService userService;
   private final ReadDataService readDataService;
   private final outcomeDocsTab outcomeDocsTab;
+  private final TimeService timeService;
 
   @Inject
   public OutcomeTabController(ApplicationSummaryViewService applicationSummaryViewService,
-                              WithdrawalApprovalDao withdrawalApprovalDao,
-                              AppDataService appDataService,
-                              ApplicationTabsViewService applicationTabsViewService,
-                              UserService userService,
-                              ReadDataService readDataService,
-                              outcomeDocsTab outcomeDocsTab) {
+                              WithdrawalApprovalDao withdrawalApprovalDao, AppDataService appDataService,
+                              ApplicationTabsViewService applicationTabsViewService, UserService userService,
+                              ReadDataService readDataService, outcomeDocsTab outcomeDocsTab, TimeService timeService) {
     this.applicationSummaryViewService = applicationSummaryViewService;
     this.withdrawalApprovalDao = withdrawalApprovalDao;
     this.appDataService = appDataService;
@@ -55,6 +53,7 @@ public class OutcomeTabController extends SamlController {
     this.userService = userService;
     this.readDataService = readDataService;
     this.outcomeDocsTab = outcomeDocsTab;
+    this.timeService = timeService;
   }
 
   public Result showOutcomeTab(String appId) {
@@ -91,10 +90,10 @@ public class OutcomeTabController extends SamlController {
             return new OutcomeDocumentView(name, document.getUrl());
           })
           .collect(Collectors.toList());
-      String issuedOn = TimeUtil.formatDate(outcome.getCreatedTimestamp());
+      String issuedOn = timeService.formatDate(outcome.getCreatedTimestamp());
       String voidedOn;
       if (i > 0) {
-        voidedOn = TimeUtil.formatDate(outcomes.get(i - 1).getCreatedTimestamp());
+        voidedOn = timeService.formatDate(outcomes.get(i - 1).getCreatedTimestamp());
       } else {
         voidedOn = null;
       }
@@ -114,7 +113,7 @@ public class OutcomeTabController extends SamlController {
   }
 
   private InformLetterView getInformLetterView(Notification notification) {
-    String name = TimeUtil.formatDate(notification.getCreatedTimestamp()) + " " + notification.getDocument().getFilename();
+    String name = timeService.formatDate(notification.getCreatedTimestamp()) + " " + notification.getDocument().getFilename();
     String link = notification.getDocument().getUrl();
     return new InformLetterView(name, link);
   }

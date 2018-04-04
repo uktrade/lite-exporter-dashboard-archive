@@ -6,7 +6,6 @@ import components.client.LicenceClient;
 import components.exceptions.ServiceException;
 import components.util.ApplicationUtil;
 import components.util.LicenceUtil;
-import components.util.TimeUtil;
 import models.view.SielDetailsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +19,14 @@ public class SielDetailsViewServiceImpl implements SielDetailsViewService {
 
   private final CustomerServiceClient customerServiceClient;
   private final LicenceClient licenceClient;
+  private final TimeService timeService;
 
   @Inject
   public SielDetailsViewServiceImpl(CustomerServiceClient customerServiceClient,
-                                    LicenceClient licenceClient) {
+                                    LicenceClient licenceClient, TimeService timeService) {
     this.customerServiceClient = customerServiceClient;
     this.licenceClient = licenceClient;
+    this.timeService = timeService;
   }
 
   @Override
@@ -38,8 +39,8 @@ public class SielDetailsViewServiceImpl implements SielDetailsViewService {
       return Optional.empty();
     }
     String sielStatusName = LicenceUtil.getSielStatusName(licenceView.getStatus());
-    String issueDate = TimeUtil.formatDate(TimeUtil.toMillis(licenceView.getIssueDate()));
-    String expiryDate = TimeUtil.formatDate(TimeUtil.toMillis(licenceView.getExpiryDate()));
+    String issueDate = timeService.formatDate(timeService.toMillis(licenceView.getIssueDate()));
+    String expiryDate = timeService.formatDate(timeService.toMillis(licenceView.getExpiryDate()));
     String exportDestinations = ApplicationUtil.getSielDestinations(licenceView);
     String site = customerServiceClient.getSite(licenceView.getSiteId()).getSiteName();
     String licensee = customerServiceClient.getCustomer(licenceView.getCustomerId()).getCompanyName();
