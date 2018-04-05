@@ -1,8 +1,6 @@
 package pact.provider;
 
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import au.com.dius.pact.provider.PactVerifyProvider;
@@ -19,7 +17,6 @@ import components.dao.DraftFileDao;
 import components.dao.RfiReplyDao;
 import components.dao.WithdrawalRequestDao;
 import components.message.MessagePublisher;
-import components.message.MessagePublisherImpl;
 import components.service.AmendmentService;
 import components.service.AmendmentServiceImpl;
 import components.service.ReadMessageService;
@@ -31,15 +28,8 @@ import components.service.WithdrawalRequestServiceImpl;
 import models.Attachment;
 import models.enums.DraftType;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import uk.gov.bis.lite.exporterdashboard.api.AmendmentMessage;
-import uk.gov.bis.lite.exporterdashboard.api.NotificationReadMessage;
-import uk.gov.bis.lite.exporterdashboard.api.OutcomeReadMessage;
-import uk.gov.bis.lite.exporterdashboard.api.RfiReplyMessage;
-import uk.gov.bis.lite.exporterdashboard.api.RfiWithdrawalReadMessage;
+import uk.gov.bis.lite.exporterdashboard.api.ExporterDashboardMessage;
 import uk.gov.bis.lite.exporterdashboard.api.RoutingKey;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestAcceptReadMessage;
-import uk.gov.bis.lite.exporterdashboard.api.WithdrawalRequestMessage;
 
 import java.util.Collections;
 import java.util.List;
@@ -49,9 +39,24 @@ import java.util.List;
 @PactBroker(host = "pact-broker.ci.uktrade.io", port = "80")
 public class PactProvider {
 
+  private static class MessagePublisherMock implements MessagePublisher {
+
+    private ExporterDashboardMessage lastMessage;
+
+    @Override
+    public void sendMessage(RoutingKey routingKey, ExporterDashboardMessage exporterDashboardMessage) {
+      lastMessage = exporterDashboardMessage;
+    }
+
+    ExporterDashboardMessage getLastMessage() {
+      return lastMessage;
+    }
+
+  }
+
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  private final MessagePublisher messagePublisher = mock(MessagePublisherImpl.class);
+  private final MessagePublisherMock messagePublisher = new MessagePublisherMock();
 
   @TestTarget
   public final Target target = new AmqpTarget(Collections.singletonList("pact.provider.*"));
@@ -64,10 +69,7 @@ public class PactProvider {
     RfiReplyService rfiReplyService = new RfiReplyServiceImpl(mock(RfiReplyDao.class), draftFileDao, messagePublisher);
     rfiReplyService.insertRfiReply("createdByUserId", "appId", "rfiId", "message");
 
-    ArgumentCaptor<RfiReplyMessage> captor = ArgumentCaptor.forClass(RfiReplyMessage.class);
-    verify(messagePublisher).sendMessage(eq(RoutingKey.RFI_REPLY), captor.capture());
-
-    return MAPPER.writeValueAsString(captor.getValue());
+    return MAPPER.writeValueAsString(messagePublisher.getLastMessage());
   }
 
   @PactVerifyProvider("a withdrawal was requested")
@@ -78,10 +80,7 @@ public class PactProvider {
     WithdrawalRequestService withdrawalRequestService = new WithdrawalRequestServiceImpl(mock(WithdrawalRequestDao.class), messagePublisher, draftFileDao);
     withdrawalRequestService.insertWithdrawalRequest("createdByUserId", "appId", "message");
 
-    ArgumentCaptor<WithdrawalRequestMessage> captor = ArgumentCaptor.forClass(WithdrawalRequestMessage.class);
-    verify(messagePublisher).sendMessage(eq(RoutingKey.WITHDRAWAL_REQUEST_CREATE), captor.capture());
-
-    return MAPPER.writeValueAsString(captor.getValue());
+    return MAPPER.writeValueAsString(messagePublisher.getLastMessage());
   }
 
   @PactVerifyProvider("an application was amended")
@@ -92,10 +91,7 @@ public class PactProvider {
     AmendmentService amendmentService = new AmendmentServiceImpl(mock(AmendmentRequestDao.class), messagePublisher, draftFileDao);
     amendmentService.insertAmendment("createdByUserId", "appId", "message");
 
-    ArgumentCaptor<AmendmentMessage> captor = ArgumentCaptor.forClass(AmendmentMessage.class);
-    verify(messagePublisher).sendMessage(eq(RoutingKey.AMENDMENT_CREATE), captor.capture());
-
-    return MAPPER.writeValueAsString(captor.getValue());
+    return MAPPER.writeValueAsString(messagePublisher.getLastMessage());
   }
 
   @PactVerifyProvider("an rfi withdrawal was read")
@@ -103,10 +99,7 @@ public class PactProvider {
     ReadMessageService readMessageService = new ReadMessageServiceImpl(messagePublisher);
     readMessageService.sendRfiWithdrawalReadMessage("createdByUserId", "appId", "rfiId");
 
-    ArgumentCaptor<RfiWithdrawalReadMessage> captor = ArgumentCaptor.forClass(RfiWithdrawalReadMessage.class);
-    verify(messagePublisher).sendMessage(eq(RoutingKey.RFI_WITHDRAWAL_READ), captor.capture());
-
-    return MAPPER.writeValueAsString(captor.getValue());
+    return MAPPER.writeValueAsString(messagePublisher.getLastMessage());
   }
 
   @PactVerifyProvider("an outcome was read")
@@ -114,10 +107,7 @@ public class PactProvider {
     ReadMessageService readMessageService = new ReadMessageServiceImpl(messagePublisher);
     readMessageService.sendOutcomeReadMessage("createdByUserId", "appId", "outcomeId");
 
-    ArgumentCaptor<OutcomeReadMessage> captor = ArgumentCaptor.forClass(OutcomeReadMessage.class);
-    verify(messagePublisher).sendMessage(eq(RoutingKey.OUTCOME_READ), captor.capture());
-
-    return MAPPER.writeValueAsString(captor.getValue());
+    return MAPPER.writeValueAsString(messagePublisher.getLastMessage());
   }
 
   @PactVerifyProvider("a notification was read")
@@ -125,10 +115,7 @@ public class PactProvider {
     ReadMessageService readMessageService = new ReadMessageServiceImpl(messagePublisher);
     readMessageService.sendNotificationReadMessage("createdByUserId", "appId", "notificationId");
 
-    ArgumentCaptor<NotificationReadMessage> captor = ArgumentCaptor.forClass(NotificationReadMessage.class);
-    verify(messagePublisher).sendMessage(eq(RoutingKey.NOTIFICATION_READ), captor.capture());
-
-    return MAPPER.writeValueAsString(captor.getValue());
+    return MAPPER.writeValueAsString(messagePublisher.getLastMessage());
   }
 
   @PactVerifyProvider("a withdrawal request accept was read")
@@ -136,10 +123,7 @@ public class PactProvider {
     ReadMessageService readMessageService = new ReadMessageServiceImpl(messagePublisher);
     readMessageService.sendWithdrawalRequestAcceptReadMessage("createdByUserId", "appId", "notificationId");
 
-    ArgumentCaptor<WithdrawalRequestAcceptReadMessage> captor = ArgumentCaptor.forClass(WithdrawalRequestAcceptReadMessage.class);
-    verify(messagePublisher).sendMessage(eq(RoutingKey.WITHDRAWAL_REQUEST_ACCEPT_READ), captor.capture());
-
-    return MAPPER.writeValueAsString(captor.getValue());
+    return MAPPER.writeValueAsString(messagePublisher.getLastMessage());
   }
 
   private List<Attachment> createDraftFiles() {
