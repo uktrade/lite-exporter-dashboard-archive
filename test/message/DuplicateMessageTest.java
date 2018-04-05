@@ -47,7 +47,6 @@ import java.util.Collections;
 public class DuplicateMessageTest {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
-  private static final String POSTGRES_URL = "localhost";
   private static final boolean POSTGRES_USE_EMBEDDED = true;
   private static EmbeddedPostgres POSTGRES;
 
@@ -55,7 +54,7 @@ public class DuplicateMessageTest {
   public static void startDatabase() throws IOException {
     if (POSTGRES_USE_EMBEDDED) {
       POSTGRES = new EmbeddedPostgres(V9_5);
-      POSTGRES.start(POSTGRES_URL, 5432, "postgres", "postgres", "password");
+      POSTGRES.start("localhost", 5432, "postgres", "postgres", "password");
     }
   }
 
@@ -353,7 +352,6 @@ public class DuplicateMessageTest {
         .configure(config)
         .overrides(bind(SqsPoller.class).toInstance(mock(SqsPoller.class)))
         .overrides(bind(StartUpService.class).to(TestStartUpServiceImpl.class).eagerly())
-        .configure("db.default.url", "jdbc:postgresql://" + POSTGRES_URL + ":5432/postgres?currentSchema=test")
         .build();
   }
 

@@ -1,19 +1,27 @@
 package components.service;
 
+import com.google.inject.Inject;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
-import components.util.TimeUtil;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import models.AppData;
 import models.WithdrawalRejection;
 import models.WithdrawalRequest;
 import models.view.PreviousRequestItemView;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class PreviousRequestItemViewServiceImpl implements PreviousRequestItemViewService {
+
+  private final TimeService timeService;
+
+  @Inject
+  public PreviousRequestItemViewServiceImpl(TimeService timeService) {
+    this.timeService = timeService;
+  }
 
   @Override
   public List<PreviousRequestItemView> getPreviousRequestItemViews(AppData appData) {
@@ -27,7 +35,7 @@ public class PreviousRequestItemViewServiceImpl implements PreviousRequestItemVi
   private List<PreviousRequestItemView> getPreviousAmendmentRequests(AppData appData) {
     return appData.getAmendmentRequests().stream()
         .map(amendmentRequest -> {
-          String date = TimeUtil.formatDate(amendmentRequest.getCreatedTimestamp());
+          String date = timeService.formatDate(amendmentRequest.getCreatedTimestamp());
           Long createdTimestamp = amendmentRequest.getCreatedTimestamp();
           String type = "Amendment";
           String link = LinkUtil.getAmendmentRequestMessageLink(amendmentRequest);
@@ -40,7 +48,7 @@ public class PreviousRequestItemViewServiceImpl implements PreviousRequestItemVi
     WithdrawalRequest approvedWithdrawalRequest = ApplicationUtil.getApprovedWithdrawalRequest(appData);
     return appData.getWithdrawalRequests().stream()
         .map(withdrawalRequest -> {
-          String date = TimeUtil.formatDate(withdrawalRequest.getCreatedTimestamp());
+          String date = timeService.formatDate(withdrawalRequest.getCreatedTimestamp());
           Long createdTimestamp = withdrawalRequest.getCreatedTimestamp();
           String type = "Withdrawal";
           String link = LinkUtil.getWithdrawalRequestMessageLink(withdrawalRequest);

@@ -15,7 +15,6 @@ import static components.util.RandomIdUtil.stopNotificationId;
 import static components.util.RandomIdUtil.withdrawalApprovalId;
 import static components.util.RandomIdUtil.withdrawalRejectionId;
 import static components.util.RandomIdUtil.withdrawalRequestId;
-import static components.util.TimeUtil.time;
 
 import com.google.inject.Inject;
 import components.dao.AmendmentRequestDao;
@@ -33,10 +32,10 @@ import components.dao.StatusUpdateDao;
 import components.dao.WithdrawalApprovalDao;
 import components.dao.WithdrawalRejectionDao;
 import components.dao.WithdrawalRequestDao;
+import components.service.TimeService;
 import components.service.UserPermissionService;
 import components.util.RandomIdUtil;
 import components.util.TestUtil;
-import components.util.TimeUtil;
 import models.AmendmentRequest;
 import models.Application;
 import models.CaseDetails;
@@ -150,24 +149,16 @@ public class TestDataServiceImpl implements TestDataService {
   private final UserPermissionService userPermissionService;
   private final CaseDetailsDao caseDetailsDao;
   private final BacklogDao backlogDao;
+  private final TimeService timeService;
 
   @Inject
-  public TestDataServiceImpl(RfiDao rfiDao,
-                             StatusUpdateDao statusUpdateDao,
-                             RfiReplyDao rfiReplyDao,
-                             ApplicationDao applicationDao,
-                             WithdrawalRequestDao withdrawalRequestDao,
-                             AmendmentRequestDao amendmentRequestDao,
-                             DraftFileDao draftFileDao,
-                             OutcomeDao outcomeDao,
-                             NotificationDao notificationDao,
-                             WithdrawalRejectionDao withdrawalRejectionDao,
-                             WithdrawalApprovalDao withdrawalApprovalDao,
-                             RfiWithdrawalDao rfiWithdrawalDao,
-                             ReadDao readDao,
-                             UserPermissionService userPermissionService,
-                             CaseDetailsDao caseDetailsDao,
-                             BacklogDao backlogDao) {
+  public TestDataServiceImpl(RfiDao rfiDao, StatusUpdateDao statusUpdateDao, RfiReplyDao rfiReplyDao,
+                             ApplicationDao applicationDao, WithdrawalRequestDao withdrawalRequestDao,
+                             AmendmentRequestDao amendmentRequestDao, DraftFileDao draftFileDao, OutcomeDao outcomeDao,
+                             NotificationDao notificationDao, WithdrawalRejectionDao withdrawalRejectionDao,
+                             WithdrawalApprovalDao withdrawalApprovalDao, RfiWithdrawalDao rfiWithdrawalDao,
+                             ReadDao readDao, UserPermissionService userPermissionService,
+                             CaseDetailsDao caseDetailsDao, BacklogDao backlogDao, TimeService timeService) {
     this.rfiDao = rfiDao;
     this.statusUpdateDao = statusUpdateDao;
     this.rfiReplyDao = rfiReplyDao;
@@ -184,6 +175,7 @@ public class TestDataServiceImpl implements TestDataService {
     this.userPermissionService = userPermissionService;
     this.caseDetailsDao = caseDetailsDao;
     this.backlogDao = backlogDao;
+    this.timeService = timeService;
   }
 
   @Override
@@ -219,7 +211,7 @@ public class TestDataServiceImpl implements TestDataService {
       Application app = new Application(appId,
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           userId,
-          time(2017, 1, 3, 10, 20),
+          timeService.time(2017, 1, 3, 10, 20),
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
@@ -230,12 +222,12 @@ public class TestDataServiceImpl implements TestDataService {
     // Submitted application, in progress, with RFI and message “apologies for the delay”
     for (int i = 0; i < 1; i++) {
       String appId = appId();
-      Long submittedTimestamp = time(2017, 11, 6, 10, 20);
+      Long submittedTimestamp = timeService.time(2017, 11, 6, 10, 20);
       String caseReference = RandomIdUtil.caseReference();
       Application app = new Application(appId,
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           userId,
-          time(2017, 11, 3, 10, 20),
+          timeService.time(2017, 11, 3, 10, 20),
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
@@ -249,19 +241,19 @@ public class TestDataServiceImpl implements TestDataService {
       StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
           app.getId(),
           StatusType.INITIAL_CHECKS,
-          time(2017, 11, 10, 10, 20));
+          timeService.time(2017, 11, 10, 10, 20));
       statusUpdateDao.insertStatusUpdate(initialChecks);
       StatusUpdate technicalAssessment = new StatusUpdate(statusUpdateId(),
           app.getId(),
           StatusType.TECHNICAL_ASSESSMENT,
-          time(2017, 12, 15, 10, 20));
+          timeService.time(2017, 12, 15, 10, 20));
       statusUpdateDao.insertStatusUpdate(technicalAssessment);
       Notification delayNotification = new Notification(
           delayNotificationId(),
           caseReference,
           NotificationType.DELAY,
           null,
-          time(2017, 12, 9, 13, 20),
+          timeService.time(2017, 12, 9, 13, 20),
           RECIPIENTS,
           "We're sorry to inform you that your application has been delayed.",
           null);
@@ -269,8 +261,8 @@ public class TestDataServiceImpl implements TestDataService {
       String rfiId = rfiId();
       Rfi rfi = new Rfi(rfiId,
           caseReference,
-          time(2017, 12, 20, 10, 20),
-          time(2018, 1, 22, 10, 20),
+          timeService.time(2017, 12, 20, 10, 20),
+          timeService.time(2018, 1, 22, 10, 20),
           OFFICER_ID,
           RECIPIENTS,
           "Please answer this rfi.");
@@ -286,7 +278,7 @@ public class TestDataServiceImpl implements TestDataService {
       Application application = new Application(appId,
           TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
           createdByUserId,
-          time(2016, 4, 3, 3 + k, 3),
+          timeService.time(2016, 4, 3, 3 + k, 3),
           CONSIGNEE_COUNTRIES_FOUR,
           END_USER_COUNTRIES_FOUR,
           getApplicantReference(),
@@ -295,7 +287,7 @@ public class TestDataServiceImpl implements TestDataService {
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
-          time(2016, 5, 3, 3, 3));
+          timeService.time(2016, 5, 3, 3, 3));
       insert(application, caseDetails);
       List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
           StatusType.TECHNICAL_ASSESSMENT,
@@ -305,11 +297,11 @@ public class TestDataServiceImpl implements TestDataService {
           StatusType.COMPLETE);
       for (int i = 0; i < statusTypes.size(); i++) {
         StatusType statusType = statusTypes.get(i);
-        Long createdTimestamp = time(2016, 5, 3 + 2 * i, 3 + i, 3 + i);
+        Long createdTimestamp = timeService.time(2016, 5, 3 + 2 * i, 3 + i, 3 + i);
         StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(), appId, statusType, createdTimestamp);
         statusUpdateDao.insertStatusUpdate(statusUpdate);
       }
-      long outcomeCreatedTimestamp = time(2016, 5, 13, 13, 17);
+      long outcomeCreatedTimestamp = timeService.time(2016, 5, 13, 13, 17);
       List<OutcomeDocument> issueOutcomeDocuments = new ArrayList<>();
       for (int j = 0; j < 4; j++) {
         DocumentType documentType = ISSUE_DOCUMENT_TYPES.get(j);
@@ -323,25 +315,25 @@ public class TestDataServiceImpl implements TestDataService {
       Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, issueOutcomeDocuments);
       outcomeDao.insertOutcome(outcome);
       if (k == 0) {
-        long informCreatedTimestamp = time(2016, 5, 13, 13, 17);
+        long informCreatedTimestamp = timeService.time(2016, 5, 13, 13, 17);
         Document document = new Document(fileId(), "Licence required inform", "#");
         Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
         notificationDao.insertNotification(notification);
       } else if (k == 1) {
-        long createdTimestamp = time(2017, 12, 2, 2, 2);
+        long createdTimestamp = timeService.time(2017, 12, 2, 2, 2);
         String caseReference2 = RandomIdUtil.caseReference();
         CaseDetails caseDetails2 = new CaseDetails(appId, caseReference2, OFFICER_ID, createdTimestamp);
         caseDetailsDao.insert(caseDetails2);
         Rfi rfi = new Rfi(RandomIdUtil.rfiId(),
             caseReference2,
-            time(2017, 12, 15, 2, 2),
-            time(2018, 1, 15, 2, 2),
+            timeService.time(2017, 12, 15, 2, 2),
+            timeService.time(2018, 1, 15, 2, 2),
             OFFICER_ID,
             RECIPIENTS,
             "Please answer this rfi");
         rfiDao.insertRfi(rfi);
       } else {
-        long createdTimestamp = time(2017, 2, 2, 2, 2);
+        long createdTimestamp = timeService.time(2017, 2, 2, 2, 2);
         String caseReference2 = RandomIdUtil.caseReference();
         CaseDetails caseDetails2 = new CaseDetails(appId, caseReference2, OFFICER_ID, createdTimestamp);
         caseDetailsDao.insert(caseDetails2);
@@ -349,7 +341,7 @@ public class TestDataServiceImpl implements TestDataService {
             caseReference2,
             NotificationType.STOP,
             TestDataServiceImpl.OFFICER_ID,
-            time(2017, 3, 1, 14, 30),
+            timeService.time(2017, 3, 1, 14, 30),
             RECIPIENTS,
             "We have had to stop your amendment.",
             null);
@@ -421,7 +413,7 @@ public class TestDataServiceImpl implements TestDataService {
     Application application = new Application(userId + "_" + APP_QUEUE_ID,
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
-        time(2015, 1, 1, 1, 1),
+        timeService.time(2015, 1, 1, 1, 1),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
@@ -430,19 +422,19 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(application.getId(),
         RandomIdUtil.caseReference(),
         OFFICER_ID,
-        time(2015, 2, 1, 1, 1));
+        timeService.time(2015, 2, 1, 1, 1));
     insert(application, caseDetails);
   }
 
   private void createApplications(String userId) {
     for (int i = 0; i < 20; i++) {
       String appId = appId();
-      Long submittedTimestamp = time(2017, 4, 6 + i, i, i);
+      Long submittedTimestamp = timeService.time(2017, 4, 6 + i, i, i);
       String caseReference = RandomIdUtil.caseReference();
       Application app = new Application(appId,
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           userId,
-          time(2017, 3, 3 + i, i, i),
+          timeService.time(2017, 3, 3 + i, i, i),
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
@@ -456,13 +448,13 @@ public class TestDataServiceImpl implements TestDataService {
       StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
           app.getId(),
           StatusType.INITIAL_CHECKS,
-          time(2017, 4, 4 + i, i, i));
+          timeService.time(2017, 4, 4 + i, i, i));
       statusUpdateDao.insertStatusUpdate(initialChecks);
       String rfiId = rfiId();
       Rfi rfi = new Rfi(rfiId,
           caseReference,
-          time(2017, 4, 5 + i, i, i),
-          time(2017, 5, 5 + i, i, i),
+          timeService.time(2017, 4, 5 + i, i, i),
+          timeService.time(2017, 5, 5 + i, i, i),
           OFFICER_ID,
           RECIPIENTS,
           "Please answer this rfi.");
@@ -470,8 +462,8 @@ public class TestDataServiceImpl implements TestDataService {
       String rfiTwoId = rfiId();
       Rfi rfiTwo = new Rfi(rfiTwoId,
           caseReference,
-          time(2017, 6, 5 + i, i, i),
-          time(2017, 7, 5 + i, i, i),
+          timeService.time(2017, 6, 5 + i, i, i),
+          timeService.time(2017, 7, 5 + i, i, i),
           OFFICER_ID,
           RECIPIENTS,
           "Please also answer this rfi.");
@@ -481,14 +473,14 @@ public class TestDataServiceImpl implements TestDataService {
         rfiReply.setId(rfiReplyId());
         rfiReply.setRfiId(rfiId);
         rfiReply.setCreatedByUserId(userId);
-        rfiReply.setCreatedTimestamp(time(2017, 4, 5 + i, i, i));
+        rfiReply.setCreatedTimestamp(timeService.time(2017, 4, 5 + i, i, i));
         rfiReply.setMessage("This is a reply.");
         rfiReply.setAttachments(new ArrayList<>());
         rfiReplyDao.insertRfiReply(rfiReply);
         RfiWithdrawal rfiWithdrawal = new RfiWithdrawal(rfiWithdrawalId(),
             rfiTwoId,
             OFFICER_ID,
-            time(2017, 8, 5 + i, i, i),
+            timeService.time(2017, 8, 5 + i, i, i),
             RECIPIENTS,
             "This rfi has been withdrawn.");
         rfiWithdrawalDao.insertRfiWithdrawal(rfiWithdrawal);
@@ -500,7 +492,7 @@ public class TestDataServiceImpl implements TestDataService {
             caseReference,
             NotificationType.INFORM,
             OFFICER_ID,
-            time(2017, 5, 1 + i, 2, 3),
+            timeService.time(2017, 5, 1 + i, 2, 3),
             RECIPIENTS,
             null,
             document);
@@ -516,7 +508,7 @@ public class TestDataServiceImpl implements TestDataService {
       Application app = new Application(appId,
           TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
           OTHER_APPLICANT_ID,
-          time(2017, 1, 3 + i, i, i),
+          timeService.time(2017, 1, 3 + i, i, i),
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
@@ -525,7 +517,7 @@ public class TestDataServiceImpl implements TestDataService {
       CaseDetails caseDetails = new CaseDetails(appId,
           RandomIdUtil.caseReference(),
           OFFICER_ID,
-          time(2017, 1, 4 + i, i, i));
+          timeService.time(2017, 1, 4 + i, i, i));
       insert(app, caseDetails);
     }
     // Create application with inform notice
@@ -534,7 +526,7 @@ public class TestDataServiceImpl implements TestDataService {
     Application application = new Application(appId,
         TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
         OTHER_APPLICANT_ID,
-        time(2017, 1, 7, 1, 1),
+        timeService.time(2017, 1, 7, 1, 1),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
@@ -543,19 +535,19 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
-        time(2017, 1, 8, 1, 1));
+        timeService.time(2017, 1, 8, 1, 1));
     insert(application, caseDetails);
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         application.getId(),
         StatusType.INITIAL_CHECKS,
-        time(2017, 8, 3, 0, 0));
+        timeService.time(2017, 8, 3, 0, 0));
     statusUpdateDao.insertStatusUpdate(initialChecks);
     Document document = new Document(fileId(), "Inform letter", "#");
     Notification notification = new Notification(informNotificationId(),
         caseReference,
         NotificationType.INFORM,
         OFFICER_ID,
-        time(2017, 9, 1, 2, 3),
+        timeService.time(2017, 9, 1, 2, 3),
         RECIPIENTS,
         null,
         document);
@@ -589,7 +581,7 @@ public class TestDataServiceImpl implements TestDataService {
     Application application = new Application(appId,
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
-        time(2013, 11, 4, 13, 10),
+        timeService.time(2013, 11, 4, 13, 10),
         consigneeCountries,
         endUserCountries,
         getApplicantReference(),
@@ -598,24 +590,24 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
-        time(2013, 11, 4, 14, 10));
+        timeService.time(2013, 11, 4, 14, 10));
     insert(application, caseDetails);
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.INITIAL_CHECKS,
-        time(2013, 12, 5, 3, 3));
+        timeService.time(2013, 12, 5, 3, 3));
     statusUpdateDao.insertStatusUpdate(initialChecks);
     StatusUpdate technicalAssessment = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.TECHNICAL_ASSESSMENT,
-        time(2015, 5, 6, 13, 10));
+        timeService.time(2015, 5, 6, 13, 10));
     statusUpdateDao.insertStatusUpdate(technicalAssessment);
 
     AmendmentRequest amendmentRequest = new AmendmentRequest();
     amendmentRequest.setId(amendmentId());
     amendmentRequest.setAppId(appId);
     amendmentRequest.setCreatedByUserId(userId);
-    amendmentRequest.setCreatedTimestamp(time(2014, 11, 5, 14, 17));
+    amendmentRequest.setCreatedTimestamp(timeService.time(2014, 11, 5, 14, 17));
     amendmentRequest.setAttachments(new ArrayList<>());
     amendmentRequest.setMessage("This is an amendment.");
     amendmentRequestDao.insertAmendmentRequest(amendmentRequest);
@@ -625,12 +617,12 @@ public class TestDataServiceImpl implements TestDataService {
       withdrawalRequest.setId(withdrawalRequestId());
       withdrawalRequest.setAppId(appId);
       withdrawalRequest.setCreatedByUserId(userId);
-      withdrawalRequest.setCreatedTimestamp(time(2015, 1 + 2 * i, 5, 13, 10));
+      withdrawalRequest.setCreatedTimestamp(timeService.time(2015, 1 + 2 * i, 5, 13, 10));
       withdrawalRequest.setMessage("This is a withdrawal request.");
       withdrawalRequest.setAttachments(new ArrayList<>());
       withdrawalRequestDao.insertWithdrawalRequest(withdrawalRequest);
       if (i != 3) {
-        Long createdTimestamp = time(2015, 1 + 2 * i + 1, 5, 13, 10);
+        Long createdTimestamp = timeService.time(2015, 1 + 2 * i + 1, 5, 13, 10);
         WithdrawalRejection withdrawalRejection = new WithdrawalRejection(withdrawalRejectionId(),
             appId,
             userId,
@@ -646,7 +638,7 @@ public class TestDataServiceImpl implements TestDataService {
         caseReference,
         NotificationType.DELAY,
         null,
-        time(2016, 1, 1, 13, 20),
+        timeService.time(2016, 1, 1, 13, 20),
         RECIPIENTS,
         "We're sorry to inform you that your application has been delayed.",
         null);
@@ -658,7 +650,7 @@ public class TestDataServiceImpl implements TestDataService {
           caseReference,
           NotificationType.STOP,
           TestDataServiceImpl.OFFICER_ID,
-          time(2017, 1, 1, 14, 30),
+          timeService.time(2017, 1, 1, 14, 30),
           RECIPIENTS,
           "We have had to stop your application.",
           null);
@@ -667,7 +659,7 @@ public class TestDataServiceImpl implements TestDataService {
       WithdrawalApproval withdrawalApproval = new WithdrawalApproval(withdrawalApprovalId(),
           appId,
           OFFICER_ID,
-          time(2017, 1, 5, 13, 10),
+          timeService.time(2017, 1, 5, 13, 10),
           RECIPIENTS,
           null);
       withdrawalApprovalDao.insertWithdrawalApproval(withdrawalApproval);
@@ -681,7 +673,7 @@ public class TestDataServiceImpl implements TestDataService {
     Application application = new Application(appId,
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
-        time(2016, 11, 4, 13, 10),
+        timeService.time(2016, 11, 4, 13, 10),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
@@ -690,7 +682,7 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
-        time(2016, 11, 4, 14, 10));
+        timeService.time(2016, 11, 4, 14, 10));
     insert(application, caseDetails);
     createStatusUpdateTestData(appId).forEach(statusUpdateDao::insertStatusUpdate);
     createRfiTestData(caseReference, rfiId).forEach(rfiDao::insertRfi);
@@ -702,7 +694,7 @@ public class TestDataServiceImpl implements TestDataService {
     rfiReply.setId(rfiReplyId());
     rfiReply.setRfiId(rfiId);
     rfiReply.setCreatedByUserId(userId);
-    rfiReply.setCreatedTimestamp(time(2017, 5, 13, 16, 10));
+    rfiReply.setCreatedTimestamp(timeService.time(2017, 5, 13, 16, 10));
     rfiReply.setMessage("<p>All the items on my application were originally designed for the Eurofighter Typhoon FGR4. "
         + "Please see attached the specifications and design plans showing the original design.</p>"
         + "<p>Kind regards,</p>"
@@ -714,15 +706,15 @@ public class TestDataServiceImpl implements TestDataService {
   private List<Rfi> createRfiTestData(String caseReference, String rfiId) {
     Rfi rfi = new Rfi(rfiId(),
         caseReference,
-        time(2017, 1, 2, 13, 30),
-        time(2017, 2, 2, 13, 30),
+        timeService.time(2017, 1, 2, 13, 30),
+        timeService.time(2017, 2, 2, 13, 30),
         OFFICER_ID,
         new ArrayList<>(),
         "Please reply to this rfi message.");
     Rfi rfiTwo = new Rfi(rfiId,
         caseReference,
-        time(2017, 2, 5, 10, 10),
-        time(2017, 3, 12, 16, 10),
+        timeService.time(2017, 2, 5, 10, 10),
+        timeService.time(2017, 3, 12, 16, 10),
         OFFICER_ID,
         new ArrayList<>(),
         "<p>We note from your application that you have rated all 8 line items as ML10a and that these items are used in production and maintenance of civil and/or military aircraft.</p>"
@@ -730,15 +722,15 @@ public class TestDataServiceImpl implements TestDataService {
             + "<p>Than you for your help in this matter.</p>");
     Rfi rfiThree = new Rfi(rfiId(),
         caseReference,
-        time(2017, 4, 5, 10, 10),
-        time(2017, 5, 12, 16, 10),
+        timeService.time(2017, 4, 5, 10, 10),
+        timeService.time(2017, 5, 12, 16, 10),
         OFFICER_ID,
         new ArrayList<>(),
         "This is some rfi message.");
     Rfi rfiFour = new Rfi(rfiId(),
         caseReference,
-        time(2017, 7, 5, 10, 10),
-        time(2018, 8, 5, 10, 10),
+        timeService.time(2017, 7, 5, 10, 10),
+        timeService.time(2018, 8, 5, 10, 10),
         OFFICER_ID,
         new ArrayList<>(),
         "This is another rfi message.");
@@ -754,15 +746,15 @@ public class TestDataServiceImpl implements TestDataService {
     StatusUpdate initialChecks = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.INITIAL_CHECKS,
-        time(2017, 1, 2, 13, 30));
+        timeService.time(2017, 1, 2, 13, 30));
     StatusUpdate technicalAssessment = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.TECHNICAL_ASSESSMENT,
-        time(2017, 5, 5, 0, 0));
+        timeService.time(2017, 5, 5, 0, 0));
     StatusUpdate licenseUnitProcessing = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.LU_PROCESSING,
-        time(2017, 7, 5, 0, 0));
+        timeService.time(2017, 7, 5, 0, 0));
     List<StatusUpdate> statusUpdates = new ArrayList<>();
     statusUpdates.add(initialChecks);
     statusUpdates.add(technicalAssessment);
@@ -775,7 +767,7 @@ public class TestDataServiceImpl implements TestDataService {
     Application application = new Application(appId,
         TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
         userId,
-        time(2016, 11, 3, 3, 3),
+        timeService.time(2016, 11, 3, 3, 3),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
@@ -784,12 +776,12 @@ public class TestDataServiceImpl implements TestDataService {
     CaseDetails caseDetails = new CaseDetails(appId,
         RandomIdUtil.caseReference(),
         OFFICER_ID,
-        time(2016, 12, 4, 3, 3));
+        timeService.time(2016, 12, 4, 3, 3));
     insert(application, caseDetails);
     StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(),
         appId,
         StatusType.INITIAL_CHECKS,
-        time(2016, 12, 5, 3, 3));
+        timeService.time(2016, 12, 5, 3, 3));
     statusUpdateDao.insertStatusUpdate(statusUpdate);
   }
 
@@ -809,7 +801,7 @@ public class TestDataServiceImpl implements TestDataService {
       Application application = new Application(appId,
           TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
           userId,
-          time(2015, 3, 3, 3 + k, 3),
+          timeService.time(2015, 3, 3, 3 + k, 3),
           consigneeCountries,
           endUserCountries,
           getApplicantReference(),
@@ -818,7 +810,7 @@ public class TestDataServiceImpl implements TestDataService {
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
-          time(2015, 4, 3, 3, 3));
+          timeService.time(2015, 4, 3, 3, 3));
       insert(application, caseDetails);
       List<StatusType> statusTypes = Arrays.asList(StatusType.INITIAL_CHECKS,
           StatusType.TECHNICAL_ASSESSMENT,
@@ -828,12 +820,12 @@ public class TestDataServiceImpl implements TestDataService {
           StatusType.COMPLETE);
       for (int i = 0; i < statusTypes.size(); i++) {
         StatusType statusType = statusTypes.get(i);
-        Long createdTimestamp = time(2016, 5, 3 + i, 3 + i, 3 + i);
+        Long createdTimestamp = timeService.time(2016, 5, 3 + i, 3 + i, 3 + i);
         StatusUpdate statusUpdate = new StatusUpdate(statusUpdateId(), appId, statusType, createdTimestamp);
         statusUpdateDao.insertStatusUpdate(statusUpdate);
       }
 
-      long outcomeCreatedTimestamp = time(2016, 7, 10, 13, 17);
+      long outcomeCreatedTimestamp = timeService.time(2016, 7, 10, 13, 17);
       List<OutcomeDocument> issueOutcomeDocuments = new ArrayList<>();
       for (int j = 0; j < 4; j++) {
         DocumentType documentType = ISSUE_DOCUMENT_TYPES.get(j);
@@ -861,7 +853,7 @@ public class TestDataServiceImpl implements TestDataService {
       }
 
       for (int i = 0; i < 3; i++) {
-        long informCreatedTimestamp = time(2016, 8 + i, 3 + i, 3 + i, 3 + i);
+        long informCreatedTimestamp = timeService.time(2016, 8 + i, 3 + i, 3 + i, 3 + i);
         Document document = new Document(fileId(), "Licence required inform letter number " + (i + 1), "#");
         Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
         notificationDao.insertNotification(notification);
@@ -870,7 +862,7 @@ public class TestDataServiceImpl implements TestDataService {
   }
 
   private void insertCompletedCase(String appId) {
-    long createdTimestamp = time(2016, 12, 20, 20, 20);
+    long createdTimestamp = timeService.time(2016, 12, 20, 20, 20);
     String caseReference = RandomIdUtil.caseReference();
     CaseDetails caseDetails = new CaseDetails(appId, caseReference, OFFICER_ID, createdTimestamp);
     caseDetailsDao.insert(caseDetails);
@@ -884,13 +876,14 @@ public class TestDataServiceImpl implements TestDataService {
           "#");
       outcomeDocuments.add(outcomeDocument);
     }
-    long outcomeCreatedTimestamp = time(2016, 12, 22, 13, 17);
+    long outcomeCreatedTimestamp = timeService.time(2016, 12, 22, 13, 17);
     Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, outcomeDocuments);
     outcomeDao.insertOutcome(amendOutcome);
   }
 
-  private void insertCase(String appId, boolean hasOutcome, boolean hasRfi, boolean hasInformLetter, boolean isStopped) {
-    long createdTimestamp = time(2017, 2, 2, 2, 2);
+  private void insertCase(String appId, boolean hasOutcome, boolean hasRfi, boolean hasInformLetter,
+                          boolean isStopped) {
+    long createdTimestamp = timeService.time(2017, 2, 2, 2, 2);
     String caseReference = RandomIdUtil.caseReference();
     CaseDetails caseDetails = new CaseDetails(appId, caseReference, OFFICER_ID, createdTimestamp);
     caseDetailsDao.insert(caseDetails);
@@ -898,8 +891,8 @@ public class TestDataServiceImpl implements TestDataService {
       for (int i = 0; i < 2; i++) {
         Rfi rfi = new Rfi(RandomIdUtil.rfiId(),
             caseReference,
-            time(2017, 3 + i, 2, 2, 2),
-            time(2018, 3 + i, 2, 2, 2),
+            timeService.time(2017, 3 + i, 2, 2, 2),
+            timeService.time(2018, 3 + i, 2, 2, 2),
             OFFICER_ID,
             RECIPIENTS,
             "Please answer this rfi");
@@ -907,7 +900,7 @@ public class TestDataServiceImpl implements TestDataService {
       }
     }
     if (hasInformLetter) {
-      long informCreatedTimestamp = time(2017, 4, 4, 4, 4);
+      long informCreatedTimestamp = timeService.time(2017, 4, 4, 4, 4);
       Document document = new Document(fileId(), "Licence required inform letter number 4", "#");
       Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
       notificationDao.insertNotification(notification);
@@ -917,7 +910,7 @@ public class TestDataServiceImpl implements TestDataService {
           caseReference,
           NotificationType.STOP,
           TestDataServiceImpl.OFFICER_ID,
-          time(2017, 5, 1, 14, 30),
+          timeService.time(2017, 5, 1, 14, 30),
           RECIPIENTS,
           "We have had to stop your amendment.",
           null);
@@ -934,7 +927,7 @@ public class TestDataServiceImpl implements TestDataService {
             "#");
         outcomeDocuments.add(outcomeDocument);
       }
-      long outcomeCreatedTimestamp = time(2017, 3, 10, 13, 17);
+      long outcomeCreatedTimestamp = timeService.time(2017, 3, 10, 13, 17);
       Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, outcomeDocuments);
       outcomeDao.insertOutcome(amendOutcome);
     }
@@ -942,15 +935,15 @@ public class TestDataServiceImpl implements TestDataService {
 
   private static Map<String, List<LicenceView>> licenceViewMap = new ConcurrentHashMap<>();
 
-  public static synchronized List<LicenceView> getLicenceViews(String userId) {
+  public static synchronized List<LicenceView> getLicenceViews(TimeService timeService, String userId) {
     if (licenceViewMap.get(userId) == null) {
       List<LicenceView> licenceViews = new ArrayList<>();
       for (int i = 0; i < 20; i++) {
         String customerId = i % 2 == 0 ? TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE) : TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO);
         LicenceView.Status status = LicenceView.Status.values()[i % LicenceView.Status.values().length];
         List<String> destinationList = i % 2 == 0 ? Collections.singletonList(GERMANY) : Arrays.asList(ICELAND, FRANCE);
-        Long issueTimestamp = time(2015, 3, 1 + i, 15, 10);
-        Long expiryTimestamp = status == LicenceView.Status.ACTIVE ? time(2019, 3, 1 + i, 15, 10) : time(2016, 3, 1 + i, 15, 10);
+        Long issueTimestamp = timeService.time(2015, 3, 1 + i, 15, 10);
+        Long expiryTimestamp = status == LicenceView.Status.ACTIVE ? timeService.time(2019, 3, 1 + i, 15, 10) : timeService.time(2016, 3, 1 + i, 15, 10);
         LicenceView licenceView = new LicenceView();
         licenceView.setLicenceRef(RandomIdUtil.randomNumber("REF-"));
         licenceView.setOriginalAppId(RandomIdUtil.randomNumber("APP"));
@@ -959,8 +952,8 @@ public class TestDataServiceImpl implements TestDataService {
         licenceView.setSiteId(SITE_ID);
         licenceView.setType(Type.SIEL);
         licenceView.setSubType(null);
-        licenceView.setIssueDate(TimeUtil.toLocalDate(issueTimestamp));
-        licenceView.setExpiryDate(TimeUtil.toLocalDate(expiryTimestamp));
+        licenceView.setIssueDate(timeService.toLocalDate(issueTimestamp));
+        licenceView.setExpiryDate(timeService.toLocalDate(expiryTimestamp));
         licenceView.setStatus(status);
         licenceView.setCountryList(destinationList);
         licenceView.setExternalDocumentUrl("");

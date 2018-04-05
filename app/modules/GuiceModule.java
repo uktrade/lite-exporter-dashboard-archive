@@ -91,6 +91,8 @@ import components.service.DraftFileService;
 import components.service.DraftFileServiceImpl;
 import components.service.EscapeHtmlService;
 import components.service.EscapeHtmlServiceImpl;
+import components.service.HolidayService;
+import components.service.HolidayServiceImpl;
 import components.service.MessageViewService;
 import components.service.MessageViewServiceImpl;
 import components.service.OfficerViewService;
@@ -115,6 +117,8 @@ import components.service.StartUpService;
 import components.service.StartUpServiceImpl;
 import components.service.StatusTrackerViewService;
 import components.service.StatusTrackerViewServiceImpl;
+import components.service.TimeService;
+import components.service.TimeServiceImpl;
 import components.service.UserPermissionService;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
@@ -127,7 +131,6 @@ import components.service.test.TestOgelDetailsViewServiceImpl;
 import components.service.test.TestOgelItemViewServiceImpl;
 import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
-import components.util.HolidayUtil;
 import filters.common.JwtRequestFilterConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.skife.jdbi.v2.DBI;
@@ -139,6 +142,7 @@ import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -160,6 +164,7 @@ public class GuiceModule extends AbstractModule {
   protected void configure() {
     install(new SamlModule(config));
     bindClients();
+    bind(ZoneId.class).toInstance(ZoneId.of(config.getString("defaultTimeZoneId")));
     // Jwt
     bindConstant().annotatedWith(Names.named("jwtSharedSecret")).to(config.getString("jwtSharedSecret"));
     // LicenceApplication
@@ -192,9 +197,9 @@ public class GuiceModule extends AbstractModule {
     bind(DestinationService.class).to(DestinationServiceImpl.class);
     bind(EscapeHtmlService.class).to(EscapeHtmlServiceImpl.class);
     bind(ReadMessageService.class).to(ReadMessageServiceImpl.class);
-    // Working day service
-    List<LocalDate> holidays = HolidayUtil.loadHolidaysFromFile("holidays.json");
-    bind(WorkingDayService.class).toInstance(new WorkingDayServiceImpl(holidays));
+    bind(TimeService.class).to(TimeServiceImpl.class);
+    bind(HolidayService.class).to(HolidayServiceImpl.class);
+    bind(WorkingDayService.class).to(WorkingDayServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -291,6 +296,12 @@ public class GuiceModule extends AbstractModule {
   }
 
   @Provides
+  @Named("holidays")
+  List<LocalDate> provideHolidays(HolidayService holidayService) {
+    return holidayService.loadHolidaysFromFile("holidays.json");
+  }
+
+  @Provides
   public JwtRequestFilterConfig provideJwtRequestFilterConfig(@Named("jwtSharedSecret") String key) {
     return new JwtRequestFilterConfig(key, ISSUER);
   }
@@ -308,9 +319,7 @@ public class GuiceModule extends AbstractModule {
   @Provides
   @Singleton
   public DBI provideDataSourceDbi(Config config, Database database) {
-    return new DBI(database.getUrl(),
-        config.getString("db.default.username"),
-        config.getString("db.default.password"));
+    return new DBI(database.getUrl());
   }
 
   @Provides

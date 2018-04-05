@@ -9,7 +9,6 @@ import com.google.inject.Inject;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
-import components.util.TimeUtil;
 import models.AppData;
 import models.Application;
 import models.CaseData;
@@ -38,10 +37,12 @@ import java.util.stream.Collectors;
 public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 
   private final WorkingDayService workingDayService;
+  private final TimeService timeService;
 
   @Inject
-  public StatusTrackerViewServiceImpl(WorkingDayService workingDayService) {
+  public StatusTrackerViewServiceImpl(WorkingDayService workingDayService, TimeService timeService) {
     this.workingDayService = workingDayService;
+    this.timeService = timeService;
   }
 
   @Override
@@ -89,7 +90,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   }
 
   private StatusItemView getOutcomeStatusItemView(String appId, CaseData caseData) {
-    String processDescription = "Completed on " + TimeUtil.formatDate(caseData.getOutcome().getCreatedTimestamp());
+    String processDescription = "Completed on " + timeService.formatDate(caseData.getOutcome().getCreatedTimestamp());
     return new StatusItemView(ApplicationUtil.OUTCOME_DOCUMENTS_UPDATED,
         "",
         ApplicationUtil.FINISHED,
@@ -101,7 +102,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
     String status = ApplicationUtil.DRAFT;
     String statusExplanation = "";
     String processingLabel = ApplicationUtil.FINISHED;
-    String processingDescription = "Created on " + TimeUtil.formatDate(application.getCreatedTimestamp());
+    String processingDescription = "Created on " + timeService.formatDate(application.getCreatedTimestamp());
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
 
@@ -115,7 +116,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
       processingDescription = "";
     } else {
       processingLabel = ApplicationUtil.FINISHED;
-      processingDescription = "Submitted on " + TimeUtil.formatDate(submittedTimestamp);
+      processingDescription = "Submitted on " + timeService.formatDate(submittedTimestamp);
     }
     return new StatusItemView(status, statusExplanation, processingLabel, processingDescription, new ArrayList<>());
   }
@@ -200,7 +201,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   }
 
   private StatusItemView geStopStatusItemView(Notification notification, StatusItemView inProgressStatusItemView) {
-    String processingDescription = "On " + TimeUtil.formatDate(notification.getCreatedTimestamp());
+    String processingDescription = "On " + timeService.formatDate(notification.getCreatedTimestamp());
     return new StatusItemView(inProgressStatusItemView.getStatus(),
         inProgressStatusItemView.getStatusExplanation(),
         ApplicationUtil.STOPPED,
@@ -210,7 +211,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 
   private StatusItemView getWithdrawalApprovalStatusItemView(WithdrawalApproval withdrawalApproval,
                                                              StatusItemView inProgressStatusItemView) {
-    String processingDescription = "On " + TimeUtil.formatDate(withdrawalApproval.getCreatedTimestamp());
+    String processingDescription = "On " + timeService.formatDate(withdrawalApproval.getCreatedTimestamp());
     return new StatusItemView(inProgressStatusItemView.getStatus(),
         inProgressStatusItemView.getStatusExplanation(),
         ApplicationUtil.WITHDRAWN,
@@ -256,7 +257,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   }
 
   private NotificationView getDelayNotificationView(String appId, Notification notification) {
-    String time = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
+    String time = timeService.formatDateAndTime(notification.getCreatedTimestamp());
     String description = "on " + time;
     String link = LinkUtil.getDelayedMessageLink(appId, notification);
     return new NotificationView(EventLabelType.DELAYED, "Apology for delay received", link, description, notification.getCreatedTimestamp());
@@ -269,14 +270,14 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   }
 
   private NotificationView getInformNotificationView(String appId, Notification notification) {
-    String time = TimeUtil.formatDateAndTime(notification.getCreatedTimestamp());
+    String time = timeService.formatDateAndTime(notification.getCreatedTimestamp());
     String description = "on " + time;
     String link = LinkUtil.getInformLettersLink(appId);
     return new NotificationView(EventLabelType.INFORM_ISSUED, "Inform letter issued", link, description, notification.getCreatedTimestamp());
   }
 
   private NotificationView getWithdrawalRejectionNotificationView(WithdrawalRejection withdrawalRejection) {
-    String time = TimeUtil.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
+    String time = timeService.formatDateAndTime(withdrawalRejection.getCreatedTimestamp());
     String description = "on " + time;
     String link = LinkUtil.getWithdrawalRejectionMessageLink(withdrawalRejection);
     return new NotificationView(EventLabelType.WITHDRAWAL_REJECTED, "Withdrawal rejected", link, description, withdrawalRejection.getCreatedTimestamp());
@@ -288,7 +289,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   }
 
   private NotificationView getWithdrawalRequestNotificationView(WithdrawalRequest withdrawalRequest) {
-    String time = TimeUtil.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
+    String time = timeService.formatDateAndTime(withdrawalRequest.getCreatedTimestamp());
     String description = "sent on " + time;
     String link = LinkUtil.getWithdrawalRequestMessageLink(withdrawalRequest);
     return new NotificationView(EventLabelType.WITHDRAWAL_REQUESTED, "Withdrawal request", link, description, withdrawalRequest.getCreatedTimestamp());
@@ -301,7 +302,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   }
 
   private NotificationView getRfiNotificationView(String appId, Rfi rfi) {
-    String time = TimeUtil.formatDateAndTime(rfi.getCreatedTimestamp());
+    String time = timeService.formatDateAndTime(rfi.getCreatedTimestamp());
     String description = "received on " + time;
     String link = controllers.routes.RfiTabController.showRfiTab(appId).withFragment(rfi.getId()).toString();
     return new NotificationView(EventLabelType.RFI, "Request for information", link, description, rfi.getCreatedTimestamp());
@@ -340,7 +341,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   private String getProcessingDescription(StatusUpdate statusUpdate, Long finishedTimestamp, AppData appData) {
     if (statusUpdate.getStatusType() == StatusType.COMPLETE) {
       if (finishedTimestamp != null) {
-        return "Completed on " + TimeUtil.formatDate(statusUpdate.getCreatedTimestamp());
+        return "Completed on " + timeService.formatDate(statusUpdate.getCreatedTimestamp());
       } else {
         return "";
       }
@@ -351,7 +352,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
           long duration = workingDayService.calculateWorkingDays(createdTimestamp, finishedTimestamp, appData);
           return "Processed in " + ViewUtil.pluraliseWithCount(duration, "working day") + "*";
         } else {
-          String started = TimeUtil.formatDate(createdTimestamp);
+          String started = timeService.formatDate(createdTimestamp);
           long duration = workingDayService.calculateWorkingDays(createdTimestamp, Instant.now().toEpochMilli(), appData);
           return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
         }
@@ -363,12 +364,12 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 
   private String getProcessingDescription(CaseData caseData, AppData appData) {
     if (caseData.getOutcome() != null) {
-      return "Started on " + TimeUtil.formatDate(caseData.getCaseDetails().getCreatedTimestamp());
+      return "Started on " + timeService.formatDate(caseData.getCaseDetails().getCreatedTimestamp());
     } else if (caseData.getStopNotification() != null) {
-      return "On " + TimeUtil.formatDate(caseData.getStopNotification().getCreatedTimestamp());
+      return "On " + timeService.formatDate(caseData.getStopNotification().getCreatedTimestamp());
     } else {
       long createdTimestamp = caseData.getCaseDetails().getCreatedTimestamp();
-      String started = TimeUtil.formatDate(createdTimestamp);
+      String started = timeService.formatDate(createdTimestamp);
       long duration = workingDayService.calculateWorkingDays(createdTimestamp, Instant.now().toEpochMilli(), appData);
       return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
     }

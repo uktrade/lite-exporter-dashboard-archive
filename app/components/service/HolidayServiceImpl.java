@@ -1,7 +1,8 @@
-package components.util;
+package components.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
@@ -11,11 +12,19 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HolidayUtil {
+public class HolidayServiceImpl implements HolidayService {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  public static List<LocalDate> loadHolidaysFromFile(String path) {
+  private final TimeService timeService;
+
+  @Inject
+  public HolidayServiceImpl(TimeService timeService) {
+    this.timeService = timeService;
+  }
+
+  @Override
+  public List<LocalDate> loadHolidaysFromFile(String path) {
     List<LocalDate> localDates = new ArrayList<>();
     JsonNode jsonNode;
     try {
@@ -27,7 +36,7 @@ public class HolidayUtil {
     JsonNode events = jsonNode.get("england-and-wales").get("events");
     for (int i = 0; i < events.size(); i++) {
       String date = events.get(i).get("date").asText();
-      localDates.add(TimeUtil.parseYearMonthDate(date));
+      localDates.add(timeService.parseYearMonthDate(date));
     }
     return localDates;
   }
