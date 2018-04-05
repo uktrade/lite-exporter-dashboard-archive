@@ -3,10 +3,11 @@ package service;
 import static components.util.RandomIdUtil.rfiId;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import components.service.HolidayServiceImpl;
+import components.service.TimeService;
+import components.service.TimeServiceImpl;
 import components.service.WorkingDayService;
 import components.service.WorkingDayServiceImpl;
-import components.util.HolidayUtil;
-import components.util.TimeUtil;
 import models.AppData;
 import models.Rfi;
 import models.RfiReply;
@@ -15,56 +16,58 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class WorkingDayServiceTest {
 
+  private final TimeService timeService = new TimeServiceImpl(ZoneId.systemDefault());
   private WorkingDayService workingDayService;
 
   @Before
   public void setup() {
-    List<LocalDate> holidays = HolidayUtil.loadHolidaysFromFile("holidays.json");
-    workingDayService = new WorkingDayServiceImpl(holidays);
+    List<LocalDate> holidays = new HolidayServiceImpl(timeService).loadHolidaysFromFile("holidays.json");
+    workingDayService = new WorkingDayServiceImpl(holidays, timeService);
   }
 
   @Test
   public void sameDayShouldReturnOneDay() {
-    long start = TimeUtil.time(2018, 2, 7, 10, 30);
-    long end = TimeUtil.time(2018, 2, 7, 11, 30);
+    long start = timeService.time(2018, 2, 7, 10, 30);
+    long end = timeService.time(2018, 2, 7, 11, 30);
     int days = workingDayService.calculateWorkingDays(start, end, noRfiAppData());
     assertThat(days).isEqualTo(1);
   }
 
   @Test
   public void differentDayButLessThanTwentyFourHoursShouldReturnOneDay() {
-    long start = TimeUtil.time(2018, 2, 7, 10, 30);
-    long end = TimeUtil.time(2018, 2, 8, 9, 30);
+    long start = timeService.time(2018, 2, 7, 10, 30);
+    long end = timeService.time(2018, 2, 8, 9, 30);
     int days = workingDayService.calculateWorkingDays(start, end, noRfiAppData());
     assertThat(days).isEqualTo(1);
   }
 
   @Test
   public void twentyFiveHoursShouldReturnTwoDays() {
-    long start = TimeUtil.time(2018, 2, 7, 10, 30);
-    long end = TimeUtil.time(2018, 2, 8, 11, 30);
+    long start = timeService.time(2018, 2, 7, 10, 30);
+    long end = timeService.time(2018, 2, 8, 11, 30);
     int days = workingDayService.calculateWorkingDays(start, end, noRfiAppData());
     assertThat(days).isEqualTo(2);
   }
 
   @Test
   public void christmasAndBoxingDayShouldNotBeCounted() {
-    long start = TimeUtil.time(2018, 12, 24, 10, 30);
-    long end = TimeUtil.time(2018, 12, 27, 11, 30);
+    long start = timeService.time(2018, 12, 24, 10, 30);
+    long end = timeService.time(2018, 12, 27, 11, 30);
     int days = workingDayService.calculateWorkingDays(start, end, noRfiAppData());
     assertThat(days).isEqualTo(2);
   }
 
   @Test
   public void weekendShouldNotBeCounted() {
-    long start = TimeUtil.time(2018, 2, 8, 10, 30);
-    long end = TimeUtil.time(2018, 2, 15, 10, 0);
+    long start = timeService.time(2018, 2, 8, 10, 30);
+    long end = timeService.time(2018, 2, 15, 10, 0);
     int days = workingDayService.calculateWorkingDays(start, end, noRfiAppData());
     assertThat(days).isEqualTo(5);
   }
@@ -72,9 +75,9 @@ public class WorkingDayServiceTest {
   @Test
   public void openRfiShouldNotBeCounted() {
     // Monday
-    long start = TimeUtil.time(2018, 2, 5, 10, 30);
-    long end = TimeUtil.time(2018, 2, 9, 10, 29);
-    Rfi rfi = createRfi(TimeUtil.time(2018, 2, 7, 10, 29));
+    long start = timeService.time(2018, 2, 5, 10, 30);
+    long end = timeService.time(2018, 2, 9, 10, 29);
+    Rfi rfi = createRfi(timeService.time(2018, 2, 7, 10, 29));
     AppData appData = createAppData(Collections.singletonList(rfi), new ArrayList<>(), new ArrayList<>());
     int days = workingDayService.calculateWorkingDays(start, end, appData);
     assertThat(days).isEqualTo(2);
@@ -83,11 +86,11 @@ public class WorkingDayServiceTest {
   @Test
   public void answeredRfiShouldNotBeCounted() {
     // Monday
-    long start = TimeUtil.time(2018, 2, 5, 10, 30);
-    long end = TimeUtil.time(2018, 2, 9, 10, 29);
+    long start = timeService.time(2018, 2, 5, 10, 30);
+    long end = timeService.time(2018, 2, 9, 10, 29);
 
-    Rfi rfi = createRfi(TimeUtil.time(2018, 2, 7, 10, 29));
-    RfiReply rfiReply = createRfiReply(rfi.getId(), TimeUtil.time(2018, 2, 8, 10, 28));
+    Rfi rfi = createRfi(timeService.time(2018, 2, 7, 10, 29));
+    RfiReply rfiReply = createRfiReply(rfi.getId(), timeService.time(2018, 2, 8, 10, 28));
 
     AppData appData = createAppData(Collections.singletonList(rfi), Collections.singletonList(rfiReply), new ArrayList<>());
     int days = workingDayService.calculateWorkingDays(start, end, appData);
@@ -97,11 +100,11 @@ public class WorkingDayServiceTest {
   @Test
   public void withdrawnRfiShouldNotBeCounted() {
     // Monday
-    long start = TimeUtil.time(2018, 2, 5, 10, 30);
-    long end = TimeUtil.time(2018, 2, 9, 10, 29);
+    long start = timeService.time(2018, 2, 5, 10, 30);
+    long end = timeService.time(2018, 2, 9, 10, 29);
 
-    Rfi rfi = createRfi(TimeUtil.time(2018, 2, 7, 10, 29));
-    RfiWithdrawal rfiWithdrawal = createRfiWithdrawal(rfi.getId(), TimeUtil.time(2018, 2, 8, 10, 28));
+    Rfi rfi = createRfi(timeService.time(2018, 2, 7, 10, 29));
+    RfiWithdrawal rfiWithdrawal = createRfiWithdrawal(rfi.getId(), timeService.time(2018, 2, 8, 10, 28));
 
     AppData appData = createAppData(Collections.singletonList(rfi), new ArrayList<>(), Collections.singletonList(rfiWithdrawal));
     int days = workingDayService.calculateWorkingDays(start, end, appData);

@@ -3,6 +3,7 @@ package components.client.test;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.client.LicenceClientImpl;
+import components.service.TimeService;
 import components.service.UserService;
 import components.service.test.TestDataServiceImpl;
 import components.util.TestUtil;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class TestLicenceClientImpl extends LicenceClientImpl {
 
   private final UserService userService;
+  private final TimeService timeService;
 
   @Inject
   public TestLicenceClientImpl(HttpExecutionContext httpExecutionContext,
@@ -27,14 +29,15 @@ public class TestLicenceClientImpl extends LicenceClientImpl {
                                @Named("permissionsServiceAddress") String address,
                                @Named("permissionsServiceTimeout") int timeout,
                                UserService userService,
-                               JwtRequestFilter jwtRequestFilter) {
+                               JwtRequestFilter jwtRequestFilter, TimeService timeService) {
     super(httpExecutionContext, wsClient, address, timeout, jwtRequestFilter);
     this.userService = userService;
+    this.timeService = timeService;
   }
 
   @Override
   public LicenceView getLicence(String userId, String reference) {
-    return TestDataServiceImpl.getLicenceViews(userId).stream()
+    return TestDataServiceImpl.getLicenceViews(timeService, userId).stream()
         .filter(licenceView -> licenceView.getLicenceRef().equals(reference))
         .findAny()
         .orElseGet(() -> super.getLicence(userId, reference));
@@ -45,7 +48,7 @@ public class TestLicenceClientImpl extends LicenceClientImpl {
     if (TestDataServiceImpl.ADMIN.equals(userId)) {
       return new ArrayList<>();
     } else {
-      List<LicenceView> additionalLicenceViews = TestDataServiceImpl.getLicenceViews(userId);
+      List<LicenceView> additionalLicenceViews = TestDataServiceImpl.getLicenceViews(timeService, userId);
       List<LicenceView> licenceViews = super.getLicences(userId).stream()
           .peek(licenceView -> licenceView.setCustomerId(TestUtil.wrapCustomerId(userId, licenceView.getCustomerId())))
           .collect(Collectors.toList());

@@ -1,7 +1,8 @@
 package components.service;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import components.util.ApplicationUtil;
-import components.util.TimeUtil;
 import models.AppData;
 import models.Rfi;
 import models.RfiReply;
@@ -23,9 +24,12 @@ import java.util.stream.Collectors;
 public class WorkingDayServiceImpl implements WorkingDayService {
 
   private final Set<LocalDate> holidays;
+  private final TimeService timeService;
 
-  public WorkingDayServiceImpl(List<LocalDate> holidays) {
+  @Inject
+  public WorkingDayServiceImpl(@Named("holidays") List<LocalDate> holidays, TimeService timeService) {
     this.holidays = new HashSet<>(holidays);
+    this.timeService = timeService;
   }
 
   @Override
@@ -35,8 +39,8 @@ public class WorkingDayServiceImpl implements WorkingDayService {
     if (start >= end) {
       return 0;
     } else {
-      LocalDateTime startLocalDate = TimeUtil.toLocalDateTime(start);
-      LocalDateTime endLocalDate = TimeUtil.toLocalDateTime(end);
+      LocalDateTime startLocalDate = timeService.toLocalDateTime(start);
+      LocalDateTime endLocalDate = timeService.toLocalDateTime(end);
 
       int hours = 0;
       LocalDateTime now = startLocalDate;
@@ -68,11 +72,11 @@ public class WorkingDayServiceImpl implements WorkingDayService {
     for (Rfi rfi : rfiList) {
       RfiWithdrawal rfiWithdrawal = rfiIdToRfiWithdrawal.get(rfi.getId());
       RfiReply rfiReply = rfiIdToRfiReply.get(rfi.getId());
-      LocalDateTime created = TimeUtil.toLocalDateTime(rfi.getCreatedTimestamp());
+      LocalDateTime created = timeService.toLocalDateTime(rfi.getCreatedTimestamp());
       if (rfiWithdrawal != null) {
-        rfiTimeSpans.add(ImmutablePair.of(created, TimeUtil.toLocalDateTime(rfiWithdrawal.getCreatedTimestamp())));
+        rfiTimeSpans.add(ImmutablePair.of(created, timeService.toLocalDateTime(rfiWithdrawal.getCreatedTimestamp())));
       } else if (rfiReply != null) {
-        rfiTimeSpans.add(ImmutablePair.of(created, TimeUtil.toLocalDateTime(rfiReply.getCreatedTimestamp())));
+        rfiTimeSpans.add(ImmutablePair.of(created, timeService.toLocalDateTime(rfiReply.getCreatedTimestamp())));
       } else {
         rfiTimeSpans.add(ImmutablePair.of(created, LocalDateTime.now()));
       }

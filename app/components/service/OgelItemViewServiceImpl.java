@@ -6,7 +6,6 @@ import components.client.LicenceClient;
 import components.client.OgelServiceClient;
 import components.util.EnumUtil;
 import components.util.LicenceUtil;
-import components.util.TimeUtil;
 import models.view.OgelItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
@@ -23,14 +22,15 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
   private final LicenceClient licenceClient;
   private final CustomerServiceClient customerServiceClient;
   private final OgelServiceClient ogelServiceClient;
+  private final TimeService timeService;
 
   @Inject
-  public OgelItemViewServiceImpl(LicenceClient licenceClient,
-                                 CustomerServiceClient customerServiceClient,
-                                 OgelServiceClient ogelServiceClient) {
+  public OgelItemViewServiceImpl(LicenceClient licenceClient, CustomerServiceClient customerServiceClient,
+                                 OgelServiceClient ogelServiceClient, TimeService timeService) {
     this.licenceClient = licenceClient;
     this.customerServiceClient = customerServiceClient;
     this.ogelServiceClient = ogelServiceClient;
+    this.timeService = timeService;
   }
 
   @Override
@@ -81,13 +81,13 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
 
   private OgelItemView getOgelItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView,
                                        SiteView siteView, OgelFullView ogelFullView) {
-    long registrationTimestamp = TimeUtil.toMillis(TimeUtil.parseYearMonthDate(ogelRegistrationView.getRegistrationDate()));
-    String registrationDate = TimeUtil.formatDate(registrationTimestamp);
+    long registrationTimestamp = timeService.toMillis(timeService.parseYearMonthDate(ogelRegistrationView.getRegistrationDate()));
+    String registrationDate = timeService.formatDate(registrationTimestamp);
     long updatedTimestamp;
     String updatedDate;
     if (ogelFullView.getLastUpdatedDate() != null) {
-      updatedTimestamp = TimeUtil.toMillis(ogelFullView.getLastUpdatedDate());
-      updatedDate = TimeUtil.formatDate(updatedTimestamp);
+      updatedTimestamp = timeService.toMillis(ogelFullView.getLastUpdatedDate());
+      updatedDate = timeService.formatDate(updatedTimestamp);
     } else {
       updatedTimestamp = 0;
       updatedDate = "-";
