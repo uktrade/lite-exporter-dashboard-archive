@@ -48,6 +48,19 @@ pipeline {
       }
     }
 
+    stage('sonarqube') {
+      steps {
+        script {
+          deployer.inside {
+            withSonarQubeEnv('sonarqube') {
+              sh 'sbt -no-colors compile test:compile'
+              sh "${env.SONAR_SCANNER_PATH}/sonar-scanner -Dsonar.projectVersion=${env.BUILD_VERSION}"
+            }
+          }
+        }
+      }
+    }
+
     stage('deploy') {
       steps {
         build job: 'deploy', parameters: [
