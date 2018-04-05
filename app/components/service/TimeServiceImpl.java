@@ -14,15 +14,6 @@ import java.time.temporal.ChronoUnit;
 
 public class TimeServiceImpl implements TimeService {
 
-  private static final DateTimeFormatter YEAR_MONTH_DAY_FORMATTER = new DateTimeFormatterBuilder()
-      .appendPattern("yyyy-MM-dd")
-      .toFormatter();
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy");
-  private static final DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
-      .appendPattern("h:mm")
-      .appendText(ChronoField.AMPM_OF_DAY, ImmutableMap.of(0L, "am", 1L, "pm"))
-      .toFormatter();
-
   private final ZoneId zoneId;
   private final DateTimeFormatter yearMonthDayFormatter;
   private final DateTimeFormatter dateFormatter;
@@ -31,9 +22,17 @@ public class TimeServiceImpl implements TimeService {
   @Inject
   public TimeServiceImpl(ZoneId zoneId) {
     this.zoneId = zoneId;
-    this.yearMonthDayFormatter = YEAR_MONTH_DAY_FORMATTER.withZone(zoneId);
-    this.dateFormatter = DATE_FORMATTER.withZone(zoneId);
-    this.timeFormatter = TIME_FORMATTER.withZone(zoneId);
+    this.yearMonthDayFormatter = new DateTimeFormatterBuilder()
+        .appendPattern("yyyy-MM-dd")
+        .toFormatter()
+        .withZone(zoneId);
+    this.dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+        .withZone(zoneId);
+    this.timeFormatter = new DateTimeFormatterBuilder()
+        .appendPattern("h:mm")
+        .appendText(ChronoField.AMPM_OF_DAY, ImmutableMap.of(0L, "am", 1L, "pm"))
+        .toFormatter()
+        .withZone(zoneId);
   }
 
   @Override
