@@ -12,3 +12,4 @@ lite_*
 localExport.db
 .gradle/
 build/
+/.scannerwork
