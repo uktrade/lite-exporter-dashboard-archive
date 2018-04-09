@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
+import components.exceptions.UnexpectedStateException;
 import components.service.UserService;
 import components.service.test.TestDataService;
 import components.util.EnumUtil;
@@ -52,7 +53,7 @@ public class TestDataController extends SamlController {
         testDataService.deleteCurrentUser(userId);
         break;
       default:
-        throw new RuntimeException("Unknown testType " + testTypeParam);
+        throw new UnexpectedStateException("Unknown testType " + testTypeParam);
     }
     return redirect(controllers.routes.ApplicationListController.index());
   }

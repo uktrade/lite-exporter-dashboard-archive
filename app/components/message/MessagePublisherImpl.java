@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import components.dao.BacklogDao;
+import components.exceptions.ObjectMapperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.bis.lite.exporterdashboard.api.ExporterDashboardMessage;
@@ -37,7 +38,7 @@ public class MessagePublisherImpl implements MessagePublisher {
     try {
       message = MAPPER.writeValueAsString(exporterDashboardMessage);
     } catch (Exception exception) {
-      throw new RuntimeException("Unable to write message as string with routingKey " + routingKey, exception);
+      throw new ObjectMapperException("Unable to write message as string with routingKey " + routingKey, exception);
     }
     try {
       MessageAttributeValue value = new MessageAttributeValue().withDataType("String")

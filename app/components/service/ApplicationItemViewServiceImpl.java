@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
@@ -139,8 +140,9 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   private ApplicationProgress getApplicationProgress(AppData appData) {
-    if (!appData.getCaseDataList().isEmpty()) {
-      CaseData caseData = ApplicationUtil.getMostRecentCase(appData);
+    Optional<CaseData> caseDataOptional = ApplicationUtil.getMostRecentCase(appData);
+    if (caseDataOptional.isPresent()) {
+      CaseData caseData = caseDataOptional.get();
       if (caseData.getOutcome() != null || caseData.getStopNotification() != null) {
         return ApplicationProgress.COMPLETED;
       } else {
@@ -159,8 +161,9 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   private DateColumnInfo getDateColumnInfo(AppData appData) {
-    if (!appData.getCaseDataList().isEmpty()) {
-      CaseData caseData = ApplicationUtil.getMostRecentCase(appData);
+    Optional<CaseData> caseDataOptional = ApplicationUtil.getMostRecentCase(appData);
+    if (caseDataOptional.isPresent()) {
+      CaseData caseData = caseDataOptional.get();
       if (caseData.getOutcome() != null) {
         return new DateColumnInfo(ApplicationUtil.COMPLETED, caseData.getOutcome().getCreatedTimestamp());
       } else if (caseData.getStopNotification() != null) {
@@ -189,8 +192,9 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     String appId = appData.getApplication().getId();
     List<NotificationView> notificationViews = new ArrayList<>();
     List<Rfi> openRfiList;
-    if (!appData.getCaseDataList().isEmpty()) {
-      CaseData caseData = ApplicationUtil.getMostRecentCase(appData);
+    Optional<CaseData> caseDataOptional = ApplicationUtil.getMostRecentCase(appData);
+    if (caseDataOptional.isPresent()) {
+      CaseData caseData = caseDataOptional.get();
       openRfiList = ApplicationUtil.getOpenRfiList(caseData);
     } else {
       openRfiList = ApplicationUtil.getOpenRfiList(appData);
@@ -226,8 +230,9 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     }
     if (applicationProgress != ApplicationProgress.COMPLETED) {
       List<Notification> informNotifications;
-      if (!appData.getCaseDataList().isEmpty()) {
-        informNotifications = ApplicationUtil.getMostRecentCase(appData).getInformNotifications();
+      if (caseDataOptional.isPresent()) {
+        CaseData caseData = caseDataOptional.get();
+        informNotifications = caseData.getInformNotifications();
       } else {
         informNotifications = appData.getInformNotifications();
       }

@@ -55,7 +55,7 @@ public class TestCustomerServiceClientImpl extends CustomerServiceClientImpl {
     try {
       siteView = super.getSite(siteId);
     } catch (Exception exception) {
-      LOGGER.warn("Unable to get site with id " + siteId);
+      LOGGER.warn("Unable to get site with id {}", siteId);
       siteView = new SiteView();
       siteView.setCustomerId(TestDataServiceImpl.COMPANY_ID_ONE);
       siteView.setSiteId(siteId);

@@ -108,10 +108,10 @@ public class MessageHandlerImpl implements MessageHandler {
   public boolean handleMessage(String routingKey, String message) {
     ConsumerRoutingKey consumerRoutingKey = EnumUtil.parse(routingKey, ConsumerRoutingKey.class);
     if (consumerRoutingKey == null) {
-      LOGGER.error("Unknown routing key " + routingKey);
+      LOGGER.error("Unknown routing key {}", routingKey);
       return false;
     }
-    LOGGER.info("received queue message " + consumerRoutingKey.toString() + " " + message);
+    LOGGER.info("Received queue message {} with routing key {}", message, consumerRoutingKey);
     try {
       switch (consumerRoutingKey) {
         case RFI:

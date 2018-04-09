@@ -55,26 +55,31 @@ public class SqsPollerImpl implements SqsPoller {
           receiveMessageRequest.withQueueUrl(awsSqsQueueUrl);
           receiveMessageRequest.setWaitTimeSeconds(awsSqsWaitTimeSeconds);
           List<Message> messages = amazonSQS.receiveMessage(receiveMessageRequest).getMessages();
-          for (Message message : messages) {
-            String body = message.getBody();
-            MessageAttributeValue messageAttributeValue = message.getMessageAttributes().get("routingKey");
-            String type;
-            if (messageAttributeValue != null) {
-              type = messageAttributeValue.getStringValue();
-            } else {
-              type = null;
-            }
-            boolean success = messageHandler.handleMessage(type, body);
-            if (success) {
-              amazonSQS.deleteMessage(awsSqsQueueUrl, message.getReceiptHandle());
-            }
-          }
+          messages.forEach(this::handleMessage);
         } catch (Exception exception) {
           LOGGER.error("An exception occurred receiving messages from sqs", exception);
           ThreadUtil.sleep(5000);
         }
       }
     });
+  }
+
+  private void handleMessage(Message message) {
+    String body = message.getBody();
+    String routingKey = getAttribute(message, "routingKey");
+    boolean success = messageHandler.handleMessage(routingKey, body);
+    if (success) {
+      amazonSQS.deleteMessage(awsSqsQueueUrl, message.getReceiptHandle());
+    }
+  }
+
+  private String getAttribute(Message message, String attribute) {
+    MessageAttributeValue messageAttributeValue = message.getMessageAttributes().get(attribute);
+    if (messageAttributeValue != null) {
+      return messageAttributeValue.getStringValue();
+    } else {
+      return null;
+    }
   }
 
 }
