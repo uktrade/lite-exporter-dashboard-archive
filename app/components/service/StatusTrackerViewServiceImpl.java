@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 
 public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
 
+  private static final String WORKING_DAY = "working day";
+
   private final WorkingDayService workingDayService;
   private final TimeService timeService;
 
@@ -350,11 +352,11 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
       if (createdTimestamp != null) {
         if (finishedTimestamp != null) {
           long duration = workingDayService.calculateWorkingDays(createdTimestamp, finishedTimestamp, appData);
-          return "Processed in " + ViewUtil.pluraliseWithCount(duration, "working day") + "*";
+          return "Processed in " + ViewUtil.pluraliseWithCount(duration, WORKING_DAY) + "*";
         } else {
           String started = timeService.formatDate(createdTimestamp);
           long duration = workingDayService.calculateWorkingDays(createdTimestamp, Instant.now().toEpochMilli(), appData);
-          return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
+          return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, WORKING_DAY));
         }
       } else {
         return "";
@@ -371,7 +373,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
       long createdTimestamp = caseData.getCaseDetails().getCreatedTimestamp();
       String started = timeService.formatDate(createdTimestamp);
       long duration = workingDayService.calculateWorkingDays(createdTimestamp, Instant.now().toEpochMilli(), appData);
-      return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, "working day"));
+      return String.format("Started on %s<br>(%s* ago)", started, ViewUtil.pluraliseWithCount(duration, WORKING_DAY));
     }
   }
 

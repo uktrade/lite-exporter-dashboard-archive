@@ -3,6 +3,7 @@ package components.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import components.exceptions.ObjectMapperException;
 import models.Attachment;
 import models.Document;
 import models.OutcomeDocument;
@@ -27,7 +28,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.readValue(json, Document.class);
     } catch (IOException ioe) {
-      throw new RuntimeException("Failed to convert json to file.", ioe);
+      throw new ObjectMapperException("Failed to convert json to file.", ioe);
     }
   }
 
@@ -39,7 +40,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.readValue(json, STRING_LIST_TYPE_REFERENCE);
     } catch (IOException ioe) {
-      throw new RuntimeException("Failed to convert json to list.", ioe);
+      throw new ObjectMapperException("Failed to convert json to list.", ioe);
     }
   }
 
@@ -47,7 +48,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.readValue(json, ATTACHMENT_LIST_TYPE_REFERENCE);
     } catch (IOException ioe) {
-      throw new RuntimeException("Failed to convert json to attachments.", ioe);
+      throw new ObjectMapperException("Failed to convert json to attachments.", ioe);
     }
   }
 
@@ -55,7 +56,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.readValue(json, OUTCOME_DOCUMENT_LIST_TYPE_REFERENCE);
     } catch (IOException ioe) {
-      throw new RuntimeException("Failed to convert json to outcome documents.", ioe);
+      throw new ObjectMapperException("Failed to convert json to outcome documents.", ioe);
     }
   }
 
@@ -63,7 +64,7 @@ public class JsonUtil {
     try {
       return OBJECT_MAPPER.writeValueAsString(object);
     } catch (JsonProcessingException jpe) {
-      throw new RuntimeException("Failed to convert object to json", jpe);
+      throw new ObjectMapperException("Failed to convert object to json", jpe);
     }
   }
 

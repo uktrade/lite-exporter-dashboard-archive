@@ -79,8 +79,9 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         .anyMatch(rfiWithdrawal -> rfiWithdrawal.getRfiId().equals(rfiId));
 
     boolean isApplicationInProgress;
-    if (!appData.getCaseDataList().isEmpty()) {
-      CaseData mostRecentCase = ApplicationUtil.getMostRecentCase(appData);
+    Optional<CaseData> caseDataOptional = ApplicationUtil.getMostRecentCase(appData);
+    if (caseDataOptional.isPresent()) {
+      CaseData mostRecentCase = caseDataOptional.get();
       isApplicationInProgress = ApplicationUtil.isCaseInProgress(mostRecentCase) && ApplicationUtil.getRfi(mostRecentCase.getRfiList(), rfiId).isPresent();
     } else {
       isApplicationInProgress = ApplicationUtil.isOriginalApplicationInProgress(appData) && ApplicationUtil.getRfi(appData.getRfiList(), rfiId).isPresent();

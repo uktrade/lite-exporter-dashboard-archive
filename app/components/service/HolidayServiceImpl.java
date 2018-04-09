@@ -3,6 +3,7 @@ package components.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import components.exceptions.ObjectMapperException;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
@@ -31,7 +32,7 @@ public class HolidayServiceImpl implements HolidayService {
       String json = IOUtils.toString(new ClassPathResource(path).getInputStream(), StandardCharsets.UTF_8);
       jsonNode = MAPPER.readTree(json);
     } catch (IOException ioe) {
-      throw new RuntimeException("Unable to read holiday json from path " + path, ioe);
+      throw new ObjectMapperException("Unable to read holiday json from path " + path, ioe);
     }
     JsonNode events = jsonNode.get("england-and-wales").get("events");
     for (int i = 0; i < events.size(); i++) {

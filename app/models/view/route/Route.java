@@ -2,6 +2,6 @@ package models.view.route;
 
 public interface Route {
 
-  Route setPage(int Page);
+  Route setPage(int page);
 
 }

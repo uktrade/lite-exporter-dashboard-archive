@@ -62,7 +62,7 @@ public class ApplicationUtil {
 
   private static final Map<StatusType, String> STATUS_EXPLANATION_MAP;
 
-  private final static List<StatusType> STATUS_TYPE_LIST;
+  private static final List<StatusType> STATUS_TYPE_LIST;
 
   private static final Comparator<StatusUpdate> STATUS_UPDATE_COMPARATOR;
 
@@ -151,16 +151,16 @@ public class ApplicationUtil {
     return caseData.getOutcome() != null || caseData.getStopNotification() != null;
   }
 
-  public static CaseData getMostRecentCase(AppData appData) {
+  public static Optional<CaseData> getMostRecentCase(AppData appData) {
     return appData.getCaseDataList().stream()
         .sorted(Comparators.CASE_DATA_CREATED.reversed())
-        .findFirst()
-        .orElse(null);
+        .findFirst();
   }
 
   public static StatusColumnInfo getStatusInfo(AppData appData) {
-    if (!appData.getCaseDataList().isEmpty()) {
-      CaseData caseData = ApplicationUtil.getMostRecentCase(appData);
+    Optional<CaseData> caseDataOptional = ApplicationUtil.getMostRecentCase(appData);
+    if (caseDataOptional.isPresent()) {
+      CaseData caseData = caseDataOptional.get();
       if (caseData.getOutcome() != null) {
         return new StatusColumnInfo("On", caseData.getOutcome().getCreatedTimestamp(), OUTCOME_DOCUMENTS_UPDATED);
       } else if (caseData.getStopNotification() != null) {
@@ -202,7 +202,8 @@ public class ApplicationUtil {
     return getOpenRfiList(appData.getRfiList(), appData.getRfiReplies(), appData.getRfiWithdrawals());
   }
 
-  private static List<Rfi> getOpenRfiList(List<Rfi> rfiList, List<RfiReply> rfiReplies, List<RfiWithdrawal> rfiWithdrawals) {
+  private static List<Rfi> getOpenRfiList(List<Rfi> rfiList, List<RfiReply> rfiReplies,
+                                          List<RfiWithdrawal> rfiWithdrawals) {
     Set<String> repliedToRfiIds = rfiReplies.stream()
         .map(RfiReply::getRfiId)
         .collect(Collectors.toSet());

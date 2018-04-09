@@ -52,7 +52,7 @@ public class AppGuardAction extends Action.Simple {
         String appId = appIdStart.substring(0, index);
         Application application = applicationDao.getApplication(appId);
         if (application == null) {
-          LOGGER.error("Unknown application id " + appId);
+          LOGGER.error("Unknown application id {}", appId);
           return error();
         } else {
           String currentUserId = userService.getCurrentUserId();
@@ -62,24 +62,20 @@ public class AppGuardAction extends Action.Simple {
             if (hasCase) {
               return delegate.call(ctx);
             } else {
-              String errorMessage = String.format("Application %s has no case", appId);
-              LOGGER.error(errorMessage);
+              LOGGER.error("Application {} has no case", appId);
               return error();
             }
           } else {
-            String errorMessage = String.format("User %s has no access to application %s", currentUserId, appId);
-            LOGGER.error(errorMessage);
+            LOGGER.error("User {} has no access to application {}", currentUserId, appId);
             return error();
           }
         }
       } else {
-        String errorMessage = String.format("Path %s or pattern %s not valid ", path, pattern);
-        LOGGER.error(errorMessage);
+        LOGGER.error("Path {} or pattern {} not valid ", path, pattern);
         return error();
       }
     } else {
-      String errorMessage = String.format("Path %s or pattern %s not valid ", path, pattern);
-      LOGGER.error(errorMessage);
+      LOGGER.error("Path {} or pattern {} not valid ", path, pattern);
       return error();
     }
   }
