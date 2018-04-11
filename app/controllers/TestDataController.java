@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import components.exceptions.UnexpectedStateException;
 import components.service.UserService;
 import components.service.test.TestDataService;
@@ -12,11 +13,13 @@ public class TestDataController extends SamlController {
 
   private final TestDataService testDataService;
   private final UserService userService;
+  private final boolean test;
 
   @Inject
-  public TestDataController(TestDataService testDataService, UserService userService) {
+  public TestDataController(TestDataService testDataService, UserService userService, @Named("test") boolean test) {
     this.testDataService = testDataService;
     this.userService = userService;
+    this.test = test;
   }
 
   public Result insertDefaultTestData() {
@@ -26,6 +29,11 @@ public class TestDataController extends SamlController {
   public Result insertTestData(String testTypeParam) {
     TestType testType = EnumUtil.parse(testTypeParam, TestType.class, TestType.TWO);
     String userId = userService.getCurrentUserId();
+
+    if (!test) {
+      return redirect(controllers.routes.ApplicationListController.index());
+    }
+
     switch (testType) {
       case ONE:
         testDataService.deleteCurrentUser(userId);

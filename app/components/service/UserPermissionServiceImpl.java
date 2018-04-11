@@ -36,7 +36,7 @@ public class UserPermissionServiceImpl implements UserPermissionService {
   private static final Set<Role> ADMIN_ROLES = EnumSet.of(Role.ADMIN, Role.SUBMITTER);
 
   @Inject
-  public UserPermissionServiceImpl(@Named("userServiceCacheExpireMinutes") Long cacheExpireMinutes,
+  public UserPermissionServiceImpl(@Named("userServiceCacheExpiryMinutes") Long cacheExpireMinutes,
                                    UserServiceClient userServiceClient) {
     this.userServiceClient = userServiceClient;
     this.privilegesCache = createPrivilegesCache(cacheExpireMinutes);
