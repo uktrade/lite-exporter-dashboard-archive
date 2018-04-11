@@ -21,7 +21,9 @@ import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import components.auth.SamlModule;
 import components.client.CustomerServiceClient;
+import components.client.CustomerServiceClientImpl;
 import components.client.LicenceClient;
+import components.client.LicenceClientImpl;
 import components.client.OgelServiceClient;
 import components.client.OgelServiceClientImpl;
 import components.client.UserServiceClient;
@@ -98,7 +100,9 @@ import components.service.MessageViewServiceImpl;
 import components.service.OfficerViewService;
 import components.service.OfficerViewServiceImpl;
 import components.service.OgelDetailsViewService;
+import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelItemViewService;
+import components.service.OgelItemViewServiceImpl;
 import components.service.PreviousRequestItemViewService;
 import components.service.PreviousRequestItemViewServiceImpl;
 import components.service.ReadDataService;
@@ -120,6 +124,7 @@ import components.service.StatusTrackerViewServiceImpl;
 import components.service.TimeService;
 import components.service.TimeServiceImpl;
 import components.service.UserPermissionService;
+import components.service.UserPermissionServiceImpl;
 import components.service.UserService;
 import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
@@ -162,6 +167,26 @@ public class GuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    String host = config.getStringList("play.filters.hosts.allowed").get(0);
+    boolean test = !host.contains("uat");
+    bindConstant().annotatedWith(Names.named("test")).to(test);
+
+    bind(UserService.class).to(TestUserServiceImpl.class);
+    bind(TestDataService.class).to(TestDataServiceImpl.class);
+    if (test) {
+      bind(OgelItemViewService.class).to(TestOgelItemViewServiceImpl.class);
+      bind(OgelDetailsViewService.class).to(TestOgelDetailsViewServiceImpl.class);
+      bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
+      bind(LicenceClient.class).to(TestLicenceClientImpl.class);
+      bind(UserPermissionService.class).to(TestUserPermissionServiceImpl.class);
+    } else {
+      bind(OgelItemViewService.class).to(OgelItemViewServiceImpl.class);
+      bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
+      bind(CustomerServiceClient.class).to(CustomerServiceClientImpl.class);
+      bind(LicenceClient.class).to(LicenceClientImpl.class);
+      bind(UserPermissionService.class).to(UserPermissionServiceImpl.class);
+    }
+
     install(new SamlModule(config));
     bindClients();
     bind(ZoneId.class).toInstance(ZoneId.of(config.getString("defaultTimeZoneId")));
@@ -173,14 +198,8 @@ public class GuiceModule extends AbstractModule {
     bind(JourneySerialiser.class).to(JourneySerialiserMock.class);
     bind(StatusTrackerViewService.class).to(StatusTrackerViewServiceImpl.class);
     bind(RfiViewService.class).to(RfiViewServiceImpl.class);
-    // TODO Test
-    bind(UserService.class).to(TestUserServiceImpl.class);
     bind(ApplicationItemViewService.class).to(ApplicationItemViewServiceImpl.class);
     bind(ApplicationSummaryViewService.class).to(ApplicationSummaryViewServiceImpl.class);
-    // TODO Test
-    bind(OgelItemViewService.class).to(TestOgelItemViewServiceImpl.class);
-    // TODO Test
-    bind(OgelDetailsViewService.class).to(TestOgelDetailsViewServiceImpl.class);
     bind(SielDetailsViewService.class).to(SielDetailsViewServiceImpl.class);
     bind(OfficerViewService.class).to(OfficerViewServiceImpl.class);
     bind(AmendmentService.class).to(AmendmentServiceImpl.class);
@@ -192,7 +211,6 @@ public class GuiceModule extends AbstractModule {
     bind(ReadDataService.class).to(ReadDataServiceImpl.class);
     bind(ApplicationTabsViewService.class).to(ApplicationTabsViewServiceImpl.class);
     bind(PreviousRequestItemViewService.class).to(PreviousRequestItemViewServiceImpl.class);
-    bind(UserPermissionService.class).to(TestUserPermissionServiceImpl.class).asEagerSingleton();
     bind(DraftFileService.class).to(DraftFileServiceImpl.class);
     bind(DestinationService.class).to(DestinationServiceImpl.class);
     bind(EscapeHtmlService.class).to(EscapeHtmlServiceImpl.class);
@@ -216,9 +234,6 @@ public class GuiceModule extends AbstractModule {
     bind(ReadDao.class).to(ReadDaoImpl.class);
     bind(CaseDetailsDao.class).to(CaseDetailsDaoImpl.class);
     bind(BacklogDao.class).to(BacklogDaoImpl.class);
-    // Database test data
-    // TODO Test
-    bind(TestDataService.class).to(TestDataServiceImpl.class);
     // Start up
     bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();
     // Amazon
@@ -272,13 +287,9 @@ public class GuiceModule extends AbstractModule {
     // CustomerServiceClient
     bindConstant().annotatedWith(Names.named("customerServiceAddress")).to(config.getString("customerService.address"));
     bindConstant().annotatedWith(Names.named("customerServiceTimeout")).to(config.getString("customerService.timeout"));
-    // TODO Test
-    bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
     // LicenceClient
     bindConstant().annotatedWith(Names.named("permissionsServiceAddress")).to(config.getString("permissionsService.address"));
     bindConstant().annotatedWith(Names.named("permissionsServiceTimeout")).to(config.getString("permissionsService.timeout"));
-    // TODO Test
-    bind(LicenceClient.class).to(TestLicenceClientImpl.class);
     // OgelServiceClient
     bindConstant().annotatedWith(Names.named("ogelServiceAddress")).to(config.getString("ogelService.address"));
     bindConstant().annotatedWith(Names.named("ogelServiceTimeout")).to(config.getString("ogelService.timeout"));
