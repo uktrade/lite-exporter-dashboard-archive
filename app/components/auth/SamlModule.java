@@ -24,9 +24,8 @@ public class SamlModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    LogoutController logoutController = new LogoutController();
-    logoutController.setDefaultUrl(controllers.routes.AuthorisationController.loggedOut().url());
-    bind(LogoutController.class).toInstance(logoutController);
+    String defaultUrl = controllers.routes.AuthorisationController.loggedOut().url();
+    bind(LogoutController.class).toInstance(SamlUtil.createLogoutController(config, defaultUrl));
   }
 
   @Singleton
