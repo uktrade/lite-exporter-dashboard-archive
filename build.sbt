@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   ehcache,
   javaWs,
   filters,
+  "net.logstash.logback" % "logstash-logback-encoder" % "5.0",
   "org.flywaydb" %% "flyway-play" % "4.0.0",
   "org.postgresql" % "postgresql" % "42.1.4",
   "org.jdbi" % "jdbi" % "2.78",
