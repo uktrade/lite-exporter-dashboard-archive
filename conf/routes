@@ -32,8 +32,6 @@ GET         /licence/ogel/:registrationReference                      controller
 GET         /licence/siel/:registrationReference                      controllers.LicenceListController.sielDetails(registrationReference)
 
 # Test data
-GET         /test                                                     controllers.TestDataController.insertDefaultTestData()
-GET         /test/                                                    controllers.TestDataController.insertDefaultTestData()
 GET         /test/:testType                                           controllers.TestDataController.insertTestData(testType)
 
 + nocsrf

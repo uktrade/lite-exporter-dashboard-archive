@@ -22,11 +22,6 @@ public class TestUserServiceImpl implements UserService {
   }
 
   static {
-    users.put(TestDataServiceImpl.OTHER_APPLICANT_ID, new User(TestDataServiceImpl.OTHER_APPLICANT_ID,
-        "Christoph",
-        "Mueller",
-        null,
-        null));
     users.put(TestDataServiceImpl.OFFICER_ID, new User(TestDataServiceImpl.OFFICER_ID,
         "Jerry",
         "McGuire",
@@ -57,7 +52,7 @@ public class TestUserServiceImpl implements UserService {
       if (user != null) {
         return user;
       } else {
-        throw new ServiceException("Unknown user: " + userId);
+        return new User(userId, "test", "user" + userId, "testuser" + userId + "@test.com", "+44" + userId);
       }
     }
   }

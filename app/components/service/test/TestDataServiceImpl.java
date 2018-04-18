@@ -35,7 +35,6 @@ import components.dao.WithdrawalRequestDao;
 import components.service.TimeService;
 import components.service.UserPermissionService;
 import components.util.RandomIdUtil;
-import components.util.TestUtil;
 import models.AmendmentRequest;
 import models.Application;
 import models.CaseDetails;
@@ -54,32 +53,19 @@ import models.WithdrawalRequest;
 import models.enums.DocumentType;
 import models.enums.DraftType;
 import models.enums.StatusType;
-import uk.gov.bis.lite.permissions.api.view.LicenceView;
-import uk.gov.bis.lite.permissions.api.view.LicenceView.Type;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class TestDataServiceImpl implements TestDataService {
 
-  public static final String ADMIN = "1";
-  public static final String APPLICANT_ID = "24492";
-  private static final String APPLICANT_TWO_ID = "24493";
-  public static final String APPLICANT_THREE_ID = "24494";
-  private static final List<String> RECIPIENTS = Arrays.asList(APPLICANT_ID, APPLICANT_TWO_ID, APPLICANT_THREE_ID);
-
-  public static final String OTHER_APPLICANT_ID = "2";
-  public static final String OFFICER_ID = "3";
-  public static final String OTHER_OFFICER_ID = "300";
-
-  private static final String APP_QUEUE_ID = "app_queue";
+  static final String OFFICER_ID = "3";
+  static final String OTHER_OFFICER_ID = "300";
 
   private static final String SOUTH_GEORGIA = "South Georgia and South Sandwich Islands";
   private static final String FEDERATION = "St Christopher and Nevis, Federation of";
@@ -97,14 +83,6 @@ public class TestDataServiceImpl implements TestDataService {
   private static final List<String> END_USER_COUNTRIES_FOUR = Collections.singletonList(FRANCE);
   private static final List<String> CONSIGNEE_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
   private static final List<String> END_USER_COUNTRIES_FIVE = Collections.singletonList(FRANCE);
-
-  public static final String COMPANY_ID_ONE = "SAR1";
-  private static final String COMPANY_ID_TWO = "SAR2";
-  private static final String COMPANY_ID_THREE = "SAR3";
-  public static final List<String> COMPANY_IDS = Arrays.asList(TestDataServiceImpl.COMPANY_ID_ONE,
-      TestDataServiceImpl.COMPANY_ID_TWO,
-      TestDataServiceImpl.COMPANY_ID_THREE);
-  public static final String SITE_ID = "SITE1";
 
   private static final List<DocumentType> ISSUE_DOCUMENT_TYPES = Arrays.asList(DocumentType.ISSUE_COVER_LETTER,
       DocumentType.ISSUE_LICENCE_DOCUMENT,
@@ -181,42 +159,42 @@ public class TestDataServiceImpl implements TestDataService {
   @Override
   public void deleteAllUsersAndInsertStartData() {
     deleteAllData();
-    insertOneCompany(TestDataServiceImpl.APPLICANT_ID);
-    insertTwoCompanies(TestDataServiceImpl.APPLICANT_TWO_ID);
-    insertUserTestingApplicant(TestDataServiceImpl.APPLICANT_THREE_ID);
+    insertTwoCompanies("1002", "1001", "SAR101", "SAR102", "SAR101_SITE101",
+        Arrays.asList("1001", "1002", "1003"));
+    insertOneCompany("2001", "SAR201", "SAR201_SITE201", Arrays.asList("2001", "2002", "2003"));
+    insertUserTestingApplicant("3001", "3002", "SAR301", "SAR302", "SAR301_SITE301",
+        Arrays.asList("3001", "3002", "3003"));
   }
 
-  @Override
-  public void insertOneCompany(String userId) {
-    createCompletedApplications(userId);
-    createNoCaseOfficerApplication(userId);
-    createAdvancedApplication(userId);
-    createEmptyQueueApplication(userId);
-    createWithdrawnOrStoppedApplication(userId, false);
-    createWithdrawnOrStoppedApplication(userId, true);
+  private void insertOneCompany(String userId, String companyId, String siteId, List<String> recipients) {
+    createCompletedApplications(userId, companyId, siteId, recipients);
+    createNoCaseOfficerApplication(userId, companyId, siteId);
+    createAdvancedApplication(userId, companyId, siteId);
+    createWithdrawnOrStoppedApplication(userId, companyId, siteId, false, recipients);
+    createWithdrawnOrStoppedApplication(userId, companyId, siteId, true, recipients);
   }
 
-  @Override
-  public void insertTwoCompanies(String userId) {
-    createApplications(userId);
-    createSecondUserApplications(userId);
-    createAdvancedApplication(userId);
+  private void insertTwoCompanies(String userId, String otherUserId, String companyIdOne, String companyIdTwo,
+                                  String siteId, List<String> recipients) {
+    createApplications(userId, companyIdOne, siteId, recipients);
+    createOtherUserApplications(otherUserId, companyIdOne, siteId, recipients);
+    createAdvancedApplication(userId, companyIdTwo, siteId);
   }
 
-  @Override
-  public void insertUserTestingApplicant(String userId) {
+  private void insertUserTestingApplicant(String userId, String otherUserId, String companyIdOne, String companyIdTwo,
+                                          String siteId, List<String> recipients) {
     // Draft application, not submitted
     for (int i = 0; i < 1; i++) {
       String appId = appId();
       Application app = new Application(appId,
-          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
+          companyIdOne,
           userId,
           timeService.time(2017, 1, 3, 10, 20),
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
           OFFICER_ID,
-          SITE_ID);
+          siteId);
       insert(app);
     }
     // Submitted application, in progress, with RFI and message “apologies for the delay”
@@ -225,14 +203,14 @@ public class TestDataServiceImpl implements TestDataService {
       Long submittedTimestamp = timeService.time(2017, 11, 6, 10, 20);
       String caseReference = RandomIdUtil.caseReference();
       Application app = new Application(appId,
-          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
+          companyIdOne,
           userId,
           timeService.time(2017, 11, 3, 10, 20),
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
           OFFICER_ID,
-          SITE_ID);
+          siteId);
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
@@ -254,7 +232,7 @@ public class TestDataServiceImpl implements TestDataService {
           NotificationType.DELAY,
           null,
           timeService.time(2017, 12, 9, 13, 20),
-          RECIPIENTS,
+          recipients,
           "We're sorry to inform you that your application has been delayed.",
           null);
       notificationDao.insertNotification(delayNotification);
@@ -264,7 +242,7 @@ public class TestDataServiceImpl implements TestDataService {
           timeService.time(2017, 12, 20, 10, 20),
           timeService.time(2018, 1, 22, 10, 20),
           OFFICER_ID,
-          RECIPIENTS,
+          recipients,
           "Please answer this rfi.");
       rfiDao.insertRfi(rfi);
     }
@@ -274,16 +252,16 @@ public class TestDataServiceImpl implements TestDataService {
     for (int k = 0; k < 3; k++) {
       String appId = appId();
       String caseReference = RandomIdUtil.caseReference();
-      String createdByUserId = k == 2 ? OTHER_APPLICANT_ID : userId;
+      String createdByUserId = k == 2 ? otherUserId : userId;
       Application application = new Application(appId,
-          TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
+          companyIdTwo,
           createdByUserId,
           timeService.time(2016, 4, 3, 3 + k, 3),
           CONSIGNEE_COUNTRIES_FOUR,
           END_USER_COUNTRIES_FOUR,
           getApplicantReference(),
           OFFICER_ID,
-          SITE_ID);
+          siteId);
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
@@ -312,12 +290,12 @@ public class TestDataServiceImpl implements TestDataService {
             "#");
         issueOutcomeDocuments.add(outcomeDocument);
       }
-      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, issueOutcomeDocuments);
+      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, recipients, outcomeCreatedTimestamp, issueOutcomeDocuments);
       outcomeDao.insertOutcome(outcome);
       if (k == 0) {
         long informCreatedTimestamp = timeService.time(2016, 5, 13, 13, 17);
         Document document = new Document(fileId(), "Licence required inform", "#");
-        Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
+        Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, recipients, null, document);
         notificationDao.insertNotification(notification);
       } else if (k == 1) {
         long createdTimestamp = timeService.time(2017, 12, 2, 2, 2);
@@ -329,7 +307,7 @@ public class TestDataServiceImpl implements TestDataService {
             timeService.time(2017, 12, 15, 2, 2),
             timeService.time(2018, 1, 15, 2, 2),
             OFFICER_ID,
-            RECIPIENTS,
+            recipients,
             "Please answer this rfi");
         rfiDao.insertRfi(rfi);
       } else {
@@ -342,17 +320,12 @@ public class TestDataServiceImpl implements TestDataService {
             NotificationType.STOP,
             TestDataServiceImpl.OFFICER_ID,
             timeService.time(2017, 3, 1, 14, 30),
-            RECIPIENTS,
+            recipients,
             "We have had to stop your amendment.",
             null);
         notificationDao.insertNotification(stopNotification);
       }
     }
-  }
-
-  @Override
-  public void insertOtherUserApplications(String userId) {
-    createSecondUserApplications(userId);
   }
 
   @Override
@@ -409,37 +382,20 @@ public class TestDataServiceImpl implements TestDataService {
     backlogDao.deleteAllBacklogMessages();
   }
 
-  private void createEmptyQueueApplication(String userId) {
-    Application application = new Application(userId + "_" + APP_QUEUE_ID,
-        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
-        userId,
-        timeService.time(2015, 1, 1, 1, 1),
-        CONSIGNEE_COUNTRIES,
-        END_USER_COUNTRIES,
-        getApplicantReference(),
-        OFFICER_ID,
-        SITE_ID);
-    CaseDetails caseDetails = new CaseDetails(application.getId(),
-        RandomIdUtil.caseReference(),
-        OFFICER_ID,
-        timeService.time(2015, 2, 1, 1, 1));
-    insert(application, caseDetails);
-  }
-
-  private void createApplications(String userId) {
+  private void createApplications(String userId, String companyId, String siteId, List<String> recipients) {
     for (int i = 0; i < 20; i++) {
       String appId = appId();
       Long submittedTimestamp = timeService.time(2017, 4, 6 + i, i, i);
       String caseReference = RandomIdUtil.caseReference();
       Application app = new Application(appId,
-          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
+          companyId,
           userId,
           timeService.time(2017, 3, 3 + i, i, i),
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
           OFFICER_ID,
-          SITE_ID);
+          siteId);
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
@@ -456,7 +412,7 @@ public class TestDataServiceImpl implements TestDataService {
           timeService.time(2017, 4, 5 + i, i, i),
           timeService.time(2017, 5, 5 + i, i, i),
           OFFICER_ID,
-          RECIPIENTS,
+          recipients,
           "Please answer this rfi.");
       rfiDao.insertRfi(rfi);
       String rfiTwoId = rfiId();
@@ -465,7 +421,7 @@ public class TestDataServiceImpl implements TestDataService {
           timeService.time(2017, 6, 5 + i, i, i),
           timeService.time(2017, 7, 5 + i, i, i),
           OFFICER_ID,
-          RECIPIENTS,
+          recipients,
           "Please also answer this rfi.");
       rfiDao.insertRfi(rfiTwo);
       if (i % 3 != 0) {
@@ -481,7 +437,7 @@ public class TestDataServiceImpl implements TestDataService {
             rfiTwoId,
             OFFICER_ID,
             timeService.time(2017, 8, 5 + i, i, i),
-            RECIPIENTS,
+            recipients,
             "This rfi has been withdrawn.");
         rfiWithdrawalDao.insertRfiWithdrawal(rfiWithdrawal);
 
@@ -493,7 +449,7 @@ public class TestDataServiceImpl implements TestDataService {
             NotificationType.INFORM,
             OFFICER_ID,
             timeService.time(2017, 5, 1 + i, 2, 3),
-            RECIPIENTS,
+            recipients,
             null,
             document);
         notificationDao.insertNotification(notification);
@@ -501,19 +457,19 @@ public class TestDataServiceImpl implements TestDataService {
     }
   }
 
-  private void createSecondUserApplications(String userId) {
+  private void createOtherUserApplications(String userId, String companyId, String siteId, List<String> recipients) {
     // create applications by other applicant
     for (int i = 0; i < 4; i++) {
       String appId = appId();
       Application app = new Application(appId,
-          TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
-          OTHER_APPLICANT_ID,
+          companyId,
+          userId,
           timeService.time(2017, 1, 3 + i, i, i),
           CONSIGNEE_COUNTRIES,
           END_USER_COUNTRIES,
           getApplicantReference(),
           OFFICER_ID,
-          SITE_ID);
+          siteId);
       CaseDetails caseDetails = new CaseDetails(appId,
           RandomIdUtil.caseReference(),
           OFFICER_ID,
@@ -524,14 +480,14 @@ public class TestDataServiceImpl implements TestDataService {
     String appId = appId();
     String caseReference = RandomIdUtil.caseReference();
     Application application = new Application(appId,
-        TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE),
-        OTHER_APPLICANT_ID,
+        companyId,
+        userId,
         timeService.time(2017, 1, 7, 1, 1),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
         OFFICER_ID,
-        SITE_ID);
+        siteId);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
@@ -548,7 +504,7 @@ public class TestDataServiceImpl implements TestDataService {
         NotificationType.INFORM,
         OFFICER_ID,
         timeService.time(2017, 9, 1, 2, 3),
-        RECIPIENTS,
+        recipients,
         null,
         document);
     notificationDao.insertNotification(notification);
@@ -566,7 +522,8 @@ public class TestDataServiceImpl implements TestDataService {
     return cas;
   }
 
-  private void createWithdrawnOrStoppedApplication(String userId, boolean stopped) {
+  private void createWithdrawnOrStoppedApplication(String userId, String companyId, String siteId, boolean stopped,
+                                                   List<String> recipients) {
     String appId = appId();
     String caseReference = RandomIdUtil.caseReference();
     List<String> consigneeCountries;
@@ -579,14 +536,14 @@ public class TestDataServiceImpl implements TestDataService {
       endUserCountries = END_USER_COUNTRIES_THREE;
     }
     Application application = new Application(appId,
-        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
+        companyId,
         userId,
         timeService.time(2013, 11, 4, 13, 10),
         consigneeCountries,
         endUserCountries,
         getApplicantReference(),
         OFFICER_ID,
-        SITE_ID);
+        siteId);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
@@ -627,7 +584,7 @@ public class TestDataServiceImpl implements TestDataService {
             appId,
             userId,
             createdTimestamp,
-            RECIPIENTS,
+            recipients,
             "");
         withdrawalRejectionDao.insertWithdrawalRejection(withdrawalRejection);
       }
@@ -639,7 +596,7 @@ public class TestDataServiceImpl implements TestDataService {
         NotificationType.DELAY,
         null,
         timeService.time(2016, 1, 1, 13, 20),
-        RECIPIENTS,
+        recipients,
         "We're sorry to inform you that your application has been delayed.",
         null);
     notificationDao.insertNotification(delayNotification);
@@ -651,7 +608,7 @@ public class TestDataServiceImpl implements TestDataService {
           NotificationType.STOP,
           TestDataServiceImpl.OFFICER_ID,
           timeService.time(2017, 1, 1, 14, 30),
-          RECIPIENTS,
+          recipients,
           "We have had to stop your application.",
           null);
       notificationDao.insertNotification(stopNotification);
@@ -660,25 +617,25 @@ public class TestDataServiceImpl implements TestDataService {
           appId,
           OFFICER_ID,
           timeService.time(2017, 1, 5, 13, 10),
-          RECIPIENTS,
+          recipients,
           null);
       withdrawalApprovalDao.insertWithdrawalApproval(withdrawalApproval);
     }
   }
 
-  private void createAdvancedApplication(String userId) {
+  private void createAdvancedApplication(String userId, String companyId, String siteId) {
     String appId = appId();
     String caseReference = RandomIdUtil.caseReference();
     String rfiId = rfiId();
     Application application = new Application(appId,
-        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
+        companyId,
         userId,
         timeService.time(2016, 11, 4, 13, 10),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
         OFFICER_ID,
-        SITE_ID);
+        siteId);
     CaseDetails caseDetails = new CaseDetails(appId,
         caseReference,
         OFFICER_ID,
@@ -762,17 +719,17 @@ public class TestDataServiceImpl implements TestDataService {
     return statusUpdates;
   }
 
-  private void createNoCaseOfficerApplication(String userId) {
+  private void createNoCaseOfficerApplication(String userId, String companyId, String siteId) {
     String appId = appId();
     Application application = new Application(appId,
-        TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
+        companyId,
         userId,
         timeService.time(2016, 11, 3, 3, 3),
         CONSIGNEE_COUNTRIES,
         END_USER_COUNTRIES,
         getApplicantReference(),
         null,
-        SITE_ID);
+        siteId);
     CaseDetails caseDetails = new CaseDetails(appId,
         RandomIdUtil.caseReference(),
         OFFICER_ID,
@@ -785,7 +742,7 @@ public class TestDataServiceImpl implements TestDataService {
     statusUpdateDao.insertStatusUpdate(statusUpdate);
   }
 
-  private void createCompletedApplications(String userId) {
+  private void createCompletedApplications(String userId, String companyId, String siteId, List<String> recipients) {
     for (int k = 0; k < 10; k++) {
       String appId = appId();
       String caseReference = RandomIdUtil.caseReference();
@@ -799,14 +756,14 @@ public class TestDataServiceImpl implements TestDataService {
         endUserCountries = END_USER_COUNTRIES_FIVE;
       }
       Application application = new Application(appId,
-          TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO),
+          companyId,
           userId,
           timeService.time(2015, 3, 3, 3 + k, 3),
           consigneeCountries,
           endUserCountries,
           getApplicantReference(),
           OFFICER_ID,
-          SITE_ID);
+          siteId);
       CaseDetails caseDetails = new CaseDetails(appId,
           caseReference,
           OFFICER_ID,
@@ -836,32 +793,32 @@ public class TestDataServiceImpl implements TestDataService {
             "#");
         issueOutcomeDocuments.add(outcomeDocument);
       }
-      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, issueOutcomeDocuments);
+      Outcome outcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, recipients, outcomeCreatedTimestamp, issueOutcomeDocuments);
       outcomeDao.insertOutcome(outcome);
 
       if (k > 4) {
-        insertCompletedCase(appId);
+        insertCompletedCase(appId, recipients);
       }
       if (k == 1 || k == 6) {
-        insertCase(appId, false, false, false, false);
+        insertCase(appId, false, false, false, false, recipients);
       } else if (k == 2 || k == 7) {
-        insertCase(appId, false, true, true, false);
+        insertCase(appId, false, true, true, false, recipients);
       } else if (k == 3 || k == 8) {
-        insertCase(appId, true, false, true, false);
+        insertCase(appId, true, false, true, false, recipients);
       } else if (k == 4 || k == 9) {
-        insertCase(appId, false, false, true, true);
+        insertCase(appId, false, false, true, true, recipients);
       }
 
       for (int i = 0; i < 3; i++) {
         long informCreatedTimestamp = timeService.time(2016, 8 + i, 3 + i, 3 + i, 3 + i);
         Document document = new Document(fileId(), "Licence required inform letter number " + (i + 1), "#");
-        Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
+        Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, recipients, null, document);
         notificationDao.insertNotification(notification);
       }
     }
   }
 
-  private void insertCompletedCase(String appId) {
+  private void insertCompletedCase(String appId, List<String> recipients) {
     long createdTimestamp = timeService.time(2016, 12, 20, 20, 20);
     String caseReference = RandomIdUtil.caseReference();
     CaseDetails caseDetails = new CaseDetails(appId, caseReference, OFFICER_ID, createdTimestamp);
@@ -877,12 +834,12 @@ public class TestDataServiceImpl implements TestDataService {
       outcomeDocuments.add(outcomeDocument);
     }
     long outcomeCreatedTimestamp = timeService.time(2016, 12, 22, 13, 17);
-    Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, outcomeDocuments);
+    Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, recipients, outcomeCreatedTimestamp, outcomeDocuments);
     outcomeDao.insertOutcome(amendOutcome);
   }
 
   private void insertCase(String appId, boolean hasOutcome, boolean hasRfi, boolean hasInformLetter,
-                          boolean isStopped) {
+                          boolean isStopped, List<String> recipients) {
     long createdTimestamp = timeService.time(2017, 2, 2, 2, 2);
     String caseReference = RandomIdUtil.caseReference();
     CaseDetails caseDetails = new CaseDetails(appId, caseReference, OFFICER_ID, createdTimestamp);
@@ -894,7 +851,7 @@ public class TestDataServiceImpl implements TestDataService {
             timeService.time(2017, 3 + i, 2, 2, 2),
             timeService.time(2018, 3 + i, 2, 2, 2),
             OFFICER_ID,
-            RECIPIENTS,
+            recipients,
             "Please answer this rfi");
         rfiDao.insertRfi(rfi);
       }
@@ -902,7 +859,7 @@ public class TestDataServiceImpl implements TestDataService {
     if (hasInformLetter) {
       long informCreatedTimestamp = timeService.time(2017, 4, 4, 4, 4);
       Document document = new Document(fileId(), "Licence required inform letter number 4", "#");
-      Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, RECIPIENTS, null, document);
+      Notification notification = new Notification(informNotificationId(), caseReference, NotificationType.INFORM, OFFICER_ID, informCreatedTimestamp, recipients, null, document);
       notificationDao.insertNotification(notification);
     }
     if (isStopped) {
@@ -911,7 +868,7 @@ public class TestDataServiceImpl implements TestDataService {
           NotificationType.STOP,
           TestDataServiceImpl.OFFICER_ID,
           timeService.time(2017, 5, 1, 14, 30),
-          RECIPIENTS,
+          recipients,
           "We have had to stop your amendment.",
           null);
       notificationDao.insertNotification(stopNotification);
@@ -928,40 +885,9 @@ public class TestDataServiceImpl implements TestDataService {
         outcomeDocuments.add(outcomeDocument);
       }
       long outcomeCreatedTimestamp = timeService.time(2017, 3, 10, 13, 17);
-      Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, RECIPIENTS, outcomeCreatedTimestamp, outcomeDocuments);
+      Outcome amendOutcome = new Outcome(outcomeId(), caseReference, OFFICER_ID, recipients, outcomeCreatedTimestamp, outcomeDocuments);
       outcomeDao.insertOutcome(amendOutcome);
     }
-  }
-
-  private static Map<String, List<LicenceView>> licenceViewMap = new ConcurrentHashMap<>();
-
-  public static synchronized List<LicenceView> getLicenceViews(TimeService timeService, String userId) {
-    if (licenceViewMap.get(userId) == null) {
-      List<LicenceView> licenceViews = new ArrayList<>();
-      for (int i = 0; i < 20; i++) {
-        String customerId = i % 2 == 0 ? TestUtil.wrapCustomerId(userId, COMPANY_ID_ONE) : TestUtil.wrapCustomerId(userId, COMPANY_ID_TWO);
-        LicenceView.Status status = LicenceView.Status.values()[i % LicenceView.Status.values().length];
-        List<String> destinationList = i % 2 == 0 ? Collections.singletonList(GERMANY) : Arrays.asList(ICELAND, FRANCE);
-        Long issueTimestamp = timeService.time(2015, 3, 1 + i, 15, 10);
-        Long expiryTimestamp = status == LicenceView.Status.ACTIVE ? timeService.time(2019, 3, 1 + i, 15, 10) : timeService.time(2016, 3, 1 + i, 15, 10);
-        LicenceView licenceView = new LicenceView();
-        licenceView.setLicenceRef(RandomIdUtil.randomNumber("REF-"));
-        licenceView.setOriginalAppId(RandomIdUtil.randomNumber("APP"));
-        licenceView.setOriginalExporterRef(RandomIdUtil.randomNumber("EREF-"));
-        licenceView.setCustomerId(customerId);
-        licenceView.setSiteId(SITE_ID);
-        licenceView.setType(Type.SIEL);
-        licenceView.setSubType(null);
-        licenceView.setIssueDate(timeService.toLocalDate(issueTimestamp));
-        licenceView.setExpiryDate(timeService.toLocalDate(expiryTimestamp));
-        licenceView.setStatus(status);
-        licenceView.setCountryList(destinationList);
-        licenceView.setExternalDocumentUrl("");
-        licenceViews.add(licenceView);
-      }
-      licenceViewMap.put(userId, licenceViews);
-    }
-    return licenceViewMap.get(userId);
   }
 
   private void insert(Application application, CaseDetails caseDetails) {
