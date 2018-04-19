@@ -28,8 +28,6 @@ import components.client.OgelServiceClient;
 import components.client.OgelServiceClientImpl;
 import components.client.UserServiceClient;
 import components.client.UserServiceClientImpl;
-import components.client.test.TestCustomerServiceClientImpl;
-import components.client.test.TestLicenceClientImpl;
 import components.common.cache.CountryProvider;
 import components.common.cache.UpdateCountryCacheActor;
 import components.common.client.CountryServiceClient;
@@ -132,9 +130,6 @@ import components.service.WorkingDayService;
 import components.service.WorkingDayServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
-import components.service.test.TestOgelDetailsViewServiceImpl;
-import components.service.test.TestOgelItemViewServiceImpl;
-import components.service.test.TestUserPermissionServiceImpl;
 import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -173,19 +168,6 @@ public class GuiceModule extends AbstractModule {
 
     bind(UserService.class).to(TestUserServiceImpl.class);
     bind(TestDataService.class).to(TestDataServiceImpl.class);
-    if (test) {
-      bind(OgelItemViewService.class).to(TestOgelItemViewServiceImpl.class);
-      bind(OgelDetailsViewService.class).to(TestOgelDetailsViewServiceImpl.class);
-      bind(CustomerServiceClient.class).to(TestCustomerServiceClientImpl.class);
-      bind(LicenceClient.class).to(TestLicenceClientImpl.class);
-      bind(UserPermissionService.class).to(TestUserPermissionServiceImpl.class);
-    } else {
-      bind(OgelItemViewService.class).to(OgelItemViewServiceImpl.class);
-      bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
-      bind(CustomerServiceClient.class).to(CustomerServiceClientImpl.class);
-      bind(LicenceClient.class).to(LicenceClientImpl.class);
-      bind(UserPermissionService.class).to(UserPermissionServiceImpl.class);
-    }
 
     install(new SamlModule(config));
     bindClients();
@@ -218,6 +200,9 @@ public class GuiceModule extends AbstractModule {
     bind(TimeService.class).to(TimeServiceImpl.class);
     bind(HolidayService.class).to(HolidayServiceImpl.class);
     bind(WorkingDayService.class).to(WorkingDayServiceImpl.class);
+    bind(OgelItemViewService.class).to(OgelItemViewServiceImpl.class);
+    bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
+    bind(UserPermissionService.class).to(UserPermissionServiceImpl.class);
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -287,9 +272,11 @@ public class GuiceModule extends AbstractModule {
     // CustomerServiceClient
     bindConstant().annotatedWith(Names.named("customerServiceAddress")).to(config.getString("customerService.address"));
     bindConstant().annotatedWith(Names.named("customerServiceTimeout")).to(config.getString("customerService.timeout"));
+    bind(CustomerServiceClient.class).to(CustomerServiceClientImpl.class);
     // LicenceClient
     bindConstant().annotatedWith(Names.named("permissionsServiceAddress")).to(config.getString("permissionsService.address"));
     bindConstant().annotatedWith(Names.named("permissionsServiceTimeout")).to(config.getString("permissionsService.timeout"));
+    bind(LicenceClient.class).to(LicenceClientImpl.class);
     // OgelServiceClient
     bindConstant().annotatedWith(Names.named("ogelServiceAddress")).to(config.getString("ogelService.address"));
     bindConstant().annotatedWith(Names.named("ogelServiceTimeout")).to(config.getString("ogelService.timeout"));
