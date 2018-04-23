@@ -98,7 +98,7 @@ public class RfiTabController extends SamlController {
   public CompletionStage<Result> submitReply(String appId, String rfiId) {
     String userId = userService.getCurrentUserId();
     Form<RfiReplyForm> rfiReplyForm = formFactory.form(RfiReplyForm.class).bindFromRequest();
-    String delete = rfiReplyForm.data().get("delete");
+    String delete = rfiReplyForm.rawData().get("delete");
     AppData appData = appDataService.getAppData(appId);
     if (!userPermissionService.canAddRfiReply(userId, rfiId, appData)) {
       LOGGER.error("Reply to rfiId {} and appId {} not allowed", rfiId, appId);
