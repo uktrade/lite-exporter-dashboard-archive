@@ -306,7 +306,7 @@ public class StatusTrackerViewServiceImpl implements StatusTrackerViewService {
   private NotificationView getRfiNotificationView(String appId, Rfi rfi) {
     String time = timeService.formatDateAndTime(rfi.getCreatedTimestamp());
     String description = "received on " + time;
-    String link = controllers.routes.RfiTabController.showRfiTab(appId).withFragment(rfi.getId()).toString();
+    String link = LinkUtil.getRfiLink(appId, rfi.getId());
     return new NotificationView(EventLabelType.RFI, "Request for information", link, description, rfi.getCreatedTimestamp());
   }
 
