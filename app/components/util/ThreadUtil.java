@@ -12,6 +12,7 @@ public class ThreadUtil {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
       LOGGER.error("Unable to sleep", e);
+      Thread.currentThread().interrupt();
     }
   }
 
