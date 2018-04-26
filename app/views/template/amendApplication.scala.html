@@ -12,12 +12,12 @@
 
     @views.html.helper.CSRF.formField
 
-    @formRadioGroup(form("action"), amendmentView.getSelectOptions, "heading-small", true){
+    @formRadioGroup(form("action"), amendmentView.getSelectOptions, promptCssClass = "form-label-bold", inline = true){
       What sort of change do you want to request?
     }
 
-    @formTextarea(form("message"), rows = "4", cssClass = "form-control-wide") {
-      <span class="heading-small">Please provide details of your request</span>
+    @formTextarea(form("message"), rows = "4", labelClass = "form-label-bold", cssClass = "form-control-wide") {
+      Please provide details of your request
     }
 
     <h4 class="heading-small">Optionally attach files to support your request</h4>

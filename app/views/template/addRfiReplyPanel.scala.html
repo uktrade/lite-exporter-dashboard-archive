@@ -20,8 +20,8 @@
 
         @views.html.helper.CSRF.formField
 
-        @formTextarea(rfiReplyForm("replyMessage"), rows = "4", cssClass = "form-control-wide") {
-          <span class="heading-small">Message</span>
+        @formTextarea(rfiReplyForm("replyMessage"), rows = "4", labelClass = "form-label-bold", cssClass = "form-control-wide") {
+          Message
         }
 
         <h4 class="heading-small">Attach a file</h4>
