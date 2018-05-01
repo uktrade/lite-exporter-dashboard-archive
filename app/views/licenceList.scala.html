@@ -1,18 +1,21 @@
+@import com.google.inject.name.Named
 @import licenceListTabs._
 @import models.enums.LicenceListTab
 @import models.view.LicenceListView
 @import template._
 
-@this(standardPage: standardPage, dashboardTopNav: dashboardTopNav)
+@this(@Named("ogelOnly") ogelOnly: Boolean, standardPage: standardPage, dashboardTopNav: dashboardTopNav)
 @(licenceListView: LicenceListView)
 
 @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
 } {
 
-  @dashboardTopNav()
+  @if(!ogelOnly) {
+    @dashboardTopNav()
 
-  <div class="heading-medium dashboard-section-heading">Licences</div>
+    <div class="heading-medium dashboard-section-heading">Licences</div>
+  }
 
   @if(licenceListView.isHasSiels && !licenceListView.isHasOgels) {
     <p>
@@ -20,7 +23,7 @@
     </p>
   }
 
-  @if(!licenceListView.isHasSiels && licenceListView.isHasOgels) {
+  @if(!licenceListView.isHasSiels && licenceListView.isHasOgels || ogelOnly) {
     <p>
   <h3 class="heading-small">Open General Export Licences</h3>
     </p>
@@ -34,7 +37,11 @@
   }
 
   @if(!licenceListView.isHasSiels && !licenceListView.isHasOgels) {
-    You have no licences.
+    @if(ogelOnly) {
+      You have no open general export licences.
+    } else {
+      You have no licences.
+    }
   }
 
   @if(licenceListView.getLicenceListTab == LicenceListTab.SIELS && licenceListView.isHasSiels) {

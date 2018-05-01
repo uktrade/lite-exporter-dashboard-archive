@@ -128,6 +128,7 @@ import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
 import components.service.WorkingDayService;
 import components.service.WorkingDayServiceImpl;
+import components.service.ogelonly.OgelOnlySielItemViewServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
 import components.service.test.TestUserServiceImpl;
@@ -162,6 +163,9 @@ public class GuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    boolean ogelOnly = config.getBoolean("ogelOnly");
+    bindConstant().annotatedWith(Names.named("ogelOnly")).to(ogelOnly);
+
     String host = config.getStringList("play.filters.hosts.allowed").get(0);
     boolean test = !host.contains("uat");
     bindConstant().annotatedWith(Names.named("test")).to(test);
@@ -187,7 +191,11 @@ public class GuiceModule extends AbstractModule {
     bind(AmendmentService.class).to(AmendmentServiceImpl.class);
     bind(WithdrawalRequestService.class).to(WithdrawalRequestServiceImpl.class);
     bind(RfiReplyService.class).to(RfiReplyServiceImpl.class);
-    bind(SielItemViewService.class).to(SielItemViewServiceImpl.class);
+    if (ogelOnly) {
+      bind(SielItemViewService.class).to(OgelOnlySielItemViewServiceImpl.class);
+    } else {
+      bind(SielItemViewService.class).to(SielItemViewServiceImpl.class);
+    }
     bind(MessageViewService.class).to(MessageViewServiceImpl.class);
     bind(AppDataService.class).to(AppDataServiceImpl.class);
     bind(ReadDataService.class).to(ReadDataServiceImpl.class);
