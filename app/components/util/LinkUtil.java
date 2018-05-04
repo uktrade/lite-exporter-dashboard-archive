@@ -77,4 +77,10 @@ public class LinkUtil {
         .toString();
   }
 
+  public static String getRfiLink(String appId, String rfiId) {
+    return controllers.routes.RfiTabController.showRfiTab(appId)
+        .withFragment(rfiId)
+        .toString();
+  }
+
 }
