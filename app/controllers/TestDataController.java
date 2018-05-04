@@ -27,7 +27,7 @@ public class TestDataController extends SamlController {
     String userId = userService.getCurrentUserId();
 
     if (!test || testType == null) {
-      return redirect(controllers.routes.ApplicationListController.index());
+      return redirect(controllers.routes.IndexController.index());
     }
 
     switch (testType) {
@@ -43,7 +43,7 @@ public class TestDataController extends SamlController {
       default:
         throw new UnexpectedStateException("Unknown testType " + testTypeParam);
     }
-    return redirect(controllers.routes.ApplicationListController.index());
+    return redirect(controllers.routes.IndexController.index());
   }
 
 }

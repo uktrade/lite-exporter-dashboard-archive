@@ -27,7 +27,7 @@
         @if(spireAuthManager.getAuthInfoFromContext.isAuthenticated) {
           @spireAuthManager.getAuthInfoFromContext.getFullName | <a href="@org.pac4j.play.routes.LogoutController.logout">Sign out</a>
         } else {
-          <a href="@routes.ApplicationListController.index()">Sign in</a>
+          <a href="@routes.IndexController.index()">Sign in</a>
         }
         </div>
       </nav>

@@ -40,16 +40,11 @@ public class ApplicationListController extends SamlController {
   private final applicationList applicationList;
 
   @Inject
-  public ApplicationListController(ApplicationItemViewService applicationItemViewService,
-                                   UserService userService,
+  public ApplicationListController(ApplicationItemViewService applicationItemViewService, UserService userService,
                                    applicationList applicationList) {
     this.applicationItemViewService = applicationItemViewService;
     this.userService = userService;
     this.applicationList = applicationList;
-  }
-
-  public Result index() {
-    return redirect("/applications");
   }
 
   public Result applicationList(String tab, String sort, String direction, String company, String show, Integer page) {
@@ -128,7 +123,8 @@ public class ApplicationListController extends SamlController {
     return ok(applicationList.render(applicationListView)).withHeader("Cache-Control", "no-store, no-cache");
   }
 
-  private String defaultCompanyId(ApplicationListTab applicationListTab, String companyId, List<CompanySelectItemView> companySelectItemViews) {
+  private String defaultCompanyId(ApplicationListTab applicationListTab, String companyId,
+                                  List<CompanySelectItemView> companySelectItemViews) {
     if (applicationListTab == ApplicationListTab.ATTENTION || companyId == null || COMPANY_ID_ALL.equals(companyId) ||
         companySelectItemViews.stream().noneMatch(companySelectItemView -> companySelectItemView.getCompanyId().equals(companyId))) {
       return COMPANY_ID_ALL;
@@ -137,7 +133,8 @@ public class ApplicationListController extends SamlController {
     }
   }
 
-  private ApplicationListTab defaultTab(ApplicationListTab applicationListTab, boolean hasUserApplications, boolean hasOtherUserApplications, boolean hasForYourAttentionApplications) {
+  private ApplicationListTab defaultTab(ApplicationListTab applicationListTab, boolean hasUserApplications,
+                                        boolean hasOtherUserApplications, boolean hasForYourAttentionApplications) {
     if (applicationListTab == ApplicationListTab.COMPANY && hasUserApplications && !hasOtherUserApplications) {
       return ApplicationListTab.USER;
     } else if (applicationListTab == ApplicationListTab.USER && !hasUserApplications && hasOtherUserApplications) {
@@ -176,13 +173,15 @@ public class ApplicationListController extends SamlController {
         .anyMatch(applicationItemView -> !applicationItemView.getForYourAttentionNotificationViews().isEmpty());
   }
 
-  private long countByApplicationProgress(List<ApplicationItemView> applicationItemViews, ApplicationProgress applicationProgress) {
+  private long countByApplicationProgress(List<ApplicationItemView> applicationItemViews,
+                                          ApplicationProgress applicationProgress) {
     return applicationItemViews.stream()
         .filter(view -> view.getApplicationProgress() == applicationProgress)
         .count();
   }
 
-  private List<ApplicationItemView> filterByUser(String userId, ApplicationListTab applicationListTab, List<ApplicationItemView> applicationItemViews) {
+  private List<ApplicationItemView> filterByUser(String userId, ApplicationListTab applicationListTab,
+                                                 List<ApplicationItemView> applicationItemViews) {
     if (applicationListTab == ApplicationListTab.USER) {
       return applicationItemViews.stream()
           .filter(view -> userId.equals(view.getCreatedById()))
@@ -192,7 +191,8 @@ public class ApplicationListController extends SamlController {
     }
   }
 
-  private List<ApplicationItemView> filterByCompanyId(String companyId, List<ApplicationItemView> applicationItemViews) {
+  private List<ApplicationItemView> filterByCompanyId(String companyId,
+                                                      List<ApplicationItemView> applicationItemViews) {
     if (COMPANY_ID_ALL.equals(companyId)) {
       return applicationItemViews;
     } else {
@@ -202,7 +202,8 @@ public class ApplicationListController extends SamlController {
     }
   }
 
-  private List<ApplicationItemView> filterByApplicationProgress(ApplicationProgress applicationProgress, List<ApplicationItemView> applicationItemViews) {
+  private List<ApplicationItemView> filterByApplicationProgress(ApplicationProgress applicationProgress,
+                                                                List<ApplicationItemView> applicationItemViews) {
     if (applicationProgress != null) {
       return applicationItemViews.stream()
           .filter(view -> view.getApplicationProgress() == applicationProgress)
@@ -212,7 +213,8 @@ public class ApplicationListController extends SamlController {
     }
   }
 
-  private List<ApplicationItemView> filterByAttention(ApplicationListTab applicationListTab, List<ApplicationItemView> applicationItemViews) {
+  private List<ApplicationItemView> filterByAttention(ApplicationListTab applicationListTab,
+                                                      List<ApplicationItemView> applicationItemViews) {
     if (applicationListTab == ApplicationListTab.ATTENTION) {
       return applicationItemViews.stream()
           .filter(view -> !view.getForYourAttentionNotificationViews().isEmpty())

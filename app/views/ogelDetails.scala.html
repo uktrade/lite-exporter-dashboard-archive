@@ -1,14 +1,24 @@
+@import com.google.inject.name.Named
 @import models.view.OgelDetailsView
 @import template._
+@import views.html.common.page._
 
-@this(standardPage: standardPage, dashboardTopNav: dashboardTopNav)
+@this(@Named("ogelOnly") ogelOnly: Boolean, standardPage: standardPage, dashboardTopNav: dashboardTopNav)
 @(ogelDetailsView: OgelDetailsView)
 
 @standardPage(ogelDetailsView.getRegistrationReference + " - Export licence", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
 } {
 
-  @dashboardTopNav()
+  @if(ogelOnly) {
+    @partNavigation("Licence management navigation") {
+      <li>
+        <a href="/licences">Licences</a>
+      </li>
+    }
+  } else {
+    @dashboardTopNav()
+  }
 
   <div class="application-summary-panel">
 

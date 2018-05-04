@@ -5,7 +5,7 @@
 ->          /common                                                   common.Routes
 
 # Application list
-GET         /                                                         controllers.ApplicationListController.index
+GET         /                                                         controllers.IndexController.index
 GET         /applications                                             controllers.ApplicationListController.applicationList(tab ?= null, sort ?= null, direction ?=null, company ?= null, show ?= null, page: Integer ?= null)
 
 # Application tabs
