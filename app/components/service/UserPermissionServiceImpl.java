@@ -13,7 +13,7 @@ import models.Application;
 import models.CaseData;
 import models.Rfi;
 import uk.gov.bis.lite.user.api.view.CustomerView;
-import uk.gov.bis.lite.user.api.view.Role;
+import uk.gov.bis.lite.user.api.view.enums.Role;
 import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
 
 import java.util.ArrayList;
