@@ -293,6 +293,7 @@ public class GuiceModule extends AbstractModule {
     // UserServiceClient
     bindConstant().annotatedWith(Names.named("userServiceAddress")).to(config.getString("userService.address"));
     bindConstant().annotatedWith(Names.named("userServiceTimeout")).to(config.getString("userService.timeout"));
+    bindConstant().annotatedWith(Names.named("userServiceCredentials")).to(config.getString("userService.credentials"));
     bindConstant().annotatedWith(Names.named("userServiceCacheExpiryMinutes")).to(config.getString("userService.cacheExpiryMinutes"));
     bind(UserServiceClient.class).to(UserServiceClientImpl.class);
     // CountryServiceClient
