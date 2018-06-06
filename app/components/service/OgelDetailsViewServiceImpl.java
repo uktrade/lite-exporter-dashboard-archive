@@ -1,14 +1,18 @@
 package components.service;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import components.client.LicenceClient;
 import components.client.OgelServiceClient;
-import java.util.Optional;
 import models.view.OgelDetailsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.bis.lite.ogel.api.view.OgelFullView;
 import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Optional;
 
 public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
 
@@ -16,9 +20,12 @@ public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
 
   private final LicenceClient licenceClient;
   private final OgelServiceClient ogelServiceClient;
+  private final String permissionsFinderUrl;
 
   @Inject
-  public OgelDetailsViewServiceImpl(LicenceClient licenceClient, OgelServiceClient ogelServiceClient) {
+  public OgelDetailsViewServiceImpl(@Named("permissionsFinderUrl") String permissionsFinderUrl,
+                                    LicenceClient licenceClient, OgelServiceClient ogelServiceClient) {
+    this.permissionsFinderUrl = permissionsFinderUrl;
     this.licenceClient = licenceClient;
     this.ogelServiceClient = ogelServiceClient;
   }
@@ -33,11 +40,20 @@ public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
       return Optional.empty();
     }
     OgelFullView ogelFullView = ogelServiceClient.getOgel(ogelRegistrationView.getOgelType());
+    String viewLetterLink = String.format("%s/licencefinder/view-ogel/%s", permissionsFinderUrl, encode(ogelRegistrationView.getRegistrationReference()));
     OgelDetailsView ogelDetailsView = new OgelDetailsView(registrationReference,
         ogelFullView.getName(),
         ogelFullView.getLink(),
-        ogelFullView.getSummary());
+        viewLetterLink);
     return Optional.of(ogelDetailsView);
+  }
+
+  private String encode(String queryParam) {
+    try {
+      return URLEncoder.encode(queryParam, "UTF-8");
+    } catch (UnsupportedEncodingException uee) {
+      throw new RuntimeException("Unable to encode " + queryParam, uee);
+    }
   }
 
 }

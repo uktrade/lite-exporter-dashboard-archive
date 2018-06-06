@@ -180,6 +180,7 @@ public class GuiceModule extends AbstractModule {
     bindConstant().annotatedWith(Names.named("jwtSharedSecret")).to(config.getString("jwtSharedSecret"));
     // LicenceApplication
     bindConstant().annotatedWith(Names.named("licenceApplicationAddress")).to(config.getString("licenceApplication.address"));
+    bindConstant().annotatedWith(Names.named("permissionsFinderUrl")).to(config.getString("permissionsFinderUrl"));
     // Service
     bind(JourneySerialiser.class).to(JourneySerialiserMock.class);
     bind(StatusTrackerViewService.class).to(StatusTrackerViewServiceImpl.class);

@@ -33,7 +33,7 @@
       }
 
       @summaryElement("Registration letter") {
-        <a href="#">Download letter (PDF)</a>
+        <a href="@ogelDetailsView.getViewLetterLink" target="_blank">View letter</a>
       }
     </dl>
 
@@ -43,26 +43,5 @@
     </p>
 
   </div>
-
-  <h3 class="heading-medium">What you can do</h3>
-  <ul class="list list-bullet">
-  @for(canItem <- ogelDetailsView.getOgelConditionSummary.getCanList) {
-    <li>@canItem</li>
-  }
-  </ul>
-
-  <h3 class="heading-medium">What you can't do</h3>
-  <ul class="list list-bullet">
-  @for(cantItem <- ogelDetailsView.getOgelConditionSummary.getCantList) {
-    <li>@cantItem</li>
-  }
-  </ul>
-
-  <h3 class="heading-medium">What you must do</h3>
-  <ul class="list list-bullet">
-  @for(mustItem <- ogelDetailsView.getOgelConditionSummary.getMustList) {
-    <li>@mustItem</li>
-  }
-  </ul>
 
 }
