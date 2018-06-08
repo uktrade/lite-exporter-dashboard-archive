@@ -40,7 +40,8 @@ public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
       return Optional.empty();
     }
     OgelFullView ogelFullView = ogelServiceClient.getOgel(ogelRegistrationView.getOgelType());
-    String viewLetterLink = String.format("%s/licencefinder/view-ogel/%s", permissionsFinderUrl, encode(ogelRegistrationView.getRegistrationReference()));
+    String viewLetterLink = String.format("%s/licencefinder/view-ogel?registrationRef=%s", permissionsFinderUrl,
+        encode(ogelRegistrationView.getRegistrationReference()));
     OgelDetailsView ogelDetailsView = new OgelDetailsView(registrationReference,
         ogelFullView.getName(),
         ogelFullView.getLink(),
