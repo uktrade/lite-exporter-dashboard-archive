@@ -36,6 +36,7 @@ import components.common.journey.JourneyDefinitionBuilder;
 import components.common.journey.JourneySerialiser;
 import components.common.state.ContextParamManager;
 import components.common.transaction.TransactionContextParamProvider;
+import components.common.upload.FileService;
 import components.common.upload.UploadGuiceModule;
 import components.dao.AmendmentRequestDao;
 import components.dao.ApplicationDao;
@@ -128,6 +129,8 @@ import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
 import components.service.WorkingDayService;
 import components.service.WorkingDayServiceImpl;
+import components.service.ogelonly.OgelOnlyFileServiceImpl;
+import components.service.ogelonly.OgelOnlyMessagePublisher;
 import components.service.ogelonly.OgelOnlySielItemViewServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
@@ -230,10 +233,17 @@ public class GuiceModule extends AbstractModule {
     bind(BacklogDao.class).to(BacklogDaoImpl.class);
     // Start up
     bind(StartUpService.class).to(StartUpServiceImpl.class).asEagerSingleton();
-    // Amazon
-    bindSnsAndSqsServices();
-    // Upload
-    install(new UploadGuiceModule(config));
+
+    if (!ogelOnly) {
+      // Amazon
+      bindSnsAndSqsServices();
+      // Upload
+      install(new UploadGuiceModule(config));
+    } else {
+      bind(FileService.class).to(OgelOnlyFileServiceImpl.class);
+      bind(MessagePublisher.class).to(OgelOnlyMessagePublisher.class);
+    }
+
     // Basic auth
     bindConstant().annotatedWith(Names.named("basicAuthUser")).to(config.getString("basicAuth.user"));
     bindConstant().annotatedWith(Names.named("basicAuthPassword")).to(config.getString("basicAuth.password"));
