@@ -5,13 +5,13 @@ import com.google.inject.name.Named;
 import components.common.logging.CorrelationId;
 import components.exceptions.ServiceException;
 import filters.common.JwtRequestFilter;
-import java.time.Duration;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class UserServiceClientImpl implements UserServiceClient {
 
@@ -34,7 +34,7 @@ public class UserServiceClientImpl implements UserServiceClient {
   }
 
   @Override
-  public Optional<UserPrivilegesView> getUserPrivilegeView(String userId) {
+  public UserPrivilegesView getUserPrivilegeView(String userId) {
     String url = address + USER_PRIVILEGES_PATH + userId;
     CompletableFuture<UserPrivilegesView> request = wsClient.url(url)
         .setRequestFilter(CorrelationId.requestFilter)
@@ -54,7 +54,7 @@ public class UserServiceClientImpl implements UserServiceClient {
         })
         .toCompletableFuture();
     try {
-      return Optional.of(request.get());
+      return request.get();
     } catch (InterruptedException | ExecutionException error) {
       String message = String.format("Unable to get user privileges view with id %s", userId);
       throw new ServiceException(message, error);

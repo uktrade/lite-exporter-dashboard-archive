@@ -2,8 +2,8 @@ package components.service;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.client.LicenceClient;
-import components.client.OgelServiceClient;
+import components.cache.LicenceClientCache;
+import components.cache.OgelServiceClientCache;
 import models.view.OgelDetailsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,28 +18,29 @@ public class OgelDetailsViewServiceImpl implements OgelDetailsViewService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OgelDetailsViewServiceImpl.class);
 
-  private final LicenceClient licenceClient;
-  private final OgelServiceClient ogelServiceClient;
+  private final LicenceClientCache licenceClientCache;
+  private final OgelServiceClientCache ogelServiceClientCache;
   private final String permissionsFinderUrl;
 
   @Inject
   public OgelDetailsViewServiceImpl(@Named("permissionsFinderUrl") String permissionsFinderUrl,
-                                    LicenceClient licenceClient, OgelServiceClient ogelServiceClient) {
+                                    LicenceClientCache licenceClientCache,
+                                    OgelServiceClientCache ogelServiceClientCache) {
     this.permissionsFinderUrl = permissionsFinderUrl;
-    this.licenceClient = licenceClient;
-    this.ogelServiceClient = ogelServiceClient;
+    this.licenceClientCache = licenceClientCache;
+    this.ogelServiceClientCache = ogelServiceClientCache;
   }
 
   @Override
   public Optional<OgelDetailsView> getOgelDetailsView(String userId, String registrationReference) {
     OgelRegistrationView ogelRegistrationView;
     try {
-      ogelRegistrationView = licenceClient.getOgelRegistration(userId, registrationReference);
+      ogelRegistrationView = licenceClientCache.getOgelRegistration(userId, registrationReference);
     } catch (Exception exception) {
       LOGGER.error("Unable to find ogel licence with registration reference {} for user {}", registrationReference, userId, exception);
       return Optional.empty();
     }
-    OgelFullView ogelFullView = ogelServiceClient.getOgel(ogelRegistrationView.getOgelType());
+    OgelFullView ogelFullView = ogelServiceClientCache.getOgel(ogelRegistrationView.getOgelType());
     String viewLetterLink = String.format("%s/licencefinder/view-ogel?registrationRef=%s", permissionsFinderUrl,
         encode(ogelRegistrationView.getRegistrationReference()));
     OgelDetailsView ogelDetailsView = new OgelDetailsView(registrationReference,

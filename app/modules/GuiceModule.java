@@ -20,6 +20,14 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import components.auth.SamlModule;
+import components.cache.CustomerServiceClientCache;
+import components.cache.CustomerServiceClientCacheImpl;
+import components.cache.LicenceClientCache;
+import components.cache.LicenceClientCacheImpl;
+import components.cache.OgelServiceClientCache;
+import components.cache.OgelServiceClientCacheImpl;
+import components.cache.UserServiceClientCache;
+import components.cache.UserServiceClientCacheImpl;
 import components.client.CustomerServiceClient;
 import components.client.CustomerServiceClientImpl;
 import components.client.LicenceClient;
@@ -292,21 +300,25 @@ public class GuiceModule extends AbstractModule {
     bindConstant().annotatedWith(Names.named("customerServiceAddress")).to(config.getString("customerService.address"));
     bindConstant().annotatedWith(Names.named("customerServiceTimeout")).to(config.getString("customerService.timeout"));
     bind(CustomerServiceClient.class).to(CustomerServiceClientImpl.class);
+    bind(CustomerServiceClientCache.class).to(CustomerServiceClientCacheImpl.class);
     // LicenceClient
     bindConstant().annotatedWith(Names.named("permissionsServiceAddress")).to(config.getString("permissionsService.address"));
     bindConstant().annotatedWith(Names.named("permissionsServiceTimeout")).to(config.getString("permissionsService.timeout"));
     bind(LicenceClient.class).to(LicenceClientImpl.class);
+    bind(LicenceClientCache.class).to(LicenceClientCacheImpl.class);
     // OgelServiceClient
     bindConstant().annotatedWith(Names.named("ogelServiceAddress")).to(config.getString("ogelService.address"));
     bindConstant().annotatedWith(Names.named("ogelServiceTimeout")).to(config.getString("ogelService.timeout"));
     bindConstant().annotatedWith(Names.named("ogelServiceCredentials")).to(config.getString("ogelService.credentials"));
     bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
+    bind(OgelServiceClientCache.class).to(OgelServiceClientCacheImpl.class);
     // UserServiceClient
     bindConstant().annotatedWith(Names.named("userServiceAddress")).to(config.getString("userService.address"));
     bindConstant().annotatedWith(Names.named("userServiceTimeout")).to(config.getString("userService.timeout"));
     bindConstant().annotatedWith(Names.named("userServiceCredentials")).to(config.getString("userService.credentials"));
     bindConstant().annotatedWith(Names.named("userServiceCacheExpiryMinutes")).to(config.getString("userService.cacheExpiryMinutes"));
     bind(UserServiceClient.class).to(UserServiceClientImpl.class);
+    bind(UserServiceClientCache.class).to(UserServiceClientCacheImpl.class);
     // CountryServiceClient
     bindConstant().annotatedWith(Names.named("countryAddress")).to(config.getString("countryService.address"));
     bindConstant().annotatedWith(Names.named("countryTimeout")).to(config.getString("countryService.timeout"));

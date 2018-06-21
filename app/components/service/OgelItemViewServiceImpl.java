@@ -1,9 +1,9 @@
 package components.service;
 
 import com.google.inject.Inject;
-import components.client.CustomerServiceClient;
-import components.client.LicenceClient;
-import components.client.OgelServiceClient;
+import components.cache.CustomerServiceClientCache;
+import components.cache.LicenceClientCache;
+import components.cache.OgelServiceClientCache;
 import components.util.EnumUtil;
 import components.util.LicenceUtil;
 import models.view.OgelItemView;
@@ -19,28 +19,29 @@ import java.util.stream.Collectors;
 
 public class OgelItemViewServiceImpl implements OgelItemViewService {
 
-  private final LicenceClient licenceClient;
-  private final CustomerServiceClient customerServiceClient;
-  private final OgelServiceClient ogelServiceClient;
+  private final LicenceClientCache licenceClientCache;
+  private final CustomerServiceClientCache customerServiceClientCache;
+  private final OgelServiceClientCache ogelServiceClientCache;
   private final TimeService timeService;
 
   @Inject
-  public OgelItemViewServiceImpl(LicenceClient licenceClient, CustomerServiceClient customerServiceClient,
-                                 OgelServiceClient ogelServiceClient, TimeService timeService) {
-    this.licenceClient = licenceClient;
-    this.customerServiceClient = customerServiceClient;
-    this.ogelServiceClient = ogelServiceClient;
+  public OgelItemViewServiceImpl(LicenceClientCache licenceClientCache,
+                                 CustomerServiceClientCache customerServiceClientCache,
+                                 OgelServiceClientCache ogelServiceClientCache, TimeService timeService) {
+    this.licenceClientCache = licenceClientCache;
+    this.customerServiceClientCache = customerServiceClientCache;
+    this.ogelServiceClientCache = ogelServiceClientCache;
     this.timeService = timeService;
   }
 
   @Override
   public boolean hasOgelItemViews(String userId) {
-    return !licenceClient.getOgelRegistrations(userId).isEmpty();
+    return !licenceClientCache.getOgelRegistrations(userId).isEmpty();
   }
 
   @Override
   public List<OgelItemView> getOgelItemViews(String userId) {
-    List<OgelRegistrationView> ogelRegistrationViews = licenceClient.getOgelRegistrations(userId);
+    List<OgelRegistrationView> ogelRegistrationViews = licenceClientCache.getOgelRegistrations(userId);
     Map<String, SiteView> sites = getSites(ogelRegistrationViews);
     Map<String, CustomerView> customers = getCustomers(ogelRegistrationViews);
     Map<String, OgelFullView> ogels = getOgels(ogelRegistrationViews);
@@ -59,7 +60,7 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
     return ogelRegistrationViews.stream()
         .map(OgelRegistrationView::getOgelType)
         .distinct()
-        .map(ogelServiceClient::getOgel)
+        .map(ogelServiceClientCache::getOgel)
         .collect(Collectors.toMap(OgelFullView::getId, Function.identity()));
   }
 
@@ -67,7 +68,7 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
     return ogelRegistrationViews.stream()
         .map(OgelRegistrationView::getSiteId)
         .distinct()
-        .map(customerServiceClient::getSite)
+        .map(customerServiceClientCache::getSite)
         .collect(Collectors.toMap(SiteView::getSiteId, Function.identity()));
   }
 
@@ -75,7 +76,7 @@ public class OgelItemViewServiceImpl implements OgelItemViewService {
     return ogelRegistrationViews.stream()
         .map(OgelRegistrationView::getCustomerId)
         .distinct()
-        .map(customerServiceClient::getCustomer)
+        .map(customerServiceClientCache::getCustomer)
         .collect(Collectors.toMap(CustomerView::getCustomerId, Function.identity()));
   }
 
