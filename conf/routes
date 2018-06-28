@@ -46,3 +46,4 @@ GET         /assets/*file                                             controller
 
 # Admin
 GET         /admin/build                                              controllers.AdminController.buildInfo
+GET         /admin/ping                                               controllers.AdminController.ping
