@@ -1,7 +1,7 @@
 package controllers;
 
-import components.auth.SamlAuthorizer;
 import components.common.CommonContextAction;
+import components.common.auth.SamlAuthorizer;
 import components.common.auth.SpireSAML2Client;
 import org.pac4j.play.java.Secure;
 import play.mvc.Controller;
