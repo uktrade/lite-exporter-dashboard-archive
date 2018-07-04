@@ -20,6 +20,7 @@ import models.view.ApplicationItemView;
 import models.view.ApplicationListView;
 import models.view.CompanySelectItemView;
 import play.mvc.Result;
+import play.mvc.With;
 import views.html.applicationList;
 
 import java.util.EnumSet;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@With(OgelOnlyGuardAction.class)
 public class ApplicationListController extends SamlController {
 
   private static final String COMPANY_ID_ALL = "all";

@@ -8,7 +8,9 @@ import components.service.test.TestDataService;
 import components.util.EnumUtil;
 import models.enums.TestType;
 import play.mvc.Result;
+import play.mvc.With;
 
+@With(OgelOnlyGuardAction.class)
 public class TestDataController extends SamlController {
 
   private final TestDataService testDataService;

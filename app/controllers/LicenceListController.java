@@ -2,6 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import components.cache.SessionCache;
+import components.exceptions.UnknownParameterException;
 import components.service.OgelDetailsViewService;
 import components.service.OgelItemViewService;
 import components.service.SielDetailsViewService;
@@ -21,6 +22,7 @@ import models.view.OgelItemView;
 import models.view.SielDetailsView;
 import models.view.SielItemView;
 import play.mvc.Result;
+import play.mvc.With;
 import views.html.licenceList;
 import views.html.ogelDetails;
 import views.html.sielDetails;
@@ -111,17 +113,18 @@ public class LicenceListController extends SamlController {
     if (ogelDetailsView.isPresent()) {
       return ok(ogelDetails.render(ogelDetailsView.get()));
     } else {
-      return notFound("Unknown ogel.");
+      throw UnknownParameterException.unknownOgelId(registrationReference);
     }
   }
 
+  @With(OgelOnlyGuardAction.class)
   public Result sielDetails(String registrationReference) {
     String userId = userService.getCurrentUserId();
     Optional<SielDetailsView> sielDetailsView = sielDetailsViewService.getSielDetailsView(userId, registrationReference);
     if (sielDetailsView.isPresent()) {
       return ok(sielDetails.render(sielDetailsView.get()));
     } else {
-      return notFound("Unknown siel.");
+      throw UnknownParameterException.unknownSielId(registrationReference);
     }
   }
 
