@@ -136,6 +136,7 @@ import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
 import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
+import models.templates.FeedbackConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.skife.jdbi.v2.DBI;
 import play.Environment;
@@ -369,4 +370,12 @@ public class GuiceModule extends AbstractModule {
     system.scheduler().schedule(Duration.create(0, TimeUnit.SECONDS), frequency, countryActorRef, "country cache", system.dispatcher(), null);
   }
 
+  @Provides
+  public FeedbackConfig provideFeedbackConfig(Config config) {
+    if (!config.getIsNull("feedbackUrl") && StringUtils.isNotEmpty(config.getString("feedbackUrl"))) {
+      return new FeedbackConfig(config.getString("feedbackUrl"));
+    } else {
+      return new FeedbackConfig(null);
+    }
+  }
 }
