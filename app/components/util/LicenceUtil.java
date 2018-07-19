@@ -14,7 +14,7 @@ public class LicenceUtil {
 
   static {
     OGEL_STATUS_NAME_MAP = new EnumMap<>(OgelRegistrationView.Status.class);
-    OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.EXTANT, "Active");
+    OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.EXTANT, "Extant");
     OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.SURRENDERED, "Surrendered");
     OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.DEREGISTERED, "De-registered");
     OGEL_STATUS_NAME_MAP.put(OgelRegistrationView.Status.UNKNOWN, "Unknown");
