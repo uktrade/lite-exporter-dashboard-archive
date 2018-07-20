@@ -67,3 +67,6 @@ buildInfoKeys ++= Seq[BuildInfoKey](
 buildInfoOptions += BuildInfoOption.BuildTime
 buildInfoOptions += BuildInfoOption.ToJson
 PlayKeys.externalizeResources := false
+
+// Production only pipeline stages, (after the above production and dev pipeline stages)
+pipelineStages := Seq(digest)
