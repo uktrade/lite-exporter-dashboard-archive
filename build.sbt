@@ -18,7 +18,7 @@ scalaVersion := "2.11.8"
 libraryDependencies ++= Seq(
   guice,
   javaJdbc,
-  ehcache,
+  cacheApi,
   javaWs,
   filters,
   "net.logstash.logback" % "logstash-logback-encoder" % "5.0",

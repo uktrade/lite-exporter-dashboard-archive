@@ -129,6 +129,7 @@ import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
 import components.service.WorkingDayService;
 import components.service.WorkingDayServiceImpl;
+import components.service.ogelonly.OgelOnlyDestinationServiceImpl;
 import components.service.ogelonly.OgelOnlyFileServiceImpl;
 import components.service.ogelonly.OgelOnlyMessagePublisher;
 import components.service.ogelonly.OgelOnlySielItemViewServiceImpl;
@@ -137,6 +138,7 @@ import components.service.test.TestDataServiceImpl;
 import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
 import models.templates.FeedbackConfig;
+import modules.common.RedisSessionStoreModule;
 import org.apache.commons.lang3.StringUtils;
 import org.skife.jdbi.v2.DBI;
 import play.Environment;
@@ -178,7 +180,10 @@ public class GuiceModule extends AbstractModule {
     bind(TestDataService.class).to(TestDataServiceImpl.class);
 
     install(new SamlModule(config));
+    install(new RedisSessionStoreModule(environment, config));
+
     bindClients();
+
     bind(ZoneId.class).toInstance(ZoneId.of(config.getString("defaultTimeZoneId")));
     // Jwt
     bindConstant().annotatedWith(Names.named("jwtSharedSecret")).to(config.getString("jwtSharedSecret"));
@@ -207,7 +212,11 @@ public class GuiceModule extends AbstractModule {
     bind(ApplicationTabsViewService.class).to(ApplicationTabsViewServiceImpl.class);
     bind(PreviousRequestItemViewService.class).to(PreviousRequestItemViewServiceImpl.class);
     bind(DraftFileService.class).to(DraftFileServiceImpl.class);
-    bind(DestinationService.class).to(DestinationServiceImpl.class);
+    if (ogelOnly) {
+      bind(DestinationService.class).to(OgelOnlyDestinationServiceImpl.class);
+    } else {
+      bind(DestinationService.class).to(DestinationServiceImpl.class);
+    }
     bind(EscapeHtmlService.class).to(EscapeHtmlServiceImpl.class);
     bind(ReadMessageService.class).to(ReadMessageServiceImpl.class);
     bind(TimeService.class).to(TimeServiceImpl.class);
@@ -361,7 +370,8 @@ public class GuiceModule extends AbstractModule {
   @Singleton
   @Named("countryActorRef")
   ActorRef provideCountryActorRef(ActorSystem system, CountryProvider countryProvider) {
-    return system.actorOf(Props.create(UpdateCountryCacheActor.class, () -> new UpdateCountryCacheActor(countryProvider)));
+    //TODO - dispatcher needs to be configured (see permissions finder)
+    return system.actorOf(Props.create(UpdateCountryCacheActor.class, () -> new UpdateCountryCacheActor(countryProvider, 30, system.dispatchers().defaultGlobalDispatcher())));
   }
 
   @Inject

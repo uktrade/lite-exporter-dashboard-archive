@@ -4,12 +4,16 @@
 @import models.view.LicenceListView
 @import template._
 
-@this(@Named("ogelOnly") ogelOnly: Boolean, standardPage: standardPage, dashboardTopNav: dashboardTopNav)
+@this(@Named("ogelOnly") ogelOnly: Boolean, standardPage: standardPage, dashboardTopNav: dashboardTopNav, @Named("permissionsFinderUrl") permissionsFinderUrl: String)
 @(licenceListView: LicenceListView)
 
 @standardPage("Licences", Some(Html("Export licence application management")), hideBackLink = true, twoThirdsColumn = false) {
 
 } {
+
+  <p>
+    <a href="@permissionsFinderUrl">Check if your item is controlled</a>
+  </p>
 
   @if(!ogelOnly) {
     @dashboardTopNav()
@@ -19,13 +23,13 @@
 
   @if(licenceListView.isHasSiels && !licenceListView.isHasOgels) {
     <p>
-  <h3 class="heading-small">Standard Individual Export Licences</h3>
+      <h3 class="heading-small">Standard Individual Export Licences</h3>
     </p>
   }
 
   @if(!licenceListView.isHasSiels && licenceListView.isHasOgels || ogelOnly) {
     <p>
-  <h3 class="heading-small">Open General Export Licences</h3>
+      <h3 class="heading-small">Open General Export Licences</h3>
     </p>
   }
 
