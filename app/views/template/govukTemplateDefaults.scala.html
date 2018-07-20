@@ -3,7 +3,7 @@
 @import components.common.auth.SpireAuthManager
 
 @this(spireAuthManager: SpireAuthManager)
-@(htmlTitle: String, propositionHeading: Option[Html] = None, pageHead: Option[Html] = None)(content: Html)
+@(htmlTitle: String, propositionHeading: Html = Html("License controlled items and services"), pageHead: Option[Html] = None)(content: Html)
 
 @head = {
   <!--[if gt IE 8]><!-->
@@ -22,13 +22,17 @@
   <div class="header-proposition">
     <div class="content">
       <nav id="proposition-menu">
-        <span id="proposition-name">@propositionHeading.getOrElse("Import / Export Licensing")</span>
+        <span id="proposition-name">@propositionHeading</span>
+          <nav id="proposition-menu" aria-label="Top Level Navigation" class="lite-proposition-menu">
+            <p id="proposition-link">
+              @if(spireAuthManager.getAuthInfoFromContext.isAuthenticated && propositionHeading.body.nonEmpty) {
+                <span class="visually-hidden">Signed in as </span>@spireAuthManager.getAuthInfoFromContext.getFullName  <a href="@org.pac4j.play.routes.LogoutController.logout">Sign out</a>
+              } else {
+                <a href="@routes.IndexController.index()">Sign in</a>
+              }
+            </p>
+          </nav>
         <div class="account-header">
-        @if(spireAuthManager.getAuthInfoFromContext.isAuthenticated) {
-          @spireAuthManager.getAuthInfoFromContext.getFullName | <a href="@org.pac4j.play.routes.LogoutController.logout">Sign out</a>
-        } else {
-          <a href="@routes.IndexController.index()">Sign in</a>
-        }
         </div>
       </nav>
     </div>
