@@ -2,7 +2,7 @@ package components.service;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.client.CustomerServiceClient;
+import components.cache.CustomerServiceClientCache;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
 
-  private final CustomerServiceClient customerServiceClient;
+  private final CustomerServiceClientCache customerServiceClientCache;
   private final UserService userService;
   private final AppDataService appDataService;
   private final ReadDataService readDataService;
@@ -47,7 +47,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   private final TimeService timeService;
 
   @Inject
-  public ApplicationItemViewServiceImpl(CustomerServiceClient customerServiceClient,
+  public ApplicationItemViewServiceImpl(CustomerServiceClientCache customerServiceClientCache,
                                         UserService userService,
                                         AppDataService appDataService,
                                         ReadDataService readDataService,
@@ -55,7 +55,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
                                         @Named("licenceApplicationAddress") String licenceApplicationAddress,
                                         DestinationService destinationService,
                                         TimeService timeService) {
-    this.customerServiceClient = customerServiceClient;
+    this.customerServiceClientCache = customerServiceClientCache;
     this.userService = userService;
     this.appDataService = appDataService;
     this.readDataService = readDataService;
@@ -70,7 +70,7 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
     List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
 
     Map<String, String> customerIdToCompanyName = customerIds.stream()
-        .map(customerServiceClient::getCustomer)
+        .map(customerServiceClientCache::getCustomer)
         .collect(Collectors.toMap(CustomerView::getCustomerId, CustomerView::getCompanyName));
 
     List<AppData> appDataList = appDataService.getAppDataList(customerIds, userId);

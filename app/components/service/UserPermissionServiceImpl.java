@@ -1,66 +1,33 @@
 package components.service;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import components.client.UserServiceClient;
-import components.exceptions.UnexpectedStateException;
+import components.cache.UserServiceClientCache;
 import components.util.ApplicationUtil;
 import models.AppData;
 import models.Application;
 import models.CaseData;
 import models.Rfi;
 import uk.gov.bis.lite.user.api.view.CustomerView;
-import uk.gov.bis.lite.user.api.view.enums.Role;
 import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
+import uk.gov.bis.lite.user.api.view.enums.Role;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
 
 public class UserPermissionServiceImpl implements UserPermissionService {
 
-  private final UserServiceClient userServiceClient;
-  private final LoadingCache<String, UserPrivilegesView> privilegesCache;
+  private final UserServiceClientCache userServiceClientCache;
 
   private static final Set<Role> VIEWER_ROLES = EnumSet.of(Role.ADMIN, Role.SUBMITTER, Role.PREPARER);
   private static final Set<Role> ADMIN_ROLES = EnumSet.of(Role.ADMIN, Role.SUBMITTER);
 
   @Inject
-  public UserPermissionServiceImpl(@Named("userServiceCacheExpiryMinutes") Long cacheExpireMinutes,
-                                   UserServiceClient userServiceClient) {
-    this.userServiceClient = userServiceClient;
-    this.privilegesCache = createPrivilegesCache(cacheExpireMinutes);
-  }
-
-  private LoadingCache<String, UserPrivilegesView> createPrivilegesCache(Long cacheExpireMinutes) {
-    return CacheBuilder.newBuilder()
-        .expireAfterWrite(cacheExpireMinutes, TimeUnit.MINUTES)
-        .build(new CacheLoader<String, UserPrivilegesView>() {
-                 @Override
-                 public UserPrivilegesView load(@Nonnull String id) throws Exception {
-                   return getUserPrivilegesView(id);
-                 }
-               }
-        );
-  }
-
-  private UserPrivilegesView getPrivileges(String userId) {
-    try {
-      return privilegesCache.get(userId);
-    } catch (ExecutionException exception) {
-      String message = "Unable to get user privileges from cache for user id " + userId;
-      throw new UnexpectedStateException(message, exception);
-    }
+  public UserPermissionServiceImpl(UserServiceClientCache userServiceClientCache) {
+    this.userServiceClientCache = userServiceClientCache;
   }
 
   @Override
@@ -148,15 +115,15 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         .anyMatch(view -> view.getSiteId().equals(siteId) && roles.contains(view.getRole()));
   }
 
-  protected UserPrivilegesView getUserPrivilegesView(String userId) {
-    Optional<UserPrivilegesView> userPrivilegesViewOptional = userServiceClient.getUserPrivilegeView(userId);
-    if (userPrivilegesViewOptional.isPresent()) {
-      return userPrivilegesViewOptional.get();
-    } else {
-      UserPrivilegesView userPrivilegesView = new UserPrivilegesView();
-      userPrivilegesView.setCustomers(new ArrayList<>());
-      userPrivilegesView.setSites(new ArrayList<>());
+  private UserPrivilegesView getPrivileges(String userId) {
+    UserPrivilegesView userPrivilegesView = userServiceClientCache.getUserPrivilegeView(userId);
+    if (userPrivilegesView != null) {
       return userPrivilegesView;
+    } else {
+      UserPrivilegesView view = new UserPrivilegesView();
+      view.setCustomers(new ArrayList<>());
+      view.setSites(new ArrayList<>());
+      return view;
     }
   }
 
