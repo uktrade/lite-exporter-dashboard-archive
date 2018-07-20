@@ -19,13 +19,16 @@
 
   @if(licenceListView.isHasSiels && !licenceListView.isHasOgels) {
     <p>
-  <h3 class="heading-small">Standard Individual Export Licences</h3>
+      <h3 class="heading-small">Standard Individual Export Licences</h3>
     </p>
   }
 
   @if(!licenceListView.isHasSiels && licenceListView.isHasOgels || ogelOnly) {
     <p>
-  <h3 class="heading-small">Open General Export Licences</h3>
+      <a href="https://lite-permissions-finder.lite.service.dev.uktrade.io">Check if your item is controlled</a>
+    </p>
+    <p>
+      <h3 class="heading-small">Open General Export Licences</h3>
     </p>
   }
 
