@@ -137,6 +137,7 @@ import components.service.test.TestDataServiceImpl;
 import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
 import models.templates.FeedbackConfig;
+import modules.common.RedisSessionStoreModule;
 import org.apache.commons.lang3.StringUtils;
 import org.skife.jdbi.v2.DBI;
 import play.Environment;
@@ -178,7 +179,10 @@ public class GuiceModule extends AbstractModule {
     bind(TestDataService.class).to(TestDataServiceImpl.class);
 
     install(new SamlModule(config));
+    install(new RedisSessionStoreModule(environment, config));
+
     bindClients();
+
     bind(ZoneId.class).toInstance(ZoneId.of(config.getString("defaultTimeZoneId")));
     // Jwt
     bindConstant().annotatedWith(Names.named("jwtSharedSecret")).to(config.getString("jwtSharedSecret"));
