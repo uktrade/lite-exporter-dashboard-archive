@@ -1,11 +1,12 @@
 package components.service;
 
 import models.view.SielDetailsView;
+import uk.gov.bis.lite.permissions.api.view.LicenceView;
 
-import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 
 public interface SielDetailsViewService {
 
-  Optional<SielDetailsView> getSielDetailsView(String userId, String reference);
+  CompletionStage<SielDetailsView> getSielDetailsView(LicenceView licenceView);
 
 }

@@ -26,6 +26,7 @@ import views.html.applicationList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 @With(OgelOnlyGuardAction.class)
@@ -49,80 +50,81 @@ public class ApplicationListController extends SamlController {
     this.applicationList = applicationList;
   }
 
-  public Result applicationList(String tab, String sort, String direction, String company, String show, Integer page) {
+  public CompletionStage<Result> applicationList(String tab, String sort, String direction, String company, String show,
+                                                 Integer page) {
     String userId = userService.getCurrentUserId();
+    return applicationItemViewService.getApplicationItemViews(userId).thenApply(views -> {
 
-    ApplicationListState state = SessionCache.getApplicationListState(tab, sort, direction, company, show, page);
-    ApplicationProgress applicationProgress = EnumUtil.parse(state.getShow(), ApplicationProgress.class);
-    ApplicationSortType applicationSortType = EnumUtil.parse(state.getSort(), ApplicationSortType.class, ApplicationSortType.DATE);
-    SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
-    ApplicationListTab applicationListTab = EnumUtil.parse(state.getTab(), ApplicationListTab.class, ApplicationListTab.USER);
-    String companyIdParam = state.getCompany();
+      ApplicationListState state = SessionCache.getApplicationListState(tab, sort, direction, company, show, page);
+      ApplicationProgress applicationProgress = EnumUtil.parse(state.getShow(), ApplicationProgress.class);
+      ApplicationSortType applicationSortType = EnumUtil.parse(state.getSort(), ApplicationSortType.class, ApplicationSortType.DATE);
+      SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.DESC);
+      ApplicationListTab applicationListTab = EnumUtil.parse(state.getTab(), ApplicationListTab.class, ApplicationListTab.USER);
+      String companyIdParam = state.getCompany();
 
-    List<ApplicationItemView> views = applicationItemViewService.getApplicationItemViews(userId);
+      boolean hasUserApplications = hasUserApplications(userId, views);
+      boolean hasOtherUserApplications = hasOtherUserApplications(userId, views);
+      boolean hasForYourAttentionApplications = hasForYourAttentionApplications(views);
 
-    boolean hasUserApplications = hasUserApplications(userId, views);
-    boolean hasOtherUserApplications = hasOtherUserApplications(userId, views);
-    boolean hasForYourAttentionApplications = hasForYourAttentionApplications(views);
+      applicationListTab = defaultTab(applicationListTab, hasUserApplications, hasOtherUserApplications, hasForYourAttentionApplications);
 
-    applicationListTab = defaultTab(applicationListTab, hasUserApplications, hasOtherUserApplications, hasForYourAttentionApplications);
+      if ((applicationListTab == ApplicationListTab.USER && !USER_SORT_TYPES.contains(applicationSortType)) ||
+          applicationListTab == ApplicationListTab.COMPANY && !COMPANY_SORT_TYPES.contains(applicationSortType)) {
+        applicationSortType = ApplicationSortType.DATE;
+        sortDirection = SortDirection.DESC;
+      } else if (applicationListTab == ApplicationListTab.ATTENTION && !ATTENTION_SORT_TYPES.contains(applicationSortType)) {
+        applicationSortType = ApplicationSortType.EVENT_DATE;
+        sortDirection = SortDirection.DESC;
+      }
 
-    if ((applicationListTab == ApplicationListTab.USER && !USER_SORT_TYPES.contains(applicationSortType)) ||
-        applicationListTab == ApplicationListTab.COMPANY && !COMPANY_SORT_TYPES.contains(applicationSortType)) {
-      applicationSortType = ApplicationSortType.DATE;
-      sortDirection = SortDirection.DESC;
-    } else if (applicationListTab == ApplicationListTab.ATTENTION && !ATTENTION_SORT_TYPES.contains(applicationSortType)) {
-      applicationSortType = ApplicationSortType.EVENT_DATE;
-      sortDirection = SortDirection.DESC;
-    }
+      if (applicationListTab == ApplicationListTab.ATTENTION && applicationSortType == ApplicationSortType.CREATED_BY && hasUserApplications && !hasOtherUserApplications) {
+        applicationSortType = ApplicationSortType.EVENT_DATE;
+        sortDirection = SortDirection.DESC;
+      }
 
-    if (applicationListTab == ApplicationListTab.ATTENTION && applicationSortType == ApplicationSortType.CREATED_BY && hasUserApplications && !hasOtherUserApplications) {
-      applicationSortType = ApplicationSortType.EVENT_DATE;
-      sortDirection = SortDirection.DESC;
-    }
+      if (applicationListTab == ApplicationListTab.ATTENTION) {
+        applicationProgress = null;
+      }
 
-    if (applicationListTab == ApplicationListTab.ATTENTION) {
-      applicationProgress = null;
-    }
+      boolean hasApplicationWithNoCompanyId = views.stream()
+          .anyMatch(view -> view.getCompanyId() == null);
 
-    boolean hasApplicationWithNoCompanyId = views.stream()
-        .anyMatch(view -> view.getCompanyId() == null);
+      List<CompanySelectItemView> companySelectItemViews = collectCompanyNames(views);
 
-    List<CompanySelectItemView> companySelectItemViews = collectCompanyNames(views);
+      String companyId = defaultCompanyId(applicationListTab, companyIdParam, companySelectItemViews);
 
-    String companyId = defaultCompanyId(applicationListTab, companyIdParam, companySelectItemViews);
+      List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, views);
+      List<ApplicationItemView> userFilteredViews = filterByUser(userId, applicationListTab, companyFilteredViews);
+      List<ApplicationItemView> applicationProgressFilteredViews = filterByApplicationProgress(applicationProgress, userFilteredViews);
+      List<ApplicationItemView> attentionFilteredViews = filterByAttention(applicationListTab, applicationProgressFilteredViews);
 
-    List<ApplicationItemView> companyFilteredViews = filterByCompanyId(companyId, views);
-    List<ApplicationItemView> userFilteredViews = filterByUser(userId, applicationListTab, companyFilteredViews);
-    List<ApplicationItemView> applicationProgressFilteredViews = filterByApplicationProgress(applicationProgress, userFilteredViews);
-    List<ApplicationItemView> attentionFilteredViews = filterByAttention(applicationListTab, applicationProgressFilteredViews);
+      SortUtil.sort(attentionFilteredViews, applicationSortType, sortDirection);
 
-    SortUtil.sort(attentionFilteredViews, applicationSortType, sortDirection);
+      Page<ApplicationItemView> pageData = PageUtil.getPage(state.getPage(), attentionFilteredViews);
 
-    Page<ApplicationItemView> pageData = PageUtil.getPage(state.getPage(), attentionFilteredViews);
+      long allCount = userFilteredViews.size();
+      long draftCount = countByApplicationProgress(userFilteredViews, ApplicationProgress.DRAFT);
+      long completedCount = countByApplicationProgress(userFilteredViews, ApplicationProgress.COMPLETED);
+      long currentCount = allCount - draftCount - completedCount;
 
-    long allCount = userFilteredViews.size();
-    long draftCount = countByApplicationProgress(userFilteredViews, ApplicationProgress.DRAFT);
-    long completedCount = countByApplicationProgress(userFilteredViews, ApplicationProgress.COMPLETED);
-    long currentCount = allCount - draftCount - completedCount;
+      ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
+          companyId,
+          companySelectItemViews,
+          hasApplicationWithNoCompanyId,
+          hasUserApplications,
+          hasOtherUserApplications,
+          hasForYourAttentionApplications,
+          applicationSortType,
+          sortDirection,
+          applicationProgress,
+          allCount,
+          draftCount,
+          currentCount,
+          completedCount,
+          pageData);
 
-    ApplicationListView applicationListView = new ApplicationListView(applicationListTab,
-        companyId,
-        companySelectItemViews,
-        hasApplicationWithNoCompanyId,
-        hasUserApplications,
-        hasOtherUserApplications,
-        hasForYourAttentionApplications,
-        applicationSortType,
-        sortDirection,
-        applicationProgress,
-        allCount,
-        draftCount,
-        currentCount,
-        completedCount,
-        pageData);
-
-    return ok(applicationList.render(applicationListView)).withHeader("Cache-Control", "no-store, no-cache");
+      return ok(applicationList.render(applicationListView)).withHeader("Cache-Control", "no-store, no-cache");
+    });
   }
 
   private String defaultCompanyId(ApplicationListTab applicationListTab, String companyId,

@@ -1,13 +1,13 @@
 package components.service;
 
 import models.view.SielItemView;
+import uk.gov.bis.lite.permissions.api.view.LicenceView;
 
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 
 public interface SielItemViewService {
 
-  List<SielItemView> getSielItemViews(String userId);
-
-  boolean hasSielItemViews(String userId);
+  CompletionStage<List<SielItemView>> getSielItemViews(List<LicenceView> licenceViews);
 
 }

@@ -1,11 +1,14 @@
 package components.service;
 
+import static com.spotify.futures.CompletableFutures.allAsList;
+
 import com.google.inject.Inject;
-import components.client.CustomerServiceClient;
-import components.client.LicenceClient;
-import components.client.OgelServiceClient;
+import com.spotify.futures.CompletableFutures;
+import components.common.client.CustomerServiceClient;
+import components.common.client.OgelServiceClient;
 import components.util.EnumUtil;
 import components.util.LicenceUtil;
+import components.util.MapUtil;
 import models.view.OgelItemView;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
 import uk.gov.bis.lite.customer.api.view.SiteView;
@@ -14,69 +17,62 @@ import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 public class OgelItemViewServiceImpl implements OgelItemViewService {
 
-  private final LicenceClient licenceClient;
   private final CustomerServiceClient customerServiceClient;
   private final OgelServiceClient ogelServiceClient;
   private final TimeService timeService;
 
   @Inject
-  public OgelItemViewServiceImpl(LicenceClient licenceClient, CustomerServiceClient customerServiceClient,
+  public OgelItemViewServiceImpl(CustomerServiceClient customerServiceClient,
                                  OgelServiceClient ogelServiceClient, TimeService timeService) {
-    this.licenceClient = licenceClient;
     this.customerServiceClient = customerServiceClient;
     this.ogelServiceClient = ogelServiceClient;
     this.timeService = timeService;
   }
 
   @Override
-  public boolean hasOgelItemViews(String userId) {
-    return !licenceClient.getOgelRegistrations(userId).isEmpty();
+  public CompletionStage<List<OgelItemView>> getOgelItemViews(List<OgelRegistrationView> ogelRegistrationViews) {
+    List<CompletionStage<CustomerView>> customerStages = createCustomerStages(ogelRegistrationViews);
+    List<CompletionStage<SiteView>> siteStages = createSiteStages(ogelRegistrationViews);
+    List<CompletionStage<OgelFullView>> ogelStages = createOgelStages(ogelRegistrationViews);
+    return CompletableFutures.combine(allAsList(customerStages), allAsList(siteStages), allAsList(ogelStages),
+        (customerViews, siteViews, ogelFullViews) -> {
+          Map<String, CustomerView> customerViewMap = MapUtil.createCustomerViewMap(customerViews);
+          Map<String, SiteView> siteViewMap = MapUtil.createSiteViewMap(siteViews);
+          Map<String, OgelFullView> ogelFullViewMap = MapUtil.createOgelFullViewMap(ogelFullViews);
+          return ogelRegistrationViews.stream()
+              .map(view -> getOgelItemView(view, customerViewMap.get(view.getCustomerId()),
+                  siteViewMap.get(view.getSiteId()), ogelFullViewMap.get(view.getOgelType())))
+              .collect(Collectors.toList());
+        });
   }
 
-  @Override
-  public List<OgelItemView> getOgelItemViews(String userId) {
-    List<OgelRegistrationView> ogelRegistrationViews = licenceClient.getOgelRegistrations(userId);
-    Map<String, SiteView> sites = getSites(ogelRegistrationViews);
-    Map<String, CustomerView> customers = getCustomers(ogelRegistrationViews);
-    Map<String, OgelFullView> ogels = getOgels(ogelRegistrationViews);
-
-    return ogelRegistrationViews.stream()
-        .map(view -> {
-          CustomerView customerView = customers.get(view.getCustomerId());
-          SiteView siteView = sites.get(view.getSiteId());
-          OgelFullView ogelFullView = ogels.get(view.getOgelType());
-          return getOgelItemView(view, customerView, siteView, ogelFullView);
-        })
-        .collect(Collectors.toList());
-  }
-
-  private Map<String, OgelFullView> getOgels(List<OgelRegistrationView> ogelRegistrationViews) {
-    return ogelRegistrationViews.stream()
-        .map(OgelRegistrationView::getOgelType)
-        .distinct()
-        .map(ogelServiceClient::getOgel)
-        .collect(Collectors.toMap(OgelFullView::getId, Function.identity()));
-  }
-
-  private Map<String, SiteView> getSites(List<OgelRegistrationView> ogelRegistrationViews) {
-    return ogelRegistrationViews.stream()
-        .map(OgelRegistrationView::getSiteId)
-        .distinct()
-        .map(customerServiceClient::getSite)
-        .collect(Collectors.toMap(SiteView::getSiteId, Function.identity()));
-  }
-
-  private Map<String, CustomerView> getCustomers(List<OgelRegistrationView> ogelRegistrationViews) {
+  private List<CompletionStage<CustomerView>> createCustomerStages(List<OgelRegistrationView> ogelRegistrationViews) {
     return ogelRegistrationViews.stream()
         .map(OgelRegistrationView::getCustomerId)
         .distinct()
         .map(customerServiceClient::getCustomer)
-        .collect(Collectors.toMap(CustomerView::getCustomerId, Function.identity()));
+        .collect(Collectors.toList());
+  }
+
+  private List<CompletionStage<SiteView>> createSiteStages(List<OgelRegistrationView> ogelRegistrationViews) {
+    return ogelRegistrationViews.stream()
+        .map(OgelRegistrationView::getSiteId)
+        .distinct()
+        .map(customerServiceClient::getSite)
+        .collect(Collectors.toList());
+  }
+
+  private List<CompletionStage<OgelFullView>> createOgelStages(List<OgelRegistrationView> ogelRegistrationViews) {
+    return ogelRegistrationViews.stream()
+        .map(OgelRegistrationView::getOgelType)
+        .distinct()
+        .map(ogelServiceClient::getById)
+        .collect(Collectors.toList());
   }
 
   private OgelItemView getOgelItemView(OgelRegistrationView ogelRegistrationView, CustomerView customerView,

@@ -1,8 +1,11 @@
 package components.service;
 
+import static com.spotify.futures.CompletableFutures.allAsList;
+
 import com.google.inject.Inject;
-import components.client.CustomerServiceClient;
-import components.client.LicenceClient;
+import com.spotify.futures.CompletableFutures;
+import components.common.client.CustomerServiceClient;
+import components.util.MapUtil;
 import models.view.SielItemView;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.bis.lite.customer.api.view.CustomerView;
@@ -11,47 +14,49 @@ import uk.gov.bis.lite.permissions.api.view.LicenceView;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 public class SielItemViewServiceImpl implements SielItemViewService {
 
-  private final UserPermissionService userPermissionService;
   private final CustomerServiceClient customerServiceClient;
-  private final LicenceClient licenceClient;
   private final TimeService timeService;
 
   @Inject
-  public SielItemViewServiceImpl(UserPermissionService userPermissionService,
-                                 CustomerServiceClient customerServiceClient,
-                                 LicenceClient licenceClient, TimeService timeService) {
-    this.userPermissionService = userPermissionService;
+  public SielItemViewServiceImpl(CustomerServiceClient customerServiceClient,
+                                 TimeService timeService) {
     this.customerServiceClient = customerServiceClient;
-    this.licenceClient = licenceClient;
     this.timeService = timeService;
   }
 
   @Override
-  public boolean hasSielItemViews(String userId) {
-    return !licenceClient.getLicences(userId).isEmpty();
+  public CompletionStage<List<SielItemView>> getSielItemViews(List<LicenceView> licenceViews) {
+    List<CompletionStage<CustomerView>> customerStages = createCustomerStages(licenceViews);
+    List<CompletionStage<SiteView>> siteStages = createSiteStages(licenceViews);
+    return CompletableFutures.combine(allAsList(customerStages), allAsList(siteStages), (customerViews, siteViews) -> {
+      Map<String, CustomerView> customerViewMap = MapUtil.createCustomerViewMap(customerViews);
+      Map<String, SiteView> siteViewMap = MapUtil.createSiteViewMap(siteViews);
+      return licenceViews.stream().map(licenceView -> {
+        String companyName = customerViewMap.get(licenceView.getCustomerId()).getCompanyName();
+        String siteName = siteViewMap.get(licenceView.getSiteId()).getSiteName();
+        return createSielItemView(licenceView, companyName, siteName);
+      }).collect(Collectors.toList());
+    });
   }
 
-  @Override
-  public List<SielItemView> getSielItemViews(String userId) {
-    List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
-    Map<String, String> customerIdToCompanyName = customerIds.stream()
+  private List<CompletionStage<CustomerView>> createCustomerStages(List<LicenceView> licenceViews) {
+    return licenceViews.stream()
+        .map(LicenceView::getCustomerId)
+        .distinct()
         .map(customerServiceClient::getCustomer)
-        .collect(Collectors.toMap(CustomerView::getCustomerId, CustomerView::getCompanyName));
+        .collect(Collectors.toList());
+  }
 
-    List<LicenceView> licenceViews = licenceClient.getLicences(userId);
-
-    Map<String, String> siteIdToNameMap = getSiteIdToNameMap(licenceViews);
-
-    return licenceClient.getLicences(userId).stream()
-        .map(licenceView -> {
-          String companyName = customerIdToCompanyName.get(licenceView.getCustomerId());
-          String siteName = siteIdToNameMap.get(licenceView.getSiteId());
-          return createSielItemView(licenceView, companyName, siteName);
-        })
+  private List<CompletionStage<SiteView>> createSiteStages(List<LicenceView> licenceViews) {
+    return licenceViews.stream()
+        .map(LicenceView::getSiteId)
+        .distinct()
+        .map(customerServiceClient::getSite)
         .collect(Collectors.toList());
   }
 
@@ -66,14 +71,6 @@ public class SielItemViewServiceImpl implements SielItemViewService {
         expiryDate,
         expiryTimestamp,
         sielStatus);
-  }
-
-  private Map<String, String> getSiteIdToNameMap(List<LicenceView> licenceViews) {
-    return licenceViews.stream()
-        .map(LicenceView::getSiteId)
-        .distinct()
-        .map(customerServiceClient::getSite)
-        .collect(Collectors.toMap(SiteView::getSiteId, SiteView::getSiteName));
   }
 
 }

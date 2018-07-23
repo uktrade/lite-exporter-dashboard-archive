@@ -2,10 +2,12 @@ package components.service;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.client.CustomerServiceClient;
+import com.spotify.futures.CompletableFutures;
+import components.common.client.CustomerServiceClient;
 import components.util.ApplicationUtil;
 import components.util.Comparators;
 import components.util.LinkUtil;
+import components.util.MapUtil;
 import models.AppData;
 import models.Application;
 import models.AttentionTabNotificationViews;
@@ -33,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 public class ApplicationItemViewServiceImpl implements ApplicationItemViewService {
@@ -66,23 +69,25 @@ public class ApplicationItemViewServiceImpl implements ApplicationItemViewServic
   }
 
   @Override
-  public List<ApplicationItemView> getApplicationItemViews(String userId) {
+  public CompletionStage<List<ApplicationItemView>> getApplicationItemViews(String userId) {
     List<String> customerIds = userPermissionService.getCustomerIdsWithViewingPermission(userId);
 
-    Map<String, String> customerIdToCompanyName = customerIds.stream()
+    List<CompletionStage<CustomerView>> customerStages = userPermissionService.getCustomerIdsWithViewingPermission(userId).stream()
         .map(customerServiceClient::getCustomer)
-        .collect(Collectors.toMap(CustomerView::getCustomerId, CustomerView::getCompanyName));
+        .collect(Collectors.toList());
 
-    List<AppData> appDataList = appDataService.getAppDataList(customerIds, userId);
+    return CompletableFutures.allAsList(customerStages).thenApply(customerViews -> {
+      Map<String, CustomerView> customerViewMap = MapUtil.createCustomerViewMap(customerViews);
+      List<AppData> appDataList = appDataService.getAppDataList(customerIds, userId);
+      Map<String, ReadData> readDataMap = readDataService.getReadData(userId, appDataList);
 
-    Map<String, ReadData> readDataMap = readDataService.getReadData(userId, appDataList);
-
-    return appDataList.stream()
-        .map(appData -> {
-          String companyName = customerIdToCompanyName.get(appData.getApplication().getCustomerId());
-          ReadData readData = readDataMap.get(appData.getApplication().getId());
-          return getApplicationItemView(userId, appData, readData, companyName);
-        }).collect(Collectors.toList());
+      return appDataList.stream()
+          .map(appData -> {
+            String companyName = customerViewMap.get(appData.getApplication().getCustomerId()).getCompanyName();
+            ReadData readData = readDataMap.get(appData.getApplication().getId());
+            return getApplicationItemView(userId, appData, readData, companyName);
+          }).collect(Collectors.toList());
+    });
   }
 
   private ApplicationItemView getApplicationItemView(String userId, AppData appData, ReadData readData,
