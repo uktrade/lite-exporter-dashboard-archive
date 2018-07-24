@@ -118,6 +118,7 @@ import components.service.TimeServiceImpl;
 import components.service.UserPermissionService;
 import components.service.UserPermissionServiceImpl;
 import components.service.UserService;
+import components.service.UserServiceImpl;
 import components.service.WithdrawalRequestService;
 import components.service.WithdrawalRequestServiceImpl;
 import components.service.WorkingDayService;
@@ -127,7 +128,6 @@ import components.service.ogelonly.OgelOnlyFileServiceImpl;
 import components.service.ogelonly.OgelOnlyMessagePublisher;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
-import components.service.test.TestUserServiceImpl;
 import filters.common.JwtRequestFilterConfig;
 import models.templates.FeedbackConfig;
 import modules.common.RedisSessionStoreModule;
@@ -164,11 +164,9 @@ public class GuiceModule extends AbstractModule {
     boolean ogelOnly = config.getBoolean("ogelOnly");
     bindConstant().annotatedWith(Names.named("ogelOnly")).to(ogelOnly);
 
-    String host = config.getStringList("play.filters.hosts.allowed").get(0);
-    boolean test = !host.contains("uat");
-    bindConstant().annotatedWith(Names.named("test")).to(test);
+    bindConstant().annotatedWith(Names.named("test")).to(false);
+    bind(UserService.class).to(UserServiceImpl.class);
 
-    bind(UserService.class).to(TestUserServiceImpl.class);
     bind(TestDataService.class).to(TestDataServiceImpl.class);
 
     install(new SamlModule(config));
