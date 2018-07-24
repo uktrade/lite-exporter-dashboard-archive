@@ -1,10 +1,12 @@
 package components.service;
 
-import java.util.Optional;
 import models.view.OgelDetailsView;
+import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
+
+import java.util.concurrent.CompletionStage;
 
 public interface OgelDetailsViewService {
 
-  Optional<OgelDetailsView> getOgelDetailsView(String userId, String registrationReference);
+  CompletionStage<OgelDetailsView> getOgelDetailsView(OgelRegistrationView ogelRegistrationView);
 
 }

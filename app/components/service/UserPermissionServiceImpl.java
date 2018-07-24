@@ -5,7 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import components.client.UserServiceClient;
+import components.common.client.UserServiceClientJwt;
 import components.exceptions.UnexpectedStateException;
 import components.util.ApplicationUtil;
 import models.AppData;
@@ -13,8 +13,8 @@ import models.Application;
 import models.CaseData;
 import models.Rfi;
 import uk.gov.bis.lite.user.api.view.CustomerView;
-import uk.gov.bis.lite.user.api.view.enums.Role;
 import uk.gov.bis.lite.user.api.view.UserPrivilegesView;
+import uk.gov.bis.lite.user.api.view.enums.Role;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -29,7 +29,7 @@ import javax.annotation.Nonnull;
 
 public class UserPermissionServiceImpl implements UserPermissionService {
 
-  private final UserServiceClient userServiceClient;
+  private final UserServiceClientJwt userServiceClientJwt;
   private final LoadingCache<String, UserPrivilegesView> privilegesCache;
 
   private static final Set<Role> VIEWER_ROLES = EnumSet.of(Role.ADMIN, Role.SUBMITTER, Role.PREPARER);
@@ -37,9 +37,9 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
   @Inject
   public UserPermissionServiceImpl(@Named("userServiceCacheExpiryMinutes") Long cacheExpireMinutes,
-                                   UserServiceClient userServiceClient) {
-    this.userServiceClient = userServiceClient;
+                                   UserServiceClientJwt userServiceClientJwt) {
     this.privilegesCache = createPrivilegesCache(cacheExpireMinutes);
+    this.userServiceClientJwt = userServiceClientJwt;
   }
 
   private LoadingCache<String, UserPrivilegesView> createPrivilegesCache(Long cacheExpireMinutes) {
@@ -148,11 +148,10 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         .anyMatch(view -> view.getSiteId().equals(siteId) && roles.contains(view.getRole()));
   }
 
-  protected UserPrivilegesView getUserPrivilegesView(String userId) {
-    Optional<UserPrivilegesView> userPrivilegesViewOptional = userServiceClient.getUserPrivilegeView(userId);
-    if (userPrivilegesViewOptional.isPresent()) {
-      return userPrivilegesViewOptional.get();
-    } else {
+  private UserPrivilegesView getUserPrivilegesView(String userId) {
+    try {
+      return userServiceClientJwt.getUserPrivilegeView(userId).toCompletableFuture().get();
+    } catch (Exception exception) {
       UserPrivilegesView userPrivilegesView = new UserPrivilegesView();
       userPrivilegesView.setCustomers(new ArrayList<>());
       userPrivilegesView.setSites(new ArrayList<>());

@@ -1,7 +1,10 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import com.spotify.futures.CompletableFutures;
 import components.cache.SessionCache;
+import components.common.client.PermissionsServiceClient;
 import components.exceptions.UnknownParameterException;
 import components.service.OgelDetailsViewService;
 import components.service.OgelItemViewService;
@@ -17,25 +20,36 @@ import models.enums.LicenceListTab;
 import models.enums.LicenceSortType;
 import models.enums.SortDirection;
 import models.view.LicenceListView;
-import models.view.OgelDetailsView;
 import models.view.OgelItemView;
-import models.view.SielDetailsView;
 import models.view.SielItemView;
 import play.mvc.Result;
 import play.mvc.With;
+import uk.gov.bis.lite.permissions.api.view.LicenceView;
+import uk.gov.bis.lite.permissions.api.view.OgelRegistrationView;
 import views.html.licenceList;
 import views.html.ogelDetails;
 import views.html.sielDetails;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class LicenceListController extends SamlController {
 
-  private static final EnumSet<LicenceSortType> OGEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.REGISTRATION_DATE, LicenceSortType.LAST_UPDATED);
-  private static final EnumSet<LicenceSortType> SIEL_ONLY_SORT_TYPES = EnumSet.of(LicenceSortType.EXPIRY_DATE);
+  private static final EnumSet<LicenceSortType> OGEL_SORT_TYPES = EnumSet.of(LicenceSortType.REFERENCE,
+      LicenceSortType.LICENSEE,
+      LicenceSortType.REGISTRATION_DATE,
+      LicenceSortType.STATUS,
+      LicenceSortType.LAST_UPDATED);
+  private static final EnumSet<LicenceSortType> SIEL_SORT_TYPES = EnumSet.of(LicenceSortType.REFERENCE,
+      LicenceSortType.LICENSEE,
+      LicenceSortType.EXPIRY_DATE,
+      LicenceSortType.STATUS);
 
+  private final boolean ogelOnly;
+  private final PermissionsServiceClient permissionsServiceClient;
   private final OgelItemViewService ogelItemViewService;
   private final OgelDetailsViewService ogelDetailsViewService;
   private final UserService userService;
@@ -46,7 +60,9 @@ public class LicenceListController extends SamlController {
   private final sielDetails sielDetails;
 
   @Inject
-  public LicenceListController(OgelItemViewService ogelItemViewService,
+  public LicenceListController(@Named("ogelOnly") boolean ogelOnly,
+                               PermissionsServiceClient permissionsServiceClient,
+                               OgelItemViewService ogelItemViewService,
                                OgelDetailsViewService ogelDetailsViewService,
                                UserService userService,
                                SielItemViewService sielItemViewService,
@@ -54,6 +70,8 @@ public class LicenceListController extends SamlController {
                                licenceList licenceList,
                                ogelDetails ogelDetails,
                                sielDetails sielDetails) {
+    this.ogelOnly = ogelOnly;
+    this.permissionsServiceClient = permissionsServiceClient;
     this.ogelItemViewService = ogelItemViewService;
     this.ogelDetailsViewService = ogelDetailsViewService;
     this.userService = userService;
@@ -64,68 +82,83 @@ public class LicenceListController extends SamlController {
     this.sielDetails = sielDetails;
   }
 
-  public Result licenceList(String tab, String sort, String direction, Integer page) {
+  public CompletionStage<Result> licenceList(String tab, String sort, String direction, Integer page) {
     String userId = userService.getCurrentUserId();
 
     LicenceListState state = SessionCache.getLicenseListState(tab, sort, direction, page);
-    SortDirection sortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.ASC);
-    LicenceSortType licenceSortType = EnumUtil.parse(state.getSort(), LicenceSortType.class, LicenceSortType.STATUS);
-    LicenceListTab licenceListTab = EnumUtil.parse(state.getTab(), LicenceListTab.class, LicenceListTab.SIELS);
+    SortDirection querySortDirection = EnumUtil.parse(state.getDirection(), SortDirection.class, SortDirection.ASC);
+    LicenceSortType queryLicenceSortType = EnumUtil.parse(state.getSort(), LicenceSortType.class, LicenceSortType.STATUS);
+    LicenceListTab queryLicenceListTab = EnumUtil.parse(state.getTab(), LicenceListTab.class, LicenceListTab.SIELS);
 
-    boolean hasOgels = ogelItemViewService.hasOgelItemViews(userId);
-    boolean hasSiels = sielItemViewService.hasSielItemViews(userId);
-
-    if (licenceListTab == LicenceListTab.SIELS && !hasSiels && hasOgels) {
-      licenceListTab = LicenceListTab.OGELS;
-    } else if (licenceListTab == LicenceListTab.OGELS && !hasOgels && hasSiels) {
-      licenceListTab = LicenceListTab.SIELS;
-    }
-
-    if ((licenceListTab == LicenceListTab.SIELS && OGEL_ONLY_SORT_TYPES.contains(licenceSortType)) ||
-        (licenceListTab == LicenceListTab.OGELS && SIEL_ONLY_SORT_TYPES.contains(licenceSortType))) {
-      licenceSortType = LicenceSortType.REFERENCE;
-      sortDirection = SortDirection.ASC;
-    }
-
-    Page<OgelItemView> ogelPage = null;
-    Page<SielItemView> sielPage = null;
-    int currentPage;
-    if (licenceListTab == LicenceListTab.OGELS) {
-      List<OgelItemView> ogelItemViews = ogelItemViewService.getOgelItemViews(userId);
-      SortUtil.sortOgels(ogelItemViews, licenceSortType, sortDirection);
-      ogelPage = PageUtil.getPage(page, ogelItemViews);
-      currentPage = ogelPage.getCurrentPage();
+    CompletionStage<List<OgelRegistrationView>> ogelStage = permissionsServiceClient.getOgelRegistrations(userId);
+    CompletionStage<List<LicenceView>> licenceStage;
+    if (ogelOnly) {
+      licenceStage = CompletableFuture.completedFuture(new ArrayList<>());
     } else {
-      List<SielItemView> sielItemViews = sielItemViewService.getSielItemViews(userId);
-      SortUtil.sortSiels(sielItemViews, licenceSortType, sortDirection);
-      sielPage = PageUtil.getPage(page, sielItemViews);
-      currentPage = sielPage.getCurrentPage();
+      licenceStage = permissionsServiceClient.getLicences(userId);
     }
 
-    LicenceListView licenceListView = new LicenceListView(hasSiels, hasOgels, licenceListTab, licenceSortType, sortDirection, ogelPage, sielPage, currentPage);
+    return CompletableFutures.combineFutures(ogelStage, licenceStage, (ogelRegistrationViews, licenceViews) -> {
 
-    return ok(licenceList.render(licenceListView));
+      boolean hasOgels = !ogelRegistrationViews.isEmpty();
+      boolean hasSiels = !licenceViews.isEmpty();
+
+      LicenceListTab licenceListTab = createLicenceListTab(queryLicenceListTab, hasSiels, hasOgels);
+
+      boolean isCoherent = isTabAllowed(licenceListTab, queryLicenceSortType);
+      LicenceSortType licenceSortType = isCoherent ? queryLicenceSortType : LicenceSortType.REFERENCE;
+      SortDirection sortDirection = isCoherent ? querySortDirection : SortDirection.ASC;
+
+      if (licenceListTab == LicenceListTab.OGELS) {
+        return ogelItemViewService.getOgelItemViews(ogelRegistrationViews).thenApply(ogelItemViews -> {
+          SortUtil.sortOgels(ogelItemViews, licenceSortType, sortDirection);
+          Page<OgelItemView> ogelPage = PageUtil.getPage(page, ogelItemViews);
+          int currentPage = ogelPage.getCurrentPage();
+          LicenceListView licenceListView = new LicenceListView(hasSiels, hasOgels, licenceListTab, licenceSortType, sortDirection, ogelPage, null, currentPage);
+          return ok(licenceList.render(licenceListView));
+        });
+      } else {
+        return sielItemViewService.getSielItemViews(licenceViews).thenApply(sielItemViews -> {
+          SortUtil.sortSiels(sielItemViews, licenceSortType, sortDirection);
+          Page<SielItemView> sielPage = PageUtil.getPage(page, sielItemViews);
+          int currentPage = sielPage.getCurrentPage();
+          LicenceListView licenceListView = new LicenceListView(hasSiels, hasOgels, licenceListTab, licenceSortType, sortDirection, null, sielPage, currentPage);
+          return ok(licenceList.render(licenceListView));
+        });
+      }
+    });
   }
 
-  public Result ogelDetails(String registrationReference) {
-    String userId = userService.getCurrentUserId();
-    Optional<OgelDetailsView> ogelDetailsView = ogelDetailsViewService.getOgelDetailsView(userId, registrationReference);
-    if (ogelDetailsView.isPresent()) {
-      return ok(ogelDetails.render(ogelDetailsView.get()));
+  private LicenceListTab createLicenceListTab(LicenceListTab queryLicenceListTab, boolean hasSiels, boolean hasOgels) {
+    if (queryLicenceListTab == LicenceListTab.SIELS && !hasSiels && hasOgels) {
+      return LicenceListTab.OGELS;
+    } else if (queryLicenceListTab == LicenceListTab.OGELS && !hasOgels && hasSiels) {
+      return LicenceListTab.SIELS;
     } else {
-      throw UnknownParameterException.unknownOgelId(registrationReference);
+      return queryLicenceListTab;
     }
+  }
+
+  private boolean isTabAllowed(LicenceListTab licenceListTab, LicenceSortType licenceSortType) {
+    return (licenceListTab == LicenceListTab.OGELS && OGEL_SORT_TYPES.contains(licenceSortType)) ||
+        (licenceListTab == LicenceListTab.SIELS && SIEL_SORT_TYPES.contains(licenceSortType));
+  }
+
+  public CompletionStage<Result> ogelDetails(String registrationReference) {
+    String userId = userService.getCurrentUserId();
+    return permissionsServiceClient.getOgelRegistration(userId, registrationReference).exceptionally(error -> {
+      throw UnknownParameterException.unknownOgelId(registrationReference);
+    }).thenCompose(ogelRegistrationView -> ogelDetailsViewService.getOgelDetailsView(ogelRegistrationView)
+        .thenApply(ogelDetailsView -> ok(ogelDetails.render(ogelDetailsView))));
   }
 
   @With(OgelOnlyGuardAction.class)
-  public Result sielDetails(String registrationReference) {
+  public CompletionStage<Result> sielDetails(String registrationReference) {
     String userId = userService.getCurrentUserId();
-    Optional<SielDetailsView> sielDetailsView = sielDetailsViewService.getSielDetailsView(userId, registrationReference);
-    if (sielDetailsView.isPresent()) {
-      return ok(sielDetails.render(sielDetailsView.get()));
-    } else {
+    return permissionsServiceClient.getLicence(userId, registrationReference).exceptionally(error -> {
       throw UnknownParameterException.unknownSielId(registrationReference);
-    }
+    }).thenCompose(licenceView -> sielDetailsViewService.getSielDetailsView(licenceView)
+        .thenApply(sielDetailsView -> ok(sielDetails.render(sielDetailsView))));
   }
 
 }

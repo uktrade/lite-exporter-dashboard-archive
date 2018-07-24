@@ -1,11 +1,13 @@
 package components.service;
 
-import java.util.List;
 import models.view.ApplicationItemView;
+
+import java.util.List;
+import java.util.concurrent.CompletionStage;
 
 public interface ApplicationItemViewService {
 
-  List<ApplicationItemView> getApplicationItemViews(String userId);
+  CompletionStage<List<ApplicationItemView>> getApplicationItemViews(String userId);
 
 }
 

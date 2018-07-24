@@ -11,7 +11,6 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
@@ -20,14 +19,6 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import components.auth.SamlModule;
-import components.client.CustomerServiceClient;
-import components.client.CustomerServiceClientImpl;
-import components.client.LicenceClient;
-import components.client.LicenceClientImpl;
-import components.client.OgelServiceClient;
-import components.client.OgelServiceClientImpl;
-import components.client.UserServiceClient;
-import components.client.UserServiceClientImpl;
 import components.common.cache.CountryProvider;
 import components.common.cache.UpdateCountryCacheActor;
 import components.common.client.CountryServiceClient;
@@ -132,7 +123,6 @@ import components.service.WorkingDayServiceImpl;
 import components.service.ogelonly.OgelOnlyDestinationServiceImpl;
 import components.service.ogelonly.OgelOnlyFileServiceImpl;
 import components.service.ogelonly.OgelOnlyMessagePublisher;
-import components.service.ogelonly.OgelOnlySielItemViewServiceImpl;
 import components.service.test.TestDataService;
 import components.service.test.TestDataServiceImpl;
 import components.service.test.TestUserServiceImpl;
@@ -201,11 +191,7 @@ public class GuiceModule extends AbstractModule {
     bind(AmendmentService.class).to(AmendmentServiceImpl.class);
     bind(WithdrawalRequestService.class).to(WithdrawalRequestServiceImpl.class);
     bind(RfiReplyService.class).to(RfiReplyServiceImpl.class);
-    if (ogelOnly) {
-      bind(SielItemViewService.class).to(OgelOnlySielItemViewServiceImpl.class);
-    } else {
-      bind(SielItemViewService.class).to(SielItemViewServiceImpl.class);
-    }
+    bind(SielItemViewService.class).to(SielItemViewServiceImpl.class);
     bind(MessageViewService.class).to(MessageViewServiceImpl.class);
     bind(AppDataService.class).to(AppDataServiceImpl.class);
     bind(ReadDataService.class).to(ReadDataServiceImpl.class);
@@ -301,22 +287,18 @@ public class GuiceModule extends AbstractModule {
     // CustomerServiceClient
     bindConstant().annotatedWith(Names.named("customerServiceAddress")).to(config.getString("customerService.address"));
     bindConstant().annotatedWith(Names.named("customerServiceTimeout")).to(config.getString("customerService.timeout"));
-    bind(CustomerServiceClient.class).to(CustomerServiceClientImpl.class);
     // LicenceClient
     bindConstant().annotatedWith(Names.named("permissionsServiceAddress")).to(config.getString("permissionsService.address"));
     bindConstant().annotatedWith(Names.named("permissionsServiceTimeout")).to(config.getString("permissionsService.timeout"));
-    bind(LicenceClient.class).to(LicenceClientImpl.class);
     // OgelServiceClient
     bindConstant().annotatedWith(Names.named("ogelServiceAddress")).to(config.getString("ogelService.address"));
     bindConstant().annotatedWith(Names.named("ogelServiceTimeout")).to(config.getString("ogelService.timeout"));
     bindConstant().annotatedWith(Names.named("ogelServiceCredentials")).to(config.getString("ogelService.credentials"));
-    bind(OgelServiceClient.class).to(OgelServiceClientImpl.class);
     // UserServiceClient
     bindConstant().annotatedWith(Names.named("userServiceAddress")).to(config.getString("userService.address"));
     bindConstant().annotatedWith(Names.named("userServiceTimeout")).to(config.getString("userService.timeout"));
     bindConstant().annotatedWith(Names.named("userServiceCredentials")).to(config.getString("userService.credentials"));
     bindConstant().annotatedWith(Names.named("userServiceCacheExpiryMinutes")).to(config.getString("userService.cacheExpiryMinutes"));
-    bind(UserServiceClient.class).to(UserServiceClientImpl.class);
     // CountryServiceClient
     bindConstant().annotatedWith(Names.named("countryAddress")).to(config.getString("countryService.address"));
     bindConstant().annotatedWith(Names.named("countryTimeout")).to(config.getString("countryService.timeout"));
@@ -356,14 +338,8 @@ public class GuiceModule extends AbstractModule {
                                          WSClient wsClient,
                                          @Named("countryAddress") String address,
                                          @Named("countryTimeout") int timeout,
-                                         @Named("countryCredentials") String credentials,
-                                         ObjectMapper mapper) {
-    return new CountryProvider(CountryServiceClient.buildCountryServiceAllClient(httpContext,
-        wsClient,
-        timeout,
-        address,
-        credentials,
-        mapper));
+                                         @Named("countryCredentials") String credentials) {
+    return new CountryProvider(CountryServiceClient.buildCountryServiceAllClient(address, timeout, credentials, wsClient, httpContext));
   }
 
   @Provides
