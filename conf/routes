@@ -32,6 +32,9 @@ GET         /licences                                                 controller
 GET         /licence/ogel/:registrationReference                      controllers.LicenceListController.ogelDetails(registrationReference)
 GET         /licence/siel/:registrationReference                      controllers.LicenceListController.sielDetails(registrationReference)
 
+# Static content
+GET         /fair-processing-note          controllers.StaticContentController.renderFairProcessingNote
+
 # Test data
 GET         /test/:testType                                           controllers.TestDataController.insertTestData(testType)
 

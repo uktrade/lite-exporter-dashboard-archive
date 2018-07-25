@@ -1,0 +1,5 @@
+@import template._
+
+@this(standardPage: standardPage)
+@(title: String, pageHeading: Option[Html], content: Html, hideBackLink: Boolean)
+@standardPage(title, pageHeading, hideBackLink = hideBackLink){ }(content)
