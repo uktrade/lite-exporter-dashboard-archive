@@ -6,6 +6,7 @@ import actions.BasicAuthAction;
 import com.google.inject.Inject;
 import components.service.PingService;
 import models.admin.PingResult;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Result;
 import play.mvc.With;
@@ -13,7 +14,8 @@ import play.mvc.With;
 
 public class AdminController {
 
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
+
   private final PingService pingService;
 
   private final String PING_XML_TEMPLATE = "<pingdom_http_custom_check><status>%s</status><detail>%s</detail></pingdom_http_custom_check>";
