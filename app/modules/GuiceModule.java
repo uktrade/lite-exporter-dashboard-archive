@@ -93,6 +93,8 @@ import components.service.OgelDetailsViewService;
 import components.service.OgelDetailsViewServiceImpl;
 import components.service.OgelItemViewService;
 import components.service.OgelItemViewServiceImpl;
+import components.service.PingService;
+import components.service.PingServiceImpl;
 import components.service.PreviousRequestItemViewService;
 import components.service.PreviousRequestItemViewServiceImpl;
 import components.service.ReadDataService;
@@ -211,6 +213,8 @@ public class GuiceModule extends AbstractModule {
     bind(OgelItemViewService.class).to(OgelItemViewServiceImpl.class);
     bind(OgelDetailsViewService.class).to(OgelDetailsViewServiceImpl.class);
     bind(UserPermissionService.class).to(UserPermissionServiceImpl.class);
+    bind(PingService.class).to(PingServiceImpl.class);
+
     // Database
     bind(RfiDao.class).to(RfiDaoImpl.class);
     bind(RfiReplyDao.class).to(RfiReplyDaoImpl.class);
@@ -287,9 +291,11 @@ public class GuiceModule extends AbstractModule {
     // CustomerServiceClient
     bindConstant().annotatedWith(Names.named("customerServiceAddress")).to(config.getString("customerService.address"));
     bindConstant().annotatedWith(Names.named("customerServiceTimeout")).to(config.getString("customerService.timeout"));
+    bindConstant().annotatedWith(Names.named("customerServiceCredentials")).to(config.getString("customerService.credentials"));
     // LicenceClient
     bindConstant().annotatedWith(Names.named("permissionsServiceAddress")).to(config.getString("permissionsService.address"));
     bindConstant().annotatedWith(Names.named("permissionsServiceTimeout")).to(config.getString("permissionsService.timeout"));
+    bindConstant().annotatedWith(Names.named("permissionsServiceCredentials")).to(config.getString("permissionsService.credentials"));
     // OgelServiceClient
     bindConstant().annotatedWith(Names.named("ogelServiceAddress")).to(config.getString("ogelService.address"));
     bindConstant().annotatedWith(Names.named("ogelServiceTimeout")).to(config.getString("ogelService.timeout"));
