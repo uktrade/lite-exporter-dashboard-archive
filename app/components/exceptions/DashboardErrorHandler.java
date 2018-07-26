@@ -4,7 +4,6 @@ import static play.mvc.Results.badRequest;
 import static play.mvc.Results.notFound;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.typesafe.config.Config;
 import controllers.common.ErrorHandler;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -26,8 +25,8 @@ public class DashboardErrorHandler extends ErrorHandler {
 
   @Inject
   public DashboardErrorHandler(Environment environment, OptionalSourceMapper sourceMapper, Config config,
-                               views.html.notFound notFound, @Named("ecjuEmailAddress") String errorContactEmail) {
-    super(environment, sourceMapper, config, errorContactEmail);
+                               views.html.notFound notFound) {
+    super(environment, sourceMapper, config, "exportservicesteam@digital.trade.gov.uk");
     this.notFound = notFound;
   }
 
