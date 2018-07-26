@@ -176,6 +176,8 @@ public class GuiceModule extends AbstractModule {
 
     bindClients();
 
+    bindConstant().annotatedWith(Names.named("ecjuEmailAddress")).to(config.getString("ecjuEmailAddress"));
+
     bind(ZoneId.class).toInstance(ZoneId.of(config.getString("defaultTimeZoneId")));
     // Jwt
     bindConstant().annotatedWith(Names.named("jwtSharedSecret")).to(config.getString("jwtSharedSecret"));

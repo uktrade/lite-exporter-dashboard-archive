@@ -4,6 +4,7 @@ import static play.mvc.Results.badRequest;
 import static play.mvc.Results.notFound;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.typesafe.config.Config;
 import controllers.common.ErrorHandler;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -21,20 +22,20 @@ public class DashboardErrorHandler extends ErrorHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DashboardErrorHandler.class);
 
-  private final views.html.errorPage errorPage;
+  private final views.html.notFound notFound;
 
   @Inject
   public DashboardErrorHandler(Environment environment, OptionalSourceMapper sourceMapper, Config config,
-                               views.html.errorPage errorPage) {
-    super(environment, sourceMapper, config);
-    this.errorPage = errorPage;
+                               views.html.notFound notFound, @Named("ecjuEmailAddress") String errorContactEmail) {
+    super(environment, sourceMapper, config, errorContactEmail);
+    this.notFound = notFound;
   }
 
   @Override
   public CompletionStage<Result> onClientError(Http.RequestHeader request, int statusCode, String message) {
     if (statusCode == Http.Status.NOT_FOUND || statusCode == Http.Status.BAD_REQUEST) {
       LOGGER.warn(statusCode + " " + message);
-      return CompletableFuture.completedFuture(notFound(errorPage.render("This page could not be found")));
+      return CompletableFuture.completedFuture(notFound(notFound.render()));
     } else {
       return super.onClientError(request, statusCode, message);
     }
@@ -43,7 +44,7 @@ public class DashboardErrorHandler extends ErrorHandler {
   @Override
   public CompletionStage<Result> onServerError(Http.RequestHeader request, Throwable exception) {
     if (ExceptionUtils.indexOfThrowable(exception, UnknownParameterException.class) != -1) {
-      return CompletableFuture.completedFuture(badRequest(errorPage.render("This page could not be found")));
+      return CompletableFuture.completedFuture(badRequest(notFound.render()));
     } else {
       return super.onServerError(request, exception);
     }
