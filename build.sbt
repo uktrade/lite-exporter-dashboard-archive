@@ -26,8 +26,8 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "42.1.4",
   "org.jdbi" % "jdbi" % "2.78",
   "org.apache.commons" % "commons-collections4" % "4.1",
-  "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.385",
-  "com.amazonaws" % "aws-java-sdk-sns" % "1.11.382",
+  "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.443",
+  "com.amazonaws" % "aws-java-sdk-sns" % "1.11.443",
   // We need this dependency to use JDBI @BindIn annotation
   "org.antlr" % "stringtemplate" % "3.2.1",
   "org.jsoup" % "jsoup" % "1.11.2"
