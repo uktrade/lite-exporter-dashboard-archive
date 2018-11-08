@@ -21,7 +21,7 @@ libraryDependencies ++= Seq(
   cacheApi,
   javaWs,
   filters,
-  "com.fasterxml.jackson.core:jackson-databind" % "2.9.7",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.7",
   "net.logstash.logback" % "logstash-logback-encoder" % "5.2",
   "org.flywaydb" %% "flyway-play" % "4.0.0",
   "org.postgresql" % "postgresql" % "42.1.4",
