@@ -1,4 +1,10 @@
-# LITE Exporter Dashboard
+# Deprecated
+
+Use lite-exporter-hub instead.
+
+---
+
+LITE Exporter Dashboard
 
 A frontend application allowing exporters to see a list of their Open General Export Licences (OGELs).
 
