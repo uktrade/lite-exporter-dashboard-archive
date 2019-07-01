@@ -1,7 +1,5 @@
 # Deprecated
 
-Use lite-exporter-hub instead.
-
 ---
 
 LITE Exporter Dashboard
